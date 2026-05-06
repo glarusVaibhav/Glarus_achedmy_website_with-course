@@ -1,0 +1,292 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+enum Role {
+  STUDENT
+  INSTRUCTOR
+  ADMIN
+}
+
+enum CourseStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum UserStatus {
+  ACTIVE
+  BLOCKED
+}
+
+enum CourseType {
+  SELF_PACED
+  INSTRUCTOR_LED
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum RefundStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model User {
+  id            String          @id @default(cuid())
+  name          String
+  email         String          @unique
+  password      String
+  role          Role            @default(STUDENT)
+  status        UserStatus      @default(ACTIVE)
+  courses       Course[]        @relation("InstructorCourses")
+  purchases     Purchase[]
+  enrollments   Enrollment[]
+  auditLogs     AuditLog[]      @relation("AdminAuditLogs")
+  videoProgress VideoProgress[]
+  certificates  Certificate[]
+  activities    UserActivity[]
+  achievements  Achievement[]
+  notifications Notification[]
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  instructorProfile  InstructorProfile?
+  managedRefunds     Refund[]            @relation("AdminRefunds")
+  instructorApproval InstructorApproval?
+}
+
+model Course {
+  id           String         @id @default(cuid())
+  title        String
+  description  String
+  price        Float
+  instructor   User           @relation("InstructorCourses", fields: [instructorId], references: [id], onDelete: Cascade)
+  instructorId String
+  status       CourseStatus   @default(PENDING)
+  purchases    Purchase[]
+  enrollments  Enrollment[]
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  type         CourseType     @default(SELF_PACED)
+  modules      Module[]
+  batches      Batch[]
+  certificates Certificate[]
+  activities   UserActivity[]
+  refundRate     Float           @default(0.0)
+  rating         Float           @default(0.0)
+  reviewsCount   Int             @default(0)
+  courseApproval CourseApproval?
+}
+
+model Purchase {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  course        Course        @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId      String
+  paymentStatus PaymentStatus @default(COMPLETED)
+  createdAt     DateTime      @default(now())
+  refund        Refund?       @relation("PurchaseRefund")
+}
+
+model Enrollment {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId  String
+  progress  Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Settings {
+  id                String   @id @default("global")
+  platformName      String   @default("EduAI Platform")
+  currency          String   @default("INR")
+  commissionPercent Float    @default(15.0)
+  updatedAt         DateTime @updatedAt
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  action    String
+  details   String
+  admin     User     @relation("AdminAuditLogs", fields: [adminId], references: [id], onDelete: Cascade)
+  adminId   String
+  timestamp DateTime @default(now())
+}
+
+model Module {
+  id       String    @id @default(cuid())
+  title    String
+  course   Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId String
+  lectures Lecture[]
+  order    Int
+}
+
+model Lecture {
+  id        String          @id @default(cuid())
+  title     String
+  videoUrl  String?
+  module    Module          @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  moduleId  String
+  progress  VideoProgress[]
+  order     Int
+}
+
+model VideoProgress {
+  id              String   @id @default(cuid())
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId          String
+  lecture         Lecture  @relation(fields: [lectureId], references: [id], onDelete: Cascade)
+  lectureId       String
+  progressSeconds Float    @default(0)
+  isCompleted     Boolean  @default(false)
+  updatedAt       DateTime @updatedAt
+  
+  @@unique([userId, lectureId])
+}
+
+model Batch {
+  id          String      @id @default(cuid())
+  name        String
+  course      Course      @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId    String
+  startDate   DateTime
+  liveClasses LiveClass[]
+}
+
+model LiveClass {
+  id          String   @id @default(cuid())
+  batch       Batch    @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  batchId     String
+  title       String
+  date        DateTime
+  meetingLink String
+}
+
+model Certificate {
+  id              String   @id @default(cuid())
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId          String
+  course          Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId        String
+  issueDate       DateTime @default(now())
+  certificateUrl  String?
+
+  @@unique([userId, courseId])
+}
+
+model UserActivity {
+  id              String   @id @default(cuid())
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId          String
+  course          Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId        String
+  lastLectureId   String?
+  lastLectureTitle String?
+  lastTimestamp   Float    @default(0)
+  totalSeconds    Float    @default(0)
+  accessedAt      DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([userId, courseId])
+}
+
+model Achievement {
+  id       String   @id @default(cuid())
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId   String
+  badge    String
+  title    String
+  xp       Int      @default(0)
+  earnedAt DateTime @default(now())
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  message   String
+  type      String   @default("INFO")
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model InstructorProfile {
+  id             String   @id @default(cuid())
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         String   @unique
+  totalRevenue   Float    @default(0.0)
+  rating         Float    @default(0.0)
+  totalStudents  Int      @default(0)
+}
+
+model Refund {
+  id                String       @id @default(cuid())
+  purchase          Purchase     @relation("PurchaseRefund", fields: [purchaseId], references: [id], onDelete: Cascade)
+  purchaseId        String       @unique
+  status            RefundStatus @default(PENDING)
+  reason            String
+  amount            Float
+  adminApprovedBy   User?        @relation("AdminRefunds", fields: [adminApprovedById], references: [id])
+  adminApprovedById String?
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+}
+
+model Analytics {
+  id        String   @id @default(cuid())
+  event     String   // e.g., "PAGE_VIEW", "ADD_CART", "PURCHASE", "DROP_OFF"
+  path      String?
+  userId    String?
+  courseId  String?
+  metadata  String?  // JSON stringified additional data
+  createdAt DateTime @default(now())
+}
+
+model InstructorApproval {
+  id          String         @id @default(cuid())
+  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String         @unique
+  resumeUrl   String?
+  status      ApprovalStatus @default(PENDING)
+  experience  String?
+  skills      String?
+  bio         String?
+  reviewedBy  String?
+  reviewedAt  DateTime?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+}
+
+model CourseApproval {
+  id             String         @id @default(cuid())
+  course         Course         @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId       String         @unique
+  status         ApprovalStatus @default(PENDING)
+  feedback       String?
+  contentPreview String?        // JSON stringified curriculum preview
+  reviewedBy     String?
+  reviewedAt     DateTime?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+}
