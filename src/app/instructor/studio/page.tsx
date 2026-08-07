@@ -4,7 +4,7 @@ import { useState } from "react";
 import { 
   Tv, Layers, ClipboardList, LineChart, Sparkles, Plus, 
   Video, Code, HelpCircle, GripVertical, ChevronDown, ChevronRight,
-  AlertTriangle, UserX, Loader2, ArrowRight, BookOpen, Settings, PieChart, Activity, Bell
+  AlertTriangle, UserX, Loader2, ArrowRight, BookOpen, Settings, PieChart, Activity, Bell, TrendingDown
 } from "lucide-react";
 
 interface Lesson {

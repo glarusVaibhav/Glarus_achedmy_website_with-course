@@ -38,7 +38,7 @@ export default function DemoChatMockup() {
            <div className="w-3 h-3 rounded-full bg-amber-500/50" />
            <div className="w-3 h-3 rounded-full bg-emerald-500/50" />
          </div>
-         <span className="text-[10px] font-bold text-subtext uppercase tracking-widest ml-4">EduAI Tutor Session</span>
+         <span className="text-[10px] font-bold text-subtext uppercase tracking-widest ml-4">GlarusAcademy Tutor Session</span>
       </div>
 
       <div className="flex-1 p-6 flex flex-col gap-6 overflow-y-auto custom-scrollbar relative">

@@ -17,8 +17,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AI EdTech Platform",
-  description: "Master AI from Beginner to Expert",
+  title: "GlarusAcademy - AI EdTech Platform",
+  description: "Master AI from Beginner to Expert with GlarusAcademy",
 };
 
 export default function RootLayout({

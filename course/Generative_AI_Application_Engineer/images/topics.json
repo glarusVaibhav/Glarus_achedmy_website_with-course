@@ -1,0 +1,2612 @@
+[
+  {
+    "id": "M001",
+    "title": "Module 1: Python Fundamentals",
+    "topics": [
+      {
+        "id": "M001-what-is-python",
+        "title": "What is Python?"
+      },
+      {
+        "id": "M001-the-execution-environment",
+        "title": "The Execution Environment"
+      },
+      {
+        "id": "M001-how-python-works-execution-flow",
+        "title": "How Python Works (Execution Flow)"
+      },
+      {
+        "id": "M001-variables-as-memory-containers",
+        "title": "Variables as Memory Containers"
+      },
+      {
+        "id": "M001-variable-anatomy",
+        "title": "Variable Anatomy"
+      },
+      {
+        "id": "M001-the-fundamental-data-types",
+        "title": "The Fundamental Data Types"
+      },
+      {
+        "id": "M001-variable-scope-with-professor-python",
+        "title": "Variable Scope with Professor Python"
+      },
+      {
+        "id": "M001-how-variables-work-in-memory",
+        "title": "How Variables Work in Memory"
+      },
+      {
+        "id": "M001-password-strength-checker",
+        "title": "Password Strength Checker"
+      },
+      {
+        "id": "M001-input-and-output",
+        "title": "Input and Output"
+      },
+      {
+        "id": "M001-type-conversion",
+        "title": "Type Conversion"
+      },
+      {
+        "id": "M001-basic-debugging",
+        "title": "Basic Debugging"
+      },
+      {
+        "id": "M001-conditional-statements",
+        "title": "Conditional Statements"
+      },
+      {
+        "id": "M001-the-decision-tree",
+        "title": "The Decision Tree"
+      },
+      {
+        "id": "M001-loops-automating-repetition",
+        "title": "Loops: Automating Repetition"
+      },
+      {
+        "id": "M001-functions-modular-engineering",
+        "title": "Functions: Modular Engineering"
+      },
+      {
+        "id": "M001-scope-and-return-values",
+        "title": "Scope and Return Values"
+      },
+      {
+        "id": "M001-lambda-functions",
+        "title": "Lambda Functions"
+      },
+      {
+        "id": "M001-complete-the-logic",
+        "title": "Complete the Logic"
+      },
+      {
+        "id": "M001-the-big-four-data-structures",
+        "title": "The Big Four Data Structures"
+      },
+      {
+        "id": "M001-list-comprehensions-iterators",
+        "title": "List Comprehensions & Iterators"
+      },
+      {
+        "id": "M001-json-the-api-language",
+        "title": "JSON: The API Language"
+      },
+      {
+        "id": "M001-classes-and-objects",
+        "title": "Classes and Objects"
+      },
+      {
+        "id": "M001-constructors-init-and-self",
+        "title": "Constructors (__init__) and 'self'"
+      },
+      {
+        "id": "M001-inheritance",
+        "title": "Inheritance"
+      },
+      {
+        "id": "M001-types-of-inheritance",
+        "title": "Types of Inheritance"
+      },
+      {
+        "id": "M001-encapsulation",
+        "title": "Encapsulation"
+      },
+      {
+        "id": "M001-reusable-ai-components",
+        "title": "Reusable AI Components"
+      },
+      {
+        "id": "M001-file-operations-reading-and-writing",
+        "title": "File Operations: Reading and Writing"
+      },
+      {
+        "id": "M001-understanding-file-modes",
+        "title": "Understanding File Modes"
+      },
+      {
+        "id": "M001-csv-processing",
+        "title": "CSV Processing"
+      },
+      {
+        "id": "M001-json-processing-file-io",
+        "title": "JSON Processing (File I/O)"
+      },
+      {
+        "id": "M001-the-json-function-matrix",
+        "title": "The JSON Function Matrix"
+      },
+      {
+        "id": "M001-data-validation-exception-handling",
+        "title": "Data Validation & Exception Handling"
+      },
+      {
+        "id": "M001-working-with-configuration-files",
+        "title": "Working with Configuration Files"
+      },
+      {
+        "id": "M001-virtual-environments-the-dependency-sandbox",
+        "title": "Virtual Environments: The Dependency Sandbox"
+      },
+      {
+        "id": "M001-package-management-pip-requirementstxt",
+        "title": "Package Management (pip & requirements.txt)"
+      },
+      {
+        "id": "M001-async-programming-deep-dive",
+        "title": "Async Programming Deep Dive"
+      },
+      {
+        "id": "M001-the-golden-rule-of-async",
+        "title": "The Golden Rule of Async"
+      },
+      {
+        "id": "M001-introduction-to-fastapi-rest-apis",
+        "title": "Introduction to FastAPI & REST APIs"
+      },
+      {
+        "id": "M001-async-endpoints-non-blocking-ai",
+        "title": "Async Endpoints (Non-Blocking AI)"
+      },
+      {
+        "id": "M001-request-response-models-pydantic",
+        "title": "Request & Response Models (Pydantic)"
+      },
+      {
+        "id": "M001-file-upload-handling",
+        "title": "File Upload Handling"
+      },
+      {
+        "id": "M001-api-documentation-deployment",
+        "title": "API Documentation & Deployment"
+      },
+      {
+        "id": "M001-architecting-the-cli-assistant",
+        "title": "Architecting the CLI Assistant"
+      },
+      {
+        "id": "M001-data-flow-integration",
+        "title": "Data Flow & Integration"
+      }
+    ]
+  },
+  {
+    "id": "M002",
+    "title": "Module 2: Machine Learning Foundations",
+    "topics": [
+      {
+        "id": "M002-what-is-machine-learning",
+        "title": "What is Machine Learning?"
+      },
+      {
+        "id": "M002-the-concentric-domains-of-ai",
+        "title": "The Concentric Domains of AI"
+      },
+      {
+        "id": "M002-the-core-machine-learning-workflow",
+        "title": "The Core Machine Learning Workflow"
+      },
+      {
+        "id": "M002-supervised-vs-unsupervised-learning",
+        "title": "Supervised vs. Unsupervised Learning"
+      },
+      {
+        "id": "M002-reinforcement-learning-rl",
+        "title": "Reinforcement Learning (RL)"
+      },
+      {
+        "id": "M002-advanced-frameworks-semi-supervised-self-supervised",
+        "title": "Advanced Frameworks: Semi-Supervised & Self-Supervised"
+      },
+      {
+        "id": "M002-the-anatomy-of-data-features-labels-structure",
+        "title": "The Anatomy of Data: Features, Labels & Structure"
+      },
+      {
+        "id": "M002-the-data-split-train-validation-and-test",
+        "title": "The Data Split: Train, Validation, and Test"
+      },
+      {
+        "id": "M002-data-quality-ai-bias",
+        "title": "Data Quality & AI Bias"
+      },
+      {
+        "id": "M002-data-cleaning-missing-values",
+        "title": "Data Cleaning & Missing Values"
+      },
+      {
+        "id": "M002-encoding-words-to-numbers",
+        "title": "Encoding: Words to Numbers"
+      },
+      {
+        "id": "M002-scaling-leveling-the-playing-field",
+        "title": "Scaling: Leveling the Playing Field"
+      },
+      {
+        "id": "M002-feature-engineering-selection",
+        "title": "Feature Engineering & Selection"
+      },
+      {
+        "id": "M002-what-is-regression",
+        "title": "What is Regression?"
+      },
+      {
+        "id": "M002-regression-terminology-essentials",
+        "title": "Regression Terminology Essentials"
+      },
+      {
+        "id": "M002-simple-linear-regression",
+        "title": "Simple Linear Regression"
+      },
+      {
+        "id": "M002-multiple-linear-regression",
+        "title": "Multiple Linear Regression"
+      },
+      {
+        "id": "M002-model-building-steps-python-libraries",
+        "title": "Model Building Steps & Python Libraries"
+      },
+      {
+        "id": "M002-what-is-classification",
+        "title": "What is Classification?"
+      },
+      {
+        "id": "M002-what-is-logistic-regression",
+        "title": "What is Logistic Regression?"
+      },
+      {
+        "id": "M002-how-logistic-regression-works-mathematically",
+        "title": "How Logistic Regression Works Mathematically"
+      },
+      {
+        "id": "M002-decision-trees-the-20-questions-game",
+        "title": "Decision Trees (The '20 Questions' Game)"
+      },
+      {
+        "id": "M002-k-nearest-neighbors-knn-the-neighborhood-watch",
+        "title": "K-Nearest Neighbors / KNN (The Neighborhood Watch)"
+      },
+      {
+        "id": "M002-what-is-ensemble-learning-algorithm",
+        "title": "What is Ensemble Learning Algorithm?"
+      },
+      {
+        "id": "M002-random-forest-the-wisdom-of-the-crowd",
+        "title": "Random Forest (The Wisdom of the Crowd)"
+      },
+      {
+        "id": "M002-naive-bayes-the-detective",
+        "title": "Naive Bayes (The Detective)"
+      },
+      {
+        "id": "M002-coding-a-classifier-in-python",
+        "title": "Coding a Classifier in Python"
+      },
+      {
+        "id": "M002-what-is-clustering",
+        "title": "What is Clustering?"
+      },
+      {
+        "id": "M002-important-clustering-terminologies",
+        "title": "Important Clustering Terminologies"
+      },
+      {
+        "id": "M002-k-means-clustering",
+        "title": "K-Means Clustering"
+      },
+      {
+        "id": "M002-hierarchical-clustering-the-family-tree",
+        "title": "Hierarchical Clustering (The Family Tree)"
+      },
+      {
+        "id": "M002-customer-segmentation-in-python",
+        "title": "Customer Segmentation in Python"
+      },
+      {
+        "id": "M002-dimensionality-reduction-pca-the-shadow",
+        "title": "Dimensionality Reduction & PCA (The Shadow)"
+      },
+      {
+        "id": "M002-evaluating-clustering-quality-wcss-silhouette-score",
+        "title": "Evaluating Clustering Quality (WCSS & Silhouette Score)"
+      },
+      {
+        "id": "M002-the-confusion-matrix-the-hospital-test",
+        "title": "The Confusion Matrix (The Hospital Test)"
+      },
+      {
+        "id": "M002-accuracy-precision-recall-f1-score",
+        "title": "Accuracy, Precision, Recall, & F1-Score"
+      },
+      {
+        "id": "M002-regression-evaluation-metrics",
+        "title": "Regression Evaluation Metrics"
+      },
+      {
+        "id": "M002-cross-validation-the-practice-exams",
+        "title": "Cross-Validation (The Practice Exams)"
+      },
+      {
+        "id": "M002-hyperparameter-tuning-the-djs-soundboard",
+        "title": "Hyperparameter Tuning (The DJ's Soundboard)"
+      },
+      {
+        "id": "M002-tuning-a-random-forest-in-python",
+        "title": "Tuning a Random Forest in Python"
+      },
+      {
+        "id": "M002-the-goldilocks-problem",
+        "title": "The Goldilocks Problem"
+      },
+      {
+        "id": "M002-underfitting-the-lazy-student",
+        "title": "Underfitting (The Lazy Student)"
+      },
+      {
+        "id": "M002-overfitting-the-memorizer",
+        "title": "Overfitting (The Memorizer)"
+      },
+      {
+        "id": "M002-good-fit-the-smart-student",
+        "title": "Good Fit (The Smart Student)"
+      },
+      {
+        "id": "M002-generalization-the-smart-student",
+        "title": "Generalization: The Smart Student"
+      },
+      {
+        "id": "M002-bias-vs-variance-the-dartboard",
+        "title": "Bias vs Variance (The Dartboard)"
+      },
+      {
+        "id": "M002-the-diagnostic-matrix",
+        "title": "The Diagnostic Matrix"
+      },
+      {
+        "id": "M002-limitations-of-traditional-ml",
+        "title": "Limitations of Traditional ML"
+      },
+      {
+        "id": "M002-why-deep-learning-emerged",
+        "title": "Why Deep Learning Emerged"
+      },
+      {
+        "id": "M002-introduction-to-neural-networks",
+        "title": "Introduction to Neural Networks"
+      },
+      {
+        "id": "M002-the-business-crisis",
+        "title": "The Business Crisis"
+      },
+      {
+        "id": "M002-industrial-machine-learning-workflow",
+        "title": "Industrial Machine Learning Workflow"
+      },
+      {
+        "id": "M002-exploring-the-dataset",
+        "title": "Exploring the Dataset"
+      },
+      {
+        "id": "M002-step-4-deployment-impact",
+        "title": "Step 4: Deployment & Impact"
+      }
+    ]
+  },
+  {
+    "id": "M003",
+    "title": "Module 3: Deep Learning & Neural Networks",
+    "topics": [
+      {
+        "id": "M003-why-traditional-ml-has-limitations",
+        "title": "Why Traditional ML Has Limitations"
+      },
+      {
+        "id": "M003-what-is-deep-learning",
+        "title": "What is Deep Learning?"
+      },
+      {
+        "id": "M003-biological-neuron-vs-artificial-neuron",
+        "title": "Biological Neuron vs Artificial Neuron"
+      },
+      {
+        "id": "M003-neurons-weights-biases",
+        "title": "Neurons, Weights, Biases"
+      },
+      {
+        "id": "M003-input-layer-hidden-layer-output-layer",
+        "title": "`Input Layer, Hidden Layer, Output Layer`"
+      },
+      {
+        "id": "M003-artificial-neural-network-ann",
+        "title": "Artificial Neural Network (ANN)"
+      },
+      {
+        "id": "M003-forward-propagation",
+        "title": "Forward Propagation"
+      },
+      {
+        "id": "M003-how-neural-networks-learn",
+        "title": "How Neural Networks Learn"
+      },
+      {
+        "id": "M003-why-activation-functions-are-needed",
+        "title": "Why Activation Functions are Needed"
+      },
+      {
+        "id": "M003-the-classic-curves-sigmoid-tanh",
+        "title": "The Classic Curves: Sigmoid & Tanh"
+      },
+      {
+        "id": "M003-the-interactive-activation-visualizer",
+        "title": "The Interactive Activation Visualizer"
+      },
+      {
+        "id": "M003-the-modern-standard-relu-leaky-relu",
+        "title": "The Modern Standard: ReLU & Leaky ReLU"
+      },
+      {
+        "id": "M003-advanced-variations-elu-gelu",
+        "title": "`Advanced Variations: ELU & GELU`"
+      },
+      {
+        "id": "M003-the-final-decider-softmax",
+        "title": "The Final Decider: Softmax"
+      },
+      {
+        "id": "M003-when-to-use-each-activation-function",
+        "title": "`When to Use Each Activation Function`"
+      },
+      {
+        "id": "M003-what-is-a-loss-function",
+        "title": "What is a Loss Function?"
+      },
+      {
+        "id": "M003-why-models-need-loss-functions",
+        "title": "Why Models Need Loss Functions"
+      },
+      {
+        "id": "M003-loss-vs-cost-function",
+        "title": "Loss vs Cost Function"
+      },
+      {
+        "id": "M003-mae-mean-absolute-error",
+        "title": "MAE (Mean Absolute Error)"
+      },
+      {
+        "id": "M003-mse-mean-squared-error",
+        "title": "MSE (Mean Squared Error)"
+      },
+      {
+        "id": "M003-rmse-root-mean-squared-error",
+        "title": "RMSE (Root Mean Squared Error)"
+      },
+      {
+        "id": "M003-binary-cross-entropy-log-loss",
+        "title": "Binary Cross-Entropy (Log Loss)"
+      },
+      {
+        "id": "M003-categorical-cross-entropy",
+        "title": "Categorical Cross-Entropy"
+      },
+      {
+        "id": "M003-sparse-categorical-cross-entropy",
+        "title": "Sparse Categorical Cross-Entropy"
+      },
+      {
+        "id": "M003-hinge-loss",
+        "title": "Hinge Loss"
+      },
+      {
+        "id": "M003-the-network-architecture-cheat-sheet",
+        "title": "The Network Architecture Cheat Sheet"
+      },
+      {
+        "id": "M003-what-is-backpropagation",
+        "title": "What is Backpropagation?"
+      },
+      {
+        "id": "M003-phase-1-the-forward-pass",
+        "title": "The Forward Pass"
+      },
+      {
+        "id": "M003-phase-2-error-calculation",
+        "title": "Error Calculation"
+      },
+      {
+        "id": "M003-phase-3-gradient-computation-the-chain-rule",
+        "title": "Gradient Computation & The Chain Rule"
+      },
+      {
+        "id": "M003-phase-4-gradient-descent",
+        "title": "Gradient Descent"
+      },
+      {
+        "id": "M003-the-learning-rate-simulator",
+        "title": "The Learning Rate Simulator"
+      },
+      {
+        "id": "M003-stochastic-gradient-descent-sgd",
+        "title": "Stochastic Gradient Descent (SGD)"
+      },
+      {
+        "id": "M003-mini-batch-gradient-descent",
+        "title": "Mini-Batch Gradient Descent"
+      },
+      {
+        "id": "M003-momentum-optimizer",
+        "title": "Momentum Optimizer"
+      },
+      {
+        "id": "M003-rmsprop-root-mean-square-propagation",
+        "title": "RMSProp (Root Mean Square Propagation)"
+      },
+      {
+        "id": "M003-adam-adaptive-moment-estimation",
+        "title": "Adam (Adaptive Moment Estimation)"
+      },
+      {
+        "id": "M003-learning-rate-scheduling",
+        "title": "Learning Rate Scheduling"
+      },
+      {
+        "id": "M003-what-is-an-image-to-a-computer",
+        "title": "What is an Image to a Computer?"
+      },
+      {
+        "id": "M003-the-image-tensor",
+        "title": "The Image Tensor"
+      },
+      {
+        "id": "M003-why-standard-neural-networks-fail-here",
+        "title": "Why Standard Neural Networks Fail Here"
+      },
+      {
+        "id": "M003-the-kernel-the-magnifying-glass",
+        "title": "The Kernel (The Magnifying Glass)"
+      },
+      {
+        "id": "M003-feature-maps",
+        "title": "Feature Maps"
+      },
+      {
+        "id": "M003-image-augmentation",
+        "title": "Image Augmentation"
+      },
+      {
+        "id": "M003-why-cnns-were-invented",
+        "title": "Why CNNs Were Invented"
+      },
+      {
+        "id": "M003-the-convolution-operation-feature-extraction",
+        "title": "The Convolution Operation & Feature Extraction"
+      },
+      {
+        "id": "M003-stride",
+        "title": "Stride"
+      },
+      {
+        "id": "M003-padding-same-vs-valid",
+        "title": "Padding (Same vs Valid)"
+      },
+      {
+        "id": "M003-pooling-max-average",
+        "title": "Pooling (Max & Average)"
+      },
+      {
+        "id": "M003-flatten-layer-fully-connected-layer",
+        "title": "Flatten Layer & Fully Connected Layer"
+      },
+      {
+        "id": "M003-cnn-architecture-the-end-to-end-flow",
+        "title": "CNN Architecture: The End-to-End Flow"
+      },
+      {
+        "id": "M003-feature-hierarchies",
+        "title": "Feature Hierarchies"
+      },
+      {
+        "id": "M003-the-cnn-training-process",
+        "title": "The CNN Training Process"
+      },
+      {
+        "id": "M003-historical-architectures-lenet-to-vgg",
+        "title": "Historical Architectures: LeNet to VGG"
+      },
+      {
+        "id": "M003-the-deep-network-problem-vanishing-gradients",
+        "title": "The Deep Network Problem: Vanishing Gradients"
+      },
+      {
+        "id": "M003-the-solution-resnet-skip-connections",
+        "title": "The Solution: ResNet & Skip Connections"
+      },
+      {
+        "id": "M003-cnn-applications-limitations",
+        "title": "CNN Applications & Limitations"
+      },
+      {
+        "id": "M003-the-paradigm-shift-vision-transformers-vits",
+        "title": "The Paradigm Shift: Vision Transformers (ViTs)"
+      },
+      {
+        "id": "M003-the-automation-crisis",
+        "title": "The Automation Crisis"
+      },
+      {
+        "id": "M003-computer-vision-workflow",
+        "title": "Computer Vision Workflow"
+      },
+      {
+        "id": "M003-preparing-the-neural-network",
+        "title": "Preparing the Neural Network"
+      },
+      {
+        "id": "M003-step-4-deployment-impact",
+        "title": "Step 4: Deployment & Impact"
+      }
+    ]
+  },
+  {
+    "id": "M004",
+    "title": "Module 4: Natural Language Processing",
+    "topics": [
+      {
+        "id": "M004-the-language-barrier-what-is-nlp",
+        "title": "The Language Barrier: What is NLP?"
+      },
+      {
+        "id": "M004-nlp-in-the-wild-applications",
+        "title": "NLP in the Wild: Applications"
+      },
+      {
+        "id": "M004-the-data-hierarchy",
+        "title": "The Data Hierarchy"
+      },
+      {
+        "id": "M004-the-text-processing-pipeline-cleaning-tokenization",
+        "title": "The Text Processing Pipeline: Cleaning & Tokenization"
+      },
+      {
+        "id": "M004-stemming-vs-lemmatization",
+        "title": "Stemming vs. Lemmatization"
+      },
+      {
+        "id": "M004-context-is-king-n-grams-word-frequency",
+        "title": "Context is King: N-Grams & Word Frequency"
+      },
+      {
+        "id": "M004-the-math-barrier-why-machines-cannot-understand-text",
+        "title": "The Math Barrier: Why Machines Cannot Understand Text"
+      },
+      {
+        "id": "M004-bag-of-words-bow-how-it-works",
+        "title": "Bag of Words (BoW): How It Works"
+      },
+      {
+        "id": "M004-tf-idf-highlighting-the-important-words",
+        "title": "TF-IDF: Highlighting the Important Words"
+      },
+      {
+        "id": "M004-dense-vs-sparse-representations",
+        "title": "Dense vs Sparse Representations"
+      },
+      {
+        "id": "M004-the-paradigm-shift-what-are-word-embeddings",
+        "title": "The Paradigm Shift: What are Word Embeddings?"
+      },
+      {
+        "id": "M004-word2vec-cbow-vs-skip-gram",
+        "title": "Word2Vec: CBOW vs. Skip-Gram"
+      },
+      {
+        "id": "M004-glove-global-vectors-for-word-representation",
+        "title": "GloVe: Global Vectors for Word Representation"
+      },
+      {
+        "id": "M004-semantic-meaning-vector-similarity",
+        "title": "Semantic Meaning & Vector Similarity"
+      },
+      {
+        "id": "M004-why-similarity-matters",
+        "title": "Why Similarity Matters"
+      },
+      {
+        "id": "M004-the-tale-of-two-distances-euclidean-manhattan",
+        "title": "The Tale of Two Distances: Euclidean & Manhattan"
+      },
+      {
+        "id": "M004-the-gold-standard-cosine-similarity",
+        "title": "The Gold Standard: Cosine Similarity"
+      },
+      {
+        "id": "M004-jaccard-similarity-the-set-theory-approach",
+        "title": "Jaccard Similarity: The Set Theory Approach"
+      },
+      {
+        "id": "M004-introduction-to-topic-modeling",
+        "title": "Introduction to Topic Modeling"
+      },
+      {
+        "id": "M004-lsa-latent-semantic-analysis",
+        "title": "LSA (Latent Semantic Analysis)"
+      },
+      {
+        "id": "M004-lda-latent-dirichlet-allocation",
+        "title": "LDA (Latent Dirichlet Allocation)"
+      },
+      {
+        "id": "M004-a-story-of-lost-context",
+        "title": "A Story of Lost Context"
+      },
+      {
+        "id": "M004-sequential-data-the-power-of-order",
+        "title": "Sequential Data: The Power of Order"
+      },
+      {
+        "id": "M004-recurrent-neural-networks-rnn",
+        "title": "Recurrent Neural Networks (RNN)"
+      },
+      {
+        "id": "M004-why-rnns-fail-the-vanishing-gradient-problem",
+        "title": "Why RNNs Fail: The Vanishing Gradient Problem"
+      },
+      {
+        "id": "M004-the-solution-long-short-term-memory-lstm",
+        "title": "The Solution: Long Short-Term Memory (LSTM)"
+      },
+      {
+        "id": "M004-inside-the-lstm-understanding-the-gates",
+        "title": "Inside the LSTM: Understanding the Gates"
+      },
+      {
+        "id": "M004-how-to-implement-long-short-term-memory-lstm-architecture",
+        "title": "How to Implement Long Short-Term Memory (LSTM) architecture"
+      },
+      {
+        "id": "M004-gru-gated-recurrent-unit",
+        "title": "GRU (Gated Recurrent Unit)"
+      },
+      {
+        "id": "M004-difference-between-rnnlstm-and-gru",
+        "title": "Difference between RNN,LSTM and GRU "
+      },
+      {
+        "id": "M004-the-bottleneck-of-lstms",
+        "title": "The Bottleneck of LSTMs"
+      },
+      {
+        "id": "M004-the-paradigm-shift-attention",
+        "title": "The Paradigm Shift: Attention"
+      },
+      {
+        "id": "M004-self-attention-context-is-everything",
+        "title": "Self-Attention: Context is Everything"
+      },
+      {
+        "id": "M004-what-is-query-key-value-qkv",
+        "title": "What is Query, Key, Value (QKV)"
+      },
+      {
+        "id": "M004-how-attention-works",
+        "title": "How Attention Works?"
+      },
+      {
+        "id": "M004-multi-head-attention",
+        "title": "Multi-Head Attention"
+      },
+      {
+        "id": "M004-the-parallel-speed-hack-positional-encoding",
+        "title": "The Parallel Speed Hack: Positional Encoding"
+      },
+      {
+        "id": "M004-the-transformer-architecture-encoder-decoder",
+        "title": "The Transformer Architecture: Encoder & Decoder"
+      },
+      {
+        "id": "M004-how-transformers-work-encoder-decoder-pipeline",
+        "title": "How Transformers Work: Encoder → Decoder Pipeline"
+      },
+      {
+        "id": "M004-basic-practical-implementation",
+        "title": "Basic Practical Implementation"
+      },
+      {
+        "id": "M004-the-grading-problem-why-accuracy-is-a-liar",
+        "title": "The Grading Problem: Why Accuracy is a Liar"
+      },
+      {
+        "id": "M004-the-confusion-matrix-sorting-the-mistakes",
+        "title": "The Confusion Matrix: Sorting the Mistakes"
+      },
+      {
+        "id": "M004-precision-recall-and-the-f1-score",
+        "title": "Precision, Recall, and the F1 Score"
+      },
+      {
+        "id": "M004-evaluating-language-models-perplexity",
+        "title": "Evaluating Language Models: Perplexity"
+      },
+      {
+        "id": "M004-evaluating-translation-bleu-score",
+        "title": "Evaluating Translation: BLEU Score"
+      },
+      {
+        "id": "M004-evaluating-summarization-rouge-score",
+        "title": "Evaluating Summarization: ROUGE Score"
+      },
+      {
+        "id": "M004-the-flaw-of-exact-matching-meteor-semantic-similarity",
+        "title": "The Flaw of Exact Matching: METEOR & Semantic Similarity"
+      },
+      {
+        "id": "M004-the-mission-the-pr-crisis",
+        "title": "The Mission: The PR Crisis"
+      },
+      {
+        "id": "M004-step-1-the-nlp-pipeline-recap",
+        "title": "Step 1: The NLP Pipeline Recap"
+      },
+      {
+        "id": "M004-step-3-choosing-the-brain-lstm",
+        "title": "Step 3: Choosing the Brain (LSTM)"
+      },
+      {
+        "id": "M004-step-5-the-final-deployment",
+        "title": "Step 5: The Final Deployment"
+      },
+      {
+        "id": "M004-introduction-to-hugging-face",
+        "title": "Introduction to Hugging Face"
+      },
+      {
+        "id": "M004-building-your-first-hugging-face-pipeline",
+        "title": "Building Your First Hugging Face Pipeline"
+      },
+      {
+        "id": "M004-transformer-pipelines",
+        "title": "Transformer Pipelines"
+      },
+      {
+        "id": "M004-loading-pretrained-models",
+        "title": "Loading Pretrained Models"
+      },
+      {
+        "id": "M004-understanding-tokenizers",
+        "title": "Understanding Tokenizers"
+      },
+      {
+        "id": "M004-tokenization-process",
+        "title": "Tokenization Process"
+      },
+      {
+        "id": "M004-saving-and-loading-models",
+        "title": "Saving and Loading Models"
+      },
+      {
+        "id": "M004-running-your-first-llm",
+        "title": "Running Your First LLM"
+      }
+    ]
+  },
+  {
+    "id": "M005",
+    "title": "Module 5: Large Language Models",
+    "topics": [
+      {
+        "id": "M005-what-is-a-large-language-model-llm",
+        "title": "What is a Large Language Model (LLM)?"
+      },
+      {
+        "id": "M005-llms-vs-traditional-nlp-models",
+        "title": "LLMs vs Traditional NLP Models"
+      },
+      {
+        "id": "M005-foundation-models-popular-providers",
+        "title": "Foundation Models & Popular Providers"
+      },
+      {
+        "id": "M005-capabilities-of-modern-llms",
+        "title": "Capabilities of Modern LLMs"
+      },
+      {
+        "id": "M005-limitations-risks-of-llms",
+        "title": "Limitations & Risks of LLMs"
+      },
+      {
+        "id": "M005-real-world-llm-applications",
+        "title": "Real-World LLM Applications"
+      },
+      {
+        "id": "M005-hands-on-setting-up-api-access",
+        "title": "Hands-On: Setting Up API Access"
+      },
+      {
+        "id": "M005-the-self-taught-wizard",
+        "title": "The Self-Taught Wizard"
+      },
+      {
+        "id": "M005-tokenization-vocabulary",
+        "title": "Tokenization & Vocabulary"
+      },
+      {
+        "id": "M005-embeddings-the-context-window",
+        "title": "Embeddings & The Context Window"
+      },
+      {
+        "id": "M005-the-core-engine-next-token-prediction",
+        "title": "The Core Engine: Next Token Prediction"
+      },
+      {
+        "id": "M005-measuring-mistakes-cross-entropy-loss",
+        "title": "Measuring Mistakes: Cross Entropy Loss"
+      },
+      {
+        "id": "M005-learning-from-mistakes-backpropagation",
+        "title": "Learning from Mistakes: Backpropagation"
+      },
+      {
+        "id": "M005-pretraining-scaling-laws-billions-of-tokens",
+        "title": "Pretraining: Scaling Laws & Billions of Tokens"
+      },
+      {
+        "id": "M005-the-self-taught-wizard-self-supervised-pretraining",
+        "title": "The Self-Taught Wizard: Self-Supervised Pretraining"
+      },
+      {
+        "id": "M005-tokenization-the-vocabulary-boundary",
+        "title": "Tokenization & The Vocabulary Boundary"
+      },
+      {
+        "id": "M005-from-numbers-to-coordinates-embeddings-context",
+        "title": "From Numbers to Coordinates: Embeddings & Context"
+      },
+      {
+        "id": "M005-the-core-loop-next-token-prediction",
+        "title": "The Core Loop: Next Token Prediction"
+      },
+      {
+        "id": "M005-tuning-the-dials-backpropagation-in-transformers",
+        "title": "Tuning the Dials: Backpropagation in Transformers"
+      },
+      {
+        "id": "M005-training-on-billions-of-tokens-scaling-laws",
+        "title": "Training on Billions of Tokens & Scaling Laws"
+      },
+      {
+        "id": "M005-api-based-models-vs-local-models",
+        "title": "API-Based Models vs Local Models"
+      },
+      {
+        "id": "M005-comparing-closed-source-models-gpt-claude-gemini",
+        "title": "Comparing Closed Source Models: GPT, Claude, Gemini"
+      },
+      {
+        "id": "M005-openai-api-basics",
+        "title": "OpenAI API Basics"
+      },
+      {
+        "id": "M005-sending-prompts",
+        "title": "Sending Prompts"
+      },
+      {
+        "id": "M005-understanding-responses",
+        "title": "Understanding Responses"
+      },
+      {
+        "id": "M005-temperature-max-tokens",
+        "title": "Temperature & Max Tokens"
+      },
+      {
+        "id": "M005-building-a-chatbot",
+        "title": "Building a Chatbot"
+      },
+      {
+        "id": "M005-building-a-text-summarizer",
+        "title": "Building a Text Summarizer"
+      },
+      {
+        "id": "M005-llm-inference-generation-controls",
+        "title": "LLM Inference & Generation Controls"
+      },
+      {
+        "id": "M005-decoding-strategies-greedy-vs-beam-search",
+        "title": "Decoding Strategies: Greedy vs Beam Search"
+      },
+      {
+        "id": "M005-the-repetition-trap-frequency-presence-penalties",
+        "title": "The Repetition Trap: Frequency & Presence Penalties"
+      },
+      {
+        "id": "M005-the-ultimate-veto-logit-bias",
+        "title": "The Ultimate Veto: Logit Bias"
+      },
+      {
+        "id": "M005-under-the-hood-the-kv-cache",
+        "title": "Under the Hood: The KV Cache"
+      },
+      {
+        "id": "M005-the-foundation-transfer-learning",
+        "title": "The Foundation: Transfer Learning"
+      },
+      {
+        "id": "M005-adaptation-vs-fine-tuning",
+        "title": "Adaptation vs. Fine-Tuning"
+      },
+      {
+        "id": "M005-instruction-tuning-sft",
+        "title": "Instruction Tuning & SFT"
+      },
+      {
+        "id": "M005-peft-lora-fine-tuning-for-everyone",
+        "title": "PEFT & LoRA: Fine-Tuning for Everyone"
+      },
+      {
+        "id": "M005-qlora-fine-tuning-large-models-at-home",
+        "title": "QLoRA: Fine-Tuning Large Models at Home"
+      },
+      {
+        "id": "M005-the-comparison-transfer-vs-adaptation-vs-fine-tuning",
+        "title": "The Comparison: Transfer vs Adaptation vs Fine-Tuning"
+      },
+      {
+        "id": "M005-phase-1-the-gpt-blueprint",
+        "title": "The GPT Blueprint"
+      },
+      {
+        "id": "M005-phase-2-tokenization-dataset-preparation",
+        "title": "Tokenization & Dataset Preparation"
+      },
+      {
+        "id": "M005-phase-3-masked-causal-self-attention",
+        "title": "Masked Causal Self-Attention"
+      },
+      {
+        "id": "M005-phase-4-the-transformer-block",
+        "title": "The Transformer Block"
+      },
+      {
+        "id": "M005-phase-5-assembling-the-full-gpt-architecture",
+        "title": "Assembling the Full GPT Architecture"
+      },
+      {
+        "id": "M005-phase-6-the-training-loop",
+        "title": "The Training Loop"
+      },
+      {
+        "id": "M005-phase-7-autoregressive-text-generation",
+        "title": "Autoregressive Text Generation"
+      },
+      {
+        "id": "M005-phase-8-improving-and-scaling-up",
+        "title": "Improving and Scaling Up"
+      },
+      {
+        "id": "M005-project-1-ai-text-generator",
+        "title": "Project 1: AI Text Generator"
+      },
+      {
+        "id": "M005-ai-text-generator-architecture",
+        "title": "AI Text Generator Architecture"
+      },
+      {
+        "id": "M005-project-2-ai-summarizer",
+        "title": "Project 2: AI Summarizer"
+      },
+      {
+        "id": "M005-project-3-ai-qa-assistant",
+        "title": "Project 3: AI Q&A Assistant"
+      },
+      {
+        "id": "M005-project-4-bert-question-answering-app",
+        "title": "Project 4: BERT Question Answering App"
+      },
+      {
+        "id": "M005-project-5-simple-chatgpt-clone",
+        "title": "Project 5: Simple ChatGPT Clone"
+      }
+    ]
+  },
+  {
+    "id": "M006",
+    "title": "Module 6: Prompt Engineering",
+    "topics": [
+      {
+        "id": "M006-the-brilliant-but-clueless-intern",
+        "title": "The Brilliant but Clueless Intern"
+      },
+      {
+        "id": "M006-how-llms-actually-read-instructions",
+        "title": "How LLMs Actually Read Instructions"
+      },
+      {
+        "id": "M006-the-anatomy-of-a-perfect-prompt",
+        "title": "The Anatomy of a Perfect Prompt"
+      },
+      {
+        "id": "M006-good-prompt-vs-bad-prompt",
+        "title": "Good Prompt vs. Bad Prompt"
+      },
+      {
+        "id": "M006-the-negative-space-common-prompting-mistakes",
+        "title": "The Negative Space: Common Prompting Mistakes"
+      },
+      {
+        "id": "M006-zero-shot-the-brave-explorer",
+        "title": "Zero-Shot: The Brave Explorer"
+      },
+      {
+        "id": "M006-one-shot-the-map-maker",
+        "title": "One-Shot: The Map Maker"
+      },
+      {
+        "id": "M006-few-shot-the-pattern-architect",
+        "title": "Few-Shot: The Pattern Architect"
+      },
+      {
+        "id": "M006-role-prompting-the-expert-mask",
+        "title": "Role Prompting: The Expert Mask"
+      },
+      {
+        "id": "M006-challenge-write-a-zero-shot-prompt",
+        "title": "Challenge: Write a Zero-Shot Prompt"
+      },
+      {
+        "id": "M006-persona-prompting-the-voice-actor",
+        "title": "Persona Prompting: The Voice Actor"
+      },
+      {
+        "id": "M006-format-constrained-prompting",
+        "title": "Format-Constrained Prompting"
+      },
+      {
+        "id": "M006-challenge-write-a-few-shot-prompt",
+        "title": "Challenge: Write a Few-Shot Prompt"
+      },
+      {
+        "id": "M006-chain-of-thought-cot-showing-your-work",
+        "title": "Chain of Thought (CoT): Showing Your Work"
+      },
+      {
+        "id": "M006-zero-shot-cot-the-magic-phrase",
+        "title": "Zero-Shot CoT: The Magic Phrase"
+      },
+      {
+        "id": "M006-tree-of-thoughts-tot-the-chess-grandmaster",
+        "title": "Tree of Thoughts (ToT): The Chess Grandmaster"
+      },
+      {
+        "id": "M006-self-consistency-the-wisdom-of-the-crowd",
+        "title": "Self-Consistency: The Wisdom of the Crowd"
+      },
+      {
+        "id": "M006-react-framework-reason-act",
+        "title": "ReAct Framework: Reason + Act"
+      },
+      {
+        "id": "M006-reflection-verification-prompts",
+        "title": "Reflection & Verification Prompts"
+      },
+      {
+        "id": "M006-hands-on-the-math-solver",
+        "title": "Hands-On: The Math Solver"
+      },
+      {
+        "id": "M006-hands-on-business-case-analyzer",
+        "title": "Hands-On: Business Case Analyzer"
+      },
+      {
+        "id": "M006-the-babel-problem-why-standard-text-fails",
+        "title": "The Babel Problem: Why Standard Text Fails"
+      },
+      {
+        "id": "M006-json-output-schema-based-prompting",
+        "title": "JSON Output & Schema-Based Prompting"
+      },
+      {
+        "id": "M006-markdown-and-xml-the-other-formats",
+        "title": "Markdown and XML: The Other Formats"
+      },
+      {
+        "id": "M006-function-calling-the-ultimate-control",
+        "title": "Function Calling: The Ultimate Control"
+      },
+      {
+        "id": "M006-validation-techniques-trust-but-verify",
+        "title": "Validation Techniques: Trust, but Verify"
+      },
+      {
+        "id": "M006-hands-on-the-agentic-resume-parser",
+        "title": "Hands-On: The Agentic Resume Parser"
+      },
+      {
+        "id": "M006-hands-on-invoice-information-extractor",
+        "title": "Hands-On: Invoice Information Extractor"
+      },
+      {
+        "id": "M006-chatbots-the-actor-that-never-sleeps",
+        "title": "Chatbots: The Actor That Never Sleeps"
+      },
+      {
+        "id": "M006-content-generation-the-ghostwriter",
+        "title": "Content Generation: The Ghostwriter"
+      },
+      {
+        "id": "M006-information-extraction-summarization-the-sieve",
+        "title": "Information Extraction & Summarization: The Sieve"
+      },
+      {
+        "id": "M006-classification-the-automated-mailroom",
+        "title": "Classification: The Automated Mailroom"
+      },
+      {
+        "id": "M006-hands-on-customer-support-bot",
+        "title": "Hands-On: Customer Support Bot"
+      },
+      {
+        "id": "M006-hands-on-meeting-notes-summarizer",
+        "title": "Hands-On: Meeting Notes Summarizer"
+      },
+      {
+        "id": "M006-prompt-chaining-the-assembly-line",
+        "title": "Prompt Chaining: The Assembly Line"
+      },
+      {
+        "id": "M006-prompt-templates-dynamic-generation",
+        "title": "Prompt Templates & Dynamic Generation"
+      },
+      {
+        "id": "M006-context-management-memory-integration",
+        "title": "Context Management & Memory Integration"
+      },
+      {
+        "id": "M006-guardrails-safety-prompts",
+        "title": "Guardrails & Safety Prompts"
+      },
+      {
+        "id": "M006-hands-on-the-research-assistant-pipeline",
+        "title": "Hands-On: The Research Assistant Pipeline"
+      },
+      {
+        "id": "M006-hands-on-ai-workflow-guardrails",
+        "title": "Hands-On: AI Workflow Guardrails"
+      }
+    ]
+  },
+  {
+    "id": "M007",
+    "title": "Module 7: Vector Databases & Embeddings",
+    "topics": [
+      {
+        "id": "M007-why-traditional-keyword-search-fails",
+        "title": "Why Traditional Keyword Search Fails"
+      },
+      {
+        "id": "M007-what-is-semantic-search",
+        "title": "What is Semantic Search?"
+      },
+      {
+        "id": "M007-keyword-search-vs-semantic-search",
+        "title": "Keyword Search Vs Semantic Search"
+      },
+      {
+        "id": "M007-real-world-industrial-architectures",
+        "title": "Real-World Industrial Architectures"
+      },
+      {
+        "id": "M007-introduction-to-embeddings",
+        "title": "Introduction to Embeddings"
+      },
+      {
+        "id": "M007-what-is-an-embedding-text-vector",
+        "title": "What is an Embedding? (Text → Vector)"
+      },
+      {
+        "id": "M007-embedding-dimensions",
+        "title": "Embedding Dimensions"
+      },
+      {
+        "id": "M007-how-embeddings-work-internally",
+        "title": "How Embeddings Work Internally"
+      },
+      {
+        "id": "M007-the-gold-standard-cosine-similarity",
+        "title": "The Gold Standard: Cosine Similarity"
+      },
+      {
+        "id": "M007-open-source-vs-closed-source-models",
+        "title": "Open-Source vs. Closed-Source Models"
+      },
+      {
+        "id": "M007-practical-implementation-of-embeddings",
+        "title": "Practical Implementation of Embeddings"
+      },
+      {
+        "id": "M007-what-is-vector-space",
+        "title": "What is Vector Space?"
+      },
+      {
+        "id": "M007-real-project-the-enterprise-semantic-router",
+        "title": "Real Project: The Enterprise Semantic Router"
+      },
+      {
+        "id": "M007-why-vector-comparison-matters",
+        "title": "Why Vector Comparison Matters"
+      },
+      {
+        "id": "M007-euclidean-distance-l2",
+        "title": "Euclidean Distance (L2)"
+      },
+      {
+        "id": "M007-cosine-similarity-the-industry-standard",
+        "title": "Cosine Similarity: The Industry Standard"
+      },
+      {
+        "id": "M007-dot-product-inner-product",
+        "title": "Dot Product (Inner Product)"
+      },
+      {
+        "id": "M007-finding-nearest-neighbors-k-nn-vs-ann",
+        "title": "Finding Nearest Neighbors (k-NN vs ANN)"
+      },
+      {
+        "id": "M007-build-it-calculate-vector-distance",
+        "title": "Build It: Calculate Vector Distance"
+      },
+      {
+        "id": "M007-what-is-a-vector-database",
+        "title": "What is a Vector Database?"
+      },
+      {
+        "id": "M007-why-sql-databases-are-not-enough",
+        "title": "Why SQL Databases Are Not Enough"
+      },
+      {
+        "id": "M007-indexing-millions-of-vectors-hnsw",
+        "title": "Indexing Millions of Vectors (HNSW)"
+      },
+      {
+        "id": "M007-the-vector-db-landscape",
+        "title": "The Vector DB Landscape"
+      },
+      {
+        "id": "M007-practical-implmentation-of-vector-databases",
+        "title": "Practical Implmentation of Vector Databases"
+      },
+      {
+        "id": "M007-the-secret-weapon-metadata-filtering",
+        "title": "The Secret Weapon: Metadata Filtering"
+      },
+      {
+        "id": "M007-challenge-write-a-metadata-filter",
+        "title": "Challenge: Write a Metadata Filter"
+      },
+      {
+        "id": "M007-the-end-to-end-architecture",
+        "title": "The End-to-End Architecture"
+      },
+      {
+        "id": "M007-step-1-document-chunking",
+        "title": "Step 1: Document Chunking"
+      },
+      {
+        "id": "M007-code-challenge-basic-text-chunking",
+        "title": "Code Challenge: Basic Text Chunking"
+      },
+      {
+        "id": "M007-step-2-3-embed-store",
+        "title": "Step 2 & 3: Embed & Store"
+      },
+      {
+        "id": "M007-step-4-5-6-query-search-and-return",
+        "title": "Step 4, 5 & 6: Query, Search, and Return"
+      }
+    ]
+  },
+  {
+    "id": "M008",
+    "title": "Module 8: Retrieval-Augmented Generation (RAG)",
+    "topics": [
+      {
+        "id": "M008-llm-limitations-and-hallucinations",
+        "title": "LLM Limitations and Hallucinations"
+      },
+      {
+        "id": "M008-static-vs-dynamic-knowledge",
+        "title": "Static vs. Dynamic Knowledge"
+      },
+      {
+        "id": "M008-why-rag-instead-of-fine-tuning",
+        "title": "Why RAG Instead of Fine-Tuning?"
+      },
+      {
+        "id": "M008-introduction-to-rag",
+        "title": "Introduction to RAG"
+      },
+      {
+        "id": "M008-the-end-to-end-workflow-explained",
+        "title": "The End-to-End Workflow Explained"
+      },
+      {
+        "id": "M008-building-a-simple-end-to-end-rag-chatbot",
+        "title": "Building a Simple End-to-End RAG Chatbot"
+      },
+      {
+        "id": "M008-build-a-simple-rag-chatbot",
+        "title": "Build a Simple RAG Chatbot"
+      },
+      {
+        "id": "M008-loading-documents-gathering-the-knowledge",
+        "title": "Loading Documents: Gathering the Knowledge"
+      },
+      {
+        "id": "M008-text-cleaning-garbage-in-garbage-out",
+        "title": "Text Cleaning: Garbage In, Garbage Out"
+      },
+      {
+        "id": "M008-chunking-strategies-size-overlap",
+        "title": "Chunking Strategies: Size & Overlap"
+      },
+      {
+        "id": "M008-types-of-chunking-strategies",
+        "title": "Types of Chunking Strategies"
+      },
+      {
+        "id": "M008-metadata-creation-preparing-data-for-retrieval",
+        "title": "Metadata Creation: Preparing Data for Retrieval"
+      },
+      {
+        "id": "M008-code-chunking-with-langchain",
+        "title": "Code: Chunking with LangChain"
+      },
+      {
+        "id": "M008-embed-store-the-ingestion-hand-off",
+        "title": "Embed & Store (The Ingestion Hand-off)"
+      },
+      {
+        "id": "M008-the-retrieval-phase-semantic-search-top-k",
+        "title": "The Retrieval Phase: Semantic Search & Top-K"
+      },
+      {
+        "id": "M008-search-architectures-dense-sparse-hybrid",
+        "title": "Search Architectures: Dense, Sparse & Hybrid"
+      },
+      {
+        "id": "M008-exact-search-k-nn-vs-approximate-search-ann",
+        "title": "Exact Search (k-NN) vs Approximate Search (ANN)"
+      },
+      {
+        "id": "M008-the-hnsw-index-speed-graph-navigation",
+        "title": "The HNSW Index (Speed & Graph Navigation)"
+      },
+      {
+        "id": "M008-ivf-pq-memory-compression",
+        "title": "IVF & PQ (Memory Compression)"
+      },
+      {
+        "id": "M008-modern-scaling-diskann-scann",
+        "title": "Modern Scaling: DiskANN & ScaNN"
+      },
+      {
+        "id": "M008-practical-implementation-faiss-hnsw-index",
+        "title": "Practical Implementation: FAISS HNSW Index"
+      },
+      {
+        "id": "M008-practical-implementation-metadata-filtering-in-pinecone",
+        "title": "Practical Implementation: Metadata Filtering in Pinecone"
+      },
+      {
+        "id": "M008-vector-database-optimization-sharding-scaling",
+        "title": "Vector Database Optimization: Sharding & Scaling"
+      },
+      {
+        "id": "M008-hybrid-rrf",
+        "title": "Hybrid & RRF"
+      },
+      {
+        "id": "M008-what-is-query-transformation",
+        "title": "What is Query Transformation"
+      },
+      {
+        "id": "M008-hydehypothetical-document-embeddings",
+        "title": "HyDE(Hypothetical Document Embeddings)"
+      },
+      {
+        "id": "M008-the-keyhole-strategy-small-to-big",
+        "title": "The Keyhole Strategy (Small-to-Big)"
+      },
+      {
+        "id": "M008-multi-hop-retrieval",
+        "title": "Multi-Hop Retrieval "
+      },
+      {
+        "id": "M008-the-laser-focus-compression-self-query",
+        "title": "The Laser Focus (Compression & Self-Query)"
+      },
+      {
+        "id": "M008-build-it-reciprocal-rank-fusion-rrf",
+        "title": "Build It: Reciprocal Rank Fusion (RRF)"
+      },
+      {
+        "id": "M008-the-quality-bottleneck-why-re-ranking-is-needed",
+        "title": "The Quality Bottleneck: Why Re-ranking is Needed"
+      },
+      {
+        "id": "M008-bi-encoder-vs-cross-encoder",
+        "title": "Bi-Encoder vs Cross-Encoder"
+      },
+      {
+        "id": "M008-the-2-stage-re-ranking-pipeline",
+        "title": "The 2-Stage Re-ranking Pipeline"
+      },
+      {
+        "id": "M008-industry-standard-re-rankers",
+        "title": "Industry Standard Re-rankers"
+      },
+      {
+        "id": "M008-implement-cohere-re-ranking",
+        "title": "Implement: Cohere Re-ranking"
+      },
+      {
+        "id": "M008-retrieval-evaluation-how-do-we-know-it-works",
+        "title": "Retrieval Evaluation: How do we know it works?"
+      },
+      {
+        "id": "M008-the-limits-of-naive-rag",
+        "title": "The Limits of Naive RAG"
+      },
+      {
+        "id": "M008-self-rag-the-ai-that-checks-its-own-work",
+        "title": "Self-RAG: The AI That Checks Its Own Work"
+      },
+      {
+        "id": "M008-ide-implementing-self-rag",
+        "title": "IDE: Implementing Self-RAG"
+      },
+      {
+        "id": "M008-use-case-self-rag-hallucination-check",
+        "title": "Use Case: Self-RAG Hallucination Check"
+      },
+      {
+        "id": "M008-corrective-rag-crag-the-web-fallback",
+        "title": "Corrective RAG (CRAG): The Web Fallback"
+      },
+      {
+        "id": "M008-ide-implementing-crag",
+        "title": "IDE: Implementing CRAG"
+      },
+      {
+        "id": "M008-use-case-crag-routing-logic",
+        "title": "Use Case: CRAG Routing Logic"
+      },
+      {
+        "id": "M008-graphrag-seeing-the-big-picture",
+        "title": "GraphRAG: Seeing the Big Picture"
+      },
+      {
+        "id": "M008-ide-implementing-graphrag-extraction",
+        "title": "IDE: Implementing GraphRAG Extraction"
+      },
+      {
+        "id": "M008-use-case-extracting-graph-triples",
+        "title": "Use Case: Extracting Graph Triples"
+      },
+      {
+        "id": "M008-the-vibecession-moving-from-vibes-to-metrics",
+        "title": "The Vibecession: Moving from Vibes to Metrics"
+      },
+      {
+        "id": "M008-retrieval-metrics-precisionk-recallk",
+        "title": "Retrieval Metrics: Precision@K & Recall@K"
+      },
+      {
+        "id": "M008-retrieval-metrics-mrr-ndcg",
+        "title": "Retrieval Metrics: MRR & NDCG"
+      },
+      {
+        "id": "M008-calculate-precision-and-mrr",
+        "title": "Calculate: Precision and MRR"
+      },
+      {
+        "id": "M008-generation-metrics-llm-as-a-judge",
+        "title": "Generation Metrics: LLM-as-a-Judge"
+      },
+      {
+        "id": "M008-automated-frameworks-ragas-deepeval",
+        "title": "Automated Frameworks: RAGAS & DeepEval"
+      },
+      {
+        "id": "M008-build-a-mini-rag-evaluator",
+        "title": "Build a Mini RAG Evaluator"
+      },
+      {
+        "id": "M008-the-business-challenge",
+        "title": "The Business Challenge"
+      },
+      {
+        "id": "M008-industrial-rag-workflow",
+        "title": "Industrial RAG Workflow"
+      },
+      {
+        "id": "M008-deployment-business-impact",
+        "title": "Deployment & Business Impact"
+      }
+    ]
+  },
+  {
+    "id": "M010",
+    "title": "Module 10: AI Agents",
+    "topics": [
+      {
+        "id": "M010-what-are-ai-agents",
+        "title": "What Are AI Agents?"
+      },
+      {
+        "id": "M010-agent-architecture",
+        "title": "Agent Architecture"
+      },
+      {
+        "id": "M010-the-react-framework",
+        "title": "The ReAct Framework"
+      },
+      {
+        "id": "M010-the-react-framework-visualized",
+        "title": "The ReAct Framework - Visualized"
+      },
+      {
+        "id": "M010-tool-calling-function-calling",
+        "title": "Tool Calling & Function Calling"
+      },
+      {
+        "id": "M010-defining-a-tool-schema",
+        "title": "Defining a Tool Schema"
+      },
+      {
+        "id": "M010-writing-a-tool-schema",
+        "title": "Writing a Tool Schema"
+      },
+      {
+        "id": "M010-tool-calling-security",
+        "title": "Tool Calling Security"
+      },
+      {
+        "id": "M010-agent-planning-strategies",
+        "title": "Agent Planning Strategies"
+      },
+      {
+        "id": "M010-agent-evaluation-frameworks-metrics",
+        "title": "Agent Evaluation Frameworks & Metrics"
+      },
+      {
+        "id": "M010-agent-failure-analysis",
+        "title": "Agent Failure Analysis"
+      },
+      {
+        "id": "M010-recovery-strategies",
+        "title": "Recovery Strategies"
+      },
+      {
+        "id": "M010-planning-concepts",
+        "title": "Planning Concepts"
+      },
+      {
+        "id": "M010-react-orchestration-loop",
+        "title": "ReAct Orchestration Loop"
+      },
+      {
+        "id": "M010-multi-agent-systems",
+        "title": "Multi-Agent Systems"
+      },
+      {
+        "id": "M010-advanced-multi-agent-architectures",
+        "title": "Advanced Multi-Agent Architectures"
+      },
+      {
+        "id": "M010-hierarchical-agent-systems",
+        "title": "Hierarchical Agent Systems"
+      },
+      {
+        "id": "M010-long-horizon-agent-design",
+        "title": "Long-Horizon Agent Design"
+      },
+      {
+        "id": "M010-designing-a-hierarchical-agent-system",
+        "title": "Designing a Hierarchical Agent System"
+      },
+      {
+        "id": "M010-multi-agent-architectures",
+        "title": "Multi-Agent Architectures"
+      },
+      {
+        "id": "M010-agentic-design-patterns-reflection-planning-multi-agent",
+        "title": "Agentic Design Patterns: Reflection, Planning & Multi-Agent"
+      },
+      {
+        "id": "M010-agentic-pattern-selection",
+        "title": "Agentic Pattern Selection"
+      },
+      {
+        "id": "M010-agent-frameworks-langgraph-autogen-crewai",
+        "title": "Agent Frameworks: LangGraph, AutoGen & CrewAI"
+      },
+      {
+        "id": "M010-project-deep-dive-research-agent-stock-market-agent",
+        "title": "Project Deep Dive: Research Agent & Stock Market Agent"
+      },
+      {
+        "id": "M010-agent-memory-context-management",
+        "title": "Agent Memory & Context Management"
+      },
+      {
+        "id": "M010-advanced-context-memory-management",
+        "title": "Advanced Context & Memory Management"
+      },
+      {
+        "id": "M010-long-term-agent-memory-design",
+        "title": "Long-Term Agent Memory Design"
+      },
+      {
+        "id": "M010-agent-safety-guardrails-error-handling",
+        "title": "Agent Safety, Guardrails & Error Handling"
+      },
+      {
+        "id": "M010-agent-runaway-scenario",
+        "title": "Agent Runaway Scenario"
+      },
+      {
+        "id": "M010-agent-safety",
+        "title": "Agent Safety"
+      }
+    ]
+  },
+  {
+    "id": "M011",
+    "title": "Module 11: MCP (Model Context Protocol)",
+    "topics": [
+      {
+        "id": "M011-what-is-the-model-context-protocol-mcp",
+        "title": "What is the Model Context Protocol (MCP)?"
+      },
+      {
+        "id": "M011-mcp-vs-traditional-apis",
+        "title": "MCP vs Traditional APIs"
+      },
+      {
+        "id": "M011-mcp-architecture-deep-dive",
+        "title": "MCP Architecture Deep Dive"
+      },
+      {
+        "id": "M011-the-mcp-protocol-lifecycle",
+        "title": "The MCP Protocol Lifecycle"
+      },
+      {
+        "id": "M011-mcp-internal-message-format",
+        "title": "MCP Internal Message Format"
+      },
+      {
+        "id": "M011-mcp-protocol-flow",
+        "title": "MCP Protocol Flow"
+      },
+      {
+        "id": "M011-mcp-architecture-deep-dive-visualized",
+        "title": "MCP Architecture Deep Dive - Visualized"
+      },
+      {
+        "id": "M011-building-an-mcp-server",
+        "title": "Building an MCP Server"
+      },
+      {
+        "id": "M011-mcp-transport-layers",
+        "title": "MCP Transport Layers"
+      },
+      {
+        "id": "M011-selecting-an-mcp-transport-layer",
+        "title": "Selecting an MCP Transport Layer"
+      },
+      {
+        "id": "M011-writing-your-first-mcp-tool",
+        "title": "Writing Your First MCP Tool"
+      },
+      {
+        "id": "M011-writing-a-fastmcp-tool",
+        "title": "Writing a FastMCP Tool"
+      },
+      {
+        "id": "M011-mcp-server-concepts",
+        "title": "MCP Server Concepts"
+      },
+      {
+        "id": "M011-building-an-mcp-client-tool-integration",
+        "title": "Building an MCP Client & Tool Integration"
+      },
+      {
+        "id": "M011-mcp-architecture-decision",
+        "title": "MCP Architecture Decision"
+      },
+      {
+        "id": "M011-mcp-security-authentication",
+        "title": "MCP Security & Authentication"
+      },
+      {
+        "id": "M011-advanced-mcp-security-trust-boundaries",
+        "title": "Advanced MCP Security & Trust Boundaries"
+      },
+      {
+        "id": "M011-remote-mcp-servers-gateways",
+        "title": "Remote MCP Servers & Gateways"
+      },
+      {
+        "id": "M011-mcp-in-production-patterns-best-practices",
+        "title": "MCP in Production: Patterns & Best Practices"
+      },
+      {
+        "id": "M011-mcp-security",
+        "title": "MCP Security"
+      },
+      {
+        "id": "M011-debugging-mcp-using-the-inspector-tool",
+        "title": "Debugging MCP: Using the Inspector Tool"
+      },
+      {
+        "id": "M011-mcp-inspector-command",
+        "title": "MCP Inspector Command"
+      },
+      {
+        "id": "M011-mcp-server-failure",
+        "title": "MCP Server Failure"
+      }
+    ]
+  },
+  {
+    "id": "M012",
+    "title": "Module 12: LangChain & LangGraph",
+    "topics": [
+      {
+        "id": "M012-langchain-the-ai-application-framework",
+        "title": "LangChain: The AI Application Framework"
+      },
+      {
+        "id": "M012-langchain-basics",
+        "title": "LangChain Basics"
+      },
+      {
+        "id": "M012-chains-composing-llm-pipelines",
+        "title": "Chains: Composing LLM Pipelines"
+      },
+      {
+        "id": "M012-the-lcel-pipeline-langchain",
+        "title": "The LCEL Pipeline (LangChain)"
+      },
+      {
+        "id": "M012-building-an-lcel-chain",
+        "title": "Building an LCEL Chain"
+      },
+      {
+        "id": "M012-memory-in-langchain",
+        "title": "Memory in LangChain"
+      },
+      {
+        "id": "M012-langgraph-agent-orchestration-with-state-graphs",
+        "title": "LangGraph: Agent Orchestration with State Graphs"
+      },
+      {
+        "id": "M012-langgraph-agent-orchestration-with-state-graphs-visualized",
+        "title": "LangGraph: Agent Orchestration with State Graphs - Visualized"
+      },
+      {
+        "id": "M012-project-multi-agent-workflow-system",
+        "title": "Project: Multi-Agent Workflow System"
+      },
+      {
+        "id": "M012-advanced-langgraph-patterns-human-in-the-loop-streaming",
+        "title": "Advanced LangGraph Patterns: Human-in-the-Loop & Streaming"
+      },
+      {
+        "id": "M012-deep-dive-human-in-the-loop",
+        "title": "Deep Dive: Human-in-the-Loop"
+      },
+      {
+        "id": "M012-deep-dive-langchain-core-components",
+        "title": "Deep Dive: LangChain Core Components"
+      },
+      {
+        "id": "M012-coding-challenge-fixing-a-rag-chain",
+        "title": "Coding Challenge: Fixing a RAG Chain"
+      },
+      {
+        "id": "M012-introduction-to-langgraph",
+        "title": "Introduction to LangGraph"
+      },
+      {
+        "id": "M012-langgraph-capabilities",
+        "title": "LangGraph Capabilities"
+      },
+      {
+        "id": "M012-the-stategraph-object",
+        "title": "The StateGraph Object"
+      },
+      {
+        "id": "M012-state-design-patterns-in-langgraph",
+        "title": "State Design Patterns in LangGraph"
+      },
+      {
+        "id": "M012-debugging-missing-state-history",
+        "title": "Debugging Missing State History"
+      },
+      {
+        "id": "M012-state-reducers",
+        "title": "State Reducers"
+      },
+      {
+        "id": "M012-adding-nodes",
+        "title": "Adding Nodes"
+      },
+      {
+        "id": "M012-returning-state-updates-in-a-node",
+        "title": "Returning State Updates in a Node"
+      },
+      {
+        "id": "M012-adding-edges",
+        "title": "Adding Edges"
+      },
+      {
+        "id": "M012-conditional-routing",
+        "title": "Conditional Routing"
+      },
+      {
+        "id": "M012-advanced-graph-topologies",
+        "title": "Advanced Graph Topologies"
+      },
+      {
+        "id": "M012-graph-composition",
+        "title": "Graph Composition"
+      },
+      {
+        "id": "M012-choosing-graph-topology",
+        "title": "Choosing Graph Topology"
+      },
+      {
+        "id": "M012-writing-a-conditional-router",
+        "title": "Writing a Conditional Router"
+      },
+      {
+        "id": "M012-compiling-the-graph",
+        "title": "Compiling the Graph"
+      },
+      {
+        "id": "M012-streaming-execution",
+        "title": "Streaming Execution"
+      },
+      {
+        "id": "M012-user-experience",
+        "title": "User Experience"
+      },
+      {
+        "id": "M012-memory-checkpointers",
+        "title": "Memory & Checkpointers"
+      },
+      {
+        "id": "M012-production-persistence-durable-execution",
+        "title": "Production Persistence & Durable Execution"
+      },
+      {
+        "id": "M012-setting-up-postgrescheckpointer",
+        "title": "Setting up PostgresCheckpointer"
+      },
+      {
+        "id": "M012-memory-thread-ids",
+        "title": "Memory Thread IDs"
+      },
+      {
+        "id": "M012-invoking-a-graph-with-thread-memory",
+        "title": "Invoking a Graph with Thread Memory"
+      },
+      {
+        "id": "M012-time-travel-state-modification",
+        "title": "Time Travel (State Modification)"
+      },
+      {
+        "id": "M012-state-management-edge-cases",
+        "title": "State Management Edge Cases"
+      },
+      {
+        "id": "M012-state-pruning-with-removemessage",
+        "title": "State Pruning with RemoveMessage"
+      },
+      {
+        "id": "M012-prebuilt-agents-createreactagent",
+        "title": "Prebuilt Agents (create_react_agent)"
+      },
+      {
+        "id": "M012-compiling-a-prebuilt-react-agent",
+        "title": "Compiling a Prebuilt ReAct Agent"
+      },
+      {
+        "id": "M012-debugging-tracing-langgraph-workflows",
+        "title": "Debugging & Tracing LangGraph Workflows"
+      }
+    ]
+  },
+  {
+    "id": "M013",
+    "title": "Module 13: OpenAI & Hugging Face",
+    "topics": [
+      {
+        "id": "M013-the-openai-api-the-industry-standard",
+        "title": "The OpenAI API: The Industry Standard"
+      },
+      {
+        "id": "M013-structured-outputs-error-recovery",
+        "title": "Structured Outputs & Error Recovery"
+      },
+      {
+        "id": "M013-enforce-structured-output",
+        "title": "Enforce Structured Output"
+      },
+      {
+        "id": "M013-openai-api",
+        "title": "OpenAI API"
+      },
+      {
+        "id": "M013-openai-chat-completion-api-call",
+        "title": "OpenAI Chat Completion API Call"
+      },
+      {
+        "id": "M013-anthropic-claude-api-google-gemini-api",
+        "title": "Anthropic Claude API & Google Gemini API"
+      },
+      {
+        "id": "M013-context-prompt-caching",
+        "title": "Context & Prompt Caching"
+      },
+      {
+        "id": "M013-context-window-engineering",
+        "title": "Context Window Engineering"
+      },
+      {
+        "id": "M013-hugging-face-the-open-source-ai-hub",
+        "title": "Hugging Face: The Open-Source AI Hub"
+      },
+      {
+        "id": "M013-using-the-hugging-face-pipeline",
+        "title": "Using the Hugging Face Pipeline"
+      },
+      {
+        "id": "M013-embedding-models-deep-dive",
+        "title": "Embedding Models Deep Dive"
+      },
+      {
+        "id": "M013-initializing-a-pipeline",
+        "title": "Initializing a Pipeline"
+      },
+      {
+        "id": "M013-project-ai-content-generator",
+        "title": "Project: AI Content Generator"
+      },
+      {
+        "id": "M013-open-source-inference",
+        "title": "Open Source Inference"
+      },
+      {
+        "id": "M013-open-source-inference-stack",
+        "title": "Open Source Inference Stack"
+      },
+      {
+        "id": "M013-model-routing-multi-provider-strategies",
+        "title": "Model Routing & Multi-Provider Strategies"
+      },
+      {
+        "id": "M013-model-routing-strategy",
+        "title": "Model Routing Strategy"
+      },
+      {
+        "id": "M013-model-selection-challenge",
+        "title": "Model Selection Challenge"
+      },
+      {
+        "id": "M013-model-routing-function",
+        "title": "Model Routing Function"
+      },
+      {
+        "id": "M013-synthetic-data-generation-with-frontier-models",
+        "title": "Synthetic Data Generation with Frontier Models"
+      },
+      {
+        "id": "M013-multi-provider-strategy",
+        "title": "Multi-Provider Strategy"
+      },
+      {
+        "id": "M013-function-calling-internals",
+        "title": "Function Calling Internals"
+      }
+    ]
+  },
+  {
+    "id": "M014",
+    "title": "Module 14: Fine-Tuning",
+    "topics": [
+      {
+        "id": "M014-what-is-fine-tuning",
+        "title": "What is Fine-Tuning?"
+      },
+      {
+        "id": "M014-fine-tuning-data-engineering",
+        "title": "Fine-Tuning Data Engineering"
+      },
+      {
+        "id": "M014-fine-tuning-vs-rag-decision",
+        "title": "Fine-Tuning vs RAG Decision"
+      },
+      {
+        "id": "M014-lora-qlora-the-revolution-in-efficient-fine-tuning",
+        "title": "LoRA & QLoRA: The Revolution in Efficient Fine-Tuning"
+      },
+      {
+        "id": "M014-configuring-lora-parameters",
+        "title": "Configuring LoRA Parameters"
+      },
+      {
+        "id": "M014-lora-internals-deep-dive",
+        "title": "LoRA Internals Deep Dive"
+      },
+      {
+        "id": "M014-lora-matrix-decomposition",
+        "title": "LoRA Matrix Decomposition"
+      },
+      {
+        "id": "M014-writing-a-peft-configuration",
+        "title": "Writing a PEFT Configuration"
+      },
+      {
+        "id": "M014-lora-qlora-the-revolution-in-efficient-fine-tuning-visualized",
+        "title": "LoRA & QLoRA: The Revolution in Efficient Fine-Tuning - Visualized"
+      },
+      {
+        "id": "M014-peft-sft-instruction-tuning",
+        "title": "PEFT, SFT & Instruction Tuning"
+      },
+      {
+        "id": "M014-the-fine-tuning-pipeline",
+        "title": "The Fine-Tuning Pipeline"
+      },
+      {
+        "id": "M014-fine-tuning-pipeline",
+        "title": "Fine-Tuning Pipeline"
+      },
+      {
+        "id": "M014-dataset-formatting-alpaca-sharegpt-jsonl-structures",
+        "title": "Dataset Formatting: Alpaca & ShareGPT JSONL Structures"
+      },
+      {
+        "id": "M014-alpaca-format-validator",
+        "title": "Alpaca Format Validator"
+      },
+      {
+        "id": "M014-synthetic-dataset-generation",
+        "title": "Synthetic Dataset Generation"
+      },
+      {
+        "id": "M014-project-fine-tune-llama-on-custom-data",
+        "title": "Project: Fine-tune LLaMA on Custom Data"
+      },
+      {
+        "id": "M014-fine-tuning-evaluation",
+        "title": "Fine-Tuning Evaluation"
+      },
+      {
+        "id": "M014-rlhf-dpo-aligning-models-with-human-preferences",
+        "title": "RLHF & DPO: Aligning Models with Human Preferences"
+      },
+      {
+        "id": "M014-advanced-alignment-orpo-kto-simpo",
+        "title": "Advanced Alignment: ORPO, KTO & SimPO"
+      },
+      {
+        "id": "M014-advanced-training-infrastructure",
+        "title": "Advanced Training Infrastructure"
+      }
+    ]
+  },
+  {
+    "id": "M015",
+    "title": "Module 15: LLMOps",
+    "topics": [
+      {
+        "id": "M015-what-is-llmops",
+        "title": "What is LLMOps?"
+      },
+      {
+        "id": "M015-evaluation-measuring-llm-quality",
+        "title": "Evaluation: Measuring LLM Quality"
+      },
+      {
+        "id": "M015-evaluation-frameworks",
+        "title": "Evaluation Frameworks"
+      },
+      {
+        "id": "M015-using-deepeval",
+        "title": "Using DeepEval"
+      },
+      {
+        "id": "M015-guardrails-observability",
+        "title": "Guardrails & Observability"
+      },
+      {
+        "id": "M015-observability-platforms",
+        "title": "Observability Platforms"
+      },
+      {
+        "id": "M015-production-prompt-management-experimentation",
+        "title": "Production Prompt Management & Experimentation"
+      },
+      {
+        "id": "M015-ab-testing-experimentation",
+        "title": "A/B Testing & Experimentation"
+      },
+      {
+        "id": "M015-dspy-algorithmic-prompting",
+        "title": "DSPy & Algorithmic Prompting"
+      },
+      {
+        "id": "M015-prompt-deployment-decision",
+        "title": "Prompt Deployment Decision"
+      },
+      {
+        "id": "M015-llmops-practices",
+        "title": "LLMOps Practices"
+      },
+      {
+        "id": "M015-llm-serving-infrastructure-gpu-optimization",
+        "title": "LLM Serving Infrastructure & GPU Optimization"
+      },
+      {
+        "id": "M015-llm-gpu-memory-estimator",
+        "title": "LLM GPU Memory Estimator"
+      },
+      {
+        "id": "M015-llm-security-owasp-top-10-vulnerabilities",
+        "title": "LLM Security & OWASP Top 10 Vulnerabilities"
+      },
+      {
+        "id": "M015-securing-an-agent-from-indirect-prompt-injection",
+        "title": "Securing an Agent from Indirect Prompt Injection"
+      },
+      {
+        "id": "M015-the-data-flywheel-fine-tuning-pipelines",
+        "title": "The Data Flywheel & Fine-Tuning Pipelines"
+      },
+      {
+        "id": "M015-llm-as-judge-prompt-template",
+        "title": "LLM-as-Judge Prompt Template"
+      },
+      {
+        "id": "M015-production-failures-resilience",
+        "title": "Production Failures & Resilience"
+      },
+      {
+        "id": "M015-cost-optimization",
+        "title": "Cost Optimization"
+      },
+      {
+        "id": "M015-ai-monitoring",
+        "title": "AI Monitoring"
+      }
+    ]
+  },
+  {
+    "id": "M016",
+    "title": "Module 16: Backend Development",
+    "topics": [
+      {
+        "id": "M016-fastapi-the-modern-python-backend",
+        "title": "FastAPI: The Modern Python Backend"
+      },
+      {
+        "id": "M016-advanced-fastapi-architecture",
+        "title": "Advanced FastAPI Architecture"
+      },
+      {
+        "id": "M016-fastapi-vs-flask",
+        "title": "FastAPI vs Flask"
+      },
+      {
+        "id": "M016-creating-a-fastapi-endpoint",
+        "title": "Creating a FastAPI Endpoint"
+      },
+      {
+        "id": "M016-rest-apis-websockets-authentication",
+        "title": "REST APIs, WebSockets & Authentication"
+      },
+      {
+        "id": "M016-authentication-deep-dive",
+        "title": "Authentication Deep Dive"
+      },
+      {
+        "id": "M016-backend-concepts",
+        "title": "Backend Concepts"
+      },
+      {
+        "id": "M016-streaming-responses-server-sent-events-sse",
+        "title": "Streaming Responses & Server-Sent Events (SSE)"
+      },
+      {
+        "id": "M016-streaming-architecture-internals",
+        "title": "Streaming Architecture Internals"
+      },
+      {
+        "id": "M016-streaming-responses-server-sent-events-sse-visualized",
+        "title": "Streaming Responses & Server-Sent Events (SSE) - Visualized"
+      },
+      {
+        "id": "M016-fastapi-token-stream-generator",
+        "title": "FastAPI Token Stream Generator"
+      },
+      {
+        "id": "M016-asynchronous-background-tasks-task-queues",
+        "title": "Asynchronous Background Tasks & Task Queues"
+      },
+      {
+        "id": "M016-advanced-task-queues",
+        "title": "Advanced Task Queues"
+      },
+      {
+        "id": "M016-asynchronous-task-queues",
+        "title": "Asynchronous Task Queues"
+      },
+      {
+        "id": "M016-designing-a-long-running-agent-job-queue",
+        "title": "Designing a Long-Running Agent Job Queue"
+      },
+      {
+        "id": "M016-middleware-rate-limiting-cost-management",
+        "title": "Middleware, Rate Limiting & Cost Management"
+      },
+      {
+        "id": "M016-distributed-backend-patterns",
+        "title": "Distributed Backend Patterns"
+      }
+    ]
+  },
+  {
+    "id": "M017",
+    "title": "Module 17: Databases",
+    "topics": [
+      {
+        "id": "M017-database-architecture-for-ai-applications",
+        "title": "Database Architecture for AI Applications"
+      },
+      {
+        "id": "M017-vector-databases-overview",
+        "title": "Vector Databases Overview"
+      },
+      {
+        "id": "M017-graphrag-knowledge-graphs",
+        "title": "GraphRAG & Knowledge Graphs"
+      },
+      {
+        "id": "M017-graphrag-knowledge-graphs-visualized",
+        "title": "GraphRAG & Knowledge Graphs - Visualized"
+      },
+      {
+        "id": "M017-vector-search-internals-hnsw-approximate-nearest-neighbors",
+        "title": "Vector Search Internals: HNSW & Approximate Nearest Neighbors"
+      },
+      {
+        "id": "M017-hybrid-search",
+        "title": "Hybrid Search"
+      },
+      {
+        "id": "M017-querying-pgvector-in-code",
+        "title": "Querying pgvector in Code"
+      },
+      {
+        "id": "M017-writing-a-pgvector-query",
+        "title": "Writing a pgvector Query"
+      },
+      {
+        "id": "M017-project-ai-chat-history-system",
+        "title": "Project: AI Chat History System"
+      },
+      {
+        "id": "M017-reranking-systems",
+        "title": "Reranking Systems"
+      },
+      {
+        "id": "M017-chunking-strategies",
+        "title": "Chunking Strategies"
+      },
+      {
+        "id": "M017-advanced-rag-architectures",
+        "title": "Advanced RAG Architectures"
+      },
+      {
+        "id": "M017-retrieval-evaluation-metrics",
+        "title": "Retrieval Evaluation Metrics"
+      }
+    ]
+  },
+  {
+    "id": "M018",
+    "title": "Module 18: Cloud & Deployment",
+    "topics": [
+      {
+        "id": "M018-docker-containerizing-ai-applications",
+        "title": "Docker: Containerizing AI Applications"
+      },
+      {
+        "id": "M018-advanced-docker-for-ai",
+        "title": "Advanced Docker for AI"
+      },
+      {
+        "id": "M018-writing-an-ai-dockerfile",
+        "title": "Writing an AI Dockerfile"
+      },
+      {
+        "id": "M018-completing-the-dockerfile",
+        "title": "Completing the Dockerfile"
+      },
+      {
+        "id": "M018-kubernetes-orchestrating-ai-at-scale",
+        "title": "Kubernetes: Orchestrating AI at Scale"
+      },
+      {
+        "id": "M018-kubernetes-primitives-for-ai",
+        "title": "Kubernetes Primitives for AI"
+      },
+      {
+        "id": "M018-cloud-providers-aws-azure-gcp-for-ai",
+        "title": "Cloud Providers: AWS, Azure & GCP for AI"
+      },
+      {
+        "id": "M018-local-edge-ai-inference",
+        "title": "Local & Edge AI Inference"
+      },
+      {
+        "id": "M018-cloud-deployment-decision",
+        "title": "Cloud Deployment Decision"
+      },
+      {
+        "id": "M018-gpu-infrastructure-hardware-selection",
+        "title": "GPU Infrastructure & Hardware Selection"
+      },
+      {
+        "id": "M018-cicd-for-ai-systems",
+        "title": "CI/CD for AI Systems"
+      },
+      {
+        "id": "M018-monitoring-observability-stack",
+        "title": "Monitoring & Observability Stack"
+      }
+    ]
+  },
+  {
+    "id": "M019",
+    "title": "Module 19: Frontend for AI Applications",
+    "topics": [
+      {
+        "id": "M019-react-building-ai-chat-interfaces",
+        "title": "React: Building AI Chat Interfaces"
+      },
+      {
+        "id": "M019-ai-chat-ux-patterns",
+        "title": "AI Chat UX Patterns"
+      },
+      {
+        "id": "M019-nextjs-full-stack-ai-applications",
+        "title": "Next.js: Full-Stack AI Applications"
+      },
+      {
+        "id": "M019-vercel-ai-sdk-deep-dive",
+        "title": "Vercel AI SDK Deep Dive"
+      },
+      {
+        "id": "M019-implementing-the-usechat-hook",
+        "title": "Implementing the useChat Hook"
+      },
+      {
+        "id": "M019-building-a-react-chat-ui",
+        "title": "Building a React Chat UI"
+      },
+      {
+        "id": "M019-real-time-multimodal-webrtc",
+        "title": "Real-Time Multimodal & WebRTC"
+      },
+      {
+        "id": "M019-streamlit-gradio-rapid-ai-prototyping",
+        "title": "Streamlit & Gradio: Rapid AI Prototyping"
+      },
+      {
+        "id": "M019-project-chatgpt-style-ui",
+        "title": "Project: ChatGPT-style UI"
+      },
+      {
+        "id": "M019-state-management-for-ai",
+        "title": "State Management for AI"
+      },
+      {
+        "id": "M019-authentication-in-nextjs",
+        "title": "Authentication in Next.js"
+      },
+      {
+        "id": "M019-multimodal-frontends",
+        "title": "Multimodal Frontends"
+      },
+      {
+        "id": "M019-realtime-ai-voice",
+        "title": "Realtime AI & Voice"
+      }
+    ]
+  },
+  {
+    "id": "M020",
+    "title": "Module 20: Production AI System Design",
+    "topics": [
+      {
+        "id": "M020-ai-system-architecture-the-big-picture",
+        "title": "AI System Architecture: The Big Picture"
+      },
+      {
+        "id": "M020-enterprise-ai-reference-architecture",
+        "title": "Enterprise AI Reference Architecture"
+      },
+      {
+        "id": "M020-ai-system-architecture-the-big-picture-visualized",
+        "title": "AI System Architecture: The Big Picture - Visualized"
+      },
+      {
+        "id": "M020-scalability-performance-optimization",
+        "title": "Scalability & Performance Optimization"
+      },
+      {
+        "id": "M020-advanced-model-routing",
+        "title": "Advanced Model Routing"
+      },
+      {
+        "id": "M020-security-compliance-for-ai-systems",
+        "title": "Security & Compliance for AI Systems"
+      },
+      {
+        "id": "M020-security-architecture-decision",
+        "title": "Security Architecture Decision"
+      },
+      {
+        "id": "M020-project-enterprise-genai-platform",
+        "title": "Project: Enterprise GenAI Platform"
+      },
+      {
+        "id": "M020-ai-gateways",
+        "title": "AI Gateways"
+      },
+      {
+        "id": "M020-reliability-engineering",
+        "title": "Reliability Engineering"
+      },
+      {
+        "id": "M020-cost-engineering",
+        "title": "Cost Engineering"
+      },
+      {
+        "id": "M020-scaling-ai-systems-from-10-to-1m-users",
+        "title": "Scaling AI Systems: From 10 to 1M Users"
+      }
+    ]
+  }
+]

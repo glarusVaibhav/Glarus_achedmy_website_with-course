@@ -22,6 +22,19 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
+    // Instructors must be verified before creating courses (admins bypass)
+    if (session.role === "INSTRUCTOR") {
+      const approval = await prisma.instructorApproval.findUnique({
+        where: { userId: session.id },
+      });
+      if (!approval || approval.status !== "APPROVED") {
+        return NextResponse.json(
+          { error: "You must complete instructor verification before creating courses." },
+          { status: 403 }
+        );
+      }
+    }
+
     const { title, description, price } = await req.json();
 
     const course = await prisma.course.create({

@@ -22,11 +22,19 @@ export async function verifyToken(token: string) {
   }
 }
 
-export async function getSession() {
+export interface UserSession {
+  id: string;
+  email?: string;
+  name?: string;
+  role?: string;
+  [key: string]: any;
+}
+
+export async function getSession(): Promise<UserSession | null> {
   const cookieStore = await cookies();
   const token = cookieStore.get('auth_token')?.value;
   if (!token) return null;
-  return await verifyToken(token);
+  return (await verifyToken(token)) as UserSession | null;
 }
 
 export async function setSession(payload: any) {

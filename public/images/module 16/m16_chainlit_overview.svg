@@ -1,0 +1,20 @@
+<svg width="800" height="400" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="400" fill="#0f172a" rx="12"/>
+  <rect x="40" y="40" width="720" height="320" rx="8" fill="#1e293b" stroke="#f43f5e"/>
+  <text x="65" y="75" fill="#f43f5e" font-family="sans-serif" font-size="18" font-weight="bold">Chainlit — Built Specifically for LLM Agents</text>
+  
+  <!-- Left Side: Chat -->
+  <rect x="65" y="95" width="380" height="240" rx="6" fill="#0f172a"/>
+  <text x="80" y="125" fill="#cbd5e1" font-family="sans-serif" font-size="13">User: Research quantum computing papers</text>
+  <rect x="80" y="145" width="350" height="170" rx="6" fill="#1e293b"/>
+  <text x="95" y="170" fill="#f43f5e" font-family="sans-serif" font-size="12" font-weight="bold">Agent Response:</text>
+  <text x="95" y="195" fill="#cbd5e1" font-family="sans-serif" font-size="11">I found 3 relevant papers on arXiv...</text>
+
+  <!-- Right Side: Step Tree -->
+  <rect x="460" y="95" width="280" height="240" rx="6" fill="#334155"/>
+  <text x="475" y="125" fill="#38bdf8" font-family="sans-serif" font-size="13" font-weight="bold">cl.Step Thinking Tree:</text>
+  <text x="475" y="155" fill="#34d399" font-family="monospace" font-size="11">▼ Step 1: arXiv Search</text>
+  <text x="490" y="175" fill="#94a3b8" font-family="monospace" font-size="10">query: "quantum computing"</text>
+  <text x="475" y="205" fill="#34d399" font-family="monospace" font-size="11">▼ Step 2: Rerank Results</text>
+  <text x="475" y="255" fill="#34d399" font-family="monospace" font-size="11">▼ Step 3: Summarize LLM</text>
+</svg>

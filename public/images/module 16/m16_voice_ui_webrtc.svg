@@ -1,0 +1,17 @@
+<svg width="800" height="400" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="400" fill="#0f172a" rx="12"/>
+  <rect x="50" y="40" width="700" height="320" rx="10" fill="#1e293b" stroke="#a855f7"/>
+  <text x="400" y="75" fill="#c084fc" font-family="sans-serif" font-size="18" font-weight="bold" text-anchor="middle">Real-Time Voice AI (WebRTC &amp; Web Audio API)</text>
+  
+  <!-- Waveform Visualizer -->
+  <line x1="150" y1="200" x2="150" y2="150" stroke="#c084fc" stroke-width="8" stroke-linecap="round"/>
+  <line x1="180" y1="200" x2="180" y2="120" stroke="#c084fc" stroke-width="8" stroke-linecap="round"/>
+  <line x1="210" y1="200" x2="210" y2="240" stroke="#c084fc" stroke-width="8" stroke-linecap="round"/>
+  <line x1="240" y1="200" x2="240" y2="100" stroke="#c084fc" stroke-width="8" stroke-linecap="round"/>
+  <line x1="270" y1="200" x2="270" y2="260" stroke="#c084fc" stroke-width="8" stroke-linecap="round"/>
+  <line x1="300" y1="200" x2="300" y2="140" stroke="#c084fc" stroke-width="8" stroke-linecap="round"/>
+
+  <!-- Push to talk button -->
+  <circle cx="550" cy="180" r="50" fill="#a855f7"/>
+  <text x="550" y="185" fill="#ffffff" font-family="sans-serif" font-size="14" font-weight="bold" text-anchor="middle">🎙️ Push to Talk</text>
+</svg>

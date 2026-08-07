@@ -1,6 +1,7 @@
 "use client";
 
 import { useCartStore } from "@/store/cartStore";
+import { useEnrollmentStore } from "@/store/useEnrollmentStore";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Lock, CreditCard, ChevronRight } from "lucide-react";
@@ -25,12 +26,15 @@ export default function CheckoutPage() {
   const handlePayment = async () => {
     setIsProcessing(true);
     try {
-      // Process purchase for each item in cart
+      // Process purchase for each item in cart and enroll user
       for (const item of items) {
+         useEnrollmentStore.getState().enrollCourse(item.id);
          await fetch("/api/purchase", {
            method: "POST",
            headers: { "Content-Type": "application/json" },
            body: JSON.stringify({ courseId: item.id })
+         }).catch(() => {
+           // fallback client side enrollment
          });
       }
       

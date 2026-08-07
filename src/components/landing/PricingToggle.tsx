@@ -9,12 +9,12 @@ export default function PricingToggle() {
   const [isAnnual, setIsAnnual] = useState(true);
 
   return (
-    <section className="w-full py-24 md:py-32 bg-card/30 border-y border-card/40 relative">
-      <div className="max-w-7xl mx-auto px-6 relative z-10 text-center">
+    <section className="w-full py-6 md:py-8 bg-card/30 relative">
+      <div className="max-w-[1650px] mx-auto px-6 sm:px-10 relative z-10 text-center">
          <h2 className="text-4xl md:text-5xl font-black text-text tracking-tight mb-6">Invest in your trajectory</h2>
-         <p className="text-lg text-subtext mb-12 max-w-2xl mx-auto">Get unrestricted access to our entire catalog, interactive sandboxes, and personalized AI mentor sessions.</p>
+         <p className="text-lg text-subtext mb-8 max-w-2xl mx-auto">Get unrestricted access to our entire catalog, interactive sandboxes, and personalized AI mentor sessions.</p>
 
-         <div className="flex items-center justify-center mb-16">
+         <div className="flex items-center justify-center mb-8">
             <div className="p-1 bg-background border border-card rounded-full flex relative">
                <div 
                  className={`absolute inset-y-1 w-1/2 bg-card border border-card/60 shadow-md rounded-full transition-all duration-300 ${isAnnual ? 'left-1' : 'left-[calc(50%-4px)]'}`}

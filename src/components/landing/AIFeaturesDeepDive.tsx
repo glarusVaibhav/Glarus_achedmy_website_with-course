@@ -36,20 +36,17 @@ export default function AIFeaturesDeepDive() {
   const [activeTab, setActiveTab] = useState(FEATURES[0].id);
 
   return (
-    <section className="w-full py-24 md:py-40 bg-card/20 border-y border-card/40 relative overflow-hidden">
-       {/* Background structural styling */}
-       <div className="absolute top-0 w-full h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
-       
-       <div className="max-w-7xl mx-auto px-6 relative z-10">
+    <section className="w-full py-6 md:py-8 bg-background text-text relative overflow-hidden">
+       <div className="max-w-[1650px] mx-auto px-6 sm:px-10 relative z-10">
           <motion.div 
              initial={{ opacity: 0, y: 20 }}
              whileInView={{ opacity: 1, y: 0 }}
              viewport={{ once: true }}
              transition={{ duration: 0.6 }}
-             className="text-center max-w-3xl mx-auto mb-20"
+             className="text-center max-w-3xl mx-auto mb-6"
           >
              <h2 className="text-4xl md:text-5xl font-black text-text tracking-tight mb-6">Built using the <br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">Technologies</span> we Teach</h2>
-             <p className="text-lg md:text-xl font-medium text-subtext">The EduAI engine is fundamentally different. It adapts, it tutors, and it provides a 1-to-1 mentorship experience at massive scale.</p>
+             <p className="text-lg md:text-xl font-medium text-subtext">The GlarusAcademy engine is fundamentally different. It adapts, it tutors, and it provides a 1-to-1 mentorship experience at massive scale.</p>
           </motion.div>
 
           <div className="flex flex-col lg:flex-row gap-12 lg:gap-24 h-auto lg:h-[600px] items-center">

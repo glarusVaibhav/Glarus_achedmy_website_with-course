@@ -26,13 +26,29 @@ export function CourseCard({ course }: { course: Course }) {
     toggle(course as any);
   };
 
+  const courseUrl = `/course/${course.id === "ai-1" ? "Generative_AI_Application_Engineer" : course.id}`;
+
+  const getImageSrc = () => {
+    if (course.image && course.image !== "/placeholder-course.jpg") return course.image;
+    const title = (course.title || "").toLowerCase();
+    if (title.includes("python fundamentals") || title.includes("python")) return "/images/courses/python-fundamentals.png";
+    if (title.includes("machine learning") || title.includes("ml")) return "/images/courses/ml-math.png";
+    if (title.includes("ai engineering") || title.includes("advanced ai") || title.includes("llm")) return "/images/courses/llm-architecture.png";
+    if (title.includes("rag") || title.includes("vector")) return "/images/courses/rag-vector-db.png";
+    if (title.includes("generative")) return "/images/courses/generative-ai.png";
+    if (title.includes("smart contract") || title.includes("security")) return "/images/courses/smart-contracts.png";
+    if (title.includes("automation")) return "/images/courses/python-fundamentals.png";
+    if (title.includes("next.js") || title.includes("full-stack")) return "/images/courses/generative-ai.png";
+    return "/images/courses/llm-architecture.png";
+  };
+
   return (
-    <Link href={`/course/${course.id}`} className="group h-full">
+    <Link href={courseUrl} className="group h-full">
       <div className="bg-card border border-card rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 h-full flex flex-col hover:-translate-y-1">
         {/* Image Container */}
         <div className="relative w-full h-48 overflow-hidden bg-background">
           <Image 
-            src={course.image} 
+            src={getImageSrc()} 
             alt={course.title} 
             fill 
             className="object-cover group-hover:scale-105 transition-transform duration-500" 

@@ -4,9 +4,19 @@ const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
 
 export async function POST(req: Request) {
   try {
-    const { topic, numQuestions = 5 } = await req.json();
+    const {
+      topic,
+      numQuestions = 5,
+      difficulty = "Medium",
+      questionTypes = ["Multiple Choice"],
+      generateBasedOn = "Lesson Title",
+      customPrompt = "",
+      additionalInstructions = "",
+      singleQuestionRegen = false,
+      singleQuestionContext = ""
+    } = await req.json();
 
-    if (!topic) {
+    if (!topic && !singleQuestionContext) {
       return NextResponse.json({ error: "Topic required" }, { status: 400 });
     }
 
@@ -15,27 +25,44 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "GROQ_API_KEY not set" }, { status: 500 });
     }
 
-    const systemPrompt = `You are an expert quiz creator for an educational platform. Generate exactly ${numQuestions} multiple-choice quiz questions about the given topic.
+    const count = singleQuestionRegen ? 1 : numQuestions;
+    const typesStr = Array.isArray(questionTypes) && questionTypes.length > 0 ? questionTypes.join(", ") : "Multiple Choice";
 
-Each question MUST have exactly 4 options labeled A, B, C, D. One option must be the correct answer.
+    const systemPrompt = `You are an expert educational quiz creator. Generate exactly ${count} high-quality quiz question(s) about the provided topic.
 
-Return your response as a valid JSON array. Each object has:
-- "question": the question text
-- "options": an array of exactly 4 strings (the choices)
-- "correctIndex": the 0-based index of the correct answer (0-3)
-- "explanation": a brief explanation of why the answer is correct
+Target Difficulty: ${difficulty}
+Allowed Question Types: ${typesStr}
+Source Context Basis: ${generateBasedOn}
+${customPrompt ? `Custom User Instructions: ${customPrompt}` : ""}
+${additionalInstructions ? `Regeneration Tweaks: ${additionalInstructions}` : ""}
+
+For each question, return a JSON object with:
+- "question": string (the question text)
+- "options": array of strings (for Multiple Choice / True-False, provide 2 to 4 distinct options)
+- "correctIndex": number (0-based index of the correct answer)
+- "explanation": string (clear pedagogical explanation of why this answer is correct)
+- "hint": string (a subtle hint to help students if stuck)
+- "difficulty": string ("${difficulty}")
+- "points": number (usually 10)
 
 Example format:
 [
   {
-    "question": "What is X?",
-    "options": ["Option A", "Option B", "Option C", "Option D"],
+    "question": "What is the primary function of a let statement in JavaScript?",
+    "options": ["Declares a block-scoped variable", "Declares a global constant", "Executes an asynchronous loop", "Deletes an object property"],
     "correctIndex": 0,
-    "explanation": "Because..."
+    "explanation": "The 'let' keyword declares a re-assignable variable that is block-scoped.",
+    "hint": "Think about variable scoping introduced in ES6.",
+    "difficulty": "${difficulty}",
+    "points": 10
   }
 ]
 
-Return ONLY the JSON array. No markdown, no backticks, no extra text.`;
+Return ONLY a valid JSON array. No markdown wrapper, no extra text.`;
+
+    const userPrompt = singleQuestionRegen
+      ? `Regenerate a fresh, replacement question for: ${singleQuestionContext || topic}. Ensure it is distinct and has 4 clean choices.`
+      : `Generate a ${difficulty} difficulty quiz (${count} questions) on topic: ${topic}.`;
 
     const res = await fetch(GROQ_API_URL, {
       method: "POST",
@@ -44,10 +71,10 @@ Return ONLY the JSON array. No markdown, no backticks, no extra text.`;
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "meta-llama/llama-4-scout-17b-16e-instruct",
+        model: "llama-3.3-70b-versatile",
         messages: [
           { role: "system", content: systemPrompt },
-          { role: "user", content: `Generate a quiz about: ${topic}` },
+          { role: "user", content: userPrompt },
         ],
         temperature: 0.7,
         max_tokens: 4096,
@@ -63,13 +90,10 @@ Return ONLY the JSON array. No markdown, no backticks, no extra text.`;
     const data = await res.json();
     const content = data.choices?.[0]?.message?.content ?? "";
 
-    // Extract JSON from the response
     let questions;
     try {
-      // Try direct parse
       questions = JSON.parse(content);
     } catch {
-      // Try extracting JSON from markdown code blocks
       const jsonMatch = content.match(/\[[\s\S]*\]/);
       if (jsonMatch) {
         questions = JSON.parse(jsonMatch[0]);

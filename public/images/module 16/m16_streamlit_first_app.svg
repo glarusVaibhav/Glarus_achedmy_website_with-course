@@ -1,0 +1,22 @@
+<svg width="800" height="400" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="400" fill="#0f172a" rx="12"/>
+  <!-- Browser Window -->
+  <rect x="50" y="40" width="700" height="320" rx="10" fill="#1e293b" stroke="#ff4b4b" stroke-width="2"/>
+  <!-- Header Bar -->
+  <rect x="50" y="40" width="700" height="35" fill="#0f172a" rx="10"/>
+  <circle cx="75" cy="57" r="5" fill="#ef4444"/>
+  <circle cx="90" cy="57" r="5" fill="#f59e0b"/>
+  <circle cx="105" cy="57" r="5" fill="#10b981"/>
+  <text x="400" y="62" fill="#94a3b8" font-family="sans-serif" font-size="12" text-anchor="middle">localhost:8501 — Streamlit App</text>
+  
+  <!-- Content -->
+  <text x="90" y="120" fill="#ff4b4b" font-family="sans-serif" font-size="22" font-weight="bold">Hello, AI World! 🤖</text>
+  <text x="90" y="150" fill="#cbd5e1" font-family="sans-serif" font-size="14">This is my first Streamlit web app in Python.</text>
+  
+  <text x="90" y="200" fill="#94a3b8" font-family="sans-serif" font-size="12">What is your name?</text>
+  <rect x="90" y="215" width="400" height="40" rx="6" fill="#334155" stroke="#475569"/>
+  <text x="105" y="240" fill="#f8fafc" font-family="sans-serif" font-size="14">Alex Engineer</text>
+  
+  <rect x="90" y="275" width="620" height="50" rx="6" fill="#065f46" stroke="#10b981"/>
+  <text x="110" y="305" fill="#ecfdf5" font-family="sans-serif" font-size="14" font-weight="bold">Welcome, Alex Engineer! Let's build something amazing.</text>
+</svg>

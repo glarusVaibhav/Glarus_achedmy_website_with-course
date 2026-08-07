@@ -46,6 +46,7 @@ enum ApprovalStatus {
   PENDING
   APPROVED
   REJECTED
+  CHANGES_REQUESTED
 }
 
 model User {
@@ -272,6 +273,8 @@ model InstructorApproval {
   experience  String?
   skills      String?
   bio         String?
+  version     Int            @default(1)
+  feedback    String?
   reviewedBy  String?
   reviewedAt  DateTime?
   createdAt   DateTime       @default(now())

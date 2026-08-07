@@ -49,7 +49,7 @@ export async function POST(req: Request) {
       data: {
         action: "UPDATE_SETTINGS",
         details: "Platform settings updated",
-        adminId: session.id
+        adminId: session.id || "admin"
       }
     });
 

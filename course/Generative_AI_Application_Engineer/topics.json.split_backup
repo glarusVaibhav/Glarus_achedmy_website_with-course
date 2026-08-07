@@ -1,0 +1,3803 @@
+[
+  {
+    "id": "M000",
+    "title": "Course Overview",
+    "topics": [
+      {
+        "id": "M000-course-overview",
+        "title": "Course Overview"
+      }
+    ]
+  },
+  {
+    "id": "M001",
+    "title": "Module 1: Python Programming",
+    "topics": [
+      {
+        "id": "M001-intro",
+        "title": "Introduction to Python"
+      },
+      {
+        "id": "M001-variables-data-types",
+        "title": "Variables & Data Types"
+      },
+      {
+        "id": "M001-control-flow-functions",
+        "title": "Control Flow & Functions"
+      },
+      {
+        "id": "M001-module-data-structures",
+        "title": "Data Structures & JSON"
+      },
+      {
+        "id": "M001-5-oop",
+        "title": "Object-Oriented Programming (OOP)"
+      },
+      {
+        "id": "M001-file-handling-data",
+        "title": "File Handling & Data Processing"
+      },
+      {
+        "id": "M001-python-regex",
+        "title": "Regular Expressions (Regex) in Python"
+      },
+      {
+        "id": "M001-pandas-introduction",
+        "title": "Introduction to Pandas"
+      },
+      {
+        "id": "M001-env-async",
+        "title": "Python Environments & Async Programming"
+      },
+      {
+        "id": "M001-final-project",
+        "title": "Practice Project: Building an AI CLI Assistant"
+      }
+    ]
+  },
+  {
+    "id": "M002",
+    "title": "Module 2: Machine Learning",
+    "topics": [
+      {
+        "id": "M002-ml-comprehensive-lesson-1",
+        "title": "Introduction to Machine Learning & Core Paradigms"
+      },
+      {
+        "id": "M002-ml-lesson-3",
+        "title": "Data Preprocessing & Feature Engineering"
+      },
+      {
+        "id": "M002-regression-algorithms",
+        "title": "Regression Algorithms"
+      },
+      {
+        "id": "M002-ml-lesson-9-limitations",
+        "title": "Overfitting, Underfitting & ML Limitations"
+      },
+      {
+        "id": "M002-ml-lesson-6-classification",
+        "title": "Classification Algorithms"
+      },
+      {
+        "id": "M002-ml-lesson-7-clustering",
+        "title": "Clustering & Unsupervised Learning"
+      },
+      {
+        "id": "M002-ml-lesson-8-evaluation",
+        "title": "Model Evaluation & Optimization"
+      },
+      {
+        "id": "M002-ml-practice-project-final",
+        "title": "Practice Project"
+      },
+      {
+        "id": "M002-ml-lesson-10-capstone",
+        "title": "Capstone Project: House Price Prediction"
+      }
+    ]
+  },
+  {
+    "id": "M003",
+    "title": "Module 3: Deep Learning",
+    "topics": [
+      {
+        "id": "M003-dl-lesson-1-intro",
+        "title": "Introduction to Deep Learning & Neural Networks"
+      },
+      {
+        "id": "M003-deep-learning-frameworks",
+        "title": "Introduction to Deep Learning Frameworks"
+      },
+      {
+        "id": "M003-dl-lesson-2-activation",
+        "title": "Activation Functions"
+      },
+      {
+        "id": "M003-dl-lesson-3-loss",
+        "title": "Loss Functions & Optimization"
+      },
+      {
+        "id": "M003-dl-lesson-4-part1-core",
+        "title": "Backpropagation & Gradient Descent"
+      },
+      {
+        "id": "M003-dl-lesson-5-cnn-foundations",
+        "title": "Image Processing Foundations for Deep Learning"
+      },
+      {
+        "id": "M003-dl-lesson-6-cnn-core",
+        "title": "CNN Foundations & Core Concepts"
+      },
+      {
+        "id": "M003-dl-lesson-7-cnn-architectures",
+        "title": "CNN Architectures & Evolution"
+      },
+      {
+        "id": "M003-dl-lesson-capstone-catdog",
+        "title": "Capstone Project: Cat vs. Dog Image Classification"
+      }
+    ]
+  },
+  {
+    "id": "M004",
+    "title": "Module 4: Natural Language Processing",
+    "topics": [
+      {
+        "id": "M004-nlp-lesson-1-fundamentals",
+        "title": "Introduction to NLP & Text Processing Fundamentals"
+      },
+      {
+        "id": "M004-nlp-lesson-2-embeddings-advanced",
+        "title": "Text Representation & Word Embeddings"
+      },
+      {
+        "id": "M004-nlp-lesson-3-similarity",
+        "title": "Similarity Metrics & Topic Modeling"
+      },
+      {
+        "id": "M004-nlp-lesson-4-rnn-lstm",
+        "title": "Sequential Models for NLP: RNN & LSTM"
+      },
+      {
+        "id": "M004-nlp-lesson-5-transformers",
+        "title": "Attention Mechanism & Transformers"
+      },
+      {
+        "id": "M004-nlp-lesson-6-arch_transformers",
+        "title": "Build Transformer From Scratch"
+      },
+      {
+        "id": "M004-nlp-lesson-7-metrics",
+        "title": "NLP Evaluation Metrics & End-to-End Evaluation"
+      },
+      {
+        "id": "M004-nlp-lesson-6-practice",
+        "title": "Practice Project - Build Sentiment analysis project from scratch"
+      },
+      {
+        "id": "M004-nlp-lesson-8-capstone",
+        "title": "Capstone Project: End-to-End Sentiment Analysis"
+      }
+    ]
+  },
+  {
+    "id": "M005",
+    "title": "Module 5: Large Language Models (LLMs)",
+    "topics": [
+      {
+        "id": "M005_llm_01",
+        "title": "Getting Started with LLMs"
+      },
+      {
+        "id": "M005-llm-lesson-2-how-they-learn",
+        "title": "How LLMs Learn: From Tokens to Training"
+      },
+      {
+        "id": "M005-llm-lesson-3-huggingfae",
+        "title": "Hugging Face Transformers"
+      },
+      {
+        "id": "M005-llm-lesson-4-working-with-apis",
+        "title": "Working with LLM APIs & Model Providers"
+      },
+      {
+        "id": "M005_llm_05",
+        "title": "LLM Inference & Generation Controls"
+      },
+      {
+        "id": "M005-llm-lesson-7-build-from-scratch",
+        "title": "Building a Mini GPT Model from scratch"
+      },
+      {
+        "id": "M005-llm-project",
+        "title": "Beginner LLM Projects"
+      }
+    ]
+  },
+  {
+    "id": "M006",
+    "title": "Module 6: Prompt Engineering",
+    "topics": [
+      {
+        "id": "M006-module-prompt-lesson-1-intro",
+        "title": "Introduction to Prompt Engineering"
+      },
+      {
+        "id": "M006-prompt-eng-02",
+        "title": "Core Prompting Techniques"
+      },
+      {
+        "id": "M006-prompt-eng-03",
+        "title": "Reasoning Prompting Techniques"
+      },
+      {
+        "id": "M006-prompt-eng-04",
+        "title": "Structured Output Generation"
+      },
+      {
+        "id": "M006-prompt-eng-05",
+        "title": "Prompt Engineering for Real Applications"
+      },
+      {
+        "id": "M006-prompt-eng-06",
+        "title": "Advanced Prompt Engineering"
+      }
+    ]
+  },
+  {
+    "id": "M007",
+    "title": "Module 7: Embeddings & Vector Databases",
+    "topics": [
+      {
+        "id": "M007-vector-db-01",
+        "title": "From Keywords to Semantic Search"
+      },
+      {
+        "id": "M007-vector-db-masterclass",
+        "title": "Embeddings & Vector space Architectures"
+      },
+      {
+        "id": "M007-vector-db-03-distance-v2",
+        "title": "Similarity Search & Distance Metrics"
+      },
+      {
+        "id": "M007-vector-db-04-architecture",
+        "title": "The Enterprise Memory Engine (Vector DBs)"
+      },
+      {
+        "id": "M007-vector-db-05-rag-pipeline",
+        "title": "Building a Semantic Search Engine"
+      }
+    ]
+  },
+  {
+    "id": "M008",
+    "title": "Module 8: Retrieval-Augmented Generation (RAG)",
+    "topics": [
+      {
+        "id": "M008-rag-01-intro",
+        "title": "Introduction to Retrieval-Augmented Generation (RAG)"
+      },
+      {
+        "id": "M008-rag-02-pipeline",
+        "title": "The RAG Data Pipeline"
+      },
+      {
+        "id": "M008-rag-03-indexing",
+        "title": "Advanced Vector Search & Indexing Strategies"
+      },
+      {
+        "id": "M008-rag-04-advanced-retrieval",
+        "title": "Advanced Retrieval Techniques"
+      },
+      {
+        "id": "M008-rag-05-reranking",
+        "title": "Re-ranking & Evaluation"
+      },
+      {
+        "id": "M008-rag-06-advanced-architectures",
+        "title": "Advanced RAG Architectures"
+      },
+      {
+        "id": "M008-vectorless-rag",
+        "title": "Vectorless RAG"
+      },
+      {
+        "id": "M008-rag-07-evaluation",
+        "title": "Evaluation & Observability (Production RAG)"
+      },
+      {
+        "id": "M004-nlp-lesson-9-practice",
+        "title": "Practice Project"
+      },
+      {
+        "id": "M008-rag-lesson-08-capstone",
+        "title": "Capstone Project: Enterprise Knowledge Assistant"
+      }
+    ]
+  },
+  {
+    "id": "M009",
+    "title": "Module 9: OpenAI & Hugging Face",
+    "topics": [
+      {
+        "id": "M009-openai-huggingface",
+        "title": "Module 9: OpenAI & Hugging Face"
+      }
+    ]
+  },
+  {
+    "id": "M010",
+    "title": "Module 10: Fine-Tuning",
+    "topics": [
+      {
+        "id": "M010-phase-1",
+        "title": "What is Fine-Tuning?",
+        "isPhase": true,
+        "moduleId": "M010-ai-agents",
+        "children": [
+          {
+            "id": "M010-what-is-fine-tuning-0",
+            "title": "What is Fine-Tuning?",
+            "stageIndex": 0
+          },
+          {
+            "id": "M010-when-to-fine-tune-vs-prompt-engineering-vs-rag-1",
+            "title": "When to Fine-Tune vs. Prompt Engineering vs. RAG",
+            "stageIndex": 1
+          },
+          {
+            "id": "M010-scenario-practice-2",
+            "title": "Scenario Practice",
+            "stageIndex": 2
+          },
+          {
+            "id": "M010-scenario-practice-3",
+            "title": "Scenario Practice",
+            "stageIndex": 3
+          },
+          {
+            "id": "M010-mcq-practice-4",
+            "title": "Mcq Practice",
+            "stageIndex": 4
+          },
+          {
+            "id": "M010-what-is-the-decision-hierarchy-for-impro-5",
+            "title": "What is the decision hierarchy for impro",
+            "stageIndex": 5
+          }
+        ]
+      },
+      {
+        "id": "M010-phase-2",
+        "title": "The LoRA Engine & PEFT",
+        "isPhase": true,
+        "moduleId": "M010-ai-agents",
+        "children": [
+          {
+            "id": "M010-the-lora-engine-how-we-actually-fine-tune-without-going-broke-6",
+            "title": "The LoRA Engine — How We Actually Fine-Tune Without Going Broke",
+            "stageIndex": 6
+          },
+          {
+            "id": "M010-full-fine-tuning-vs-lora-vs-qlora-the-three-types-of-fine-tuning-7",
+            "title": "Full Fine-Tuning vs LoRA vs QLoRA — The Three Types of Fine-Tuning",
+            "stageIndex": 7
+          },
+          {
+            "id": "M010-lora-hyperparameters-the-three-knobs-you-need-to-know-8",
+            "title": "LoRA Hyperparameters — The Three Knobs You Need to Know",
+            "stageIndex": 8
+          },
+          {
+            "id": "M010-configuring-lora-adapters-9",
+            "title": "Configuring LoRA Adapters",
+            "stageIndex": 9
+          },
+          {
+            "id": "M010-qlora-fine-tuning-on-your-laptop-yes-really-10",
+            "title": "QLoRA: Fine-Tuning on Your Laptop — Yes, Really",
+            "stageIndex": 10
+          },
+          {
+            "id": "M010-configuring-4-bit-quantization-for-qlora-11",
+            "title": "Configuring 4-bit Quantization for QLoRA",
+            "stageIndex": 11
+          },
+          {
+            "id": "M010-speed-quiz-practice-12",
+            "title": "Speed Quiz Practice",
+            "stageIndex": 12
+          },
+          {
+            "id": "M010-lora-fundamentals-13",
+            "title": "LoRA Fundamentals",
+            "stageIndex": 13
+          },
+          {
+            "id": "M010-beyond-lora-other-peft-methods-you-should-know-14",
+            "title": "Beyond LoRA — Other PEFT Methods You Should Know",
+            "stageIndex": 14
+          },
+          {
+            "id": "M010-mcq-practice-15",
+            "title": "Mcq Practice",
+            "stageIndex": 15
+          },
+          {
+            "id": "M010-lora-vs-qlora-vs-full-fine-tuning-matching-16",
+            "title": "LoRA vs QLoRA vs Full Fine-Tuning Matching",
+            "stageIndex": 16
+          },
+          {
+            "id": "M010-mcq-practice-17",
+            "title": "Mcq Practice",
+            "stageIndex": 17
+          },
+          {
+            "id": "M010-supervised-fine-tuning-sft-the-foundation-of-all-fine-tuning-18",
+            "title": "Supervised Fine-Tuning (SFT) — The Foundation of All Fine-Tuning",
+            "stageIndex": 18
+          },
+          {
+            "id": "M010-sfttrainer-with-formatting-function-19",
+            "title": "SFTTrainer with Formatting Function",
+            "stageIndex": 19
+          }
+        ]
+      },
+      {
+        "id": "M010-phase-3",
+        "title": "Data Engineering & Synthetic Data",
+        "isPhase": true,
+        "moduleId": "M010-ai-agents",
+        "children": [
+          {
+            "id": "M010-data-engineering-the-part-that-makes-or-breaks-everything-20",
+            "title": "Data Engineering — The Part That Makes or Breaks Everything",
+            "stageIndex": 20
+          },
+          {
+            "id": "M010-chat-templates-the-1-mistake-that-kills-fine-tuning-projects-21",
+            "title": "Chat Templates: The #1 Mistake That Kills Fine-Tuning Projects",
+            "stageIndex": 21
+          },
+          {
+            "id": "M010-applying-chat-templates-22",
+            "title": "Applying Chat Templates",
+            "stageIndex": 22
+          },
+          {
+            "id": "M010-validating-alpaca-format-data-23",
+            "title": "Validating Alpaca Format Data",
+            "stageIndex": 23
+          },
+          {
+            "id": "M010-loading-and-validating-a-jsonl-dataset-24",
+            "title": "Loading and Validating a JSONL Dataset",
+            "stageIndex": 24
+          },
+          {
+            "id": "M010-mcq-practice-25",
+            "title": "Mcq Practice",
+            "stageIndex": 25
+          },
+          {
+            "id": "M010-data-format-matching-26",
+            "title": "Data Format Matching",
+            "stageIndex": 26
+          },
+          {
+            "id": "M010-synthetic-data-generation-building-training-data-at-scale-27",
+            "title": "Synthetic Data Generation — Building Training Data at Scale",
+            "stageIndex": 27
+          },
+          {
+            "id": "M010-building-a-data-quality-filter-28",
+            "title": "Building a Data Quality Filter",
+            "stageIndex": 28
+          },
+          {
+            "id": "M010-choosing-a-data-generation-strategy-29",
+            "title": "Choosing a Data Generation Strategy",
+            "stageIndex": 29
+          },
+          {
+            "id": "M010-tokenizer-chat-template-formatting-30",
+            "title": "Tokenizer Chat Template Formatting",
+            "stageIndex": 30
+          },
+          {
+            "id": "M010-mcq-practice-31",
+            "title": "Mcq Practice",
+            "stageIndex": 31
+          }
+        ]
+      },
+      {
+        "id": "M010-phase-4",
+        "title": "Alignment & Safety",
+        "isPhase": true,
+        "moduleId": "M010-ai-agents",
+        "children": [
+          {
+            "id": "M010-alignment-teaching-the-model-right-from-wrong-32",
+            "title": "Alignment — Teaching the Model Right from Wrong",
+            "stageIndex": 32
+          },
+          {
+            "id": "M010-the-alignment-evolution-33",
+            "title": "The Alignment Evolution",
+            "stageIndex": 33
+          },
+          {
+            "id": "M010-creating-dpo-training-data-34",
+            "title": "Creating DPO Training Data",
+            "stageIndex": 34
+          },
+          {
+            "id": "M010-scenario-practice-35",
+            "title": "Scenario Practice",
+            "stageIndex": 35
+          },
+          {
+            "id": "M010-mcq-practice-36",
+            "title": "Mcq Practice",
+            "stageIndex": 36
+          },
+          {
+            "id": "M010-dpo-in-practice-hands-on-preference-optimization-37",
+            "title": "DPO In Practice — Hands-On Preference Optimization",
+            "stageIndex": 37
+          },
+          {
+            "id": "M010-building-a-dpo-training-pipeline-38",
+            "title": "Building a DPO Training Pipeline",
+            "stageIndex": 38
+          },
+          {
+            "id": "M010-rlhf-deep-dive-how-chatgpt-was-trained-39",
+            "title": "RLHF Deep Dive — How ChatGPT Was Trained",
+            "stageIndex": 39
+          },
+          {
+            "id": "M010-mcq-practice-40",
+            "title": "Mcq Practice",
+            "stageIndex": 40
+          },
+          {
+            "id": "M010-safety-fine-tuning-preventing-harmful-outputs-41",
+            "title": "Safety Fine-Tuning — Preventing Harmful Outputs",
+            "stageIndex": 41
+          },
+          {
+            "id": "M010-red-teaming-your-model-42",
+            "title": "Red-Teaming Your Model",
+            "stageIndex": 42
+          },
+          {
+            "id": "M010-reorder-practice-43",
+            "title": "Reorder Practice",
+            "stageIndex": 43
+          }
+        ]
+      },
+      {
+        "id": "M010-phase-5",
+        "title": "The Complete Fine-Tuning Code Pipeline",
+        "isPhase": true,
+        "moduleId": "M010-ai-agents",
+        "children": [
+          {
+            "id": "M010-building-the-complete-pipeline-putting-it-all-together-44",
+            "title": "Building the Complete Pipeline — Putting It All Together",
+            "stageIndex": 44
+          },
+          {
+            "id": "M010-hardware-vram-math-cost-realities-45",
+            "title": "Hardware, VRAM Math & Cost Realities",
+            "stageIndex": 45
+          },
+          {
+            "id": "M010-loading-the-dataset-46",
+            "title": "Loading the Dataset",
+            "stageIndex": 46
+          },
+          {
+            "id": "M010-configuring-training-arguments-47",
+            "title": "Configuring Training Arguments",
+            "stageIndex": 47
+          },
+          {
+            "id": "M010-assembling-the-sfttrainer-48",
+            "title": "Assembling the SFTTrainer",
+            "stageIndex": 48
+          },
+          {
+            "id": "M010-merging-and-saving-the-fine-tuned-model-49",
+            "title": "Merging and Saving the Fine-Tuned Model",
+            "stageIndex": 49
+          },
+          {
+            "id": "M010-merging-lora-adapters-50",
+            "title": "Merging LoRA Adapters",
+            "stageIndex": 50
+          },
+          {
+            "id": "M010-reorder-practice-51",
+            "title": "Reorder Practice",
+            "stageIndex": 51
+          },
+          {
+            "id": "M010-scaling-up-multi-gpu-training-with-deepspeed-fsdp-52",
+            "title": "Scaling Up — Multi-GPU Training with DeepSpeed & FSDP",
+            "stageIndex": 52
+          },
+          {
+            "id": "M010-configuring-deepspeed-for-fine-tuning-53",
+            "title": "Configuring DeepSpeed for Fine-Tuning",
+            "stageIndex": 53
+          },
+          {
+            "id": "M010-resolving-cuda-out-of-memory-in-sfttrainer-54",
+            "title": "Resolving CUDA Out of Memory in SFTTrainer",
+            "stageIndex": 54
+          },
+          {
+            "id": "M010-what-is-the-recommended-learning-rate-ra-55",
+            "title": "What is the recommended learning rate ra",
+            "stageIndex": 55
+          }
+        ]
+      },
+      {
+        "id": "M010-phase-6",
+        "title": "Evaluation & Deployment",
+        "isPhase": true,
+        "moduleId": "M010-ai-agents",
+        "children": [
+          {
+            "id": "M010-evaluation-how-do-you-know-if-your-model-is-actually-good-56",
+            "title": "Evaluation — How Do You Know If Your Model Is Actually Good?",
+            "stageIndex": 56
+          },
+          {
+            "id": "M010-the-danger-of-overfitting-reading-loss-curves-57",
+            "title": "The Danger of Overfitting & Reading Loss Curves",
+            "stageIndex": 57
+          },
+          {
+            "id": "M010-advanced-evaluation-benchmarks-harnesses-llm-judges-58",
+            "title": "Advanced Evaluation — Benchmarks, Harnesses & LLM Judges",
+            "stageIndex": 58
+          },
+          {
+            "id": "M010-building-an-llm-as-a-judge-pipeline-59",
+            "title": "Building an LLM-as-a-Judge Pipeline",
+            "stageIndex": 59
+          },
+          {
+            "id": "M010-evaluation-tools-matching-60",
+            "title": "Evaluation Tools Matching",
+            "stageIndex": 60
+          },
+          {
+            "id": "M010-evaluating-with-bertscore-61",
+            "title": "Evaluating with BERTScore",
+            "stageIndex": 61
+          },
+          {
+            "id": "M010-deployment-getting-your-model-into-the-real-world-62",
+            "title": "Deployment: Getting Your Model Into the Real World",
+            "stageIndex": 62
+          },
+          {
+            "id": "M010-model-merging-export-from-adapter-to-production-63",
+            "title": "Model Merging & Export — From Adapter to Production",
+            "stageIndex": 63
+          },
+          {
+            "id": "M010-merging-and-exporting-a-lora-model-64",
+            "title": "Merging and Exporting a LoRA Model",
+            "stageIndex": 64
+          },
+          {
+            "id": "M010-mcq-practice-65",
+            "title": "Mcq Practice",
+            "stageIndex": 65
+          },
+          {
+            "id": "M010-cloud-fine-tuning-when-to-let-someone-else-handle-the-gpus-66",
+            "title": "Cloud Fine-Tuning — When to Let Someone Else Handle the GPUs",
+            "stageIndex": 66
+          },
+          {
+            "id": "M010-choosing-a-fine-tuning-platform-67",
+            "title": "Choosing a Fine-Tuning Platform",
+            "stageIndex": 67
+          },
+          {
+            "id": "M010-choosing-the-right-evaluation-metric-68",
+            "title": "Choosing the Right Evaluation Metric",
+            "stageIndex": 68
+          },
+          {
+            "id": "M010-mcq-practice-69",
+            "title": "Mcq Practice",
+            "stageIndex": 69
+          },
+          {
+            "id": "M010-speed-quiz-practice-70",
+            "title": "Speed Quiz Practice",
+            "stageIndex": 70
+          },
+          {
+            "id": "M010-evaluation-metrics-matching-71",
+            "title": "Evaluation Metrics Matching",
+            "stageIndex": 71
+          },
+          {
+            "id": "M010-what-are-the-three-zones-on-a-loss-curve-72",
+            "title": "What are the three zones on a loss curve",
+            "stageIndex": 72
+          },
+          {
+            "id": "M010-speed-quiz-practice-73",
+            "title": "Speed Quiz Practice",
+            "stageIndex": 73
+          }
+        ]
+      },
+      {
+        "id": "M010-phase-7",
+        "title": "Mini Project",
+        "isPhase": true,
+        "moduleId": "M010-ai-agents",
+        "children": [
+          {
+            "id": "M010-project-overview-74",
+            "title": "Project Overview",
+            "stageIndex": 74
+          },
+          {
+            "id": "M010-resources-tools-you-will-need-75",
+            "title": "Resources & Tools You Will Need",
+            "stageIndex": 75
+          },
+          {
+            "id": "M010-step-1-create-your-training-dataset-76",
+            "title": "Step 1: Create Your Training Dataset",
+            "stageIndex": 76
+          },
+          {
+            "id": "M010-step-2-configure-lora-load-the-model-77",
+            "title": "Step 2: Configure LoRA & Load the Model",
+            "stageIndex": 77
+          },
+          {
+            "id": "M010-step-3-train-your-model-78",
+            "title": "Step 3: Train Your Model",
+            "stageIndex": 78
+          },
+          {
+            "id": "M010-step-4-evaluate-submit-79",
+            "title": "Step 4: Evaluate & Submit",
+            "stageIndex": 79
+          },
+          {
+            "id": "M010-mcq-practice-80",
+            "title": "Mcq Practice",
+            "stageIndex": 80
+          }
+        ]
+      },
+      {
+        "id": "M010-phase-8",
+        "title": "Sample Project: Fine-Tune LLaMA 3.2 with Kaggle Dataset",
+        "isPhase": true,
+        "moduleId": "M010-ai-agents",
+        "children": [
+          {
+            "id": "M010-hands-on-sample-project-fine-tune-llama-32-on-a-kaggle-mental-health-faq-dataset-81",
+            "title": "Hands-On Sample Project: Fine-Tune LLaMA 3.2 on a Kaggle Mental Health FAQ Dataset",
+            "stageIndex": 81
+          },
+          {
+            "id": "M010-resources-links-82",
+            "title": "Resources & Links",
+            "stageIndex": 82
+          },
+          {
+            "id": "M010-next-steps-after-this-project-83",
+            "title": "Next Steps After This Project",
+            "stageIndex": 83
+          },
+          {
+            "id": "M010-step-1-environment-setup-library-installation-84",
+            "title": "Step 1: Environment Setup & Library Installation",
+            "stageIndex": 84
+          },
+          {
+            "id": "M010-step-2-download-llama-32-1b-from-hugging-face-85",
+            "title": "Step 2: Download LLaMA 3.2-1B from Hugging Face",
+            "stageIndex": 85
+          },
+          {
+            "id": "M010-step-3-download-prepare-the-kaggle-mental-health-faq-dataset-86",
+            "title": "Step 3: Download & Prepare the Kaggle Mental Health FAQ Dataset",
+            "stageIndex": 86
+          },
+          {
+            "id": "M010-step-4-configure-lora-training-arguments-87",
+            "title": "Step 4: Configure LoRA & Training Arguments",
+            "stageIndex": 87
+          },
+          {
+            "id": "M010-step-5-train-the-model-88",
+            "title": "Step 5: Train the Model",
+            "stageIndex": 88
+          },
+          {
+            "id": "M010-step-6-test-your-fine-tuned-model-89",
+            "title": "Step 6: Test Your Fine-Tuned Model",
+            "stageIndex": 89
+          },
+          {
+            "id": "M010-complete-project-code-copy-paste-ready-90",
+            "title": "Complete Project Code — Copy-Paste Ready",
+            "stageIndex": 90
+          },
+          {
+            "id": "M010-production-llama-32-deployment-architecture-91",
+            "title": "Production LLaMA 3.2 Deployment Architecture",
+            "stageIndex": 91
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "M011",
+    "title": "Module 11: LangChain & LangGraph",
+    "topics": [
+      {
+        "id": "M011-langchain-langgraph-phase-1-what-is-langchain",
+        "title": "What is LangChain?",
+        "isPhase": true,
+        "children": [
+          {
+            "id": "M011-langchain-langgraph-phase-1-what-is-langchain-intro",
+            "title": "What is LangChain?"
+          },
+          {
+            "id": "M011-langchain-langgraph-chatmodels-your-universal-llm-interface",
+            "title": "ChatModels: Your Universal LLM Interface"
+          },
+          {
+            "id": "M011-langchain-langgraph-switching-llm-providers",
+            "title": "Switching LLM Providers 💻"
+          },
+          {
+            "id": "M011-langchain-langgraph-the-message-system-speaking-the-llm-s-language",
+            "title": "The Message System: Speaking the LLM's Language"
+          },
+          {
+            "id": "M011-langchain-langgraph-your-first-chatmodel",
+            "title": "Your First ChatModel 💻"
+          },
+          {
+            "id": "M011-langchain-langgraph-prompttemplates-reusable-prompt-design",
+            "title": "PromptTemplates: Reusable Prompt Design"
+          },
+          {
+            "id": "M011-langchain-langgraph-building-a-chatprompttemplate",
+            "title": "Building a ChatPromptTemplate 💻"
+          },
+          {
+            "id": "M011-langchain-langgraph-template-variables",
+            "title": "Template Variables"
+          },
+          {
+            "id": "M011-langchain-langgraph-multi-turn-prompt-templates",
+            "title": "Multi-Turn Prompt Templates 💻"
+          },
+          {
+            "id": "M011-langchain-langgraph-output-parsers-getting-clean-data-from-llms",
+            "title": "Output Parsers: Getting Clean Data from LLMs"
+          },
+          {
+            "id": "M011-langchain-langgraph-using-stroutputparser",
+            "title": "Using StrOutputParser 💻"
+          },
+          {
+            "id": "M011-langchain-langgraph-pydanticoutputparser-for-type-safety",
+            "title": "PydanticOutputParser for Type Safety 💻"
+          }
+        ]
+      },
+      {
+        "id": "M011-langchain-langgraph-phase-2-lcel-the-pipe-operator-for-ai",
+        "title": "LCEL — The Pipe Operator for AI",
+        "isPhase": true,
+        "children": [
+          {
+            "id": "M011-langchain-langgraph-phase-2-lcel-the-pipe-operator-for-ai-intro",
+            "title": "LCEL — The Pipe Operator for AI"
+          },
+          {
+            "id": "M011-langchain-langgraph-the-lcel-pipeline",
+            "title": "The LCEL Pipeline"
+          },
+          {
+            "id": "M011-langchain-langgraph-building-your-first-lcel-chain",
+            "title": "Building Your First LCEL Chain 💻"
+          },
+          {
+            "id": "M011-langchain-langgraph-rag-chain-with-runnablepassthrough",
+            "title": "RAG Chain with RunnablePassthrough 💻"
+          },
+          {
+            "id": "M011-langchain-langgraph-lcel-syntax",
+            "title": "LCEL Syntax"
+          },
+          {
+            "id": "M011-langchain-langgraph-memory-making-your-chatbot-remember",
+            "title": "Memory: Making Your Chatbot Remember"
+          },
+          {
+            "id": "M011-langchain-langgraph-creating-chat-memory",
+            "title": "Creating Chat Memory 💻"
+          },
+          {
+            "id": "M011-langchain-langgraph-multi-user-session-history",
+            "title": "Multi-User Session History 💻"
+          },
+          {
+            "id": "M011-langchain-langgraph-memory-session-ids",
+            "title": "Memory Session IDs"
+          },
+          {
+            "id": "M011-langchain-langgraph-tools-giving-llms-superpowers",
+            "title": "Tools: Giving LLMs Superpowers"
+          },
+          {
+            "id": "M011-langchain-langgraph-retrievers-fetching-relevant-documents",
+            "title": "Retrievers: Fetching Relevant Documents"
+          },
+          {
+            "id": "M011-langchain-langgraph-creating-a-custom-tool",
+            "title": "Creating a Custom Tool 💻"
+          },
+          {
+            "id": "M011-langchain-langgraph-expert-concept-the-langchain-package-ecosystem",
+            "title": "Expert Concept: The LangChain Package Ecosystem"
+          },
+          {
+            "id": "M011-langchain-langgraph-langchain-architecture-overview",
+            "title": "LangChain Architecture Overview"
+          },
+          {
+            "id": "M011-langchain-langgraph-installing-langchain-packages",
+            "title": "Installing LangChain Packages"
+          }
+        ]
+      },
+      {
+        "id": "M011-langchain-langgraph-phase-3-langgraph-from-chains-to-agents",
+        "title": "LangGraph — From Chains to Agents",
+        "isPhase": true,
+        "children": [
+          {
+            "id": "M011-langchain-langgraph-phase-3-langgraph-from-chains-to-agents-intro",
+            "title": "LangGraph — From Chains to Agents"
+          },
+          {
+            "id": "M011-langchain-langgraph-chain-vs-langgraph-architecture",
+            "title": "Chain vs LangGraph Architecture"
+          },
+          {
+            "id": "M011-langchain-langgraph-state-design-the-heart-of-every-langgraph-agent",
+            "title": "State Design: The Heart of Every LangGraph Agent"
+          },
+          {
+            "id": "M011-langchain-langgraph-designing-agent-state",
+            "title": "Designing Agent State 💻"
+          },
+          {
+            "id": "M011-langchain-langgraph-writing-a-custom-reducer",
+            "title": "Writing a Custom Reducer 💻"
+          },
+          {
+            "id": "M011-langchain-langgraph-building-a-stategraph-step-by-step",
+            "title": "Building a StateGraph Step by Step"
+          },
+          {
+            "id": "M011-langchain-langgraph-building-a-simple-stategraph",
+            "title": "Building a Simple StateGraph 💻"
+          },
+          {
+            "id": "M011-langchain-langgraph-edges-routing-controlling-agent-flow",
+            "title": "Edges & Routing: Controlling Agent Flow"
+          },
+          {
+            "id": "M011-langchain-langgraph-adding-conditional-edges",
+            "title": "Adding Conditional Edges 💻"
+          },
+          {
+            "id": "M011-langchain-langgraph-building-a-router-function",
+            "title": "Building a Router Function 💻"
+          },
+          {
+            "id": "M011-langchain-langgraph-complete-agent-with-tool-loop",
+            "title": "Complete Agent with Tool Loop 💻"
+          },
+          {
+            "id": "M011-langchain-langgraph-the-tool-calling-agent-loop",
+            "title": "The Tool-Calling Agent Loop"
+          },
+          {
+            "id": "M011-langchain-langgraph-conditional-edge-wiring",
+            "title": "Conditional Edge Wiring"
+          },
+          {
+            "id": "M011-langchain-langgraph-the-easy-way-create-react-agent",
+            "title": "The Easy Way: create_react_agent"
+          },
+          {
+            "id": "M011-langchain-langgraph-building-a-react-agent",
+            "title": "Building a ReAct Agent 💻"
+          },
+          {
+            "id": "M011-langchain-langgraph-checkpointers-persistent-agent-memory",
+            "title": "Checkpointers: Persistent Agent Memory"
+          },
+          {
+            "id": "M011-langchain-langgraph-adding-memory-with-memorysaver",
+            "title": "Adding Memory with MemorySaver 💻"
+          },
+          {
+            "id": "M011-langchain-langgraph-using-thread-ids-for-conversations",
+            "title": "Using Thread IDs for Conversations 💻"
+          },
+          {
+            "id": "M011-langchain-langgraph-full-conversational-agent-with-memory",
+            "title": "Full Conversational Agent with Memory 💻"
+          },
+          {
+            "id": "M011-langchain-langgraph-streaming-real-time-agent-execution",
+            "title": "Streaming: Real-Time Agent Execution"
+          },
+          {
+            "id": "M011-langchain-langgraph-expert-concept-human-in-the-loop-safety-gates",
+            "title": "Expert Concept: Human-in-the-Loop Safety Gates"
+          },
+          {
+            "id": "M011-langchain-langgraph-streaming-a-graph-execution",
+            "title": "Streaming a Graph Execution 💻"
+          },
+          {
+            "id": "M011-langchain-langgraph-human-in-the-loop-agent",
+            "title": "Human-in-the-Loop Agent 💻"
+          },
+          {
+            "id": "M011-langchain-langgraph-resuming-after-interrupt",
+            "title": "Resuming After Interrupt"
+          },
+          {
+            "id": "M011-langchain-langgraph-multi-agent-patterns-teams-of-specialized-agents",
+            "title": "Multi-Agent Patterns: Teams of Specialized Agents"
+          },
+          {
+            "id": "M011-langchain-langgraph-building-a-supervisor-router",
+            "title": "Building a Supervisor Router 💻"
+          }
+        ]
+      },
+      {
+        "id": "M011-capstone-project",
+        "title": "Practice Project: Multi-Tool Research Agent with LangChain",
+        "isPhase": true,
+        "children": [
+          {
+            "id": "M011-capstone-project walkthrough: building the agent step by step",
+            "title": "Project Walkthrough: Building the Agent Step by Step"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "M012",
+    "title": "Module 12: AI Agents",
+    "topics": [
+      {
+        "id": "M012-ai-agents-phase-1-what-are-ai-agents",
+        "title": "What Are AI Agents?",
+        "isPhase": true,
+        "children": [
+          {
+            "id": "M012-ai-agents-phase-1-what-are-ai-agents-intro",
+            "title": "What Are AI Agents?"
+          },
+          {
+            "id": "M012-ai-agents-the-agent-loop-perceive-think-act",
+            "title": "The Agent Loop: Perceive → Think → Act"
+          },
+          {
+            "id": "M012-ai-agents-your-first-agent-loop",
+            "title": "Your First Agent Loop 💻"
+          },
+          {
+            "id": "M012-ai-agents-agent-architecture",
+            "title": "Agent Architecture"
+          },
+          {
+            "id": "M012-ai-agents-agents-vs-chatbots-vs-pipelines-when-to-use-what",
+            "title": "Agents vs. Chatbots vs. Pipelines — When to Use What"
+          },
+          {
+            "id": "M012-ai-agents-choosing-the-right-architecture",
+            "title": "Choosing the Right Architecture"
+          }
+        ]
+      },
+      {
+        "id": "M012-ai-agents-phase-2-the-react-framework-reasoning-acting",
+        "title": "The ReAct Framework — Reasoning + Acting",
+        "isPhase": true,
+        "children": [
+          {
+            "id": "M012-ai-agents-phase-2-the-react-framework-reasoning-acting-intro",
+            "title": "The ReAct Framework — Reasoning + Acting"
+          },
+          {
+            "id": "M012-ai-agents-the-react-loop-visualized",
+            "title": "The ReAct Loop Visualized"
+          },
+          {
+            "id": "M012-ai-agents-building-a-react-loop-from-scratch",
+            "title": "Building a ReAct Loop from Scratch 💻"
+          },
+          {
+            "id": "M012-ai-agents-self-correction-when-things-go-wrong",
+            "title": "Self-Correction: When Things Go Wrong"
+          },
+          {
+            "id": "M012-ai-agents-adding-error-recovery-to-your-agent",
+            "title": "Adding Error Recovery to Your Agent 💻"
+          }
+        ]
+      },
+      {
+        "id": "M012-ai-agents-phase-3-tool-calling-giving-agents-superpowers",
+        "title": "Tool Calling — Giving Agents Superpowers",
+        "isPhase": true,
+        "children": [
+          {
+            "id": "M012-ai-agents-phase-3-tool-calling-giving-agents-superpowers-intro",
+            "title": "Tool Calling — Giving Agents Superpowers"
+          },
+          {
+            "id": "M012-ai-agents-your-first-tool-calling-agent-openai",
+            "title": "Your First Tool-Calling Agent (OpenAI) 💻"
+          },
+          {
+            "id": "M012-ai-agents-defining-tool-schemas-with-json-schema",
+            "title": "Defining Tool Schemas with JSON Schema"
+          },
+          {
+            "id": "M012-ai-agents-writing-a-complete-tool-schema",
+            "title": "Writing a Complete Tool Schema 💻"
+          },
+          {
+            "id": "M012-ai-agents-the-tool-execution-pipeline",
+            "title": "The Tool Execution Pipeline"
+          },
+          {
+            "id": "M012-ai-agents-building-the-full-tool-execution-loop",
+            "title": "Building the Full Tool Execution Loop 💻"
+          },
+          {
+            "id": "M012-ai-agents-tool-calling-concepts",
+            "title": "Tool Calling Concepts"
+          },
+          {
+            "id": "M012-ai-agents-parallel-tool-calls-structured-outputs",
+            "title": "Parallel Tool Calls & Structured Outputs"
+          },
+          {
+            "id": "M012-ai-agents-handling-parallel-tool-calls",
+            "title": "Handling Parallel Tool Calls 💻"
+          },
+          {
+            "id": "M012-ai-agents-tool-calling-security",
+            "title": "Tool Calling Security"
+          }
+        ]
+      },
+      {
+        "id": "M012-ai-agents-phase-4-why-planning-matters-think-before-you-act",
+        "title": "Why Planning Matters — Think Before You Act",
+        "isPhase": true,
+        "children": [
+          {
+            "id": "M012-ai-agents-phase-4-why-planning-matters-think-before-you-act-intro",
+            "title": "Why Planning Matters — Think Before You Act"
+          },
+          {
+            "id": "M012-ai-agents-task-decomposition-breaking-big-problems-down",
+            "title": "Task Decomposition: Breaking Big Problems Down"
+          },
+          {
+            "id": "M012-ai-agents-building-a-planner-agent",
+            "title": "Building a Planner Agent 💻"
+          },
+          {
+            "id": "M012-ai-agents-the-plan-and-execute-pattern",
+            "title": "The Plan-and-Execute Pattern"
+          },
+          {
+            "id": "M012-ai-agents-building-a-plan-and-execute-agent",
+            "title": "Building a Plan-and-Execute Agent 💻"
+          },
+          {
+            "id": "M012-ai-agents-dynamic-replanning-adapting-when-plans-fail",
+            "title": "Dynamic Replanning: Adapting When Plans Fail"
+          },
+          {
+            "id": "M012-ai-agents-planning-strategy-selection",
+            "title": "Planning Strategy Selection"
+          }
+        ]
+      },
+      {
+        "id": "M012-ai-agents-phase-5-agent-frameworks-langgraph-crewai-openai-agents-sdk",
+        "title": "Agent Frameworks — LangGraph, CrewAI & OpenAI Agents SDK",
+        "isPhase": true,
+        "children": [
+          {
+            "id": "M012-ai-agents-phase-5-agent-frameworks-langgraph-crewai-openai-agents-sdk-intro",
+            "title": "Agent Frameworks — LangGraph, CrewAI & OpenAI Agents SDK"
+          },
+          {
+            "id": "M012-ai-agents-langgraph-agents-state-machines-for-ai",
+            "title": "LangGraph Agents: State Machines for AI"
+          },
+          {
+            "id": "M012-ai-agents-building-a-langgraph-react-agent",
+            "title": "Building a LangGraph ReAct Agent 💻"
+          },
+          {
+            "id": "M012-ai-agents-crewai-agents-with-roles-backstories",
+            "title": "CrewAI: Agents with Roles & Backstories"
+          },
+          {
+            "id": "M012-ai-agents-building-a-crewai-research-team",
+            "title": "Building a CrewAI Research Team 💻"
+          },
+          {
+            "id": "M012-ai-agents-openai-agents-sdk-the-simplest-path-to-agents",
+            "title": "OpenAI Agents SDK: The Simplest Path to Agents"
+          },
+          {
+            "id": "M012-ai-agents-building-an-agent-with-openai-agents-sdk",
+            "title": "Building an Agent with OpenAI Agents SDK 💻"
+          }
+        ]
+      },
+      {
+        "id": "M012-ai-agents-phase-6-multi-agent-systems-why-one-agent-isn-t-enough",
+        "title": "Multi-Agent Systems — Why One Agent Isn't Enough",
+        "isPhase": true,
+        "children": [
+          {
+            "id": "M012-ai-agents-phase-6-multi-agent-systems-why-one-agent-isn-t-enough-intro",
+            "title": "Multi-Agent Systems — Why One Agent Isn't Enough"
+          },
+          {
+            "id": "M012-ai-agents-building-a-sequential-multi-agent-pipeline",
+            "title": "Building a Sequential Multi-Agent Pipeline 💻"
+          },
+          {
+            "id": "M012-ai-agents-the-supervisor-pattern-manager-workers",
+            "title": "The Supervisor Pattern: Manager + Workers"
+          },
+          {
+            "id": "M012-ai-agents-building-a-supervisor-worker-system",
+            "title": "Building a Supervisor-Worker System 💻"
+          },
+          {
+            "id": "M012-ai-agents-the-debate-pattern-adversarial-verification",
+            "title": "The Debate Pattern: Adversarial Verification"
+          },
+          {
+            "id": "M012-ai-agents-building-a-debate-agent-system",
+            "title": "Building a Debate Agent System 💻"
+          },
+          {
+            "id": "M012-ai-agents-multi-agent-architecture-comparison",
+            "title": "Multi-Agent Architecture Comparison"
+          },
+          {
+            "id": "M012-ai-agents-agent-handoffs-communication-protocols",
+            "title": "Agent Handoffs & Communication Protocols"
+          },
+          {
+            "id": "M012-ai-agents-designing-a-multi-agent-system",
+            "title": "Designing a Multi-Agent System"
+          }
+        ]
+      },
+      {
+        "id": "M012-ai-agents-phase-7-the-four-agentic-design-patterns",
+        "title": "The Four Agentic Design Patterns",
+        "isPhase": true,
+        "children": [
+          {
+            "id": "M012-ai-agents-phase-7-the-four-agentic-design-patterns-intro",
+            "title": "The Four Agentic Design Patterns"
+          },
+          {
+            "id": "M012-ai-agents-the-reflection-pattern-self-improvement-loop",
+            "title": "The Reflection Pattern: Self-Improvement Loop"
+          },
+          {
+            "id": "M012-ai-agents-building-a-reflection-agent",
+            "title": "Building a Reflection Agent 💻"
+          },
+          {
+            "id": "M012-ai-agents-tool-use-pattern-connecting-to-the-world",
+            "title": "Tool Use Pattern: Connecting to the World"
+          },
+          {
+            "id": "M012-ai-agents-planning-pattern-strategic-execution",
+            "title": "Planning Pattern: Strategic Execution"
+          },
+          {
+            "id": "M012-ai-agents-multi-agent-pattern-divide-and-conquer",
+            "title": "Multi-Agent Pattern: Divide and Conquer"
+          },
+          {
+            "id": "M012-ai-agents-choosing-the-right-design-pattern",
+            "title": "Choosing the Right Design Pattern"
+          },
+          {
+            "id": "M012-ai-agents-design-patterns",
+            "title": "Design Patterns"
+          }
+        ]
+      },
+      {
+        "id": "M012-ai-agents-phase-8-agent-memory-from-goldfish-to-elephant",
+        "title": "Agent Memory — From Goldfish to Elephant",
+        "isPhase": true,
+        "children": [
+          {
+            "id": "M012-ai-agents-phase-8-agent-memory-from-goldfish-to-elephant-intro",
+            "title": "Agent Memory — From Goldfish to Elephant"
+          },
+          {
+            "id": "M012-ai-agents-building-short-term-memory-conversation-buffer",
+            "title": "Building Short-Term Memory (Conversation Buffer) 💻"
+          },
+          {
+            "id": "M012-ai-agents-long-term-memory-with-vector-databases",
+            "title": "Long-Term Memory with Vector Databases"
+          },
+          {
+            "id": "M012-ai-agents-building-long-term-agent-memory",
+            "title": "Building Long-Term Agent Memory 💻"
+          },
+          {
+            "id": "M012-ai-agents-episodic-semantic-memory",
+            "title": "Episodic & Semantic Memory"
+          },
+          {
+            "id": "M012-ai-agents-context-window-management-strategies",
+            "title": "Context Window Management Strategies"
+          },
+          {
+            "id": "M012-ai-agents-implementing-sliding-window-summarization-memory",
+            "title": "Implementing Sliding Window + Summarization Memory 💻"
+          }
+        ]
+      },
+      {
+        "id": "M012-ai-agents-phase-9-agent-safety-what-can-go-wrong-will-go-wrong",
+        "title": "Agent Safety — What Can Go Wrong Will Go Wrong",
+        "isPhase": true,
+        "children": [
+          {
+            "id": "M012-ai-agents-phase-9-agent-safety-what-can-go-wrong-will-go-wrong-intro",
+            "title": "Agent Safety — What Can Go Wrong Will Go Wrong"
+          },
+          {
+            "id": "M012-ai-agents-the-five-guardrails-every-agent-needs",
+            "title": "The Five Guardrails Every Agent Needs"
+          },
+          {
+            "id": "M012-ai-agents-implementing-agent-guardrails",
+            "title": "Implementing Agent Guardrails 💻"
+          },
+          {
+            "id": "M012-ai-agents-human-in-the-loop-the-ultimate-safety-net",
+            "title": "Human-in-the-Loop: The Ultimate Safety Net"
+          },
+          {
+            "id": "M012-ai-agents-building-a-human-in-the-loop-agent",
+            "title": "Building a Human-in-the-Loop Agent 💻"
+          },
+          {
+            "id": "M012-ai-agents-agent-failure-analysis-debugging",
+            "title": "Agent Failure Analysis & Debugging"
+          },
+          {
+            "id": "M012-ai-agents-agent-runaway-recovery",
+            "title": "Agent Runaway Recovery"
+          },
+          {
+            "id": "M012-ai-agents-safety-concepts",
+            "title": "Safety Concepts"
+          }
+        ]
+      },
+      {
+        "id": "M012-ai-agents-phase-10-agent-evaluation-is-your-agent-actually-good",
+        "title": "Agent Evaluation — Is Your Agent Actually Good?",
+        "isPhase": true,
+        "children": [
+          {
+            "id": "M012-ai-agents-phase-10-agent-evaluation-is-your-agent-actually-good-intro",
+            "title": "Agent Evaluation — Is Your Agent Actually Good?"
+          },
+          {
+            "id": "M012-ai-agents-the-agent-evaluation-toolkit",
+            "title": "The Agent Evaluation Toolkit"
+          },
+          {
+            "id": "M012-ai-agents-building-an-agent-evaluation-harness",
+            "title": "Building an Agent Evaluation Harness 💻"
+          },
+          {
+            "id": "M012-ai-agents-observability-seeing-inside-your-agent",
+            "title": "Observability: Seeing Inside Your Agent"
+          }
+        ]
+      },
+      {
+        "id": "M012-ai-agents-phase-11-project-research-agent-architecture",
+        "title": "Project — Research Agent Architecture",
+        "isPhase": true,
+        "children": [
+          {
+            "id": "M012-ai-agents-phase-11-project-research-agent-architecture-intro",
+            "title": "Project — Research Agent Architecture"
+          },
+          {
+            "id": "M012-ai-agents-building-a-research-agent",
+            "title": "Building a Research Agent 💻"
+          },
+          {
+            "id": "M012-ai-agents-project-stock-market-analysis-agent",
+            "title": "Project: Stock Market Analysis Agent"
+          },
+          {
+            "id": "M012-ai-agents-building-a-stock-analysis-agent",
+            "title": "Building a Stock Analysis Agent 💻"
+          },
+          {
+            "id": "M012-ai-agents-long-horizon-agent-design",
+            "title": "Long-Horizon Agent Design"
+          }
+        ]
+      },
+      {
+        "id": "M012-capstone-project",
+        "title": "Practice Project: Build an Autonomous Task Manager Agent",
+        "isPhase": true,
+        "children": [
+          {
+            "id": "M012-capstone-capstone project: build an autonomous task manager agent",
+            "title": "Practice Project: Build an Autonomous Task Manager Agent"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "M013",
+    "title": "Module 13: MCP (Model Context Protocol)",
+    "topics": [
+      {
+        "id": "M013-phase-1",
+        "title": "Introduction to MCP",
+        "isPhase": true,
+        "children": [
+          {
+            "id": "M013-mcp-what-is-the-model-context-protocol-mcp",
+            "title": "What is the Model Context Protocol (MCP)?"
+          },
+          {
+            "id": "M013-mcp-before-mcp-vs-after-mcp",
+            "title": "Before MCP vs After MCP"
+          },
+          {
+            "id": "M013-mcp-enterprise-integration-decision",
+            "title": "Enterprise Integration Decision"
+          },
+          {
+            "id": "M013-mcp-mcp-vs-traditional-apis",
+            "title": "MCP vs Traditional APIs"
+          },
+          {
+            "id": "M013-mcp-converting-a-rest-tool-to-mcp",
+            "title": "Converting a REST Tool to MCP 💻"
+          }
+        ]
+      },
+      {
+        "id": "M013-phase-2",
+        "title": "Architecture & Wire Protocol",
+        "isPhase": true,
+        "children": [
+          {
+            "id": "M013-mcp-mcp-wire-protocol",
+            "title": "MCP Wire Protocol"
+          },
+          {
+            "id": "M013-mcp-mcp-architecture-deep-dive",
+            "title": "MCP Architecture Deep Dive"
+          },
+          {
+            "id": "M013-mcp-mcp-architecture-stack",
+            "title": "MCP Architecture Stack"
+          },
+          {
+            "id": "M013-mcp-json-rpc-2-0-the-wire-protocol",
+            "title": "JSON-RPC 2.0: The Wire Protocol"
+          },
+          {
+            "id": "M013-mcp-parsing-a-json-rpc-mcp-response",
+            "title": "Parsing a JSON-RPC MCP Response 💻"
+          },
+          {
+            "id": "M013-mcp-the-mcp-lifecycle-from-connection-to-shutdown",
+            "title": "The MCP Lifecycle: From Connection to Shutdown"
+          },
+          {
+            "id": "M013-mcp-mcp-initialization",
+            "title": "MCP Initialization"
+          }
+        ]
+      },
+      {
+        "id": "M013-phase-3",
+        "title": "Building an MCP Server",
+        "isPhase": true,
+        "children": [
+          {
+            "id": "M013-mcp-building-an-mcp-server",
+            "title": "Building an MCP Server"
+          },
+          {
+            "id": "M013-mcp-creating-a-minimal-mcp-server",
+            "title": "Creating a Minimal MCP Server 💻"
+          },
+          {
+            "id": "M013-mcp-adding-tools-to-your-server",
+            "title": "Adding Tools to Your Server"
+          },
+          {
+            "id": "M013-mcp-building-a-multi-tool-mcp-server",
+            "title": "Building a Multi-Tool MCP Server 💻"
+          },
+          {
+            "id": "M013-mcp-resources-exposing-data-to-the-ai",
+            "title": "Resources: Exposing Data to the AI"
+          },
+          {
+            "id": "M013-mcp-creating-an-mcp-resource",
+            "title": "Creating an MCP Resource 💻"
+          },
+          {
+            "id": "M013-mcp-prompts-reusable-templates-for-the-ai",
+            "title": "Prompts: Reusable Templates for the AI"
+          },
+          {
+            "id": "M013-mcp-complete-mcp-server-with-tools-resources-and-prompts",
+            "title": "Complete MCP Server with Tools, Resources, and Prompts 💻"
+          }
+        ]
+      },
+      {
+        "id": "M013-phase-4",
+        "title": "Writing MCP Tools",
+        "isPhase": true,
+        "children": [
+          {
+            "id": "M013-mcp-writing-your-first-mcp-tool",
+            "title": "Writing Your First MCP Tool"
+          },
+          {
+            "id": "M013-mcp-building-a-multi-parameter-tool",
+            "title": "Building a Multi-Parameter Tool 💻"
+          },
+          {
+            "id": "M013-mcp-writing-an-async-database-tool",
+            "title": "Writing an Async Database Tool 💻"
+          },
+          {
+            "id": "M013-mcp-error-handling-in-mcp-tools",
+            "title": "Error Handling in MCP Tools"
+          },
+          {
+            "id": "M013-mcp-tool-with-input-validation",
+            "title": "Tool with Input Validation 💻"
+          },
+          {
+            "id": "M013-mcp-tool-descriptions",
+            "title": "Tool Descriptions"
+          },
+          {
+            "id": "M013-mcp-handling-invalid-llm-input",
+            "title": "Handling Invalid LLM Input"
+          }
+        ]
+      },
+      {
+        "id": "M013-phase-5",
+        "title": "Building MCP Clients",
+        "isPhase": true,
+        "children": [
+          {
+            "id": "M013-mcp-building-an-mcp-client-tool-integration",
+            "title": "Building an MCP Client & Tool Integration"
+          },
+          {
+            "id": "M013-mcp-building-a-stdio-mcp-client",
+            "title": "Building a stdio MCP Client 💻"
+          },
+          {
+            "id": "M013-mcp-multi-server-orchestration-langchain-integration",
+            "title": "Multi-Server Orchestration & LangChain Integration"
+          },
+          {
+            "id": "M013-mcp-calling-an-mcp-tool-from-client",
+            "title": "Calling an MCP Tool from Client 💻"
+          },
+          {
+            "id": "M013-mcp-langgraph-agent-with-mcp-tools",
+            "title": "LangGraph Agent with MCP Tools 💻"
+          },
+          {
+            "id": "M013-mcp-mcp-client-server-data-flow",
+            "title": "MCP Client-Server Data Flow"
+          }
+        ]
+      },
+      {
+        "id": "M013-phase-6",
+        "title": "Security & Production Best Practices",
+        "isPhase": true,
+        "children": [
+          {
+            "id": "M013-mcp-mcp-security-authentication",
+            "title": "MCP Security & Authentication"
+          },
+          {
+            "id": "M013-mcp-secure-tool-with-input-validation",
+            "title": "Secure Tool with Input Validation 💻"
+          },
+          {
+            "id": "M013-mcp-trust-boundaries-tool-isolation",
+            "title": "Trust Boundaries & Tool Isolation"
+          },
+          {
+            "id": "M013-mcp-tool-with-rate-limiting",
+            "title": "Tool with Rate Limiting 💻"
+          },
+          {
+            "id": "M013-mcp-choosing-authentication-for-remote-mcp",
+            "title": "Choosing Authentication for Remote MCP"
+          },
+          {
+            "id": "M013-mcp-trust-boundary-decision",
+            "title": "Trust Boundary Decision"
+          },
+          {
+            "id": "M013-mcp-mcp-in-production-patterns-best-practices",
+            "title": "MCP in Production: Patterns & Best Practices"
+          },
+          {
+            "id": "M013-mcp-health-check-endpoint",
+            "title": "Health Check Endpoint 💻"
+          },
+          {
+            "id": "M013-mcp-scaling-monitoring-error-design",
+            "title": "Scaling, Monitoring & Error Design"
+          },
+          {
+            "id": "M013-mcp-structured-error-response-tool",
+            "title": "Structured Error Response Tool 💻"
+          }
+        ]
+      },
+      {
+        "id": "M013-phase-7",
+        "title": "Debugging & Troubleshooting",
+        "isPhase": true,
+        "children": [
+          {
+            "id": "M013-mcp-debugging-mcp-using-the-inspector-tool",
+            "title": "Debugging MCP: Using the Inspector Tool"
+          },
+          {
+            "id": "M013-mcp-using-the-mcp-inspector-logging",
+            "title": "Using the MCP Inspector & Logging"
+          },
+          {
+            "id": "M013-mcp-adding-logging-to-an-mcp-server",
+            "title": "Adding Logging to an MCP Server 💻"
+          },
+          {
+            "id": "M013-mcp-debugging-a-broken-tool-handler",
+            "title": "Debugging a Broken Tool Handler 💻"
+          },
+          {
+            "id": "M013-mcp-debugging-tools-don-t-appear",
+            "title": "Debugging: Tools Don't Appear"
+          },
+          {
+            "id": "M013-mcp-stdio-safety-rule",
+            "title": "Stdio Safety Rule"
+          }
+        ]
+      },
+      {
+        "id": "M013-phase-8",
+        "title": "Practice Project: Build a RAG-Powered Documentation Assistant",
+        "isPhase": true,
+        "children": [
+          {
+            "id": "M013-capstone-capstone project: build a rag-powered documentation assistant",
+            "title": "Practice Project: Build a RAG-Powered Documentation Assistant"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "M014",
+    "title": "Module 14: Backend Development",
+    "topics": [
+      {
+        "id": "M014-phase-1",
+        "title": "API Fundamentals",
+        "isPhase": true,
+        "children": [
+          {
+            "id": "M014-what-is-a-server-the-restaurant-analogy--0",
+            "title": "What is a Server? (The Restaurant Analogy)"
+          },
+          {
+            "id": "M014-the-restaurant-the-internet-1",
+            "title": "The Restaurant = The Internet"
+          },
+          {
+            "id": "M014-client-server-communication-flow-2",
+            "title": "Client-Server Communication Flow"
+          },
+          {
+            "id": "M014-what-is-an-api-the-waiter-analogy--3",
+            "title": "What is an API? (The Waiter Analogy)"
+          },
+          {
+            "id": "M014-api-request-lifecycle-4",
+            "title": "API Request Lifecycle"
+          },
+          {
+            "id": "M014-http-methods-the-4-types-of-orders-5",
+            "title": "HTTP Methods — The 4 Types of Orders"
+          },
+          {
+            "id": "M014-http-methods-practice--7",
+            "title": "HTTP Methods Practice 💻"
+          },
+          {
+            "id": "M014-backend-basics-quick-review-8",
+            "title": "Backend Basics — Quick Review"
+          },
+          {
+            "id": "M014-what-is-json-how-computers-talk-to-each-other--9",
+            "title": "What is JSON? (How Computers Talk to Each Other)"
+          },
+          {
+            "id": "M014-reflect-the-client-server-model-11",
+            "title": "Reflect: The Client-Server Model"
+          }
+        ]
+      },
+      {
+        "id": "M014-phase-2",
+        "title": "FastAPI Essentials",
+        "isPhase": true,
+        "children": [
+          {
+            "id": "M014-what-is-fastapi-your-first-backend-framework-12",
+            "title": "What is FastAPI? Your First Backend Framework"
+          },
+          {
+            "id": "M014-anatomy-of-your-first-fastapi-app-13",
+            "title": "Anatomy of Your First FastAPI App"
+          },
+          {
+            "id": "M014-your-very-first-api-practice--14",
+            "title": "Your Very First API Practice 💻"
+          },
+          {
+            "id": "M014-creating-multiple-endpoints-a-bigger-menu--15",
+            "title": "Creating Multiple Endpoints (A Bigger Menu)"
+          },
+          {
+            "id": "M014-building-a-multi-endpoint-api-practice--16",
+            "title": "Building a Multi-Endpoint API Practice 💻"
+          },
+          {
+            "id": "M014-post-requests-pydantic-models-placing-an-order--17",
+            "title": "POST Requests & Pydantic Models (Placing an Order)"
+          },
+          {
+            "id": "M014-get-vs-post-the-difference-18",
+            "title": "GET vs POST — The Difference"
+          },
+          {
+            "id": "M014-understanding-pydantic-models-step-by-step-19",
+            "title": "Understanding Pydantic Models — Step by Step"
+          },
+          {
+            "id": "M014-build-your-first-ai-chat-endpoint-practice--20",
+            "title": "Build Your First AI Chat Endpoint Practice 💻"
+          },
+          {
+            "id": "M014-order-the-api-request-flow-practice--22",
+            "title": "Order the API Request Flow Practice 💻"
+          },
+          {
+            "id": "M014-custom-error-handling-in-fastapi-23",
+            "title": "Custom Error Handling in FastAPI"
+          },
+          {
+            "id": "M014-status-codes-the-server-s-mood-24",
+            "title": "Status Codes — The Server's Mood"
+          },
+          {
+            "id": "M014-debug-the-api-error-25",
+            "title": "Debug the API Error"
+          },
+          {
+            "id": "M014-async-await-handling-multiple-customers-at-once-26",
+            "title": "Async & Await — Handling Multiple Customers at Once"
+          },
+          {
+            "id": "M014-sync-vs-async-the-restaurant-example-27",
+            "title": "Sync vs Async — The Restaurant Example"
+          },
+          {
+            "id": "M014-make-it-async-practice--28",
+            "title": "Make it Async! Practice 💻"
+          },
+          {
+            "id": "M014-fastapi-vs-flask-choosing-your-tool-29",
+            "title": "FastAPI vs Flask — Choosing Your Tool"
+          }
+        ]
+      },
+      {
+        "id": "M014-phase-3",
+        "title": "Real-Time & Streaming",
+        "isPhase": true,
+        "children": [
+          {
+            "id": "M014-streaming-responses-why-ai-feels-instant-30",
+            "title": "Streaming Responses — Why AI Feels Instant"
+          },
+          {
+            "id": "M014-normal-response-vs-streaming-response-31",
+            "title": "Normal Response vs Streaming Response"
+          },
+          {
+            "id": "M014-understanding-yield-vs-return-32",
+            "title": "Understanding yield vs return"
+          },
+          {
+            "id": "M014-build-a-streaming-countdown-practice--33",
+            "title": "Build a Streaming Countdown Practice 💻"
+          },
+          {
+            "id": "M014-streaming-ai-responses-the-real-thing-34",
+            "title": "Streaming AI Responses — The Real Thing"
+          },
+          {
+            "id": "M014-websockets-real-time-two-way-chat-35",
+            "title": "WebSockets — Real-Time Two-Way Chat"
+          }
+        ]
+      },
+      {
+        "id": "M014-phase-4",
+        "title": "Security, Secrets & Tasks",
+        "isPhase": true,
+        "children": [
+          {
+            "id": "M014-authentication-locking-the-door-to-your-api-37",
+            "title": "Authentication — Locking the Door to Your API"
+          },
+          {
+            "id": "M014-jwt-json-web-tokens-how-login-works-38",
+            "title": "JWT (JSON Web Tokens) — How Login Works"
+          },
+          {
+            "id": "M014-managing-secrets-environment-variables-env--39",
+            "title": "Managing Secrets & Environment Variables (.env)"
+          },
+          {
+            "id": "M014-jwt-authentication-flow-40",
+            "title": "JWT Authentication Flow"
+          },
+          {
+            "id": "M014-build-a-protected-api-endpoint-practice--41",
+            "title": "Build a Protected API Endpoint Practice 💻"
+          },
+          {
+            "id": "M014-rate-limiting-don-t-let-anyone-bankrupt-you-42",
+            "title": "Rate Limiting — Don't Let Anyone Bankrupt You"
+          },
+          {
+            "id": "M014-the-10-000-mistake-43",
+            "title": "The $10,000 Mistake"
+          },
+          {
+            "id": "M014-middleware-the-security-guard-at-every-door-45",
+            "title": "Middleware — The Security Guard at Every Door"
+          },
+          {
+            "id": "M014-cors-connecting-your-frontend-to-your-backend-46",
+            "title": "CORS: Connecting Your Frontend to Your Backend"
+          },
+          {
+            "id": "M014-background-tasks-don-t-make-the-customer-wait-47",
+            "title": "Background Tasks — Don't Make the Customer Wait"
+          },
+          {
+            "id": "M014-background-task-lifecycle-48",
+            "title": "Background Task Lifecycle"
+          },
+          {
+            "id": "M014-build-a-background-task-system-practice--49",
+            "title": "Build a Background Task System Practice 💻"
+          }
+        ]
+      },
+      {
+        "id": "M014-phase-5",
+        "title": "Databases & Data Storage",
+        "isPhase": true,
+        "children": [
+          {
+            "id": "M014-connecting-fastapi-to-postgresql-sqlalchemy-sqlmodel--50",
+            "title": "Connecting FastAPI to PostgreSQL (SQLAlchemy & SQLModel)"
+          },
+          {
+            "id": "M014-performing-database-crud-operations-51",
+            "title": "Performing Database CRUD Operations"
+          },
+          {
+            "id": "M014-database-migrations-with-alembic-52",
+            "title": "Database Migrations with Alembic"
+          },
+          {
+            "id": "M014-redis-caching-for-ai-applications-53",
+            "title": "Redis Caching for AI Applications"
+          },
+          {
+            "id": "M014-storing-embeddings-introduction-to-vector-databases-54",
+            "title": "Storing Embeddings: Introduction to Vector Databases"
+          },
+          {
+            "id": "M014-integrating-pgvector-with-fastapi-55",
+            "title": "Integrating pgvector with FastAPI"
+          }
+        ]
+      },
+      {
+        "id": "M014-phase-6",
+        "title": "DevOps & Production",
+        "isPhase": true,
+        "children": [
+          {
+            "id": "M014-putting-it-all-together-a-complete-ai-backend-56",
+            "title": "Putting It All Together — A Complete AI Backend"
+          },
+          {
+            "id": "M014-dependency-injection-keeping-your-code-clean-57",
+            "title": "Dependency Injection — Keeping Your Code Clean"
+          },
+          {
+            "id": "M014-project-structure-organizing-a-real-application-58",
+            "title": "Project Structure — Organizing a Real Application"
+          },
+          {
+            "id": "M014-deploying-your-api-going-live--59",
+            "title": "Deploying Your API — Going Live!"
+          },
+          {
+            "id": "M014-dockerizing-your-fastapi-application-60",
+            "title": "Dockerizing Your FastAPI Application"
+          },
+          {
+            "id": "M014-writing-a-docker-compose-yml-file-61",
+            "title": "Writing a docker-compose.yml File"
+          },
+          {
+            "id": "M014-writing-api-tests-with-pytest-and-testclient-62",
+            "title": "Writing API Tests with Pytest and TestClient"
+          },
+          {
+            "id": "M014-adding-structured-logging-to-your-api-63",
+            "title": "Adding Structured Logging to Your API"
+          },
+          {
+            "id": "M014-order-the-deployment-stack-practice--65",
+            "title": "Order the Deployment Stack Practice 💻"
+          },
+          {
+            "id": "M014-backend-concepts-mastery-practice--66",
+            "title": "Backend Concepts Mastery Practice 💻"
+          },
+          {
+            "id": "M014-designing-your-ai-backend-67",
+            "title": "Designing Your AI Backend"
+          },
+          {
+            "id": "M014-backend-knowledge-recall-68",
+            "title": "Backend Knowledge Recall"
+          },
+          {
+            "id": "M014-design-your-ai-backend-69",
+            "title": "Design Your AI Backend"
+          },
+          {
+            "id": "M014-module-14-reflection-your-backend-journey-70",
+            "title": "Module 14 Reflection: Your Backend Journey"
+          }
+        ]
+      },
+      {
+        "id": "M014-phase-7",
+        "title": "Practice Project",
+        "isPhase": true,
+        "children": [
+          {
+            "id": "M014-capstone-project-production-ready-api-with-ci-cd-pipeline-71",
+            "title": "Practice Project: Production-Ready API with CI/CD Pipeline"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "M015",
+    "title": "Module 15: Databases",
+    "topics": [
+      {
+        "id": "M015-phase-1",
+        "title": "Why Do We Need Databases?",
+        "isPhase": true,
+        "moduleId": "M015-databases",
+        "children": [
+          {
+            "id": "M015-your-ai-app-has-a-memory-problem-0",
+            "title": "Your AI App Has a Memory Problem",
+            "stageIndex": 0
+          },
+          {
+            "id": "M015-the-library-analogy-how-databases-actually-work-1",
+            "title": "The Library Analogy: How Databases Actually Work",
+            "stageIndex": 1
+          },
+          {
+            "id": "M015-database-fundamentals-assessment-2",
+            "title": "Database Fundamentals Assessment",
+            "stageIndex": 2
+          },
+          {
+            "id": "M015-the-ai-application-database-stack-your-roadmap-3",
+            "title": "The AI Application Database Stack — Your Roadmap",
+            "stageIndex": 3
+          },
+          {
+            "id": "M015-choosing-where-to-store-what-4",
+            "title": "Choosing Where to Store What",
+            "stageIndex": 4
+          }
+        ]
+      },
+      {
+        "id": "M015-phase-2",
+        "title": "Relational Databases & SQL",
+        "isPhase": true,
+        "moduleId": "M015-databases",
+        "children": [
+          {
+            "id": "M015-relational-databases-the-internets-foundation-5",
+            "title": "Relational Databases — The Internet's Foundation",
+            "stageIndex": 5
+          },
+          {
+            "id": "M015-sql-the-language-every-ai-engineer-must-know-6",
+            "title": "SQL: The Language Every AI Engineer Must Know",
+            "stageIndex": 6
+          },
+          {
+            "id": "M015-basic-sql-find-pro-users-7",
+            "title": "Basic SQL: Find Pro Users 💻",
+            "stageIndex": 7
+          },
+          {
+            "id": "M015-acid-why-you-can-trust-your-database-with-money-8",
+            "title": "ACID: Why You Can Trust Your Database With Money",
+            "stageIndex": 8
+          },
+          {
+            "id": "M015-database-indexes-from-30-seconds-to-5-milliseconds-9",
+            "title": "Database Indexes: From 30 Seconds to 5 Milliseconds",
+            "stageIndex": 9
+          },
+          {
+            "id": "M015-acid-indexes-quiz-10",
+            "title": "ACID & Indexes Quiz",
+            "stageIndex": 10
+          },
+          {
+            "id": "M015-async-database-operations-dont-block-your-ai-server-11",
+            "title": "Async Database Operations — Don't Block Your AI Server",
+            "stageIndex": 11
+          },
+          {
+            "id": "M015-connection-pooling-dont-open-10000-connections-12",
+            "title": "Connection Pooling — Don't Open 10,000 Connections",
+            "stageIndex": 12
+          },
+          {
+            "id": "M015-sql-async-connection-pooling-assessment-13",
+            "title": "SQL, Async & Connection Pooling Assessment",
+            "stageIndex": 13
+          }
+        ]
+      },
+      {
+        "id": "M015-phase-3",
+        "title": "NoSQL & In-Memory Caching",
+        "isPhase": true,
+        "moduleId": "M015-databases",
+        "children": [
+          {
+            "id": "M015-nosql-databases-when-structure-gets-in-the-way-14",
+            "title": "NoSQL Databases — When Structure Gets in the Way",
+            "stageIndex": 14
+          },
+          {
+            "id": "M015-redis-the-ultra-fast-in-memory-database-15",
+            "title": "Redis: The Ultra-Fast In-Memory Database",
+            "stageIndex": 15
+          },
+          {
+            "id": "M015-semantic-caching-stop-paying-for-almost-identical-questions-16",
+            "title": "Semantic Caching — Stop Paying for 'Almost Identical' Questions",
+            "stageIndex": 16
+          },
+          {
+            "id": "M015-build-a-semantic-cache-check-17",
+            "title": "Build a Semantic Cache Check 💻",
+            "stageIndex": 17
+          },
+          {
+            "id": "M015-redis-as-your-ai-agents-short-term-memory-18",
+            "title": "Redis as Your AI Agent's Short-Term Memory",
+            "stageIndex": 18
+          },
+          {
+            "id": "M015-caching-strategy-decision-19",
+            "title": "Caching Strategy Decision",
+            "stageIndex": 19
+          },
+          {
+            "id": "M015-redis-caching-concepts-20",
+            "title": "Redis & Caching Concepts",
+            "stageIndex": 20
+          },
+          {
+            "id": "M015-nosql-redis-key-concepts-flashcards-21",
+            "title": "NoSQL & Redis Key Concepts Flashcards",
+            "stageIndex": 21
+          },
+          {
+            "id": "M015-cache-strategy-matching-22",
+            "title": "Cache Strategy Matching",
+            "stageIndex": 22
+          }
+        ]
+      },
+      {
+        "id": "M015-phase-4",
+        "title": "Vector Databases & Semantic Search",
+        "isPhase": true,
+        "moduleId": "M015-databases",
+        "children": [
+          {
+            "id": "M015-vector-databases-how-ai-searches-by-meaning-23",
+            "title": "Vector Databases — How AI Searches by Meaning",
+            "stageIndex": 23
+          },
+          {
+            "id": "M015-embeddings-teaching-computers-to-understand-meaning-24",
+            "title": "Embeddings: Teaching Computers to Understand Meaning",
+            "stageIndex": 24
+          },
+          {
+            "id": "M015-ann-search-hnsw-how-vector-dbs-handle-millions-of-vectors-25",
+            "title": "ANN Search & HNSW: How Vector DBs Handle Millions of Vectors",
+            "stageIndex": 25
+          },
+          {
+            "id": "M015-vector-quantization-storing-10-million-vectors-without-going-broke-26",
+            "title": "Vector Quantization — Storing 10 Million Vectors Without Going Broke",
+            "stageIndex": 26
+          },
+          {
+            "id": "M015-vector-search-indexing-assessment-27",
+            "title": "Vector Search & Indexing Assessment",
+            "stageIndex": 27
+          },
+          {
+            "id": "M015-building-a-rag-system-from-scratch-28",
+            "title": "Building a RAG System from Scratch",
+            "stageIndex": 28
+          },
+          {
+            "id": "M015-vector-similarity-search-with-chromadb-29",
+            "title": "Vector Similarity Search with ChromaDB 💻",
+            "stageIndex": 29
+          },
+          {
+            "id": "M015-pgvector-vector-search-inside-postgresql-30",
+            "title": "Pgvector — Vector Search Inside PostgreSQL",
+            "stageIndex": 30
+          },
+          {
+            "id": "M015-pgvector-semantic-search-query-31",
+            "title": "Pgvector: Semantic Search Query 💻",
+            "stageIndex": 31
+          },
+          {
+            "id": "M015-production-vector-databases-pinecone-qdrant-32",
+            "title": "Production Vector Databases: Pinecone & Qdrant",
+            "stageIndex": 32
+          },
+          {
+            "id": "M015-hybrid-search-when-vectors-alone-arent-enough-33",
+            "title": "Hybrid Search — When Vectors Alone Aren't Enough",
+            "stageIndex": 33
+          },
+          {
+            "id": "M015-implementing-rrf-hybrid-search-34",
+            "title": "Implementing RRF Hybrid Search 💻",
+            "stageIndex": 34
+          },
+          {
+            "id": "M015-choosing-your-vector-database-35",
+            "title": "Choosing Your Vector Database",
+            "stageIndex": 35
+          },
+          {
+            "id": "M015-multi-tenant-security-the-enterprise-requirement-that-cant-wait-36",
+            "title": "Multi-Tenant Security — The Enterprise Requirement That Can't Wait",
+            "stageIndex": 36
+          },
+          {
+            "id": "M015-multi-tenant-security-assessment-37",
+            "title": "Multi-Tenant Security Assessment",
+            "stageIndex": 37
+          },
+          {
+            "id": "M015-vector-database-feature-matching-38",
+            "title": "Vector Database Feature Matching",
+            "stageIndex": 38
+          }
+        ]
+      },
+      {
+        "id": "M015-phase-5",
+        "title": "Graph Databases & GraphRAG",
+        "isPhase": true,
+        "moduleId": "M015-databases",
+        "children": [
+          {
+            "id": "M015-graph-databases-when-relationships-are-the-data-39",
+            "title": "Graph Databases — When Relationships ARE the Data",
+            "stageIndex": 39
+          },
+          {
+            "id": "M015-graphrag-microsofts-breakthrough-for-complex-questions-40",
+            "title": "GraphRAG — Microsoft's Breakthrough for Complex Questions",
+            "stageIndex": 40
+          },
+          {
+            "id": "M015-querying-a-knowledge-graph-with-cypher-41",
+            "title": "Querying a Knowledge Graph with Cypher 💻",
+            "stageIndex": 41
+          },
+          {
+            "id": "M015-vector-rag-vs-graphrag-decision-42",
+            "title": "Vector RAG vs GraphRAG Decision",
+            "stageIndex": 42
+          },
+          {
+            "id": "M015-graph-database-assessment-43",
+            "title": "Graph Database Assessment",
+            "stageIndex": 43
+          }
+        ]
+      },
+      {
+        "id": "M015-phase-6",
+        "title": "Agentic Memory & System Architecture",
+        "isPhase": true,
+        "moduleId": "M015-databases",
+        "children": [
+          {
+            "id": "M015-the-three-tiers-of-ai-agent-memory-44",
+            "title": "The Three Tiers of AI Agent Memory",
+            "stageIndex": 44
+          },
+          {
+            "id": "M015-building-the-memory-manager-putting-all-three-together-45",
+            "title": "Building the Memory Manager — Putting All Three Together",
+            "stageIndex": 45
+          },
+          {
+            "id": "M015-implementing-a-memory-recall-function-46",
+            "title": "Implementing a Memory Recall Function 💻",
+            "stageIndex": 46
+          },
+          {
+            "id": "M015-designing-the-production-ai-chat-schema-47",
+            "title": "Designing the Production AI Chat Schema",
+            "stageIndex": 47
+          },
+          {
+            "id": "M015-choosing-the-right-database-the-complete-decision-framework-48",
+            "title": "Choosing the Right Database — The Complete Decision Framework",
+            "stageIndex": 48
+          },
+          {
+            "id": "M015-architecting-a-full-ai-application-stack-49",
+            "title": "Architecting a Full AI Application Stack",
+            "stageIndex": 49
+          },
+          {
+            "id": "M015-the-complete-ai-database-architecture-50",
+            "title": "The Complete AI Database Architecture",
+            "stageIndex": 50
+          },
+          {
+            "id": "M015-rag-pipeline-database-step-ordering-51",
+            "title": "RAG Pipeline Database Step Ordering",
+            "stageIndex": 51
+          }
+        ]
+      },
+      {
+        "id": "M015-phase-7",
+        "title": "Production Patterns & Observability",
+        "isPhase": true,
+        "moduleId": "M015-databases",
+        "children": [
+          {
+            "id": "M015-production-database-patterns-for-ai-engineers-52",
+            "title": "Production Database Patterns for AI Engineers",
+            "stageIndex": 52
+          },
+          {
+            "id": "M015-vector-database-observability-is-your-search-still-good-53",
+            "title": "Vector Database Observability — Is Your Search Still Good?",
+            "stageIndex": 53
+          },
+          {
+            "id": "M015-database-architecture-speed-quiz-54",
+            "title": "Database Architecture Speed Quiz",
+            "stageIndex": 54
+          },
+          {
+            "id": "M015-key-terms-review-flashcard-55",
+            "title": "Key Terms Review Flashcard",
+            "stageIndex": 55
+          }
+        ]
+      },
+      {
+        "id": "M015-phase-8",
+        "title": "Practice Project & Recap",
+        "isPhase": true,
+        "moduleId": "M015-databases",
+        "children": [
+          {
+            "id": "M015-capstone-project-build-a-multi-database-ai-knowledge-assistant-56",
+            "title": "Practice Project: Build a Multi-Database AI Knowledge Assistant",
+            "stageIndex": 56
+          },
+          {
+            "id": "M015-capstone-step-by-step-implementation-guide-57",
+            "title": "Practice Project: Step-by-Step Implementation Guide",
+            "stageIndex": 57
+          },
+          {
+            "id": "M015-module-recap-your-complete-database-toolkit-58",
+            "title": "Module Recap: Your Complete Database Toolkit",
+            "stageIndex": 58
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "M016",
+    "title": "Module 16: Frontend for AI Applications",
+    "topics": [
+      {
+        "id": "M016-phase-1-why-your-ai-needs-a-frontend",
+        "title": "Why Your AI Needs a Frontend",
+        "isPhase": true,
+        "children": [
+          {
+            "id": "M016-phase-1-why-your-ai-needs-a-frontend-intro",
+            "title": "Why Your AI Needs a Frontend"
+          }
+        ]
+      },
+      {
+        "id": "M016-phase-2-streamlit-from-zero-to-hero",
+        "title": "Streamlit — From Zero to Hero",
+        "isPhase": true,
+        "children": [
+          {
+            "id": "M016-phase-2-streamlit-from-zero-to-hero-intro",
+            "title": "Streamlit — From Zero to Hero"
+          },
+          {
+            "id": "M016-streamlit-layouts-and-organization",
+            "title": "Streamlit Layouts and Organization"
+          },
+          {
+            "id": "M016-streamlit-session-state-remembering-things",
+            "title": "Streamlit Session State — Remembering Things"
+          },
+          {
+            "id": "M016-building-an-ai-chat-app-with-streamlit",
+            "title": "Building an AI Chat App with Streamlit"
+          },
+          {
+            "id": "M016-advanced-streamlit-file-uploads-caching-and-multi-page-apps",
+            "title": "Advanced Streamlit: File Uploads, Caching, and Multi-Page Apps"
+          },
+          {
+            "id": "M016-streamlit-building-a-rag-document-q-a-app",
+            "title": "Streamlit: Building a RAG Document Q&A App"
+          }
+        ]
+      },
+      {
+        "id": "M016-phase-3-gradio-the-ml-demo-king",
+        "title": "Gradio — The ML Demo King",
+        "isPhase": true,
+        "children": [
+          {
+            "id": "M016-phase-3-gradio-the-ml-demo-king-intro",
+            "title": "Gradio — The ML Demo King"
+          },
+          {
+            "id": "M016-gradio-components-deep-dive",
+            "title": "Gradio Components Deep Dive"
+          },
+          {
+            "id": "M016-gradio-blocks-full-layout-control",
+            "title": "Gradio Blocks — Full Layout Control"
+          },
+          {
+            "id": "M016-building-an-ai-chatbot-with-gradio",
+            "title": "Building an AI Chatbot with Gradio"
+          },
+          {
+            "id": "M016-advanced-gradio-api-endpoints-themes-and-deployment",
+            "title": "Advanced Gradio: API Endpoints, Themes, and Deployment"
+          }
+        ]
+      },
+      {
+        "id": "M016-phase-4-streamlit-vs-gradio-when-to-use-which",
+        "title": "Streamlit vs Gradio — When to Use Which",
+        "isPhase": true,
+        "children": [
+          {
+            "id": "M016-phase-4-streamlit-vs-gradio-when-to-use-which-intro",
+            "title": "Streamlit vs Gradio — When to Use Which"
+          }
+        ]
+      },
+      {
+        "id": "M016-phase-5-introduction-to-next-js-the-production-frontend",
+        "title": "Introduction to Next.js — The Production Frontend",
+        "isPhase": true,
+        "children": [
+          {
+            "id": "M016-phase-5-introduction-to-next-js-the-production-frontend-intro",
+            "title": "Introduction to Next.js — The Production Frontend"
+          },
+          {
+            "id": "M016-the-vercel-ai-sdk-and-react-patterns-for-ai",
+            "title": "The Vercel AI SDK and React Patterns for AI"
+          }
+        ]
+      },
+      {
+        "id": "M016-capstone-project-build-a-multi-tool-ai-dashboard",
+        "title": "Practice Project: Build a Multi-Tool AI Dashboard",
+        "isPhase": true,
+        "children": [
+          {
+            "id": "M016-capstone-project-build-a-multi-tool-ai-dashboard-intro",
+            "title": "Practice Project: Build a Multi-Tool AI Dashboard"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "M017",
+    "title": "Module 17: LLMOps",
+    "topics": [
+      {
+        "id": "M017-llmops-what-is-llmops",
+        "title": "What is LLMOps? (From Prototype to Production)",
+        "isPhase": true,
+        "children": [
+          {
+            "id": "M017-llmops-what-is-llmops-intro",
+            "title": "What is LLMOps? (From Prototype to Production)",
+            "stageIndex": 0
+          },
+          {
+            "id": "M017-llmops-what-is-llmops-flashcard",
+            "title": "LLMOps Foundations",
+            "stageIndex": 1
+          },
+          {
+            "id": "M017-llmops-what-is-llmops-mcq",
+            "title": "LLMOps Core Concepts",
+            "stageIndex": 2
+          }
+        ]
+      },
+      {
+        "id": "M017-llmops-evaluation",
+        "title": "Evaluation — How Do You Know If Your LLM Is Good?",
+        "isPhase": true,
+        "children": [
+          {
+            "id": "M017-llmops-evaluation-intro",
+            "title": "Evaluation — How Do You Know If Your LLM Is Good?",
+            "stageIndex": 3
+          },
+          {
+            "id": "M017-llmops-evaluation-three-types",
+            "title": "The Three Types of LLM Evaluation",
+            "stageIndex": 4
+          },
+          {
+            "id": "M017-llmops-evaluation-frameworks",
+            "title": "Evaluation Frameworks — DeepEval, Ragas, and LangSmith",
+            "stageIndex": 5
+          },
+          {
+            "id": "M017-llmops-evaluation-code-deepeval",
+            "title": "Write an LLM Evaluation Test with DeepEval",
+            "stageIndex": 6
+          },
+          {
+            "id": "M017-llmops-evaluation-rag-triad",
+            "title": "RAG Triad Evaluation (Faithfulness, Answer & Context Relevance)",
+            "stageIndex": 7
+          },
+          {
+            "id": "M017-llmops-evaluation-code-ragas",
+            "title": "Implementing RAG Triad with Ragas",
+            "stageIndex": 8
+          },
+          {
+            "id": "M017-llmops-evaluation-visual",
+            "title": "The LLM Evaluation Pipeline",
+            "stageIndex": 9
+          },
+          {
+            "id": "M017-llmops-evaluation-scenario",
+            "title": "Choosing the Right Evaluation Metric",
+            "stageIndex": 10
+          },
+          {
+            "id": "M017-llmops-evaluation-speed",
+            "title": "Evaluation Concepts Speed Round",
+            "stageIndex": 11
+          }
+        ]
+      },
+      {
+        "id": "M017-llmops-cicd-evals",
+        "title": "Automated Evals in CI/CD & Human Feedback",
+        "isPhase": true,
+        "children": [
+          {
+            "id": "M017-llmops-cicd-evals-intro",
+            "title": "Automated Evals in CI/CD Pipelines (GitHub Actions)",
+            "stageIndex": 12
+          },
+          {
+            "id": "M017-llmops-cicd-evals-code",
+            "title": "Building a GitHub Actions Eval Workflow",
+            "stageIndex": 13
+          },
+          {
+            "id": "M017-llmops-cicd-hitl",
+            "title": "Human-in-the-Loop (HITL) Feedback & Annotation Workflows",
+            "stageIndex": 14
+          },
+          {
+            "id": "M017-llmops-cicd-mcq",
+            "title": "CI/CD & Human Feedback Concepts",
+            "stageIndex": 15
+          }
+        ]
+      },
+      {
+        "id": "M017-llmops-guardrails",
+        "title": "Guardrails, Privacy & Data Protection",
+        "isPhase": true,
+        "children": [
+          {
+            "id": "M017-llmops-guardrails-intro",
+            "title": "Guardrails — Keeping LLMs From Going Off the Rails",
+            "stageIndex": 16
+          },
+          {
+            "id": "M017-llmops-guardrails-code",
+            "title": "Building Input & Output Guardrails",
+            "stageIndex": 17
+          },
+          {
+            "id": "M017-llmops-guardrails-scenario",
+            "title": "The Customer Support Bot Gone Wrong",
+            "stageIndex": 18
+          },
+          {
+            "id": "M017-llmops-guardrails-nemo",
+            "title": "NeMo Guardrails & Programmable Colang Rules",
+            "stageIndex": 19
+          },
+          {
+            "id": "M017-llmops-guardrails-nemo-code",
+            "title": "Writing NeMo Guardrails with Colang 2.0",
+            "stageIndex": 20
+          },
+          {
+            "id": "M017-llmops-guardrails-pii",
+            "title": "PII Masking & Data Loss Prevention (Microsoft Presidio)",
+            "stageIndex": 21
+          },
+          {
+            "id": "M017-llmops-guardrails-pii-code",
+            "title": "Building a PII Masking Pipeline with Presidio",
+            "stageIndex": 22
+          },
+          {
+            "id": "M017-llmops-guardrails-mcq",
+            "title": "Guardrails & Privacy Concepts",
+            "stageIndex": 23
+          }
+        ]
+      },
+      {
+        "id": "M017-llmops-observability",
+        "title": "Observability — Seeing Inside Your AI Pipeline",
+        "isPhase": true,
+        "children": [
+          {
+            "id": "M017-llmops-observability-intro",
+            "title": "Observability — Seeing Inside Your AI Pipeline",
+            "stageIndex": 24
+          },
+          {
+            "id": "M017-llmops-observability-visual",
+            "title": "The LLMOps Observability Stack",
+            "stageIndex": 25
+          },
+          {
+            "id": "M017-llmops-observability-code",
+            "title": "Setting Up LangSmith Tracing",
+            "stageIndex": 26
+          },
+          {
+            "id": "M017-llmops-observability-mcq",
+            "title": "Observability Concepts",
+            "stageIndex": 27
+          }
+        ]
+      },
+      {
+        "id": "M017-llmops-prompt-management",
+        "title": "Prompt Management & A/B Testing",
+        "isPhase": true,
+        "children": [
+          {
+            "id": "M017-llmops-prompt-mgmt-intro",
+            "title": "Prompt Management — Treating Prompts Like Code",
+            "stageIndex": 28
+          },
+          {
+            "id": "M017-llmops-prompt-mgmt-fill",
+            "title": "Prompt Deployment Strategies",
+            "stageIndex": 29
+          },
+          {
+            "id": "M017-llmops-prompt-mgmt-scenario",
+            "title": "The Prompt Deployment Decision",
+            "stageIndex": 30
+          },
+          {
+            "id": "M017-llmops-prompt-mgmt-ab",
+            "title": "A/B Testing & Shadow Deployments for Prompts & Models",
+            "stageIndex": 31
+          },
+          {
+            "id": "M017-llmops-prompt-mgmt-ab-code",
+            "title": "Building a Prompt A/B Testing Framework",
+            "stageIndex": 32
+          },
+          {
+            "id": "M017-llmops-prompt-mgmt-mcq",
+            "title": "Prompt Management & A/B Testing Concepts",
+            "stageIndex": 33
+          }
+        ]
+      },
+      {
+        "id": "M017-llmops-dspy",
+        "title": "DSPy — Replacing Prompt Engineering with Programming",
+        "isPhase": true,
+        "children": [
+          {
+            "id": "M017-llmops-dspy-intro",
+            "title": "DSPy — Replacing Prompt Engineering with Programming",
+            "stageIndex": 34
+          },
+          {
+            "id": "M017-llmops-dspy-code",
+            "title": "Building a DSPy Signature & Module",
+            "stageIndex": 35
+          },
+          {
+            "id": "M017-llmops-dspy-mcq",
+            "title": "DSPy Concepts",
+            "stageIndex": 36
+          }
+        ]
+      },
+      {
+        "id": "M017-llmops-security",
+        "title": "LLM Security & Red Teaming",
+        "isPhase": true,
+        "children": [
+          {
+            "id": "M017-llmops-security-intro",
+            "title": "LLM Security — OWASP Top 10 for LLMs",
+            "stageIndex": 37
+          },
+          {
+            "id": "M017-llmops-security-scenario",
+            "title": "Securing Your Agent from Indirect Prompt Injection",
+            "stageIndex": 38
+          },
+          {
+            "id": "M017-llmops-security-redteam",
+            "title": "Automated Red Teaming & Vulnerability Scanning (Garak)",
+            "stageIndex": 39
+          },
+          {
+            "id": "M017-llmops-security-redteam-code",
+            "title": "Running Garak Against Your LLM Endpoint",
+            "stageIndex": 40
+          },
+          {
+            "id": "M017-llmops-security-mcq",
+            "title": "LLM Security Concepts",
+            "stageIndex": 41
+          }
+        ]
+      },
+      {
+        "id": "M017-llmops-cost",
+        "title": "Cost Optimization, AI Gateways & Semantic Caching",
+        "isPhase": true,
+        "children": [
+          {
+            "id": "M017-llmops-cost-intro",
+            "title": "Cost Optimization — Cutting LLM Costs by 80%",
+            "stageIndex": 42
+          },
+          {
+            "id": "M017-llmops-cost-gateways",
+            "title": "Unified AI Gateways (LiteLLM / Portkey) for Multi-Provider Routing",
+            "stageIndex": 43
+          },
+          {
+            "id": "M017-llmops-cost-gateways-code",
+            "title": "Setting Up LiteLLM as a Unified Gateway",
+            "stageIndex": 44
+          },
+          {
+            "id": "M017-llmops-cost-caching",
+            "title": "Production Semantic Caching with Redis for 0ms Responses",
+            "stageIndex": 45
+          },
+          {
+            "id": "M017-llmops-cost-caching-code",
+            "title": "Building a Semantic Cache with Redis",
+            "stageIndex": 46
+          },
+          {
+            "id": "M017-llmops-cost-routing",
+            "title": "Dynamic Model Routing (Tiered Cost Optimization)",
+            "stageIndex": 47
+          },
+          {
+            "id": "M017-llmops-cost-routing-code",
+            "title": "Building a Smart Model Router",
+            "stageIndex": 48
+          },
+          {
+            "id": "M017-llmops-cost-scenario",
+            "title": "Choosing a Cost Optimization Strategy",
+            "stageIndex": 49
+          },
+          {
+            "id": "M017-llmops-cost-speed",
+            "title": "Cost Optimization Speed Round",
+            "stageIndex": 50
+          }
+        ]
+      },
+      {
+        "id": "M017-llmops-serving",
+        "title": "LLM Serving, Quantization & High-Performance Inference",
+        "isPhase": true,
+        "children": [
+          {
+            "id": "M017-llmops-serving-intro",
+            "title": "LLM Serving Infrastructure — Self-Hosting vs API",
+            "stageIndex": 51
+          },
+          {
+            "id": "M017-llmops-serving-vllm",
+            "title": "vLLM & PagedAttention Architecture for High-Throughput Inference",
+            "stageIndex": 52
+          },
+          {
+            "id": "M017-llmops-serving-vllm-code",
+            "title": "Deploying a Model with vLLM",
+            "stageIndex": 53
+          },
+          {
+            "id": "M017-llmops-serving-quantization",
+            "title": "Production Model Quantization (AWQ, GGUF, GPTQ)",
+            "stageIndex": 54
+          },
+          {
+            "id": "M017-llmops-serving-quantization-code",
+            "title": "Quantizing a Model to GGUF Format",
+            "stageIndex": 55
+          },
+          {
+            "id": "M017-llmops-serving-speculative",
+            "title": "Speculative Decoding for Accelerated Generation",
+            "stageIndex": 56
+          },
+          {
+            "id": "M017-llmops-serving-gpu-code",
+            "title": "LLM GPU Memory Estimator",
+            "stageIndex": 57
+          },
+          {
+            "id": "M017-llmops-serving-dragdrop",
+            "title": "Match Serving Approach to Use Case",
+            "stageIndex": 58
+          },
+          {
+            "id": "M017-llmops-serving-mcq",
+            "title": "LLM Serving Concepts",
+            "stageIndex": 59
+          }
+        ]
+      },
+      {
+        "id": "M017-llmops-flywheel",
+        "title": "The Data Flywheel & Fine-Tuning Pipelines",
+        "isPhase": true,
+        "children": [
+          {
+            "id": "M017-llmops-flywheel-intro",
+            "title": "The Data Flywheel & Fine-Tuning Pipelines",
+            "stageIndex": 60
+          },
+          {
+            "id": "M017-llmops-flywheel-speed",
+            "title": "Data Flywheel Speed Round",
+            "stageIndex": 61
+          }
+        ]
+      },
+      {
+        "id": "M017-llmops-resilience",
+        "title": "Production Resilience & Module Review",
+        "isPhase": true,
+        "children": [
+          {
+            "id": "M017-llmops-resilience-intro",
+            "title": "Production Resilience — When Things Go Wrong",
+            "stageIndex": 62
+          },
+          {
+            "id": "M017-llmops-resilience-code",
+            "title": "Build an LLM-as-Judge Evaluator",
+            "stageIndex": 63
+          },
+          {
+            "id": "M017-llmops-resilience-reorder",
+            "title": "Order the LLMOps Deployment Pipeline",
+            "stageIndex": 64
+          },
+          {
+            "id": "M017-llmops-resilience-fill",
+            "title": "LLMOps Concepts Mastery",
+            "stageIndex": 65
+          },
+          {
+            "id": "M017-llmops-resilience-speed",
+            "title": "Production Resilience Speed Round",
+            "stageIndex": 66
+          },
+          {
+            "id": "M017-llmops-resilience-flashcard",
+            "title": "Production Resilience & Review",
+            "stageIndex": 67
+          }
+        ]
+      },
+      {
+        "id": "M017-Practice Project-project",
+        "title": "Practice Project: End-to-End LLMOps Pipeline",
+        "isPhase": true,
+        "children": [
+          {
+            "id": "M017-llmops-project",
+            "title": "Practice Project: End-to-End LLMOps Pipeline",
+            "stageIndex": 68
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "M018",
+    "title": "Module 18: Production AI System Design",
+    "topics": [
+      {
+        "id": "M018-production-architecture-phase",
+        "title": "Production Architecture & Fundamentals",
+        "isPhase": true,
+        "children": [
+          {
+            "id": "M018-production-system-design-what-does-production-actually-mean",
+            "title": "What Does 'Production' Actually Mean?"
+          },
+          {
+            "id": "M018-production-system-design-the-6-layer-reference-architecture",
+            "title": "The 6-Layer Reference Architecture"
+          },
+          {
+            "id": "M018-production-system-design-production-ai-system-architecture",
+            "title": "Production AI System Architecture"
+          },
+          {
+            "id": "M018-production-system-design-your-first-production-ready-setup",
+            "title": "Your First Production-Ready Setup"
+          },
+          {
+            "id": "M018-production-system-design-production-fastapi-skeleton",
+            "title": "Production FastAPI Skeleton 💻"
+          },
+          {
+            "id": "M018-production-system-design-environment-variables",
+            "title": "Environment Variables"
+          }
+        ]
+      },
+      {
+        "id": "M018-api-gateways-phase",
+        "title": "API Gateways & Rate Limiting",
+        "isPhase": true,
+        "children": [
+          {
+            "id": "M018-production-system-design-api-gateways-the-bouncer-of-your-system",
+            "title": "API Gateways: The Bouncer of Your System"
+          },
+          {
+            "id": "M018-production-system-design-api-gateway-request-flow",
+            "title": "API Gateway Request Flow"
+          },
+          {
+            "id": "M018-production-system-design-simple-rate-limiter",
+            "title": "Simple Rate Limiter 💻"
+          }
+        ]
+      },
+      {
+        "id": "M018-caching-phase",
+        "title": "Caching & Semantic Caching",
+        "isPhase": true,
+        "children": [
+          {
+            "id": "M018-production-system-design-caching-the-1-cost-saver",
+            "title": "Caching: The #1 Cost Saver"
+          },
+          {
+            "id": "M018-production-system-design-multi-layer-caching-architecture",
+            "title": "Multi-Layer Caching Architecture"
+          },
+          {
+            "id": "M018-production-system-design-semantic-cache-implementation",
+            "title": "Semantic Cache Implementation 💻"
+          }
+        ]
+      },
+      {
+        "id": "M018-model-routing-phase",
+        "title": "Model Routing & Traffic Control",
+        "isPhase": true,
+        "children": [
+          {
+            "id": "M018-production-system-design-model-routing-the-smart-traffic-director",
+            "title": "Model Routing: The Smart Traffic Director"
+          },
+          {
+            "id": "M018-production-system-design-single-model-vs-smart-router",
+            "title": "Single Model vs Smart Router"
+          },
+          {
+            "id": "M018-production-system-design-build-a-model-router",
+            "title": "Build a Model Router 💻"
+          },
+          {
+            "id": "M018-production-system-design-model-routing-decision",
+            "title": "Model Routing Decision"
+          }
+        ]
+      },
+      {
+        "id": "M018-ai-security-phase",
+        "title": "AI Security & Guardrails",
+        "isPhase": true,
+        "children": [
+          {
+            "id": "M018-production-system-design-ai-security-threats-you-must-know",
+            "title": "AI Security: Threats You Must Know"
+          },
+          {
+            "id": "M018-production-system-design-pii-redactor",
+            "title": "PII Redactor 💻"
+          },
+          {
+            "id": "M018-production-system-design-security-architecture-decision",
+            "title": "Security Architecture Decision"
+          }
+        ]
+      },
+      {
+        "id": "M018-reliability-phase",
+        "title": "Reliability & Circuit Breakers",
+        "isPhase": true,
+        "children": [
+          {
+            "id": "M018-production-system-design-reliability-designing-for-failure",
+            "title": "Reliability: Designing for Failure"
+          },
+          {
+            "id": "M018-production-system-design-circuit-breaker-state-machine",
+            "title": "Circuit Breaker State Machine"
+          },
+          {
+            "id": "M018-production-system-design-circuit-breaker-implementation",
+            "title": "Circuit Breaker Implementation 💻"
+          }
+        ]
+      },
+      {
+        "id": "M018-cost-batching-phase",
+        "title": "Cost Engineering & Batch Processing",
+        "isPhase": true,
+        "children": [
+          {
+            "id": "M018-production-system-design-cost-engineering-every-dollar-counts",
+            "title": "Cost Engineering: Every Dollar Counts"
+          },
+          {
+            "id": "M018-production-system-design-cost-tracker",
+            "title": "Cost Tracker 💻"
+          },
+          {
+            "id": "M018-production-system-design-batch-processing",
+            "title": "Batch Processing"
+          }
+        ]
+      },
+      {
+        "id": "M018-scaling-enterprise-phase",
+        "title": "Scaling & Enterprise GenAI Platform",
+        "isPhase": true,
+        "children": [
+          {
+            "id": "M018-production-system-design-scaling-from-10-to-1-000-000-users",
+            "title": "Scaling: From 10 to 1,000,000 Users"
+          },
+          {
+            "id": "M018-production-system-design-the-scaling-journey",
+            "title": "The Scaling Journey"
+          },
+          {
+            "id": "M018-production-system-design-ai-gateways-your-llm-traffic-controller",
+            "title": "AI Gateways: Your LLM Traffic Controller"
+          },
+          {
+            "id": "M018-production-system-design-ai-gateway-architecture",
+            "title": "AI Gateway Architecture"
+          },
+          {
+            "id": "M018-production-system-design-the-enterprise-genai-platform",
+            "title": "The Enterprise GenAI Platform"
+          },
+          {
+            "id": "M018-production-system-design-enterprise-architecture-decision",
+            "title": "Enterprise Architecture Decision"
+          }
+        ]
+      },
+      {
+        "id": "M018-capstone-project",
+        "title": "Practice Project: Full-Stack AI Chat Application",
+        "isPhase": true,
+        "children": [
+          {
+            "id": "M018-capstone-capstone project: full-stack ai chat application",
+            "title": "Practice Project: Full-Stack AI Chat Application"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "M019",
+    "title": "Module 19: Cloud & Deployment",
+    "topics": [
+      {
+        "id": "M019-phase-1",
+        "title": "Containers & Docker for AI Applications",
+        "isPhase": true,
+        "moduleId": "M019-cloud-deployment",
+        "children": [
+          {
+            "id": "M019-why-deployment-matters-from-code-to-users-0",
+            "title": "Why Deployment Matters: From Code to Users",
+            "stageIndex": 0
+          },
+          {
+            "id": "M019-environment-variables-secrets-management-1",
+            "title": "Environment Variables & Secrets Management",
+            "stageIndex": 1
+          },
+          {
+            "id": "M019-mcq-practice-2",
+            "title": "MCQ Practice",
+            "stageIndex": 2
+          },
+          {
+            "id": "M019-what-is-docker-the-container-revolution-3",
+            "title": "What is Docker? The Container Revolution",
+            "stageIndex": 3
+          },
+          {
+            "id": "M019-docker-workflow-from-code-to-container-4",
+            "title": "Docker Workflow: From Code to Container",
+            "stageIndex": 4
+          },
+          {
+            "id": "M019-writing-dockerfiles-for-ai-applications-5",
+            "title": "Writing Dockerfiles for AI Applications",
+            "stageIndex": 5
+          },
+          {
+            "id": "M019-write-a-dockerfile-for-a-fastapi-ai-app-6",
+            "title": "Write a Dockerfile for a FastAPI AI App",
+            "stageIndex": 6
+          },
+          {
+            "id": "M019-dockerfile-command-knowledge-7",
+            "title": "Dockerfile Command Knowledge",
+            "stageIndex": 7
+          },
+          {
+            "id": "M019-multi-stage-builds-cuda-optimization-for-ai-8",
+            "title": "Multi-Stage Builds & CUDA Optimization for AI",
+            "stageIndex": 8
+          },
+          {
+            "id": "M019-optimize-an-ai-container-image-9",
+            "title": "Optimize an AI Container Image",
+            "stageIndex": 9
+          },
+          {
+            "id": "M019-docker-compose-running-multi-container-ai-stacks-10",
+            "title": "Docker Compose: Running Multi-Container AI Stacks",
+            "stageIndex": 10
+          },
+          {
+            "id": "M019-write-a-docker-compose-for-an-ai-stack-11",
+            "title": "Write a Docker Compose for an AI Stack",
+            "stageIndex": 11
+          },
+          {
+            "id": "M019-mcq-practice-12",
+            "title": "MCQ Practice",
+            "stageIndex": 12
+          },
+          {
+            "id": "M019-docker-strategy-decision-13",
+            "title": "Docker Strategy Decision",
+            "stageIndex": 13
+          },
+          {
+            "id": "M019-docker-concepts-matching-14",
+            "title": "Docker Concepts Matching",
+            "stageIndex": 14
+          }
+        ]
+      },
+      {
+        "id": "M019-phase-2",
+        "title": "Kubernetes & Container Orchestration",
+        "isPhase": true,
+        "moduleId": "M019-cloud-deployment",
+        "children": [
+          {
+            "id": "M019-what-is-kubernetes-container-orchestration-explained-15",
+            "title": "What is Kubernetes? Container Orchestration Explained",
+            "stageIndex": 15
+          },
+          {
+            "id": "M019-kubernetes-architecture-how-it-all-connects-16",
+            "title": "Kubernetes Architecture: How It All Connects",
+            "stageIndex": 16
+          },
+          {
+            "id": "M019-kubernetes-core-primitives-pods-deployments-services-17",
+            "title": "Kubernetes Core Primitives: Pods, Deployments & Services",
+            "stageIndex": 17
+          },
+          {
+            "id": "M019-horizontal-pod-autoscaling-scaling-ai-on-demand-18",
+            "title": "Horizontal Pod Autoscaling: Scaling AI on Demand",
+            "stageIndex": 18
+          },
+          {
+            "id": "M019-write-a-kubernetes-deployment-manifest-19",
+            "title": "Write a Kubernetes Deployment Manifest",
+            "stageIndex": 19
+          },
+          {
+            "id": "M019-kubernetes-primitives-knowledge-20",
+            "title": "Kubernetes Primitives Knowledge",
+            "stageIndex": 20
+          },
+          {
+            "id": "M019-mcq-practice-21",
+            "title": "MCQ Practice",
+            "stageIndex": 21
+          },
+          {
+            "id": "M019-ai-application-scaling-decision-22",
+            "title": "AI Application Scaling Decision",
+            "stageIndex": 22
+          },
+          {
+            "id": "M019-helm-charts-gitops-for-ai-deployments-23",
+            "title": "Helm Charts & GitOps for AI Deployments",
+            "stageIndex": 23
+          },
+          {
+            "id": "M019-kubernetes-speed-quiz-24",
+            "title": "Kubernetes Speed Quiz",
+            "stageIndex": 24
+          },
+          {
+            "id": "M019-kubernetes-components-matching-25",
+            "title": "Kubernetes Components Matching",
+            "stageIndex": 25
+          }
+        ]
+      },
+      {
+        "id": "M019-phase-3",
+        "title": "LLM Serving & Serverless GPUs",
+        "isPhase": true,
+        "moduleId": "M019-cloud-deployment",
+        "children": [
+          {
+            "id": "M019-production-llm-serving-vllm-continuous-batching-26",
+            "title": "Production LLM Serving: vLLM & Continuous Batching",
+            "stageIndex": 26
+          },
+          {
+            "id": "M019-vram-math-kv-cache-pagedattention-27",
+            "title": "VRAM Math, KV Cache & PagedAttention",
+            "stageIndex": 27
+          },
+          {
+            "id": "M019-configure-vllm-for-production-serving-28",
+            "title": "Configure vLLM for Production Serving",
+            "stageIndex": 28
+          },
+          {
+            "id": "M019-mcq-practice-29",
+            "title": "MCQ Practice",
+            "stageIndex": 29
+          },
+          {
+            "id": "M019-serverless-gpu-endpoints-modal-labs-runpod-30",
+            "title": "Serverless GPU Endpoints: Modal Labs & RunPod",
+            "stageIndex": 30
+          },
+          {
+            "id": "M019-deploy-an-ai-model-on-modal-labs-31",
+            "title": "Deploy an AI Model on Modal Labs",
+            "stageIndex": 31
+          },
+          {
+            "id": "M019-self-hosting-vs-managed-cloud-inference-32",
+            "title": "Self-Hosting vs Managed Cloud Inference",
+            "stageIndex": 32
+          },
+          {
+            "id": "M019-inference-architecture-decision-33",
+            "title": "Inference Architecture Decision",
+            "stageIndex": 33
+          },
+          {
+            "id": "M019-model-quantization-for-deployment-gguf-gptq-awq-34",
+            "title": "Model Quantization for Deployment: GGUF, GPTQ & AWQ",
+            "stageIndex": 34
+          },
+          {
+            "id": "M019-serve-a-quantized-model-with-ollama-35",
+            "title": "Serve a Quantized Model with Ollama",
+            "stageIndex": 35
+          },
+          {
+            "id": "M019-mcq-practice-36",
+            "title": "MCQ Practice",
+            "stageIndex": 36
+          },
+          {
+            "id": "M019-llm-serving-deployment-speed-quiz-37",
+            "title": "LLM Serving & Deployment Speed Quiz",
+            "stageIndex": 37
+          },
+          {
+            "id": "M019-llm-serving-approaches-matching-38",
+            "title": "LLM Serving Approaches Matching",
+            "stageIndex": 38
+          }
+        ]
+      },
+      {
+        "id": "M019-phase-4",
+        "title": "Cloud, AI Gateways & Vector DBs",
+        "isPhase": true,
+        "moduleId": "M019-cloud-deployment",
+        "children": [
+          {
+            "id": "M019-cloud-ai-infrastructure-aws-gcp-azure-39",
+            "title": "Cloud AI Infrastructure: AWS, GCP & Azure",
+            "stageIndex": 39
+          },
+          {
+            "id": "M019-cloud-provider-decision-40",
+            "title": "Cloud Provider Decision",
+            "stageIndex": 40
+          },
+          {
+            "id": "M019-aws-for-ai-ecs-bedrock-sagemaker-deep-dive-41",
+            "title": "AWS for AI: ECS, Bedrock & SageMaker Deep Dive",
+            "stageIndex": 41
+          },
+          {
+            "id": "M019-deploying-production-vector-databases-42",
+            "title": "Deploying Production Vector Databases",
+            "stageIndex": 42
+          },
+          {
+            "id": "M019-deploy-qdrant-with-docker-compose-43",
+            "title": "Deploy Qdrant with Docker Compose",
+            "stageIndex": 43
+          },
+          {
+            "id": "M019-mcq-practice-44",
+            "title": "MCQ Practice",
+            "stageIndex": 44
+          },
+          {
+            "id": "M019-ai-gateways-litellm-portkey-model-routing-45",
+            "title": "AI Gateways: LiteLLM, Portkey & Model Routing",
+            "stageIndex": 45
+          },
+          {
+            "id": "M019-configure-litellm-for-multi-provider-routing-46",
+            "title": "Configure LiteLLM for Multi-Provider Routing",
+            "stageIndex": 46
+          },
+          {
+            "id": "M019-security-api-keys-tls-rate-limiting-in-production-47",
+            "title": "Security: API Keys, TLS & Rate Limiting in Production",
+            "stageIndex": 47
+          },
+          {
+            "id": "M019-implement-api-key-authentication-48",
+            "title": "Implement API Key Authentication",
+            "stageIndex": 48
+          },
+          {
+            "id": "M019-cloud-security-fundamentals-49",
+            "title": "Cloud Security Fundamentals",
+            "stageIndex": 49
+          },
+          {
+            "id": "M019-mcq-practice-50",
+            "title": "MCQ Practice",
+            "stageIndex": 50
+          },
+          {
+            "id": "M019-security-architecture-decision-51",
+            "title": "Security Architecture Decision",
+            "stageIndex": 51
+          }
+        ]
+      },
+      {
+        "id": "M019-phase-5",
+        "title": "CI/CD & Observability",
+        "isPhase": true,
+        "moduleId": "M019-cloud-deployment",
+        "children": [
+          {
+            "id": "M019-ci-cd-for-ai-systems-automating-everything-52",
+            "title": "CI/CD for AI Systems: Automating Everything",
+            "stageIndex": 52
+          },
+          {
+            "id": "M019-write-a-github-actions-workflow-53",
+            "title": "Write a GitHub Actions Workflow",
+            "stageIndex": 53
+          },
+          {
+            "id": "M019-automated-ai-evaluations-in-ci-cd-54",
+            "title": "Automated AI Evaluations in CI/CD",
+            "stageIndex": 54
+          },
+          {
+            "id": "M019-write-a-deepeval-test-for-rag-faithfulness-55",
+            "title": "Write a DeepEval Test for RAG Faithfulness",
+            "stageIndex": 55
+          },
+          {
+            "id": "M019-mcq-practice-56",
+            "title": "MCQ Practice",
+            "stageIndex": 56
+          },
+          {
+            "id": "M019-monitoring-observability-keeping-your-ai-alive-57",
+            "title": "Monitoring & Observability: Keeping Your AI Alive",
+            "stageIndex": 57
+          },
+          {
+            "id": "M019-ai-specific-metrics-latency-token-costs-quality-58",
+            "title": "AI-Specific Metrics: Latency, Token Costs & Quality",
+            "stageIndex": 58
+          },
+          {
+            "id": "M019-set-up-prometheus-metrics-for-an-ai-api-59",
+            "title": "Set Up Prometheus Metrics for an AI API",
+            "stageIndex": 59
+          },
+          {
+            "id": "M019-production-resilience-circuit-breakers-fallbacks-60",
+            "title": "Production Resilience: Circuit Breakers & Fallbacks",
+            "stageIndex": 60
+          },
+          {
+            "id": "M019-incident-response-decision-61",
+            "title": "Incident Response Decision",
+            "stageIndex": 61
+          },
+          {
+            "id": "M019-devops-production-speed-quiz-62",
+            "title": "DevOps & Production Speed Quiz",
+            "stageIndex": 62
+          },
+          {
+            "id": "M019-observability-tools-matching-63",
+            "title": "Observability Tools Matching",
+            "stageIndex": 63
+          }
+        ]
+      },
+      {
+        "id": "M019-phase-6",
+        "title": "Practice Project: AI-Powered Code Review Assistant",
+        "isPhase": true,
+        "moduleId": "M019-cloud-deployment",
+        "children": [
+          {
+            "id": "M019-practice-project-ai-powered-code-review-assistant-64",
+            "title": "Practice Project: AI-Powered Code Review Assistant",
+            "stageIndex": 64
+          },
+          {
+            "id": "M019-architecture-system-design-65",
+            "title": "Architecture & System Design",
+            "stageIndex": 65
+          },
+          {
+            "id": "M019-step-1-build-the-fastapi-backend-66",
+            "title": "Step 1: Build the FastAPI Backend",
+            "stageIndex": 66
+          },
+          {
+            "id": "M019-step-2-dockerize-deploy-67",
+            "title": "Step 2: Dockerize & Deploy",
+            "stageIndex": 67
+          },
+          {
+            "id": "M019-step-3-add-ci-cd-monitoring-68",
+            "title": "Step 3: Add CI/CD & Monitoring",
+            "stageIndex": 68
+          },
+          {
+            "id": "M019-complete-architecture-next-steps-69",
+            "title": "Complete Architecture & Next Steps",
+            "stageIndex": 69
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "M020",
+    "title": "Module 20: AI-Powered Customer Intelligence Platform — Industry Capstone Project",
+    "topics": [
+      {
+        "id": "M020-phase-1",
+        "title": "Project Vision & Development Environment",
+        "isPhase": true,
+        "children": [
+          {
+            "id": "M020-phase-1-welcome to the capstone: what we're building",
+            "title": "Welcome to the Practice Project: What We're Building"
+          },
+          {
+            "id": "M020-phase-1-step 1: opening vs code & creating the project",
+            "title": "Step 1: Opening VS Code & Creating the Project"
+          },
+          {
+            "id": "M020-phase-1-step 2: python virtual environment & dependencies",
+            "title": "Step 2: Python Virtual Environment & Dependencies"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "M021",
+    "title": "Module 21: Git & GitHub",
+    "topics": [
+      {
+        "id": "M021-phase-1-intro",
+        "title": "What is Git & Why Version Control?",
+        "isPhase": true,
+        "children": [
+          {
+            "id": "M021-welcome",
+            "title": "Welcome to Git & GitHub"
+          },
+          {
+            "id": "M021-git-vs-github",
+            "title": "Git vs GitHub — What is the Difference?"
+          },
+          {
+            "id": "M021-core-concepts",
+            "title": "Core Concepts — Repository, Commit, Branch"
+          }
+        ]
+      },
+      {
+        "id": "M021-phase-2-setup",
+        "title": "Installing Git & Your First Repository",
+        "isPhase": true,
+        "children": [
+          {
+            "id": "M021-installing-git",
+            "title": "Installing Git on Your Computer"
+          },
+          {
+            "id": "M021-first-repo",
+            "title": "Creating Your First Repository"
+          }
+        ]
+      },
+      {
+        "id": "M021-phase-3-workflow",
+        "title": "The Git Workflow — Add, Commit, Log",
+        "isPhase": true,
+        "children": [
+          {
+            "id": "M021-three-stages",
+            "title": "The Three Stages of Git"
+          },
+          {
+            "id": "M021-essential-commands",
+            "title": "Essential Git Commands — Your Daily Toolkit"
+          },
+          {
+            "id": "M021-undoing-changes",
+            "title": "Undoing Changes — Your Safety Net"
+          },
+          {
+            "id": "M021-gitignore",
+            "title": "The .gitignore File — Keeping Secrets Out"
+          }
+        ]
+      },
+      {
+        "id": "M021-phase-4-branching",
+        "title": "Branching & Merging",
+        "isPhase": true,
+        "children": [
+          {
+            "id": "M021-branching",
+            "title": "Branching — Parallel Universes for Your Code"
+          },
+          {
+            "id": "M021-merging",
+            "title": "Merging Branches Together"
+          }
+        ]
+      },
+      {
+        "id": "M021-phase-5-github",
+        "title": "Remote Repositories & GitHub",
+        "isPhase": true,
+        "children": [
+          {
+            "id": "M021-github-setup",
+            "title": "Setting Up GitHub — Your Online Code Home"
+          },
+          {
+            "id": "M021-push-pull-clone",
+            "title": "Push, Pull & Clone — Syncing with GitHub"
+          }
+        ]
+      },
+      {
+        "id": "M021-phase-6-collaboration",
+        "title": "Collaboration — PRs, Forks & Code Reviews",
+        "isPhase": true,
+        "children": [
+          {
+            "id": "M021-pull-requests",
+            "title": "Pull Requests — The Heart of Collaboration"
+          },
+          {
+            "id": "M021-forking",
+            "title": "Forking — Contributing to Other Projects"
+          },
+          {
+            "id": "M021-code-reviews",
+            "title": "Code Reviews — Best Practices"
+          }
+        ]
+      },
+      {
+        "id": "M021-phase-7-advanced",
+        "title": "Advanced Git — Rebase, Stash, Cherry-Pick & Tags",
+        "isPhase": true,
+        "children": [
+          {
+            "id": "M021-rebase",
+            "title": "Git Rebase — Rewriting History for a Clean Timeline"
+          },
+          {
+            "id": "M021-stash",
+            "title": "Git Stash — Save Work for Later"
+          },
+          {
+            "id": "M021-cherry-pick-tags-revert",
+            "title": "Cherry-Pick, Tags & Git Revert"
+          }
+        ]
+      },
+      {
+        "id": "M021-phase-8-production",
+        "title": "GitHub Features & Production Workflows",
+        "isPhase": true,
+        "children": [
+          {
+            "id": "M021-issues-projects",
+            "title": "GitHub Issues, Projects & Discussions"
+          },
+          {
+            "id": "M021-github-actions",
+            "title": "GitHub Actions — Automating Your Workflow"
+          },
+          {
+            "id": "M021-professional-workflows",
+            "title": "Professional Git Workflows"
+          },
+          {
+            "id": "M021-tips-tricks",
+            "title": "Git Tips, Tricks & Troubleshooting"
+          },
+          {
+            "id": "M021-github-profile",
+            "title": "Building an Impressive GitHub Profile"
+          }
+        ]
+      },
+      {
+        "id": "M021-capstone",
+        "title": "Practice Project: Build & Collaborate on a GitHub Repository",
+        "isPhase": true,
+        "children": [
+          {
+            "id": "M021-capstone-project",
+            "title": "Practice Project: Build & Collaborate on a GitHub Repository"
+          }
+        ]
+      }
+    ]
+  }
+]

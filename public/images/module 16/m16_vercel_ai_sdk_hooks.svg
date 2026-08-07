@@ -1,0 +1,16 @@
+<svg width="800" height="400" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="400" fill="#0f172a" rx="12"/>
+  <text x="400" y="45" fill="#0070f3" font-family="sans-serif" font-size="18" font-weight="bold" text-anchor="middle">Vercel AI SDK Hooks Overview</text>
+  
+  <rect x="50" y="80" width="330" height="260" rx="8" fill="#1e293b" stroke="#0070f3"/>
+  <text x="215" y="115" fill="#60a5fa" font-family="sans-serif" font-size="16" font-weight="bold" text-anchor="middle">useChat()</text>
+  <text x="70" y="150" fill="#cbd5e1" font-family="sans-serif" font-size="12">• Multi-turn chat history (messages)</text>
+  <text x="70" y="175" fill="#cbd5e1" font-family="sans-serif" font-size="12">• Auto input binding (input, handleSubmit)</text>
+  <text x="70" y="200" fill="#cbd5e1" font-family="sans-serif" font-size="12">• Stream status (isLoading, stop, reload)</text>
+
+  <rect x="420" y="80" width="330" height="260" rx="8" fill="#1e293b" stroke="#10b981"/>
+  <text x="585" y="115" fill="#34d399" font-family="sans-serif" font-size="16" font-weight="bold" text-anchor="middle">useCompletion()</text>
+  <text x="440" y="150" fill="#cbd5e1" font-family="sans-serif" font-size="12">• Single-turn text generation</text>
+  <text x="440" y="175" fill="#cbd5e1" font-family="sans-serif" font-size="12">• Auto-completion prompts</text>
+  <text x="440" y="200" fill="#cbd5e1" font-family="sans-serif" font-size="12">• One prompt → One response</text>
+</svg>

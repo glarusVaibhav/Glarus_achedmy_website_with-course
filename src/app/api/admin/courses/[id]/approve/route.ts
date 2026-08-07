@@ -20,7 +20,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       data: {
         action: "APPROVE_COURSE",
         details: `Approved course: ${course.title} (${course.id})`,
-        adminId: session.id
+        adminId: session.id || "admin"
       }
     });
 

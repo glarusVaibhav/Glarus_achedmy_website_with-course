@@ -8,6 +8,10 @@ import { useWishlist } from "@/store/useWishlist";
 import { useAuth } from "@/context/AuthContext";
 import { useEffect, useState } from "react";
 
+import { Logo } from "./Logo";
+import { UserProfileMenu } from "./UserProfileMenu";
+import { NotificationBell } from "./NotificationBell";
+
 export function Navbar() {
   const items = useCartStore((state) => state.items);
   const wishlistItems = useWishlist((state) => state.items);
@@ -31,13 +35,11 @@ export function Navbar() {
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-card bg-background/80 backdrop-blur-md">
-      <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-primary to-accent flex items-center justify-center">
-            <span className="text-white font-bold text-lg">A</span>
-          </div>
+      <div className="max-w-[1650px] mx-auto px-6 sm:px-10 h-16 flex items-center justify-between">
+        <Link href="/" className="flex items-center gap-2.5">
+          <Logo className="w-8 h-8" />
           <span className="font-bold text-xl tracking-tight text-text">
-            Edu<span className="text-primary">AI</span>
+            Glarus<span className="text-primary">Academy</span>
           </span>
         </Link>
         
@@ -58,6 +60,7 @@ export function Navbar() {
               </span>
             )}
           </Link>
+          {mounted && user && <NotificationBell />}
           <Link href="/cart" className="relative p-2 text-subtext hover:text-text transition-colors">
             <ShoppingCart className="h-5 w-5" />
             {itemCount > 0 && (
@@ -68,28 +71,13 @@ export function Navbar() {
           </Link>
 
           {/* ── Auth-Aware Section ── */}
-          <div className="hidden md:flex items-center gap-3 ml-2">
+          <div className="flex items-center gap-3 ml-2">
             {isLoading ? (
               /* Brief skeleton while verifying — prevents flicker */
               <div className="w-24 h-9 bg-card rounded-lg animate-pulse" />
             ) : user ? (
-              /* ── AUTHENTICATED VIEW ── */
-              <>
-                <Link
-                  href={getDashboardRoute()}
-                  className="flex items-center gap-2 bg-primary/10 text-primary border border-primary/20 font-semibold px-4 py-2 rounded-lg hover:bg-primary/20 transition-all text-sm"
-                >
-                  <LayoutDashboard className="h-4 w-4" />
-                  Dashboard
-                </Link>
-                <button
-                  onClick={logout}
-                  className="flex items-center gap-2 text-subtext hover:text-red-500 font-medium transition-colors text-sm px-3 py-2 rounded-lg hover:bg-red-500/10"
-                >
-                  <LogOut className="h-4 w-4" />
-                  Logout
-                </button>
-              </>
+              /* ── AUTHENTICATED USER PROFILE MENU ── */
+              <UserProfileMenu />
             ) : (
               /* ── UNAUTHENTICATED VIEW ── */
               <>

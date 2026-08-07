@@ -19,7 +19,7 @@ export const COURSES: Course[] = [
     level: "Intermediate",
     rating: 4.8,
     duration: "40 hours",
-    image: "/images/course-1.png"
+    image: "/images/courses/generative-ai.png"
   },
   {
     id: "ai-2",
@@ -30,7 +30,7 @@ export const COURSES: Course[] = [
     level: "Beginner",
     rating: 4.9,
     duration: "25 hours",
-    image: "/images/course-2.png"
+    image: "/images/courses/ml-math.png"
   },
   {
     id: "ai-3",
@@ -41,7 +41,7 @@ export const COURSES: Course[] = [
     level: "Advanced",
     rating: 4.7,
     duration: "50 hours",
-    image: "/images/course-3.png"
+    image: "/images/courses/llm-architecture.png"
   },
   {
     id: "ai-4",
@@ -52,7 +52,7 @@ export const COURSES: Course[] = [
     level: "Intermediate",
     rating: 4.9,
     duration: "30 hours",
-    image: "/images/course-4.png"
+    image: "/images/courses/rag-vector-db.png"
   },
   {
     id: "ai-5",
@@ -63,7 +63,7 @@ export const COURSES: Course[] = [
     level: "Beginner",
     rating: 4.6,
     duration: "10 hours",
-    image: "/images/course-5.png"
+    image: "/images/courses/smart-contracts.png"
   },
   {
     id: "ai-6",
@@ -74,6 +74,6 @@ export const COURSES: Course[] = [
     level: "Advanced",
     rating: 4.8,
     duration: "45 hours",
-    image: "/images/course-6.png"
+    image: "/images/courses/python-fundamentals.png"
   }
 ];

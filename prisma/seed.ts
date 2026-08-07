@@ -135,11 +135,37 @@ async function main() {
         startDate: new Date(),
         liveClasses: {
           create: [
-            { title: "Kickoff Session & Welcome", date: new Date(new Date().setHours(20, 0, 0, 0)), meetingLink: "https://zoom.us/mock-link-1" },
-            { title: "Deep Learning Foundations", date: new Date(new Date().getTime() + 2 * 24 * 60 * 60 * 1000), meetingLink: "https://zoom.us/mock-link-2" }
+            { 
+              title: "Deep Learning & Neural Network Architecture (Live Workshop)", 
+              date: new Date(Date.now() - 15 * 60 * 1000), 
+              meetingLink: "https://zoom.us/j/sample-ongoing-live-class" 
+            },
+            { 
+              title: "RAG Indexing, Vector Databases & LangChain Agents", 
+              date: new Date(Date.now() + 2.5 * 60 * 60 * 1000), 
+              meetingLink: "https://zoom.us/j/sample-upcoming-live-class" 
+            }
           ]
         }
       }
+    });
+  } else {
+    await prisma.liveClass.deleteMany({ where: { batchId: "batch-1" } });
+    await prisma.liveClass.createMany({
+      data: [
+        {
+          batchId: "batch-1",
+          title: "Deep Learning & Neural Network Architecture (Live Workshop)",
+          date: new Date(Date.now() - 15 * 60 * 1000),
+          meetingLink: "https://zoom.us/j/sample-ongoing-live-class"
+        },
+        {
+          batchId: "batch-1",
+          title: "RAG Indexing, Vector Databases & LangChain Agents",
+          date: new Date(Date.now() + 2.5 * 60 * 60 * 1000),
+          meetingLink: "https://zoom.us/j/sample-upcoming-live-class"
+        }
+      ]
     });
   }
 

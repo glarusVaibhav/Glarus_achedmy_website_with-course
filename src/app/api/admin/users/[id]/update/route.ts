@@ -20,7 +20,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       data: {
         action: "UPDATE_USER",
         details: `Role or Status updated for ${user.email}`,
-        adminId: session.id
+        adminId: session.id || "admin"
       }
     });
 

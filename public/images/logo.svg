@@ -1,0 +1,33 @@
+<svg viewBox="0 0 500 500" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="logoGGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="40%" stop-color="#1d4ed8" />
+      <stop offset="100%" stop-color="#2563eb" />
+    </linearGradient>
+
+    <linearGradient id="logoAGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0284c7" />
+      <stop offset="50%" stop-color="#00a3ff" />
+      <stop offset="100%" stop-color="#38bdf8" />
+    </linearGradient>
+  </defs>
+
+  <path
+    d="M 375 145 C 320 75, 210 55, 130 95 C 50 135, 20 240, 50 330 C 80 420, 180 460, 275 440 C 365 420, 430 340, 435 250 H 260"
+    stroke="url(#logoGGrad)"
+    stroke-width="60"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    fill="none"
+  />
+
+  <path
+    d="M 250 75 L 125 410 M 250 75 L 360 410 M 165 250 H 425"
+    stroke="url(#logoAGrad)"
+    stroke-width="56"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    fill="none"
+  />
+</svg>

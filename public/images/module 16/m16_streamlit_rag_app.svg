@@ -1,0 +1,18 @@
+<svg width="800" height="400" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="400" fill="#0f172a" rx="12"/>
+  <rect x="40" y="30" width="720" height="340" rx="8" fill="#1e293b"/>
+  <!-- Sidebar -->
+  <rect x="40" y="30" width="220" height="340" fill="#0f172a"/>
+  <text x="60" y="65" fill="#38bdf8" font-family="sans-serif" font-size="15" font-weight="bold">📄 Document Upload</text>
+  <rect x="60" y="85" width="180" height="90" rx="6" fill="#1e293b" stroke="#3b82f6" stroke-dasharray="4"/>
+  <text x="150" y="135" fill="#94a3b8" font-family="sans-serif" font-size="12" text-anchor="middle">Drop PDF / TXT files</text>
+  <text x="60" y="205" fill="#10b981" font-family="sans-serif" font-size="12">✓ report.pdf (142 KB)</text>
+  <text x="60" y="225" fill="#10b981" font-family="sans-serif" font-size="12">✓ specs.txt (48 KB)</text>
+
+  <!-- Main Q&A Area -->
+  <text x="280" y="65" fill="#f8fafc" font-family="sans-serif" font-size="18" font-weight="bold">RAG Document Q&A System</text>
+  <rect x="280" y="85" width="460" height="210" rx="6" fill="#334155"/>
+  <text x="295" y="115" fill="#38bdf8" font-family="sans-serif" font-size="13">Q: What is the Q3 revenue target in report.pdf?</text>
+  <text x="295" y="145" fill="#f8fafc" font-family="sans-serif" font-size="12">Context retrieved from vector database...</text>
+  <text x="295" y="175" fill="#34d399" font-family="sans-serif" font-size="13">Answer: The Q3 revenue target is $4.2M based on page 12.</text>
+</svg>

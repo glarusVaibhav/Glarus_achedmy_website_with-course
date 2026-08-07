@@ -21,7 +21,7 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
       data: {
         action: "DELETE_USER",
         details: `Deleted user ${user.email}`,
-        adminId: session.id
+        adminId: session.id || "admin"
       }
     });
 

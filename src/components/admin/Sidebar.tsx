@@ -10,12 +10,16 @@ import {
   RotateCcw, 
   Activity, 
   ShieldAlert, 
-  Settings 
+  Settings,
+  ShieldCheck
 } from "lucide-react";
 import { motion } from "framer-motion";
 
+import { UserProfileMenu } from "../UserProfileMenu";
+
 const sidebarNav = [
   { name: "Overview", href: "/admin", icon: LayoutDashboard },
+  { name: "Instructor Approvals", href: "/admin/approvals", icon: ShieldCheck },
   { name: "Instructor Management", href: "/admin/instructors", icon: GraduationCap },
   { name: "Course Management", href: "/admin/courses", icon: BookOpen },
   { name: "Student Management", href: "/admin/students", icon: Users },
@@ -32,7 +36,7 @@ export default function Sidebar() {
     <div className="w-64 min-h-screen bg-card/80 backdrop-blur-xl border-r border-card/40 flex flex-col fixed left-0 top-0 z-50">
       <div className="p-6">
         <h1 className="text-2xl font-black bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-          EduAI Admin
+          GlarusAcademy Admin
         </h1>
       </div>
       <nav className="flex-1 px-4 space-y-2 relative">
@@ -59,16 +63,8 @@ export default function Sidebar() {
           );
         })}
       </nav>
-      <div className="p-4 border-t border-card/40">
-        <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-background/50 border border-card">
-          <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold shadow-inner">
-            A
-          </div>
-          <div>
-            <p className="text-sm font-bold text-text">Super Admin</p>
-            <p className="text-xs text-subtext">System Access</p>
-          </div>
-        </div>
+      <div className="p-4 border-t border-card/40 flex justify-center">
+        <UserProfileMenu />
       </div>
     </div>
   );

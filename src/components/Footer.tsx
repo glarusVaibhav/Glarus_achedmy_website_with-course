@@ -1,16 +1,15 @@
 import Link from "next/link";
+import { Logo } from "./Logo";
 
 export function Footer() {
   return (
     <footer className="w-full border-t border-card py-12 mt-20">
-      <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-8">
+      <div className="max-w-[1650px] mx-auto px-6 sm:px-10 grid grid-cols-1 md:grid-cols-4 gap-8">
         <div className="space-y-4">
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-md bg-gradient-to-tr from-primary to-accent flex items-center justify-center">
-              <span className="text-white font-bold text-sm">A</span>
-            </div>
+            <Logo className="w-6 h-6" />
             <span className="font-bold text-lg tracking-tight text-text">
-              Edu<span className="text-primary">AI</span>
+              Glarus<span className="text-primary">Academy</span>
             </span>
           </Link>
           <p className="text-subtext text-sm leading-relaxed">
@@ -44,8 +43,8 @@ export function Footer() {
           </ul>
         </div>
       </div>
-      <div className="max-w-7xl mx-auto px-6 mt-12 pt-8 border-t border-card text-center text-subtext text-sm">
-        <p>&copy; {new Date().getFullYear()} EduAI. All rights reserved.</p>
+      <div className="max-w-[1650px] mx-auto px-6 sm:px-10 mt-12 pt-8 border-t border-card text-center text-subtext text-sm">
+        <p>&copy; {new Date().getFullYear()} GlarusAcademy. All rights reserved.</p>
       </div>
     </footer>
   );

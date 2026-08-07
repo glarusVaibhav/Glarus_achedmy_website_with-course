@@ -6,19 +6,9 @@ const TRADEMARKS = ["OPENAI", "DEEPMIND", "GOOGLE", "META", "ANTHROPIC", "STRIPE
 
 export default function TrustLogos() {
   return (
-    <section className="w-full py-12 md:py-16 bg-background border-y border-card/40 overflow-hidden relative select-none">
+    <section className="w-full py-6 md:py-8 bg-background overflow-hidden relative select-none">
       <div className="absolute left-0 top-0 bottom-0 w-24 md:w-48 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none" />
       <div className="absolute right-0 top-0 bottom-0 w-24 md:w-48 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none" />
-      
-      <motion.p 
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        viewport={{ once: true }}
-        transition={{ duration: 1 }}
-        className="text-center text-xs font-bold text-subtext uppercase tracking-[0.25em] mb-8 md:mb-12"
-      >
-        Trusted by engineers actively building at
-      </motion.p>
       
       <div className="flex w-[200%]">
         <motion.div 
