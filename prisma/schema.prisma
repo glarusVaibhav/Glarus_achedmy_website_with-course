@@ -265,20 +265,37 @@ model Analytics {
 }
 
 model InstructorApproval {
-  id          String         @id @default(cuid())
-  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId      String         @unique
-  resumeUrl   String?
-  status      ApprovalStatus @default(PENDING)
-  experience  String?
-  skills      String?
-  bio         String?
-  version     Int            @default(1)
-  feedback    String?
-  reviewedBy  String?
-  reviewedAt  DateTime?
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
+  id                      String         @id @default(cuid())
+  user                    User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId                  String         @unique
+  firstName               String?
+  lastName                String?
+  email                   String?
+  phone                   String?
+  photoUrl                String?
+  experience              String?
+  teachingLanguages       String?        // JSON string or comma-separated
+  skills                  String?
+  opportunitySource       String?
+  resumeUrl               String?
+  resumeFileName          String?
+  teachingVideoType       String?        @default("LINK") // "LINK" | "UPLOAD"
+  teachingVideoUrl        String?
+  teachingVideoFileName   String?
+  areasOfExpertise        String?
+  aboutInstructor         String?
+  courseTeachingPlan      String?
+  whyGlarusAcademy        String?
+  teachesOnOtherPlatforms Boolean        @default(false)
+  otherPlatformDetails    String?
+  status                  ApprovalStatus @default(PENDING)
+  bio                     String?        // legacy / fallback
+  version                 Int            @default(1)
+  feedback                String?
+  reviewedBy              String?
+  reviewedAt              DateTime?
+  createdAt               DateTime       @default(now())
+  updatedAt               DateTime       @updatedAt
 }
 
 model CourseApproval {

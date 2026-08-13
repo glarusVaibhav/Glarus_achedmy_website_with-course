@@ -356,30 +356,22 @@ export function InstructorAssignmentsView() {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
-      {/* ─── PAGE HEADER & MAIN ACTION ─── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-card/60">
-        <div>
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-2xl bg-primary/10 border border-primary/20 text-primary shadow-sm">
-              <ClipboardList className="w-6 h-6" />
-            </div>
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-black text-text tracking-tight flex items-center gap-2.5">
-                Assignments Management
-                <span className="text-xs font-black px-2.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
-                  {totalAssignments} Total
-                </span>
-              </h1>
-              <p className="text-xs sm:text-sm text-subtext mt-0.5 font-medium">
-                Create, monitor submissions, review code & publish student assessments
-              </p>
-            </div>
-          </div>
+      {/* ─── TOP ACTION BAR ─── */}
+      <div className="flex items-center justify-between gap-4 pb-3 border-b border-card/60">
+        <div className="flex items-center gap-2.5">
+          <span className="text-xs font-black px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/20">
+            {totalAssignments} Total Assignments
+          </span>
+          {pendingReviewCount > 0 && (
+            <span className="text-xs font-black px-3 py-1 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20 animate-pulse">
+              ● {pendingReviewCount} Pending Review
+            </span>
+          )}
         </div>
 
         <button
           onClick={() => { setWizardStep(1); setIsWizardOpen(true); }}
-          className="bg-gradient-to-r from-primary to-accent hover:opacity-90 text-white font-extrabold px-5 py-3 rounded-2xl shadow-lg shadow-primary/25 flex items-center justify-center gap-2 text-xs sm:text-sm transition-all shrink-0 hover:scale-[1.02] active:scale-[0.98]"
+          className="bg-gradient-to-r from-primary to-accent hover:opacity-90 text-white font-extrabold px-5 py-2.5 rounded-2xl shadow-lg shadow-primary/25 flex items-center justify-center gap-2 text-xs sm:text-sm transition-all shrink-0 hover:scale-[1.02] active:scale-[0.98]"
         >
           <Plus className="w-4 h-4" /> Create Assignment
         </button>

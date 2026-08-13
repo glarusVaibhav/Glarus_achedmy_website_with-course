@@ -145,7 +145,7 @@ export default function CourseCreatorWizard() {
          <div className="mb-12">
             <h2 className="text-2xl font-black flex items-center gap-2">
               <Sparkles className="w-6 h-6 text-purple-500" />
-              <span>AI Wizard</span>
+              <span>Create Course</span>
             </h2>
             <p className="text-subtext text-xs tracking-wider uppercase font-bold mt-2">Course Creator</p>
          </div>

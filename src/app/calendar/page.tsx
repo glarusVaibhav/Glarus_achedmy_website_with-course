@@ -18,7 +18,8 @@ import {
   Filter,
   PlayCircle,
   CalendarCheck,
-  X
+  X,
+  Lock
 } from "lucide-react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -668,14 +669,13 @@ export default function LiveCalendarPage() {
                               <Video className="w-4 h-4" /> Join Live Room
                             </a>
                           ) : isUpcoming ? (
-                            <a
-                              href={ev.meetingLink}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="w-full py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-orange-500/20 transition-all active:scale-95"
+                            <button
+                              disabled
+                              className="w-full py-2.5 bg-card/60 text-subtext/70 border border-card/80 font-semibold rounded-xl text-xs flex items-center justify-center gap-1.5 cursor-not-allowed select-none opacity-80"
+                              title="Class has not started yet. Join button activates when the live session starts."
                             >
-                              <Video className="w-4 h-4" /> Join Class
-                            </a>
+                              <Lock className="w-3.5 h-3.5 opacity-60" /> Starts at {ev.startTime}
+                            </button>
                           ) : isCompleted ? (
                             <a
                               href={ev.recordingUrl || "#"}

@@ -1,39 +1,56 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import {
-  Tv,
   Calendar,
-  Plus,
-  Search,
-  Users,
   Clock,
   Video,
   CheckCircle2,
   AlertTriangle,
-  ShieldCheck,
-  ShieldAlert,
   ArrowLeft,
-  ArrowRight,
-  ChevronRight,
   X,
-  Edit,
-  Trash2,
-  Copy,
-  BarChart2,
-  Download,
   PlayCircle,
   Sparkles,
   Check,
   CalendarDays,
   Radio,
-  User,
-  Filter
+  Search,
+  Filter,
+  DollarSign,
+  FileText,
+  History,
+  Info,
+  ExternalLink,
+  Lock,
+  ChevronRight,
+  Tv,
+  Layers,
+  ArrowUpRight,
+  ArrowRight,
+  CheckSquare
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
+export type SessionStatus =
+  | "Waiting Confirmation"
+  | "Accepted"
+  | "Reschedule Requested"
+  | "Live"
+  | "Completed"
+  | "Cancelled";
+
+export type PaymentStatus = "Pending" | "Approved" | "Processing" | "Paid" | "On Hold";
+
+export interface ActivityHistoryItem {
+  timestamp: string;
+  event: string;
+  actor: string;
+  note?: string;
+}
+
 export interface LiveSessionItem {
   id: string;
+  taskIdRef?: string;
   title: string;
   courseName: string;
   batch: string;
@@ -43,9 +60,12 @@ export interface LiveSessionItem {
   durationMinutes: number;
   registeredStudentsCount: number;
   meetingUrl: string;
-  status: "Waiting Confirmation" | "Accepted" | "Scheduled" | "Reschedule Requested" | "Live" | "Completed" | "Cancelled";
-  ownershipType: "ADMIN_ASSIGNED" | "INSTRUCTOR_CREATED";
-  assignedByAdminName?: string;
+  status: SessionStatus;
+  approvalStatus: "Approved by Academic Operations" | "Approved" | "Pending Confirmation";
+  assignedByAdminName: string;
+  assignedAt: string;
+  compensationAmount?: number;
+  paymentStatus?: PaymentStatus;
   rescheduleReason?: string;
   requestedNewDate?: string;
   requestedNewTime?: string;
@@ -53,783 +73,728 @@ export interface LiveSessionItem {
   attendanceRate?: number;
   averageRating?: number;
   description?: string;
+  requirements?: string[];
+  resources?: Array<{ label: string; url: string }>;
+  activityHistory: ActivityHistoryItem[];
 }
 
-const INITIAL_SESSIONS: LiveSessionItem[] = [
+const INITIAL_APPROVED_SESSIONS: LiveSessionItem[] = [
   {
     id: "ls-1",
-    title: "Agentic AI Q&A & Code Walkthrough",
+    taskIdRef: "TSK-1046",
+    title: "Agentic AI & Code Walkthrough",
     courseName: "Mastering Agentic AI & Autonomous Workflows",
     batch: "Batch AI-2026-A",
     sessionType: "Q&A Masterclass",
-    date: "2026-08-08",
-    time: "18:00",
-    durationMinutes: 60,
+    date: "Today, 10 Aug 2026",
+    time: "10:45 AM – 12:00 PM",
+    durationMinutes: 75,
     registeredStudentsCount: 24,
     meetingUrl: "https://meet.google.com/glarus-ai-masterclass",
-    status: "Scheduled",
-    ownershipType: "ADMIN_ASSIGNED",
+    status: "Live",
+    approvalStatus: "Approved by Academic Operations",
     assignedByAdminName: "Academic Operations Team",
-    description: "Live interactive coding session discussing multi-agent orchestration and LangGraph patterns.",
+    assignedAt: "2026-08-01",
+    compensationAmount: 5000,
+    paymentStatus: "Pending",
+    description: "Ongoing live interactive coding session discussing multi-agent orchestration and LangGraph patterns.",
+    requirements: [
+      "Conduct live pair-programming and LangGraph swarm walk-through",
+      "Answer student questions on memory state checkpointing",
+      "Ensure live HD recording is captured for replay archive",
+    ],
+    resources: [
+      { label: "LangGraph Starter Repo", url: "https://github.com/example/langgraph-starter" },
+      { label: "Session Slide Deck", url: "https://example.com/slides/agentic-qna" },
+    ],
+    activityHistory: [
+      { timestamp: "2026-08-01 10:00 AM", event: "Admin assigned task created", actor: "Academic Operations Team" },
+      { timestamp: "2026-08-02 02:15 PM", event: "Instructor accepted task assignment", actor: "Instructor" },
+      { timestamp: "2026-08-03 10:00 AM", event: "Admin approved & activated live session", actor: "Academic Operations Team" },
+      { timestamp: "2026-08-10 10:45 AM", event: "Live class broadcast started", actor: "System" },
+    ],
   },
   {
     id: "ls-2",
+    taskIdRef: "TSK-1039",
     title: "Fullstack Next.js 15 Deployment Masterclass",
     courseName: "Full-Stack Web Development Bootcamp",
     batch: "Batch FS-2026-01",
     sessionType: "Live Workshop",
-    date: "2026-08-12",
-    time: "19:30",
+    date: "24 Aug 2026",
+    time: "06:00 PM – 07:30 PM",
     durationMinutes: 90,
     registeredStudentsCount: 42,
     meetingUrl: "https://zoom.us/j/9948201923",
-    status: "Scheduled",
-    ownershipType: "INSTRUCTOR_CREATED",
-    description: "Step-by-step live walkthrough of deploying serverless architectures to Vercel and AWS.",
-  },
-  {
-    id: "ls-3",
-    title: "AI Bootcamp: Multi-Agent System Architecture Review",
-    courseName: "Mastering Agentic AI & Autonomous Workflows",
-    batch: "Batch AI-2026-A",
-    sessionType: "Q&A Masterclass",
-    date: "2026-08-14",
-    time: "19:00",
-    durationMinutes: 90,
-    registeredStudentsCount: 48,
-    meetingUrl: "https://meet.google.com/glarus-ai-review",
-    status: "Waiting Confirmation",
-    ownershipType: "ADMIN_ASSIGNED",
-    assignedByAdminName: "Academic Operations Team",
-    description: "Mandatory Q&A live review assigned by platform admins for Batch AI-2026-A.",
+    status: "Accepted",
+    approvalStatus: "Approved by Academic Operations",
+    assignedByAdminName: "Chief Academic Reviewer",
+    assignedAt: "2026-08-05",
+    compensationAmount: 5000,
+    paymentStatus: "Pending",
+    description: "Scheduled live masterclass on deploying fullstack AI apps with server actions, Prisma, and Vercel.",
+    requirements: [
+      "Demonstrate live database schema migration with Prisma",
+      "Walk through production deployment and environment variable security",
+    ],
+    resources: [
+      { label: "Deployment Checklist", url: "https://example.com/docs/next15-deploy" },
+    ],
+    activityHistory: [
+      { timestamp: "2026-08-05 09:00 AM", event: "Admin assigned task", actor: "Chief Academic Reviewer" },
+      { timestamp: "2026-08-06 04:30 PM", event: "Instructor accepted assignment", actor: "Instructor" },
+      { timestamp: "2026-08-07 10:00 AM", event: "Admin approved & scheduled", actor: "Chief Academic Reviewer" },
+    ],
   },
   {
     id: "ls-4",
+    taskIdRef: "TSK-1040",
     title: "Machine Learning Workshop: Cloud Model Deployment",
-    courseName: "Mastering Agentic AI & Autonomous Workflows",
+    courseName: "Applied Machine Learning & MLOps",
     batch: "Batch AI-2026-B",
     sessionType: "Live Workshop",
-    date: "2026-08-18",
-    time: "18:30",
+    date: "26 Aug 2026",
+    time: "06:30 PM – 08:30 PM",
     durationMinutes: 120,
     registeredStudentsCount: 52,
     meetingUrl: "https://zoom.us/j/9948201923",
     status: "Reschedule Requested",
-    ownershipType: "ADMIN_ASSIGNED",
+    approvalStatus: "Approved",
     assignedByAdminName: "Chief Academic Reviewer",
-    rescheduleReason: "Scheduled client meeting conflict.",
-    requestedNewDate: "2026-08-19",
-    requestedNewTime: "18:30",
-    description: "Hands-on workshop covering cloud deployment pipeline.",
+    assignedAt: "2026-08-06",
+    compensationAmount: 7500,
+    paymentStatus: "Pending",
+    rescheduleReason: "Scheduled client meeting conflict on original slot.",
+    requestedNewDate: "2026-08-27",
+    requestedNewTime: "07:00 PM",
+    description: "Hands-on workshop covering cloud deployment pipeline, Docker sandboxes, and vLLM GPU inference.",
+    requirements: [
+      "Prepare AWS / Modal inference container walk-through",
+      "Walk through latency benchmarking and cost optimization",
+    ],
+    activityHistory: [
+      { timestamp: "2026-08-06 01:00 PM", event: "Admin assigned task", actor: "Chief Academic Reviewer" },
+      { timestamp: "2026-08-07 10:20 AM", event: "Instructor requested reschedule to Aug 27 at 07:00 PM", actor: "Instructor", note: "Reason: Scheduled client meeting conflict." },
+    ],
+  },
+  {
+    id: "ls-5",
+    taskIdRef: "TSK-1048",
+    title: "Introduction to Agentic ReAct Loops & Tools",
+    courseName: "Mastering Agentic AI & Autonomous Workflows",
+    batch: "Batch AI-2026-A",
+    sessionType: "Curriculum Lecture",
+    date: "05 Aug 2026",
+    time: "10:00 AM – 12:00 PM",
+    durationMinutes: 120,
+    registeredStudentsCount: 45,
+    meetingUrl: "https://meet.google.com/glarus-ai-react-archived",
+    recordingUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+    status: "Completed",
+    approvalStatus: "Approved",
+    attendanceRate: 96,
+    averageRating: 4.9,
+    assignedByAdminName: "Academic Operations Team",
+    assignedAt: "2026-07-25",
+    compensationAmount: 5000,
+    paymentStatus: "Processing",
+    description: "Completed foundation session on reasoning, acting loops, and custom Python tool definitions.",
+    activityHistory: [
+      { timestamp: "2026-07-25 10:00 AM", event: "Admin assigned task", actor: "Academic Operations Team" },
+      { timestamp: "2026-07-26 12:00 PM", event: "Instructor accepted assignment", actor: "Instructor" },
+      { timestamp: "2026-08-05 07:30 PM", event: "Live class completed successfully (96% attendance)", actor: "System" },
+      { timestamp: "2026-08-06 11:00 AM", event: "Compensation ₹5,000 approved, processing payment", actor: "Finance Admin" },
+    ],
+  },
+  {
+    id: "ls-6",
+    taskIdRef: "TSK-1049",
+    title: "Vector Embeddings & Semantic Search Masterclass",
+    courseName: "Agentic AI & Autonomous Workflows",
+    batch: "Batch AI-2026-A",
+    sessionType: "Live Workshop",
+    date: "02 Aug 2026",
+    time: "06:00 PM – 08:00 PM",
+    durationMinutes: 120,
+    registeredStudentsCount: 44,
+    meetingUrl: "https://meet.google.com/glarus-ai-vectors",
+    recordingUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+    status: "Completed",
+    approvalStatus: "Approved",
+    attendanceRate: 92,
+    averageRating: 4.8,
+    assignedByAdminName: "Academic Operations Team",
+    assignedAt: "2026-07-20",
+    compensationAmount: 6000,
+    paymentStatus: "Paid",
+    description: "Deep dive into cosine similarity, HNSW indexing, and hybrid dense/sparse retrieval.",
+    activityHistory: [
+      { timestamp: "2026-07-20 11:00 AM", event: "Admin assigned task", actor: "Academic Operations Team" },
+      { timestamp: "2026-07-21 09:15 AM", event: "Instructor accepted assignment", actor: "Instructor" },
+      { timestamp: "2026-08-02 08:00 PM", event: "Live class completed successfully", actor: "System" },
+      { timestamp: "2026-08-04 03:30 PM", event: "Compensation ₹6,000 paid via direct deposit", actor: "Finance Admin" },
+    ],
   },
 ];
 
-export function InstructorLiveSessionsView() {
-  const [sessions, setSessions] = useState<LiveSessionItem[]>(INITIAL_SESSIONS);
+interface InstructorLiveSessionsViewProps {
+  onNavigateTab?: (tabName: string) => void;
+}
+
+export function InstructorLiveSessionsView({ onNavigateTab }: InstructorLiveSessionsViewProps) {
+  const [sessions, setSessions] = useState<LiveSessionItem[]>(INITIAL_APPROVED_SESSIONS);
   const [viewMode, setViewMode] = useState<"LIST" | "CALENDAR">("LIST");
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<string | null>(null);
 
   /* Toolbar Filters */
   const [searchQuery, setSearchQuery] = useState("");
-  const [ownershipTab, setOwnershipTab] = useState<"All" | "ADMIN_ASSIGNED" | "INSTRUCTOR_CREATED">("All");
-  const [statusFilter, setStatusFilter] = useState<string>("All");
+  const [selectedNavTab, setSelectedNavTab] = useState<string>("All");
 
-  /* Action Required Drawer State */
-  const [isActionDrawerOpen, setIsActionDrawerOpen] = useState(false);
-
-  /* Modals */
-  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
-  const [rescheduleAdminSession, setRescheduleAdminSession] = useState<LiveSessionItem | null>(null);
-  const [rescheduleInstructorSession, setRescheduleInstructorSession] = useState<LiveSessionItem | null>(null);
+  /* Modals & Side Drawer */
+  const [rescheduleSession, setRescheduleSession] = useState<LiveSessionItem | null>(null);
   const [selectedSessionForDetails, setSelectedSessionForDetails] = useState<LiveSessionItem | null>(null);
 
-  /* Reschedule Forms */
-  const [adminReason, setAdminReason] = useState("");
-  const [adminNewDate, setAdminNewDate] = useState("");
-  const [adminNewTime, setAdminNewTime] = useState("18:00");
+  /* Reschedule Form State */
+  const [rescheduleReason, setRescheduleReason] = useState("");
+  const [rescheduleNewDate, setRescheduleNewDate] = useState("");
+  const [rescheduleNewTime, setRescheduleNewTime] = useState("18:00");
 
-  const [instructorNewDate, setInstructorNewDate] = useState("");
-  const [instructorNewTime, setInstructorNewTime] = useState("18:00");
+  /* Confirmation Success Toast State */
+  const [acceptedToast, setAcceptedToast] = useState<{ title: string; date: string; time: string; compensation?: number } | null>(null);
 
-  const [newSessionForm, setNewSessionForm] = useState({
-    title: "",
-    courseName: "Mastering Agentic AI & Autonomous Workflows",
-    batch: "All Enrolled Students",
-    sessionType: "Live Workshop" as LiveSessionItem["sessionType"],
-    date: new Date().toISOString().split("T")[0],
-    time: "18:00",
-    durationMinutes: 60,
-    meetingUrl: "https://meet.google.com/",
-    description: "",
-  });
-
-  /* 4 KPI Counts for List View */
-  const upcomingCount = sessions.filter(s => s.status === "Accepted" || s.status === "Scheduled" || s.status === "Waiting Confirmation").length;
+  /* ─────────────────────────────────────────────────────────────────
+     METRIC COUNTS (APPROVED LIVE SESSIONS)
+     ───────────────────────────────────────────────────────────────── */
   const liveNowCount = sessions.filter(s => s.status === "Live").length;
-  const assignedCount = sessions.filter(s => s.ownershipType === "ADMIN_ASSIGNED").length;
+  const upcomingCount = sessions.filter(s => s.status === "Accepted" || s.status === "Waiting Confirmation").length;
   const completedCount = sessions.filter(s => s.status === "Completed").length;
 
-  /* Calendar View KPI Stats */
-  const totalSessionsCount = sessions.length;
-  const totalRegistrationsCount = sessions.reduce((sum, s) => sum + s.registeredStudentsCount, 0);
+  const totalEarnings = sessions
+    .filter(s => s.status === "Completed" && (s.paymentStatus === "Paid" || s.paymentStatus === "Processing"))
+    .reduce((sum, s) => sum + (s.compensationAmount || 0), 0);
 
-  /* Action Required Sessions */
-  const actionRequiredList = sessions.filter(s => s.status === "Waiting Confirmation" || s.status === "Reschedule Requested");
-
-  /* Filtered Sessions for List View */
+  /* ─────────────────────────────────────────────────────────────────
+     FILTER LOGIC
+     ───────────────────────────────────────────────────────────────── */
   const filteredSessions = sessions.filter((s) => {
-    const matchesSearch = s.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          s.courseName.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch =
+      s.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      s.courseName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      s.batch.toLowerCase().includes(searchQuery.toLowerCase());
 
-    const matchesOwnership = ownershipTab === "All" || s.ownershipType === ownershipTab;
-    const matchesStatus = statusFilter === "All" || s.status === statusFilter;
+    if (!matchesSearch) return false;
 
-    return matchesSearch && matchesOwnership && matchesStatus;
+    if (selectedNavTab === "Live Now") return s.status === "Live";
+    if (selectedNavTab === "Upcoming") return s.status === "Accepted" || s.status === "Waiting Confirmation";
+    if (selectedNavTab === "Reschedule Pending") return s.status === "Reschedule Requested";
+    if (selectedNavTab === "Completed") return s.status === "Completed";
+    return true; // "All"
   });
 
-  /* Calendar Filtered Sessions */
-  const calendarUpcomingSessions = sessions.filter((s) => {
+  /* Calendar Filtered Sessions (Read-Only) */
+  const calendarSessions = sessions.filter((s) => {
     if (selectedCalendarDate) {
-      return s.date === selectedCalendarDate;
+      return s.date.includes(selectedCalendarDate);
     }
     return s.status !== "Completed" && s.status !== "Cancelled";
   });
 
-  /* Action Handlers */
-  const handleAcceptSession = (id: string) => {
-    setSessions(prev => prev.map(s => s.id === id ? { ...s, status: "Accepted" } : s));
-  };
-
-  const handleAdminRescheduleSubmit = (e: React.FormEvent) => {
+  const handleRescheduleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!rescheduleAdminSession || !adminNewDate || !adminReason.trim()) return;
+    if (!rescheduleSession || !rescheduleNewDate || !rescheduleReason.trim()) return;
 
-    setSessions(prev => prev.map(s => {
-      if (s.id === rescheduleAdminSession.id) {
-        return {
-          ...s,
-          status: "Reschedule Requested",
-          requestedNewDate: adminNewDate,
-          requestedNewTime: adminNewTime,
-          rescheduleReason: adminReason.trim(),
-        };
-      }
-      return s;
-    }));
+    const nowStr = new Date().toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
 
-    setRescheduleAdminSession(null);
-    setAdminReason("");
-    setAdminNewDate("");
-  };
+    setSessions(prev =>
+      prev.map(s => {
+        if (s.id === rescheduleSession.id) {
+          return {
+            ...s,
+            status: "Reschedule Requested",
+            requestedNewDate: rescheduleNewDate,
+            requestedNewTime: rescheduleNewTime,
+            rescheduleReason: rescheduleReason.trim(),
+            activityHistory: [
+              ...s.activityHistory,
+              {
+                timestamp: nowStr,
+                event: `Instructor requested reschedule to ${rescheduleNewDate} at ${rescheduleNewTime}`,
+                actor: "Instructor",
+                note: `Reason: ${rescheduleReason.trim()}`,
+              },
+            ],
+          };
+        }
+        return s;
+      })
+    );
 
-  const handleInstructorRescheduleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!rescheduleInstructorSession || !instructorNewDate) return;
-
-    setSessions(prev => prev.map(s => {
-      if (s.id === rescheduleInstructorSession.id) {
-        return {
-          ...s,
-          date: instructorNewDate,
-          time: instructorNewTime,
-          status: "Scheduled",
-        };
-      }
-      return s;
-    }));
-
-    setRescheduleInstructorSession(null);
-    setInstructorNewDate("");
-  };
-
-  const handleCreateSession = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newSessionForm.title.trim()) return;
-
-    const newS: LiveSessionItem = {
-      id: `ls-inst-${Date.now()}`,
-      title: newSessionForm.title.trim(),
-      courseName: newSessionForm.courseName,
-      batch: newSessionForm.batch,
-      sessionType: newSessionForm.sessionType,
-      date: newSessionForm.date,
-      time: newSessionForm.time,
-      durationMinutes: Number(newSessionForm.durationMinutes) || 60,
-      registeredStudentsCount: 0,
-      meetingUrl: newSessionForm.meetingUrl.trim() || "https://meet.google.com/",
-      status: "Scheduled",
-      ownershipType: "INSTRUCTOR_CREATED",
-      description: newSessionForm.description.trim(),
-    };
-
-    setSessions([newS, ...sessions]);
-    setIsScheduleModalOpen(false);
-    setNewSessionForm({
-      title: "",
-      courseName: "Mastering Agentic AI & Autonomous Workflows",
-      batch: "All Enrolled Students",
-      sessionType: "Live Workshop",
-      date: new Date().toISOString().split("T")[0],
-      time: "18:00",
-      durationMinutes: 60,
-      meetingUrl: "https://meet.google.com/",
-      description: "",
-    });
-  };
-
-  const deleteSession = (id: string) => {
-    setSessions(prev => prev.filter(s => s.id !== id));
+    setRescheduleSession(null);
+    setRescheduleReason("");
+    setRescheduleNewDate("");
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-300 max-w-5xl mx-auto pb-24 font-sans relative">
+    <div className="w-full max-w-[1240px] mx-auto px-4 sm:px-6 md:px-8 py-6 space-y-6 font-sans text-slate-200">
+      {/* ─────────────────────────────────────────────────────────────
+         1. EXECUTIVE PAGE HEADER
+         ───────────────────────────────────────────────────────────── */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/[0.06]">
+        <div>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl sm:text-[26px] font-semibold text-white tracking-tight">
+              Live Sessions
+            </h1>
+            <span className="text-[10px] font-medium text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md">
+              Approved Live Classes
+            </span>
+          </div>
+          <p className="text-xs sm:text-sm text-slate-400 mt-0.5 font-normal">
+            Your approved and scheduled live training sessions.
+          </p>
+        </div>
 
-      {/* ══════════════════════════════════════════════════════════════
-         FULL CALENDAR VIEW MODE (WHEN CLICKED ON CALENDAR)
-         ══════════════════════════════════════════════════════════════ */}
+        <div className="flex items-center gap-2.5 shrink-0">
+          {onNavigateTab && (
+            <button
+              onClick={() => onNavigateTab("Tasks")}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-medium bg-white/[0.03] hover:bg-white/[0.07] text-slate-300 border border-white/[0.08] transition-colors cursor-pointer"
+            >
+              <CheckSquare className="w-3.5 h-3.5 text-indigo-400" />
+              <span>Admin Tasks (Workflow Hub)</span>
+            </button>
+          )}
+
+          <button
+            onClick={() => setViewMode(viewMode === "LIST" ? "CALENDAR" : "LIST")}
+            className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-medium border transition-all duration-150 cursor-pointer ${
+              viewMode === "CALENDAR"
+                ? "bg-white/10 text-white border-white/20 shadow-sm"
+                : "bg-white/[0.03] hover:bg-white/[0.07] text-slate-300 border-white/[0.08]"
+            }`}
+          >
+            <Calendar className="w-3.5 h-3.5 text-slate-400" />
+            <span>{viewMode === "CALENDAR" ? "List View" : "Calendar View"}</span>
+          </button>
+        </div>
+      </div>
+
       {viewMode === "CALENDAR" ? (
-        <div className="space-y-6 animate-in fade-in duration-300">
-          {/* Top Back Navigation Bar */}
-          <div className="flex items-center justify-between pt-1 pb-1 border-b border-card/60">
+        /* ══════════════════════════════════════════════════════════════
+           REFINED CALENDAR VIEW
+           ══════════════════════════════════════════════════════════════ */
+        <div className="space-y-6 animate-in fade-in duration-200">
+          <div className="flex items-center justify-between">
             <button
               onClick={() => setViewMode("LIST")}
-              className="px-4 py-2 bg-card hover:bg-card/80 text-text font-bold text-xs rounded-xl border border-card flex items-center gap-2 transition-all"
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-400 hover:text-white transition-colors cursor-pointer"
             >
-              <ArrowLeft className="w-4 h-4 text-primary" />
-              <span>← Back to Live Sessions List</span>
+              <ArrowLeft className="w-3.5 h-3.5" /> Back to All Live Sessions
             </button>
-
-            <button
-              onClick={() => setIsScheduleModalOpen(true)}
-              className="bg-primary hover:bg-primary/90 text-white font-extrabold px-4 py-2 rounded-xl shadow-md shadow-primary/20 flex items-center gap-1.5 text-xs transition-all hover:scale-105"
-            >
-              <Plus className="w-4 h-4" /> + Schedule Session
-            </button>
+            <span className="text-xs text-slate-400 font-mono">August 2026 Schedule</span>
           </div>
 
-          {/* Top 4 KPI Cards (Exactly as in Screenshot) */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <div className="bg-card/60 backdrop-blur-md border border-card/80 rounded-2xl p-4 shadow-md flex items-center gap-3">
-              <div className="p-3 rounded-xl bg-purple-500/15 text-purple-400 border border-purple-500/20">
-                <Tv className="w-5 h-5" />
-              </div>
-              <div>
-                <span className="text-[10px] font-black text-subtext uppercase tracking-wider block">TOTAL SESSIONS</span>
-                <span className="text-2xl font-black text-text">{totalSessionsCount}</span>
-              </div>
-            </div>
-
-            <div className="bg-card/60 backdrop-blur-md border border-card/80 rounded-2xl p-4 shadow-md flex items-center gap-3">
-              <div className="p-3 rounded-xl bg-amber-500/15 text-amber-400 border border-amber-500/20">
-                <Clock className="w-5 h-5" />
-              </div>
-              <div>
-                <span className="text-[10px] font-black text-subtext uppercase tracking-wider block">UPCOMING</span>
-                <span className="text-2xl font-black text-text">{upcomingCount}</span>
-              </div>
-            </div>
-
-            <div className="bg-card/60 backdrop-blur-md border border-card/80 rounded-2xl p-4 shadow-md flex items-center gap-3">
-              <div className="p-3 rounded-xl bg-rose-500/15 text-rose-400 border border-rose-500/20">
-                <Radio className="w-5 h-5" />
-              </div>
-              <div>
-                <span className="text-[10px] font-black text-subtext uppercase tracking-wider block">LIVE NOW</span>
-                <span className="text-2xl font-black text-text">{liveNowCount}</span>
-              </div>
-            </div>
-
-            <div className="bg-card/60 backdrop-blur-md border border-card/80 rounded-2xl p-4 shadow-md flex items-center gap-3">
-              <div className="p-3 rounded-xl bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">
-                <Users className="w-5 h-5" />
-              </div>
-              <div>
-                <span className="text-[10px] font-black text-subtext uppercase tracking-wider block">TOTAL REGISTRATIONS</span>
-                <span className="text-2xl font-black text-text">{totalRegistrationsCount}</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Two Column Layout (Left: Schedule Calendar Widget, Right: Upcoming Sessions) */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Left Column: Schedule Calendar Card Widget */}
-            <div className="bg-card/60 backdrop-blur-md border border-card/80 rounded-3xl p-5 shadow-xl h-fit space-y-4">
-              <div className="flex items-center justify-between">
+            {/* Calendar Widget */}
+            <div className="bg-[#121824]/90 border border-white/[0.08] rounded-2xl p-5 shadow-sm space-y-4">
+              <div className="flex items-center justify-between pb-2 border-b border-white/[0.06]">
                 <div className="flex items-center gap-2">
-                  <CalendarDays className="w-5 h-5 text-purple-400" />
-                  <h3 className="font-extrabold text-base text-text">Schedule Calendar</h3>
+                  <CalendarDays className="w-4 h-4 text-indigo-400" />
+                  <h3 className="font-semibold text-sm text-slate-200">Approved Schedule</h3>
                 </div>
-                <span className="text-xs font-bold text-subtext">Aug 2026</span>
+                <span className="text-xs text-slate-400 font-medium">Aug 2026</span>
               </div>
 
-              {/* Month Days Grid */}
-              <div className="grid grid-cols-7 gap-1 text-center text-xs font-bold pt-2">
-                {["SU", "MO", "TU", "WE", "TH", "FR", "SA"].map((d) => (
-                  <span key={d} className="text-[10px] font-black text-subtext py-1">{d}</span>
+              <div className="grid grid-cols-7 gap-1 text-center text-xs pt-1">
+                {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((d) => (
+                  <span key={d} className="text-[11px] font-semibold text-slate-500 py-1">{d}</span>
                 ))}
                 {Array.from({ length: 31 }, (_, i) => {
                   const dayNum = i + 1;
                   const dayStr = dayNum < 10 ? `0${dayNum}` : `${dayNum}`;
                   const fullDate = `2026-08-${dayStr}`;
-                  const hasSession = sessions.some(s => s.date === fullDate);
-                  const isSelected = selectedCalendarDate === fullDate;
-                  const isToday = dayNum === 5;
+                  const hasSession = sessions.some(s => s.date.includes(dayStr));
+                  const isSelected = selectedCalendarDate === dayStr;
+                  const isToday = dayNum === 10;
 
                   return (
                     <button
                       key={i}
                       onClick={() => {
-                        if (isSelected) setSelectedCalendarDate(null);
-                        else setSelectedCalendarDate(fullDate);
+                        setSelectedCalendarDate(isSelected ? null : dayStr);
                       }}
-                      className={`h-9 rounded-xl flex flex-col items-center justify-center relative text-xs font-bold transition-all ${
+                      className={`h-8 rounded-lg flex flex-col items-center justify-center relative text-xs font-medium transition-colors cursor-pointer ${
                         isSelected
-                          ? "bg-purple-600 text-white font-black shadow-md shadow-purple-600/30 scale-105"
+                          ? "bg-indigo-600 text-white font-semibold shadow-sm"
                           : isToday
-                          ? "bg-purple-500/20 text-purple-400 border border-purple-500/40"
+                          ? "border border-indigo-500/50 text-indigo-300 bg-indigo-500/10"
                           : hasSession
-                          ? "bg-purple-500 text-white font-extrabold"
-                          : "hover:bg-card/80 text-subtext"
+                          ? "bg-white/[0.08] text-slate-200 font-semibold hover:bg-white/[0.12]"
+                          : "text-slate-500 hover:bg-white/[0.04] hover:text-slate-300"
                       }`}
                     >
                       <span>{dayNum}</span>
                       {hasSession && !isSelected && (
-                        <span className="w-1.5 h-1.5 rounded-full bg-amber-400 absolute bottom-1" />
+                        <span className="w-1 h-1 rounded-full bg-indigo-400 absolute bottom-1" />
                       )}
                     </button>
                   );
                 })}
               </div>
 
-              {/* Calendar Footer Legend */}
-              <div className="pt-4 border-t border-card/60 flex items-center justify-between text-[11px] font-bold text-subtext">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-purple-500" />
-                    <span>Scheduled Session</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-purple-400/40" />
-                    <span>Today</span>
-                  </div>
+              <div className="pt-3 border-t border-white/[0.06] flex items-center justify-between text-[11px] text-slate-400">
+                <div className="flex items-center gap-3">
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-indigo-500" /> Scheduled
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full border border-indigo-400" /> Today
+                  </span>
                 </div>
-                <div className="text-right">
-                  <span className="text-xs font-black text-text block">2</span>
-                  <span className="text-[10px] text-subtext">Aug 5</span>
-                </div>
+                <span>{sessions.length} sessions</span>
               </div>
             </div>
 
-            {/* Right Column: Upcoming Live Sessions List */}
-            <div className="lg:col-span-2 space-y-4">
+            {/* Schedule List */}
+            <div className="lg:col-span-2 space-y-3">
               <div className="flex items-center justify-between">
-                <h3 className="font-extrabold text-lg text-text flex items-center gap-2">
-                  <Clock className="w-5 h-5 text-amber-400" />
-                  Upcoming Live Sessions ({calendarUpcomingSessions.length})
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                  Scheduled Live Sessions ({calendarSessions.length})
                 </h3>
                 {selectedCalendarDate && (
                   <button
                     onClick={() => setSelectedCalendarDate(null)}
-                    className="text-xs font-bold text-primary hover:underline"
+                    className="text-xs text-indigo-400 hover:text-indigo-300 cursor-pointer font-medium"
                   >
-                    Clear Filter ({selectedCalendarDate})
+                    Clear filter
                   </button>
                 )}
               </div>
 
-              <div className="space-y-4">
-                {calendarUpcomingSessions.map((session) => (
+              <div className="space-y-2.5">
+                {calendarSessions.map((session) => (
                   <div
                     key={session.id}
-                    className="bg-card/60 backdrop-blur-md border border-card/80 rounded-3xl p-5 shadow-lg space-y-3 relative overflow-hidden group hover:border-purple-500/40 transition-all"
+                    className="bg-[#121824]/90 border border-white/[0.08] hover:border-white/[0.14] rounded-2xl p-4 transition-all duration-150 space-y-3"
                   >
-                    {/* Header Badges */}
-                    <div className="flex items-center justify-between gap-2 flex-wrap">
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-black text-amber-400 bg-amber-500/15 px-2.5 py-0.5 rounded-full border border-amber-500/30 flex items-center gap-1 uppercase">
-                          <Clock className="w-3 h-3" /> UPCOMING
-                        </span>
-                        <span className="text-xs font-extrabold text-purple-400 bg-purple-500/15 px-3 py-0.5 rounded-full border border-purple-500/30">
-                          {session.courseName}
-                        </span>
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <div>
+                        <span className="text-[11px] text-slate-400 block mb-0.5">{session.courseName}</span>
+                        <h4 className="text-sm font-semibold text-slate-100">{session.title}</h4>
+                      </div>
+                      <div className="text-left sm:text-right shrink-0">
+                        <span className="text-xs font-medium text-slate-300 block">{session.date}</span>
+                        <span className="text-[11px] text-slate-400">{session.time}</span>
                       </div>
                     </div>
 
-                    {/* Title & Description */}
-                    <div>
-                      <h4 className="text-lg font-black text-text group-hover:text-purple-400 transition-colors">
-                        {session.title}
-                      </h4>
-                      <p className="text-xs text-subtext font-medium mt-1 leading-relaxed">
-                        {session.description || "Live interactive session with Q&A and code walkthroughs."}
-                      </p>
-                    </div>
-
-                    {/* Footer Details & Action Button */}
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-card/80">
-                      <div className="flex items-center gap-4 text-xs font-bold text-subtext flex-wrap">
-                        <span className="flex items-center gap-1 text-text">
-                          <Calendar className="w-3.5 h-3.5 text-purple-400" /> {session.date}
-                        </span>
-                        <span className="flex items-center gap-1 text-text">
-                          <Clock className="w-3.5 h-3.5 text-amber-400" /> {session.time} ({session.durationMinutes} mins)
-                        </span>
-                        <span className="flex items-center gap-1 text-emerald-400 font-extrabold">
-                          <Users className="w-3.5 h-3.5" /> {session.registeredStudentsCount} Enrolled Students
-                        </span>
-                      </div>
-
+                    <div className="flex items-center justify-between pt-2 border-t border-white/[0.06] text-xs">
+                      <span className="text-slate-400">Approved • ₹{session.compensationAmount?.toLocaleString()}</span>
                       <div className="flex items-center gap-2">
-                        <a
-                          href={session.meetingUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="px-5 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:opacity-90 text-white font-extrabold text-xs rounded-xl shadow-md shadow-purple-600/20 flex items-center gap-2 shrink-0 transition-transform hover:scale-105"
-                        >
-                          <Video className="w-4 h-4" /> Join / Start Live
-                        </a>
                         <button
-                          onClick={() => deleteSession(session.id)}
-                          className="p-2.5 text-subtext hover:text-rose-400 rounded-xl hover:bg-card border border-card/60 shrink-0"
-                          title="Delete Session"
+                          onClick={() => setSelectedSessionForDetails(session)}
+                          className="px-3 py-1.5 bg-white/[0.04] hover:bg-white/[0.08] text-slate-300 rounded-lg text-xs font-medium border border-white/[0.08] transition-colors"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          Details
                         </button>
+                        {session.status === "Live" && (
+                          <a
+                            href={session.meetingUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-500 text-white rounded-lg text-xs font-medium transition-colors"
+                          >
+                            Enter Live Room
+                          </a>
+                        )}
                       </div>
                     </div>
                   </div>
                 ))}
-
-                {calendarUpcomingSessions.length === 0 && (
-                  <div className="bg-card/40 border border-card rounded-2xl p-12 text-center text-subtext">
-                    <Tv className="w-10 h-10 mx-auto mb-2 opacity-20" />
-                    <p className="font-extrabold text-sm text-text">No upcoming live sessions on this date</p>
-                    <p className="text-xs">Select another date from the schedule calendar.</p>
-                  </div>
-                )}
               </div>
             </div>
           </div>
         </div>
       ) : (
         /* ══════════════════════════════════════════════════════════════
-           STANDARD MINIMAL LIVE SESSIONS LIST VIEW
+           STANDARD VIEW: METRICS STRIP + SESSION CARDS
            ══════════════════════════════════════════════════════════════ */
         <>
-          {/* 1. HERO HEADER */}
-          <div className="flex items-center justify-between pt-1 pb-1 border-b border-card/60">
-            <div>
-              <h1 className="text-2xl font-extrabold text-text tracking-tight flex items-center gap-2.5">
-                <Tv className="w-6 h-6 text-primary" />
-                Live Sessions
-              </h1>
-              <p className="text-xs text-subtext font-medium mt-0.5">
-                Manage all live classes from one place.
-              </p>
-            </div>
-
-            <button
-              onClick={() => setIsScheduleModalOpen(true)}
-              className="bg-primary hover:bg-primary/90 text-white font-extrabold px-4 py-2.5 rounded-xl shadow-md shadow-primary/20 flex items-center gap-1.5 text-xs transition-all hover:scale-105"
-            >
-              <Plus className="w-4 h-4" /> + Schedule Session
-            </button>
-          </div>
-
-          {/* 2. EXACTLY 4 KPI STAT CARDS */}
+          {/* ─────────────────────────────────────────────────────────────
+             2. REFINED HORIZONTAL METRICS STRIP
+             ───────────────────────────────────────────────────────────── */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
-              { label: "Upcoming", value: upcomingCount, icon: Clock, color: "text-purple-400" },
-              { label: "Live Now", value: liveNowCount, icon: Radio, color: "text-rose-400 animate-pulse" },
-              { label: "Assigned", value: assignedCount, icon: ShieldAlert, color: "text-blue-400" },
-              { label: "Completed", value: completedCount, icon: CheckCircle2, color: "text-emerald-400" },
-            ].map((stat, i) => (
-              <div key={i} className="bg-card/50 backdrop-blur-md border border-card/80 rounded-xl p-3.5 shadow-sm flex items-center justify-between">
-                <div>
-                  <span className="text-[10px] font-black text-subtext uppercase tracking-wider block">{stat.label}</span>
-                  <span className="text-xl font-black text-text mt-0.5 block">{stat.value}</span>
-                </div>
-                <div className="p-2 rounded-lg bg-card border border-card/60">
-                  <stat.icon className={`w-4 h-4 ${stat.color}`} />
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* 3. COMPACT ACCENT BAR FOR ACTION REQUIRED */}
-          {actionRequiredList.length > 0 && (
-            <div className="bg-amber-500/10 border-l-4 border-l-amber-400 border border-amber-500/20 rounded-xl p-3 flex items-center justify-between text-xs shadow-sm">
-              <div className="flex items-center gap-2.5">
-                <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
-                <span className="font-bold text-text">
-                  ⚠ Action Required ({actionRequiredList.length})
-                </span>
-                <span className="hidden sm:inline text-subtext">• {actionRequiredList[0].title}</span>
-              </div>
-
-              <button
-                onClick={() => setIsActionDrawerOpen(!isActionDrawerOpen)}
-                className="text-xs font-black text-amber-400 hover:underline flex items-center gap-1 shrink-0"
-              >
-                {isActionDrawerOpen ? "Hide" : "View Actions →"}
-              </button>
-            </div>
-          )}
-
-          {/* Collapsible Action Details */}
-          <AnimatePresence>
-            {isActionDrawerOpen && actionRequiredList.length > 0 && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                className="space-y-2 bg-card/30 border border-amber-500/20 p-3 rounded-2xl"
-              >
-                {actionRequiredList.map(s => (
-                  <div key={s.id} className="p-3 bg-card border border-card rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-                    <div>
-                      <span className="text-[9px] font-black text-blue-400 uppercase bg-blue-500/15 px-2 py-0.5 rounded border border-blue-500/20">
-                        🛡 ASSIGNED BY ADMIN
-                      </span>
-                      <h4 className="font-extrabold text-text mt-1">{s.title}</h4>
-                      <p className="text-[11px] text-subtext">{s.date} at {s.time} • {s.registeredStudentsCount} Students</p>
-                    </div>
-
-                    <div className="flex items-center gap-2 shrink-0">
-                      {s.status === "Waiting Confirmation" ? (
-                        <>
-                          <button
-                            onClick={() => setRescheduleAdminSession(s)}
-                            className="px-3 py-1.5 bg-card hover:bg-card/80 text-subtext font-bold text-[11px] rounded-lg border border-card"
-                          >
-                            Request Reschedule
-                          </button>
-                          <button
-                            onClick={() => handleAcceptSession(s.id)}
-                            className="px-3.5 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold text-[11px] rounded-lg shadow-sm"
-                          >
-                            Accept
-                          </button>
-                        </>
-                      ) : (
-                        <span className="text-[10px] font-extrabold text-purple-400 bg-purple-500/10 px-2.5 py-1 rounded-lg border border-purple-500/20">
-                          Reschedule Awaiting Admin Approval
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* 4. CLEAN TOOLBAR: TABS + STATUS DROPDOWN + SEARCH + CALENDAR TOGGLE */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-card/40 border border-card/80 p-2.5 rounded-2xl shadow-sm">
-            <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0">
-              {[
-                { id: "All", label: "All" },
-                { id: "ADMIN_ASSIGNED", label: "Assigned by Admin" },
-                { id: "INSTRUCTOR_CREATED", label: "My Sessions" },
-              ].map((tab) => (
+              {
+                id: "Live Now",
+                label: "LIVE NOW",
+                value: liveNowCount,
+                desc: "Currently active",
+                accent: liveNowCount > 0 ? "text-rose-400" : "text-slate-100",
+                dot: liveNowCount > 0 ? "bg-rose-500 animate-ping" : "bg-slate-600",
+              },
+              {
+                id: "Upcoming",
+                label: "UPCOMING",
+                value: upcomingCount,
+                desc: "Scheduled & confirmed",
+                accent: "text-slate-100",
+                dot: "bg-indigo-400",
+              },
+              {
+                id: "Completed",
+                label: "COMPLETED",
+                value: completedCount,
+                desc: "Delivered classes",
+                accent: "text-slate-100",
+                dot: "bg-emerald-400",
+              },
+              {
+                id: "All",
+                label: "TOTAL EARNINGS",
+                value: `₹${(totalEarnings / 1000).toFixed(0)}K`,
+                desc: "Live training revenue",
+                accent: "text-slate-100",
+                dot: "bg-emerald-500",
+              },
+            ].map((metric) => {
+              const isSelected = selectedNavTab === metric.id && metric.id !== "All";
+              return (
                 <button
-                  key={tab.id}
-                  onClick={() => setOwnershipTab(tab.id as any)}
-                  className={`px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-all whitespace-nowrap ${
-                    ownershipTab === tab.id
-                      ? "bg-primary text-white shadow-sm"
-                      : "text-subtext hover:bg-card hover:text-text"
+                  key={metric.label}
+                  onClick={() => setSelectedNavTab(metric.id)}
+                  className={`bg-[#121824]/90 border rounded-2xl p-4 text-left transition-all duration-150 cursor-pointer hover:border-white/[0.16] hover:bg-[#151D2C] ${
+                    isSelected ? "border-indigo-500/40 bg-[#162032]" : "border-white/[0.08]"
                   }`}
                 >
-                  {tab.label}
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-[10px] font-semibold text-slate-400 tracking-wider">
+                      {metric.label}
+                    </span>
+                    <span className={`w-1.5 h-1.5 rounded-full ${metric.dot}`} />
+                  </div>
+                  <div className={`text-xl sm:text-2xl font-semibold tracking-tight ${metric.accent}`}>
+                    {metric.value}
+                  </div>
+                  <div className="text-[11px] text-slate-500 mt-0.5 font-normal">
+                    {metric.desc}
+                  </div>
                 </button>
-              ))}
+              );
+            })}
+          </div>
+
+          {/* ─────────────────────────────────────────────────────────────
+             3. CONTROL BAR & SEGMENTED FILTER NAVIGATION
+             ───────────────────────────────────────────────────────────── */}
+          <div className="bg-[#121824]/90 border border-white/[0.08] p-2 rounded-2xl shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
+            {/* Nav Tabs */}
+            <div className="flex items-center gap-1 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
+              {[
+                { id: "All", label: "All Live Sessions" },
+                { id: "Live Now", label: "Live Now", count: liveNowCount, isLive: true },
+                { id: "Upcoming", label: "Upcoming", count: upcomingCount },
+                { id: "Reschedule Pending", label: "Reschedule Pending" },
+                { id: "Completed", label: "Completed" },
+              ].map((tab) => {
+                const isActive = selectedNavTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setSelectedNavTab(tab.id)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all duration-150 whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
+                      isActive
+                        ? "bg-white/[0.12] text-white font-semibold shadow-xs"
+                        : "text-slate-400 hover:text-slate-200 hover:bg-white/[0.04]"
+                    }`}
+                  >
+                    {tab.isLive && (
+                      <span className={`w-1.5 h-1.5 rounded-full ${liveNowCount > 0 ? "bg-rose-500 animate-ping" : "bg-slate-600"}`} />
+                    )}
+                    <span>{tab.label}</span>
+                    {tab.count !== undefined && tab.count > 0 && (
+                      <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
+                        isActive ? "bg-white/20 text-white" : "bg-white/[0.06] text-slate-400"
+                      }`}>
+                        {tab.count}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
             </div>
 
-            <div className="flex items-center gap-2 w-full sm:w-auto">
-              {/* Status Dropdown Filter */}
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="bg-background border border-card rounded-xl px-3 py-1.5 text-xs font-bold text-text focus:outline-none focus:border-primary"
-              >
-                <option value="All">Status ▼</option>
-                <option value="Waiting Confirmation">Waiting Confirmation</option>
-                <option value="Accepted">Accepted</option>
-                <option value="Scheduled">Scheduled</option>
-                <option value="Reschedule Requested">Reschedule Requested</option>
-                <option value="Live">Live Now</option>
-                <option value="Completed">Completed</option>
-              </select>
-
-              {/* Search Bar */}
-              <div className="relative flex-1 sm:w-48">
-                <Search className="w-3.5 h-3.5 text-subtext absolute left-3 top-1/2 -translate-y-1/2" />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search..."
-                  className="w-full bg-background border border-card rounded-xl pl-9 pr-3 py-1.5 text-xs text-text placeholder:text-subtext/60 font-medium focus:outline-none focus:border-primary"
-                />
-              </div>
-
-              {/* Calendar Toggle Button */}
-              <button
-                onClick={() => setViewMode("CALENDAR")}
-                className="p-2 bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 border border-purple-500/30 rounded-xl text-xs font-bold shrink-0 flex items-center gap-1.5 transition-all"
-                title="Switch to Calendar View"
-              >
-                <CalendarDays className="w-4 h-4" />
-                <span className="hidden sm:inline font-extrabold">📅 Calendar</span>
-              </button>
+            {/* Search Input on Right */}
+            <div className="relative w-full sm:w-64 shrink-0">
+              <Search className="w-3.5 h-3.5 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search live sessions..."
+                className="w-full bg-white/[0.04] border border-white/[0.08] focus:border-white/[0.2] rounded-xl pl-8 pr-3 py-1.5 text-xs text-slate-200 placeholder:text-slate-500 focus:outline-none transition-colors"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 text-xs"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
             </div>
           </div>
 
-          {/* 5. COMPACT SESSIONS LIST WITH DISTINCT ACCENT STRIPES */}
+          {/* ─────────────────────────────────────────────────────────────
+             4. APPROVED LIVE SESSION CARDS / ROWS
+             ───────────────────────────────────────────────────────────── */}
           <div className="space-y-2.5">
             {filteredSessions.map((session) => {
-              const isAdmin = session.ownershipType === "ADMIN_ASSIGNED";
+              const isLive = session.status === "Live";
+              const isCompleted = session.status === "Completed";
+              const isReschedulePending = session.status === "Reschedule Requested";
 
               return (
                 <div
                   key={session.id}
-                  className={`bg-card/50 backdrop-blur-md border rounded-2xl p-4 transition-all flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-sm hover:bg-card/70 ${
-                    session.status === "Live"
-                      ? "border-l-4 border-l-rose-500 border-rose-500/30 bg-rose-500/5"
-                      : isAdmin
-                      ? "border-l-4 border-l-blue-500 border-card/80 bg-blue-500/5"
-                      : "border-l-4 border-l-purple-500 border-card/80 bg-purple-500/5"
+                  className={`border rounded-2xl p-4 sm:p-5 transition-all duration-150 flex flex-col md:flex-row md:items-center justify-between gap-4 ${
+                    isCompleted
+                      ? "bg-[#101520]/60 border-white/[0.04] opacity-80 hover:opacity-100 hover:bg-[#121824]"
+                      : isLive
+                      ? "bg-[#151421] border-rose-500/30 hover:border-rose-500/50 shadow-sm"
+                      : "bg-[#121824]/90 border-white/[0.08] hover:border-white/[0.14] hover:bg-[#151D2C]"
                   }`}
                 >
-                  {/* Left Details */}
-                  <div className="space-y-1 min-w-0 flex-1">
+                  {/* LEFT: Status, Title, Course */}
+                  <div className="space-y-1 min-w-0 md:max-w-[42%] flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
-                      {isAdmin ? (
-                        <span className="text-[9px] font-black px-2 py-0.5 rounded border uppercase bg-blue-500/15 text-blue-400 border-blue-500/30 flex items-center gap-1">
-                          <ShieldCheck className="w-3 h-3" /> 🛡 ASSIGNED BY ADMIN
-                        </span>
+                      {isLive ? (
+                        <div className="flex items-center gap-1.5">
+                          <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping shrink-0" />
+                          <span className="text-[11px] font-semibold text-rose-400 uppercase tracking-wider">
+                            LIVE NOW
+                          </span>
+                        </div>
+                      ) : isReschedulePending ? (
+                        <div className="flex items-center gap-1.5">
+                          <span className="w-1.5 h-1.5 rounded-full bg-purple-400 shrink-0" />
+                          <span className="text-[11px] font-semibold text-purple-300 uppercase tracking-wider">
+                            RESCHEDULE PENDING
+                          </span>
+                        </div>
+                      ) : isCompleted ? (
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-emerald-400 text-xs font-semibold">✓</span>
+                          <span className="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider">
+                            COMPLETED
+                          </span>
+                        </div>
                       ) : (
-                        <span className="text-[9px] font-black px-2 py-0.5 rounded border uppercase bg-purple-500/15 text-purple-400 border-purple-500/30 flex items-center gap-1">
-                          <User className="w-3 h-3" /> 👤 CREATED BY YOU
-                        </span>
+                        <div className="flex items-center gap-1.5">
+                          <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 shrink-0" />
+                          <span className="text-[11px] font-semibold text-indigo-300 uppercase tracking-wider">
+                            UPCOMING
+                          </span>
+                        </div>
                       )}
 
-                      <span
-                        className={`text-[9px] font-black px-2 py-0.5 rounded-full border uppercase ${
-                          session.status === "Live"
-                            ? "bg-rose-500 text-white animate-pulse"
-                            : session.status === "Completed"
-                            ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/30"
-                            : session.status === "Waiting Confirmation"
-                            ? "bg-amber-500/15 text-amber-400 border-amber-500/30"
-                            : "bg-purple-500/15 text-purple-400 border-purple-500/30"
-                        }`}
-                      >
-                        {session.status}
+                      <span className="text-[10px] text-slate-500 font-medium">
+                        • {session.approvalStatus}
                       </span>
-
-                      <span className="text-[11px] font-semibold text-subtext">• {session.courseName}</span>
                     </div>
 
-                    <h3 className="text-sm font-extrabold text-text truncate">{session.title}</h3>
+                    <h3
+                      onClick={() => setSelectedSessionForDetails(session)}
+                      className={`text-[15px] font-semibold tracking-tight hover:text-indigo-300 transition-colors cursor-pointer ${
+                        isCompleted ? "text-slate-300" : "text-white"
+                      }`}
+                    >
+                      {session.title}
+                    </h3>
 
-                    <div className="flex items-center gap-4 text-xs text-subtext font-medium pt-0.5">
-                      <span className="flex items-center gap-1 text-text font-bold"><Calendar className="w-3.5 h-3.5 text-purple-400" /> {session.date} • {session.time}</span>
-                      <span className="flex items-center gap-1"><Users className="w-3.5 h-3.5 text-subtext" /> {session.registeredStudentsCount} Students</span>
-                      {isAdmin && (
-                        <span className="text-[11px] text-blue-400 font-medium">Assigned by Academic Operations</span>
+                    <p className="text-xs text-slate-400 font-normal truncate">
+                      {session.sessionType} • {session.courseName}
+                    </p>
+                  </div>
+
+                  {/* CENTER: Date & Time, Assigned By, Compensation */}
+                  <div className="text-xs text-slate-400 space-y-1 md:px-4 md:border-l md:border-white/[0.06] shrink-0">
+                    <div className="font-medium text-slate-200">
+                      {session.date} • {session.time}
+                    </div>
+
+                    <div className="text-[11px] text-slate-400">
+                      {session.durationMinutes} mins • {session.registeredStudentsCount} enrolled
+                    </div>
+
+                    <div className="flex items-center gap-2 text-[11px]">
+                      {session.compensationAmount && (
+                        <span className="text-slate-300 font-medium">
+                          Compensation ₹{session.compensationAmount.toLocaleString()}
+                        </span>
+                      )}
+                      {session.paymentStatus && (
+                        <span className={`px-1.5 py-0.2 rounded text-[10px] font-medium ${
+                          session.paymentStatus === "Paid"
+                            ? "bg-emerald-500/10 text-emerald-400"
+                            : session.paymentStatus === "Processing"
+                            ? "bg-cyan-500/10 text-cyan-400"
+                            : "bg-white/[0.04] text-slate-400"
+                        }`}>
+                          {session.paymentStatus}
+                        </span>
                       )}
                     </div>
                   </div>
 
-                  {/* Right Actions */}
-                  <div className="flex items-center gap-2 shrink-0 border-t md:border-t-0 pt-2 md:pt-0 border-card/60">
-                    {session.status === "Live" ? (
+                  {/* RIGHT: Actions */}
+                  <div className="flex items-center gap-2 shrink-0 self-end md:self-center">
+                    <button
+                      onClick={() => setSelectedSessionForDetails(session)}
+                      className="px-3 py-2 bg-white/[0.03] hover:bg-white/[0.07] text-slate-300 hover:text-white rounded-xl text-xs font-medium border border-white/[0.08] transition-colors cursor-pointer"
+                    >
+                      Details
+                    </button>
+
+                    {isLive ? (
                       <a
                         href={session.meetingUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white font-extrabold text-xs rounded-xl shadow-md shadow-rose-500/20 flex items-center gap-1.5"
+                        className="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-xs font-semibold shadow-sm transition-colors inline-flex items-center gap-1.5 cursor-pointer"
                       >
-                        <Video className="w-3.5 h-3.5" /> Join Live
+                        <Video className="w-3.5 h-3.5" /> Enter Live Room
                       </a>
-                    ) : session.status === "Completed" ? (
-                      <>
+                    ) : isCompleted ? (
+                      session.recordingUrl ? (
                         <a
                           href={session.recordingUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="px-3 py-1.5 bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 rounded-xl text-xs font-bold flex items-center gap-1"
+                          className="px-3.5 py-2 bg-white/[0.05] hover:bg-white/[0.1] text-slate-200 border border-white/[0.08] rounded-xl text-xs font-medium inline-flex items-center gap-1.5 transition-colors"
                         >
-                          <PlayCircle className="w-3.5 h-3.5" /> Replay
+                          <PlayCircle className="w-3.5 h-3.5 text-slate-400" /> Replay
                         </a>
-                        <button
-                          onClick={() => setSelectedSessionForDetails(session)}
-                          className="px-3 py-1.5 bg-card hover:bg-card/80 text-subtext rounded-xl text-xs font-bold"
-                        >
-                          Analytics
-                        </button>
-                      </>
-                    ) : isAdmin ? (
-                      /* Admin Assigned Actions: Accept, Start Live, Request Reschedule */
-                      session.status === "Waiting Confirmation" ? (
-                        <>
-                          <button
-                            onClick={() => setRescheduleAdminSession(session)}
-                            className="px-3 py-1.5 bg-card hover:bg-card/80 text-subtext text-xs font-bold rounded-xl border border-card"
-                          >
-                            Request Reschedule
-                          </button>
-                          <button
-                            onClick={() => handleAcceptSession(session.id)}
-                            className="px-3.5 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-extrabold rounded-xl shadow-sm"
-                          >
-                            Accept
-                          </button>
-                        </>
-                      ) : session.status === "Reschedule Requested" ? (
-                        <span className="text-[10px] font-bold text-purple-400 bg-purple-500/10 px-3 py-1.5 rounded-xl border border-purple-500/20">
-                          Awaiting Admin Approval
-                        </span>
                       ) : (
-                        <>
-                          <button
-                            onClick={() => setRescheduleAdminSession(session)}
-                            className="px-3 py-1.5 bg-card hover:bg-card/80 text-subtext text-xs font-bold rounded-xl border border-card"
-                          >
-                            Request Reschedule
-                          </button>
-                          <a
-                            href={session.meetingUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="px-3.5 py-1.5 bg-purple-600 hover:bg-purple-500 text-white text-xs font-extrabold rounded-xl shadow-sm flex items-center gap-1"
-                          >
-                            <Video className="w-3.5 h-3.5" /> Start Live
-                          </a>
-                        </>
+                        <span className="text-xs text-slate-500 px-2 py-1 font-medium">Delivered</span>
                       )
+                    ) : isReschedulePending ? (
+                      <span className="text-xs font-medium text-purple-300 bg-purple-500/10 px-3 py-2 rounded-xl border border-purple-500/20">
+                        Awaiting Admin Approval
+                      </span>
                     ) : (
-                      /* Instructor Created Actions: Start Live, Edit Date, Delete */
                       <>
                         <button
-                          onClick={() => setRescheduleInstructorSession(session)}
-                          className="px-3 py-1.5 bg-card hover:bg-card/80 text-subtext text-xs font-bold rounded-xl border border-card"
+                          onClick={() => setRescheduleSession(session)}
+                          className="px-3 py-2 bg-white/[0.03] hover:bg-white/[0.07] text-slate-400 hover:text-slate-200 rounded-xl text-xs font-medium transition-colors cursor-pointer"
                         >
-                          Edit Date
-                        </button>
-                        <button
-                          onClick={() => deleteSession(session.id)}
-                          className="p-2 text-subtext hover:text-rose-400 rounded-lg hover:bg-card"
-                          title="Delete Session"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
+                          Reschedule
                         </button>
                         <a
                           href={session.meetingUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="px-3.5 py-1.5 bg-purple-600 hover:bg-purple-500 text-white text-xs font-extrabold rounded-xl shadow-sm flex items-center gap-1"
+                          className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-medium shadow-sm transition-colors inline-flex items-center gap-1.5 cursor-pointer"
                         >
                           <Video className="w-3.5 h-3.5" /> Start Live
                         </a>
@@ -840,240 +805,250 @@ export function InstructorLiveSessionsView() {
               );
             })}
 
+            {/* Empty State */}
             {filteredSessions.length === 0 && (
-              <div className="bg-card/30 border border-card rounded-2xl p-12 text-center text-subtext">
-                <Tv className="w-10 h-10 mx-auto mb-2 opacity-20" />
-                <p className="font-extrabold text-sm text-text">No live sessions found</p>
-                <p className="text-xs">Try adjusting your filters or search query.</p>
+              <div className="bg-[#121824]/60 border border-white/[0.08] rounded-2xl p-12 text-center text-slate-400 space-y-2">
+                <Tv className="w-8 h-8 mx-auto text-slate-600 stroke-[1.5]" />
+                <h4 className="font-medium text-sm text-slate-300">No active live sessions</h4>
+                <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                  Approved live training sessions will appear here once they are assigned by Admin and approved.
+                </p>
+                {onNavigateTab && (
+                  <button
+                    onClick={() => onNavigateTab("Tasks")}
+                    className="mt-3 px-4 py-2 bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 rounded-xl text-xs font-medium transition-colors cursor-pointer inline-flex items-center gap-1.5"
+                  >
+                    <span>Check Assigned Tasks Hub</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                )}
               </div>
             )}
           </div>
         </>
       )}
 
-      {/* ══════════════════════════════════════════════════════════════
-         ADMIN RESCHEDULE REQUEST MODAL
-         ══════════════════════════════════════════════════════════════ */}
-      {rescheduleAdminSession && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in">
-          <div className="bg-background border border-card rounded-3xl w-full max-w-md p-6 space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-card pb-3">
+      {/* ─────────────────────────────────────────────────────────────
+         5. "DETAILS" SIDE DRAWER
+         ───────────────────────────────────────────────────────────── */}
+      {selectedSessionForDetails && (
+        <div className="fixed inset-0 z-[100] flex justify-end bg-black/75 backdrop-blur-sm animate-in fade-in duration-200 font-sans">
+          <div className="bg-[#101520] border-l border-white/[0.08] w-full max-w-lg h-full p-6 sm:p-7 overflow-y-auto space-y-6 shadow-2xl animate-in slide-in-from-right-4 duration-200">
+            {/* Header */}
+            <div className="flex items-start justify-between pb-4 border-b border-white/[0.08]">
               <div>
-                <span className="text-[10px] font-black uppercase text-blue-400">🛡 Admin Assigned Session</span>
-                <h3 className="text-lg font-extrabold text-text">Request Reschedule</h3>
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20">
+                    Approved Session
+                  </span>
+                  {selectedSessionForDetails.taskIdRef && (
+                    <span className="text-[11px] text-slate-500 font-mono">
+                      Source: Task #{selectedSessionForDetails.taskIdRef}
+                    </span>
+                  )}
+                </div>
+                <h3 className="text-lg font-semibold text-white mt-1 leading-snug">
+                  {selectedSessionForDetails.title}
+                </h3>
               </div>
-              <button onClick={() => setRescheduleAdminSession(null)} className="p-2 text-subtext hover:text-text rounded-xl bg-card">
+              <button
+                onClick={() => setSelectedSessionForDetails(null)}
+                className="p-1.5 text-slate-400 hover:text-white rounded-xl bg-white/[0.04] border border-white/[0.06] transition-colors cursor-pointer shrink-0 ml-3"
+              >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <form onSubmit={handleAdminRescheduleSubmit} className="space-y-3">
+            {/* Two-Column Clean Metadata Grid */}
+            <div className="grid grid-cols-2 gap-3 text-xs">
+              <div className="p-3.5 bg-white/[0.03] border border-white/[0.06] rounded-xl space-y-1">
+                <span className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider block">Course</span>
+                <p className="font-medium text-slate-200">{selectedSessionForDetails.courseName}</p>
+                <p className="text-[11px] text-indigo-400 font-mono">{selectedSessionForDetails.batch}</p>
+              </div>
+
+              <div className="p-3.5 bg-white/[0.03] border border-white/[0.06] rounded-xl space-y-1">
+                <span className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider block">Date & Time</span>
+                <p className="font-medium text-slate-200">{selectedSessionForDetails.date}</p>
+                <p className="text-[11px] text-slate-400">{selectedSessionForDetails.time} ({selectedSessionForDetails.durationMinutes}m)</p>
+              </div>
+
+              <div className="p-3.5 bg-white/[0.03] border border-white/[0.06] rounded-xl space-y-1">
+                <span className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider block">Approval Status</span>
+                <p className="font-medium text-emerald-400">{selectedSessionForDetails.approvalStatus}</p>
+                <p className="text-[11px] text-slate-400">{selectedSessionForDetails.sessionType}</p>
+              </div>
+
+              <div className="p-3.5 bg-white/[0.03] border border-white/[0.06] rounded-xl space-y-1">
+                <span className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider block">Compensation</span>
+                <p className="font-semibold text-slate-200">
+                  ₹{selectedSessionForDetails.compensationAmount?.toLocaleString() || "5,000"}
+                </p>
+                <p className="text-[11px] text-emerald-400 font-medium">Status: {selectedSessionForDetails.paymentStatus}</p>
+              </div>
+            </div>
+
+            {/* Description */}
+            {selectedSessionForDetails.description && (
+              <div className="space-y-1.5">
+                <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Notes & Objective</span>
+                <p className="text-xs text-slate-300 leading-relaxed bg-white/[0.02] p-3 rounded-xl border border-white/[0.06]">
+                  {selectedSessionForDetails.description}
+                </p>
+              </div>
+            )}
+
+            {/* Teaching Requirements Checklist */}
+            {selectedSessionForDetails.requirements && selectedSessionForDetails.requirements.length > 0 && (
+              <div className="space-y-2">
+                <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Key Objectives</span>
+                <div className="space-y-1.5">
+                  {selectedSessionForDetails.requirements.map((req, idx) => (
+                    <div key={idx} className="flex items-start gap-2 text-xs text-slate-300 bg-white/[0.02] p-2.5 rounded-lg border border-white/[0.06]">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
+                      <span>{req}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Meeting Link Endpoint */}
+            <div className="p-3.5 bg-white/[0.03] border border-white/[0.08] rounded-xl flex items-center justify-between gap-3">
+              <div className="truncate">
+                <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Room URL</span>
+                <p className="text-xs font-mono text-slate-300 truncate">{selectedSessionForDetails.meetingUrl}</p>
+              </div>
+              <a
+                href={selectedSessionForDetails.meetingUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-medium transition-colors shrink-0 flex items-center gap-1"
+              >
+                <ExternalLink className="w-3 h-3" /> Launch
+              </a>
+            </div>
+
+            {/* Activity History Timeline */}
+            <div className="space-y-2.5 pt-2 border-t border-white/[0.08]">
+              <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                <History className="w-3.5 h-3.5 text-indigo-400" />
+                <span>Activity & Approval Timeline</span>
+              </div>
+              <div className="space-y-2.5">
+                {selectedSessionForDetails.activityHistory.map((act, index) => (
+                  <div key={index} className="flex items-start gap-2.5 text-xs">
+                    <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-1.5 shrink-0" />
+                    <div>
+                      <div className="font-medium text-slate-200">{act.event}</div>
+                      <div className="text-[10px] text-slate-500 font-mono">
+                        {act.timestamp} • {act.actor}
+                      </div>
+                      {act.note && (
+                        <p className="text-[11px] text-slate-400 italic mt-0.5">{act.note}</p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Bottom Close Action */}
+            <div className="pt-3 border-t border-white/[0.08] flex justify-end">
+              <button
+                onClick={() => setSelectedSessionForDetails(null)}
+                className="px-4 py-2 bg-white/[0.06] hover:bg-white/[0.1] text-slate-200 rounded-xl text-xs font-medium transition-colors cursor-pointer"
+              >
+                Close Drawer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─────────────────────────────────────────────────────────────
+         6. "REQUEST RESCHEDULE" MODAL
+         ───────────────────────────────────────────────────────────── */}
+      {rescheduleSession && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200 font-sans">
+          <div className="bg-[#121824] border border-white/[0.08] rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl">
+            <div className="flex items-center justify-between pb-3 border-b border-white/[0.08]">
+              <div>
+                <span className="text-[10px] font-semibold uppercase text-indigo-400">Schedule Change</span>
+                <h3 className="text-base font-semibold text-white">Request Session Reschedule</h3>
+              </div>
+              <button
+                onClick={() => setRescheduleSession(null)}
+                className="p-1.5 text-slate-400 hover:text-white rounded-lg bg-white/[0.04] cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Current Schedule Summary */}
+            <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06] text-xs space-y-1">
+              <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Current Schedule</span>
+              <p className="font-semibold text-slate-200">{rescheduleSession.title}</p>
+              <p className="text-slate-400">{rescheduleSession.date} • {rescheduleSession.time}</p>
+            </div>
+
+            <form onSubmit={handleRescheduleSubmit} className="space-y-3.5">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-text mb-1">Select New Date *</label>
+                  <label className="block text-xs font-medium text-slate-300 mb-1">Preferred Date *</label>
                   <input
                     type="date"
                     required
-                    value={adminNewDate}
-                    onChange={(e) => setAdminNewDate(e.target.value)}
-                    className="w-full bg-card border border-card rounded-xl px-3 py-2 text-xs font-bold text-text"
+                    value={rescheduleNewDate}
+                    onChange={(e) => setRescheduleNewDate(e.target.value)}
+                    className="w-full bg-white/[0.04] border border-white/[0.08] focus:border-indigo-500 rounded-xl px-3 py-2 text-xs font-medium text-slate-200 focus:outline-none"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-text mb-1">Select New Time *</label>
+                  <label className="block text-xs font-medium text-slate-300 mb-1">Preferred Time *</label>
                   <input
                     type="time"
                     required
-                    value={adminNewTime}
-                    onChange={(e) => setAdminNewTime(e.target.value)}
-                    className="w-full bg-card border border-card rounded-xl px-3 py-2 text-xs font-bold text-text"
+                    value={rescheduleNewTime}
+                    onChange={(e) => setRescheduleNewTime(e.target.value)}
+                    className="w-full bg-white/[0.04] border border-white/[0.08] focus:border-indigo-500 rounded-xl px-3 py-2 text-xs font-medium text-slate-200 focus:outline-none"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-text mb-1">Mandatory Reason for Admin *</label>
+                <label className="block text-xs font-medium text-slate-300 mb-1">Reason *</label>
                 <textarea
                   rows={3}
                   required
-                  value={adminReason}
-                  onChange={(e) => setAdminReason(e.target.value)}
-                  placeholder="Explain why this admin-assigned session needs to be rescheduled..."
-                  className="w-full bg-card border border-card rounded-xl px-3 py-2 text-xs font-medium text-text"
+                  value={rescheduleReason}
+                  onChange={(e) => setRescheduleReason(e.target.value)}
+                  placeholder="Describe why this assigned time slot needs to be rescheduled..."
+                  className="w-full bg-white/[0.04] border border-white/[0.08] focus:border-indigo-500 rounded-xl px-3 py-2 text-xs text-slate-200 placeholder:text-slate-500 focus:outline-none resize-none"
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-card">
-                <button type="button" onClick={() => setRescheduleAdminSession(null)} className="px-4 py-2 bg-card text-subtext rounded-xl font-bold text-xs">
+              <div className="p-2.5 rounded-xl bg-white/[0.02] border border-white/[0.06] text-[11px] text-slate-400 flex items-start gap-2">
+                <Info className="w-3.5 h-3.5 text-indigo-400 shrink-0 mt-0.5" />
+                <span>Reschedule requests will be reviewed and confirmed by Academic Operations.</span>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-white/[0.08]">
+                <button
+                  type="button"
+                  onClick={() => setRescheduleSession(null)}
+                  className="px-3.5 py-2 bg-white/[0.04] hover:bg-white/[0.08] text-slate-300 rounded-xl font-medium text-xs cursor-pointer"
+                >
                   Cancel
                 </button>
-                <button type="submit" className="px-5 py-2 bg-primary text-white font-extrabold text-xs rounded-xl shadow-sm">
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs rounded-xl shadow-sm cursor-pointer"
+                >
                   Submit Request
                 </button>
               </div>
             </form>
-          </div>
-        </div>
-      )}
-
-      {/* ══════════════════════════════════════════════════════════════
-         INSTANT RESCHEDULE MODAL (INSTRUCTOR CREATED)
-         ══════════════════════════════════════════════════════════════ */}
-      {rescheduleInstructorSession && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in">
-          <div className="bg-background border border-card rounded-3xl w-full max-w-md p-6 space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-card pb-3">
-              <div>
-                <span className="text-[10px] font-black uppercase text-purple-400">👤 Created by You</span>
-                <h3 className="text-lg font-extrabold text-text">Reschedule Session</h3>
-              </div>
-              <button onClick={() => setRescheduleInstructorSession(null)} className="p-2 text-subtext hover:text-text rounded-xl bg-card">
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <form onSubmit={handleInstructorRescheduleSubmit} className="space-y-3">
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-bold text-text mb-1">New Date *</label>
-                  <input
-                    type="date"
-                    required
-                    value={instructorNewDate}
-                    onChange={(e) => setInstructorNewDate(e.target.value)}
-                    className="w-full bg-card border border-card rounded-xl px-3 py-2 text-xs font-bold text-text"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-text mb-1">New Time *</label>
-                  <input
-                    type="time"
-                    required
-                    value={instructorNewTime}
-                    onChange={(e) => setInstructorNewTime(e.target.value)}
-                    className="w-full bg-card border border-card rounded-xl px-3 py-2 text-xs font-bold text-text"
-                  />
-                </div>
-              </div>
-
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-card">
-                <button type="button" onClick={() => setRescheduleInstructorSession(null)} className="px-4 py-2 bg-card text-subtext rounded-xl font-bold text-xs">
-                  Cancel
-                </button>
-                <button type="submit" className="px-5 py-2 bg-purple-600 text-white font-extrabold text-xs rounded-xl shadow-sm">
-                  Update Session
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* ══════════════════════════════════════════════════════════════
-         SCHEDULE NEW SESSION MODAL (INSTRUCTOR CREATED)
-         ══════════════════════════════════════════════════════════════ */}
-      {isScheduleModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in">
-          <div className="bg-background border border-card rounded-3xl w-full max-w-md p-6 space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-card pb-3">
-              <div>
-                <span className="text-[10px] font-black uppercase text-primary">Instructor Session</span>
-                <h3 className="text-lg font-extrabold text-text">Schedule Live Session</h3>
-              </div>
-              <button onClick={() => setIsScheduleModalOpen(false)} className="p-2 text-subtext hover:text-text rounded-xl bg-card">
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <form onSubmit={handleCreateSession} className="space-y-3">
-              <div>
-                <label className="block text-xs font-bold text-text mb-1">Session Title *</label>
-                <input
-                  type="text"
-                  required
-                  value={newSessionForm.title}
-                  onChange={(e) => setNewSessionForm({ ...newSessionForm, title: e.target.value })}
-                  placeholder="e.g. React Masterclass: Server Actions"
-                  className="w-full bg-card border border-card rounded-xl px-3 py-2 text-xs font-medium text-text"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-bold text-text mb-1">Date *</label>
-                  <input
-                    type="date"
-                    required
-                    value={newSessionForm.date}
-                    onChange={(e) => setNewSessionForm({ ...newSessionForm, date: e.target.value })}
-                    className="w-full bg-card border border-card rounded-xl px-3 py-2 text-xs font-bold text-text"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-text mb-1">Time *</label>
-                  <input
-                    type="time"
-                    required
-                    value={newSessionForm.time}
-                    onChange={(e) => setNewSessionForm({ ...newSessionForm, time: e.target.value })}
-                    className="w-full bg-card border border-card rounded-xl px-3 py-2 text-xs font-bold text-text"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-text mb-1">Meeting Link *</label>
-                <input
-                  type="url"
-                  required
-                  value={newSessionForm.meetingUrl}
-                  onChange={(e) => setNewSessionForm({ ...newSessionForm, meetingUrl: e.target.value })}
-                  placeholder="https://meet.google.com/abc-defg-hij"
-                  className="w-full bg-card border border-card rounded-xl px-3 py-2 text-xs font-medium text-text"
-                />
-              </div>
-
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-card">
-                <button type="button" onClick={() => setIsScheduleModalOpen(false)} className="px-4 py-2 bg-card text-subtext rounded-xl font-bold text-xs">
-                  Cancel
-                </button>
-                <button type="submit" className="px-5 py-2 bg-primary text-white font-extrabold text-xs rounded-xl shadow-sm">
-                  Schedule
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* ══════════════════════════════════════════════════════════════
-         SESSION DETAILS MODAL
-         ══════════════════════════════════════════════════════════════ */}
-      {selectedSessionForDetails && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in">
-          <div className="bg-background border border-card rounded-3xl w-full max-w-md p-6 space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-card pb-3">
-              <div>
-                <span className="text-[10px] font-black uppercase text-primary">Session Details</span>
-                <h3 className="text-lg font-extrabold text-text">{selectedSessionForDetails.title}</h3>
-              </div>
-              <button onClick={() => setSelectedSessionForDetails(null)} className="p-2 text-subtext hover:text-text rounded-xl bg-card">
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <div className="space-y-2 text-xs font-semibold text-subtext">
-              <p><span className="text-text font-bold">Course:</span> {selectedSessionForDetails.courseName}</p>
-              <p><span className="text-text font-bold">Date & Time:</span> {selectedSessionForDetails.date} at {selectedSessionForDetails.time}</p>
-              <p><span className="text-text font-bold">Attendance:</span> {selectedSessionForDetails.attendanceRate || 92}%</p>
-              <p><span className="text-text font-bold">Average Rating:</span> ★ {selectedSessionForDetails.averageRating || 4.8}</p>
-            </div>
-
-            <div className="flex items-center justify-end pt-3 border-t border-card">
-              <button onClick={() => setSelectedSessionForDetails(null)} className="px-4 py-2 bg-card text-text rounded-xl font-bold text-xs">
-                Close
-              </button>
-            </div>
           </div>
         </div>
       )}

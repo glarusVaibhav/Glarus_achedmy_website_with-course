@@ -55,11 +55,11 @@ export default function WorkflowTimeline() {
     }
   ];
 
-  const liveCohortSteps = [
+  const liveClassSteps = [
     {
       num: "01",
-      title: "Apply for Live Cohort",
-      desc: "Reserve your seat in upcoming live interactive cohorts led by FAANG lead instructors.",
+      title: "Apply for Live Classes",
+      desc: "Reserve your seat in upcoming live interactive classes led by FAANG lead instructors.",
       icon: <CalendarCheck className="w-5 h-5 text-emerald-400" />
     },
     {
@@ -89,7 +89,7 @@ export default function WorkflowTimeline() {
   ];
 
   return (
-    <section className="w-full py-8 md:py-10 bg-background text-text relative selection:bg-purple-500/30 overflow-hidden" ref={ref}>
+    <section className="w-full pt-8 pb-2 md:pt-10 md:pb-4 bg-background text-text relative selection:bg-purple-500/30 overflow-hidden" ref={ref}>
       {/* Background Ambient Glows */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[700px] h-[700px] bg-purple-600/10 blur-[180px] rounded-full pointer-events-none z-0" />
 
@@ -112,12 +112,12 @@ export default function WorkflowTimeline() {
           </h2>
 
           <p className="text-lg md:text-xl text-subtext font-medium leading-relaxed">
-            Choose the learning experience that fits your goals. Learn independently with AI or join expert-led live cohorts.
+            Choose the learning experience that fits your goals. Learn independently with AI or join expert-led live classes.
           </p>
         </motion.div>
 
         {/* DUAL PARALLEL PATHS CONTAINER */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start relative mb-16">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start relative mb-0">
 
           {/* PATH A: SELF-PACED LEARNING */}
           <motion.div 
@@ -182,7 +182,7 @@ export default function WorkflowTimeline() {
             </div>
           </motion.div>
 
-          {/* PATH B: LIVE COHORT TRAINING */}
+          {/* PATH B: LIVE CLASS TRAINING */}
           <motion.div 
             initial={{ opacity: 0, x: 30 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -197,7 +197,7 @@ export default function WorkflowTimeline() {
                   <Video className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="text-2xl font-black text-text">Live Cohort Training</h3>
+                  <h3 className="text-2xl font-black text-text">Live Class Training</h3>
                   <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider mt-0.5">Instructor-Led Batches</p>
                 </div>
               </div>
@@ -211,7 +211,7 @@ export default function WorkflowTimeline() {
             </div>
 
             <p className="text-sm font-medium text-subtext leading-relaxed mb-8">
-              Join instructor-led cohorts with live sessions, real-time coding workshops, 1-on-1 mentorship, placement prep, and instant live doubt solving.
+              Join instructor-led classes with live sessions, real-time coding workshops, 1-on-1 mentorship, placement prep, and instant live doubt solving.
             </p>
 
             {/* Timeline Steps for Live Training */}
@@ -219,7 +219,7 @@ export default function WorkflowTimeline() {
               {/* Vertical connecting line */}
               <div className="absolute left-[13px] top-4 bottom-4 w-0.5 bg-gradient-to-b from-emerald-500/60 via-emerald-500/30 to-emerald-500/10 rounded-full" />
 
-              {liveCohortSteps.map((step, idx) => (
+              {liveClassSteps.map((step, idx) => (
                 <motion.div 
                   key={idx}
                   initial={{ opacity: 0, y: 15 }}
@@ -246,48 +246,6 @@ export default function WorkflowTimeline() {
           </motion.div>
 
         </div>
-
-        {/* BOTTOM MERGED DESTINATION CARD */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: 30 }}
-          whileInView={{ opacity: 1, scale: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8, delay: 0.3 }}
-          className="w-full bg-gradient-to-r from-purple-950/40 via-card/90 to-emerald-950/40 backdrop-blur-2xl border border-sky-500/40 rounded-3xl p-8 md:p-12 shadow-[0_0_60px_rgba(56,189,248,0.15)] text-center relative overflow-hidden"
-        >
-          <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 via-sky-500/10 to-emerald-500/10 opacity-50 pointer-events-none" />
-
-          <div className="max-w-3xl mx-auto relative z-10 space-y-6">
-            <span className="px-4 py-1.5 rounded-full bg-sky-500/20 text-sky-300 border border-sky-500/30 text-xs font-black uppercase tracking-wider">
-              🏆 The Destination
-            </span>
-
-            <h3 className="text-3xl md:text-5xl font-black text-text tracking-tight">
-              Become a Production-Ready <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-sky-400 to-emerald-400">AI Engineer</span>
-            </h3>
-
-            <p className="text-base md:text-lg text-subtext font-medium leading-relaxed max-w-2xl mx-auto">
-              Whether you learn independently or through live mentorship, you&apos;ll build production-ready projects, earn industry certifications, and become job-ready.
-            </p>
-
-            {/* Achievements checklist */}
-            <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6 pt-4">
-              {[
-                "100% Capstone Code Completion",
-                "1-on-1 Technical Interview",
-                "Guaranteed Internship Allocation*",
-                "Industry AI Certification",
-                "Hiring Partner Referrals"
-              ].map((achievement, aIdx) => (
-                <div key={aIdx} className="flex items-center gap-2 px-4 py-2 bg-[#0B0F19] border border-purple-500/30 rounded-xl text-xs font-bold text-white shadow-sm">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                  <span>{achievement}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </motion.div>
-
       </div>
     </section>
   );

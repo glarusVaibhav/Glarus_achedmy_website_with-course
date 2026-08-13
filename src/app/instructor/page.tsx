@@ -8,16 +8,19 @@ import {
   AlertTriangle, UserX, ArrowRight, BookOpen, Settings, PieChart,
   Activity, Bell, Edit3, RefreshCw, Check, Save, PlayCircle, Layout,
   CheckCircle2, IndianRupee, TrendingUp, Eye, Trash2, Clock, Calendar,
-  Image as ImageIcon, UploadCloud, Paperclip
+  Image as ImageIcon, UploadCloud, Paperclip, ShieldCheck, CheckSquare,
+  ArrowUpRight
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import InstructorVerificationForm from "@/components/instructor/InstructorVerificationForm";
 import InstructorVerificationStatus from "@/components/instructor/InstructorVerificationStatus";
+import { InstructorTasksView } from "@/components/instructor/InstructorTasksView";
 import { InstructorAssignmentsView } from "@/components/instructor/InstructorAssignmentsView";
 import { InstructorNotificationsView } from "@/components/instructor/InstructorNotificationsView";
 import { InstructorAdminInboxView } from "@/components/instructor/InstructorAdminInboxView";
 import { InstructorLiveSessionsView } from "@/components/instructor/InstructorLiveSessionsView";
+import { InstructorStudentsView } from "@/components/instructor/InstructorStudentsView";
 
 /* ═══════════════════════════════════════════════
    TYPE DEFINITIONS
@@ -857,10 +860,10 @@ export default function InstructorDashboard() {
   const sidebarItems = [
     { id: "Dashboard", icon: Activity, badge: null },
     { id: "My Courses", icon: FileText, badge: courses.length },
+    { id: "Tasks", icon: CheckSquare, badge: 4 },
     { id: "Assignments", icon: ClipboardList, badge: 12 },
-    { id: "Live Sessions", icon: Tv, badge: 4 },
-    { id: "AI Wizard", icon: Sparkles, badge: null },
-    { id: "Course Builder", icon: Layers, badge: null },
+    { id: "Live Sessions", icon: Tv, badge: 2 },
+    { id: "Create Course", icon: Sparkles, badge: null },
     { id: "Students", icon: Users, badge: students.length },
     { id: "Analytics", icon: LineChart, badge: null },
     { id: "Notifications", icon: Bell, badge: 5 },
@@ -932,7 +935,7 @@ export default function InstructorDashboard() {
               <button
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-bold text-sm group
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-bold text-sm group cursor-pointer
                   ${isActive
                     ? "bg-primary text-white shadow-lg shadow-primary/25"
                     : "text-subtext hover:bg-card hover:text-text"
@@ -949,212 +952,519 @@ export default function InstructorDashboard() {
             );
           })}
         </nav>
-
-        <div className="px-4 space-y-2 mt-auto">
-          <button className="w-full flex items-center gap-3 px-4 py-3 text-subtext hover:bg-card rounded-xl font-bold text-sm transition-all">
-            <Settings className="w-5 h-5 opacity-60" /> Settings
-          </button>
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="w-full flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white px-4 py-3.5 rounded-xl font-bold shadow-lg shadow-primary/25 transition-all text-sm"
-          >
-            <Plus className="w-5 h-5" /> Create New Course
-          </button>
-        </div>
       </aside>
 
       {/* ═══════ MAIN CONTENT AREA ═══════ */}
       <main className="flex-1 h-screen overflow-y-auto">
-        <div className="p-6 md:p-10 max-w-6xl mx-auto pb-32">
+        <div className="p-6 md:p-8 lg:p-10 max-w-[1320px] mx-auto pb-32">
 
-          {/* ─── Page Header ─── */}
-          <header className="flex items-center justify-between mb-10">
-            <div>
-              <h1 className="text-3xl font-extrabold tracking-tight">
-                {activeTab === "AI Wizard" ? "AI Course Creator" : activeTab}
-              </h1>
-              <p className="text-sm text-subtext mt-1 font-medium">
-                {activeTab === "Dashboard" && "Overview of your teaching activity"}
-                {activeTab === "My Courses" && "Manage and monitor all your courses"}
-                {activeTab === "Assignments" && "Create, publish, review and manage assignments across all your courses"}
-                {activeTab === "Live Sessions" && "Manage all live classes from one place"}
-                {activeTab === "Notifications" && "Stay updated with platform approvals, student activities, system alerts, and revenue updates"}
-                {activeTab === "Admin Inbox" && "Official communications, compliance notices, and course review feedback"}
-                {activeTab === "AI Wizard" && "Generate a complete syllabus with AI in seconds"}
-                {activeTab === "Course Builder" && "Design, build, and organize your curriculum"}
-                {activeTab === "Students" && "Track student enrollments across your courses"}
-                {activeTab === "Analytics" && "Deep insights into your teaching performance"}
-              </p>
-            </div>
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="md:hidden flex items-center gap-2 bg-primary text-white px-5 py-3 rounded-xl font-bold shadow-lg shadow-primary/25 text-sm"
-            >
-              <Plus className="w-4 h-4" /> New
-            </button>
-          </header>
+          {/* ─── Page Header / Command Center Greeting ─── */}
+          {activeTab === "Dashboard" ? (
+            <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 pb-4 border-b border-white/[0.06]">
+              <div>
+                <h1 className="text-2xl sm:text-[28px] font-semibold text-white tracking-tight">
+                  Good morning, {approvalData?.firstName || "Piyush"}
+                </h1>
+                <p className="text-xs sm:text-sm text-slate-400 mt-1 font-normal">
+                  Here’s what’s happening across your teaching workspace today.
+                </p>
+                <div className="flex items-center gap-2 mt-2">
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-amber-500/10 text-amber-300 border border-amber-500/20">
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+                    4 tasks need your attention
+                  </span>
+                  <span className="text-slate-600 text-xs">•</span>
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-rose-500/10 text-rose-300 border border-rose-500/20">
+                    <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping" />
+                    1 live session today
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2.5 shrink-0">
+                <button
+                  onClick={() => setActiveTab("Live Sessions")}
+                  className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-medium bg-white/[0.03] hover:bg-white/[0.07] text-slate-300 border border-white/[0.08] transition-colors cursor-pointer"
+                >
+                  <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                  <span>Calendar</span>
+                </button>
+
+                <button
+                  onClick={() => setActiveTab("Notifications")}
+                  className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-medium bg-white/[0.03] hover:bg-white/[0.07] text-slate-300 border border-white/[0.08] transition-colors cursor-pointer relative"
+                >
+                  <Bell className="w-3.5 h-3.5 text-slate-400" />
+                  <span>Notifications</span>
+                  <span className="w-2 h-2 rounded-full bg-indigo-500 absolute top-1.5 right-1.5" />
+                </button>
+              </div>
+            </header>
+          ) : ["My Courses", "Create Course", "Course Builder", "Analytics"].includes(activeTab) ? (
+            <header className="flex items-center justify-between mb-8 pb-4 border-b border-white/[0.06]">
+              <div>
+                <h1 className="text-2xl sm:text-[28px] font-semibold text-white tracking-tight">
+                  {activeTab === "Create Course" ? "Create Course" : activeTab}
+                </h1>
+                <p className="text-xs sm:text-sm text-slate-400 mt-1 font-medium">
+                  {activeTab === "My Courses" && "Manage and monitor all your authored courses"}
+                  {activeTab === "Create Course" && "Generate a complete syllabus with AI in seconds"}
+                  {activeTab === "Course Builder" && "Design, build, and organize your curriculum"}
+                  {activeTab === "Analytics" && "Deep insights into your teaching performance"}
+                </p>
+              </div>
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="md:hidden flex items-center gap-2 bg-primary text-white px-4 py-2.5 rounded-xl font-bold shadow-lg shadow-primary/25 text-xs"
+              >
+                <Plus className="w-4 h-4" /> New
+              </button>
+            </header>
+          ) : null}
 
           {/* ══════════════════════════════════════
-             TAB: DASHBOARD (Overview)
+             TAB: DASHBOARD (Command Center Overview)
              ══════════════════════════════════════ */}
           {activeTab === "Dashboard" && (
-            <div className="space-y-10 animate-in fade-in duration-300">
-              {/* Stats Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="space-y-6 animate-in fade-in duration-200 text-slate-200">
+              {/* ──────────────────────────────────────────────────
+                 1. SHARED NEUTRAL METRICS STRIP
+                 ────────────────────────────────────────────────── */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
                 {[
-                  { label: "TOTAL STUDENTS", value: stats.totalStudents, icon: Users, color: "text-accent", bg: "bg-accent/10" },
-                  { label: "CREATED COURSES", value: stats.totalCourses, icon: FileText, color: "text-primary", bg: "bg-primary/10" },
-                  { label: "APPROVED", value: stats.approvedCourses, icon: CheckCircle, color: "text-emerald-500", bg: "bg-emerald-500/10" },
-                  { label: "TOTAL REVENUE", value: `₹${stats.totalRevenue.toLocaleString()}`, icon: IndianRupee, color: "text-amber-500", bg: "bg-amber-500/10" },
+                  {
+                    label: "ACTIVE STUDENTS",
+                    value: stats.totalStudents || 24,
+                    desc: "+4 this month",
+                    icon: Users,
+                    accent: "text-slate-100",
+                    dot: "bg-indigo-400",
+                  },
+                  {
+                    label: "COURSES",
+                    value: courses.length || 1,
+                    desc: `${stats.pendingCourses || 1} pending approval`,
+                    icon: BookOpen,
+                    accent: "text-slate-100",
+                    dot: "bg-purple-400",
+                  },
+                  {
+                    label: "TASKS",
+                    value: 4,
+                    desc: "2 need action",
+                    icon: CheckSquare,
+                    accent: "text-amber-400",
+                    dot: "bg-amber-400",
+                  },
+                  {
+                    label: "LIVE SESSIONS",
+                    value: 3,
+                    desc: "1 live now",
+                    icon: Tv,
+                    accent: "text-rose-400",
+                    dot: "bg-rose-500 animate-ping",
+                  },
+                  {
+                    label: "EARNINGS",
+                    value: `₹48K`,
+                    desc: "This month",
+                    icon: IndianRupee,
+                    accent: "text-slate-100",
+                    dot: "bg-emerald-400",
+                  },
                 ].map((stat, i) => (
-                  <div key={i} className="bg-card border border-card rounded-2xl p-6 shadow-lg flex flex-col justify-between h-32 relative overflow-hidden group hover:-translate-y-1 transition-transform">
-                    <div className={`absolute -right-4 -top-4 w-24 h-24 rounded-full ${stat.bg} blur-2xl pointer-events-none`} />
-                    <div className="flex items-center justify-between relative z-10">
-                      <span className="text-subtext font-bold text-xs uppercase tracking-widest">{stat.label}</span>
-                      <div className={`p-2 rounded-lg ${stat.bg}`}><stat.icon className={`w-5 h-5 ${stat.color}`} /></div>
+                  <div
+                    key={i}
+                    className="bg-[#121824]/90 border border-white/[0.08] hover:border-white/[0.14] rounded-2xl p-4 transition-all duration-150 shadow-sm"
+                  >
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-[10px] font-semibold text-slate-400 tracking-wider">
+                        {stat.label}
+                      </span>
+                      <span className={`w-1.5 h-1.5 rounded-full ${stat.dot}`} />
                     </div>
-                    <span className="text-3xl font-black text-text relative z-10">{stat.value}</span>
+                    <div className={`text-2xl font-bold tracking-tight ${stat.accent}`}>
+                      {stat.value}
+                    </div>
+                    <div className="text-[11px] text-slate-500 mt-0.5 font-normal">
+                      {stat.desc}
+                    </div>
                   </div>
                 ))}
               </div>
 
-              {/* Quick Actions (4-Column Grid) */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <button onClick={() => setActiveTab("AI Wizard")} className="p-6 bg-gradient-to-br from-purple-500/10 to-purple-500/5 border border-purple-500/20 rounded-2xl text-left hover:border-purple-500/40 transition-colors group">
-                  <Sparkles className="w-8 h-8 text-purple-500 mb-3 group-hover:scale-110 transition-transform" />
-                  <h3 className="font-bold text-text mb-1 text-sm">New Course Create</h3>
-                  <p className="text-xs text-subtext leading-relaxed">Generate a full syllabus with AI in one click</p>
-                </button>
-
-                <button onClick={() => setActiveTab("Live Sessions")} className="p-6 bg-gradient-to-br from-purple-600/10 to-indigo-500/5 border border-purple-500/20 rounded-2xl text-left hover:border-purple-500/40 transition-colors group">
-                  <Tv className="w-8 h-8 text-purple-400 mb-3 group-hover:scale-110 transition-transform" />
-                  <div className="flex items-center justify-between gap-1 mb-1">
-                    <h3 className="font-bold text-text text-sm">Live Sessions</h3>
-                    <span className="text-[10px] font-black bg-purple-500/20 text-purple-400 px-2 py-0.5 rounded-full border border-purple-500/30 shrink-0">
-                      2 Scheduled
-                    </span>
+              {/* ──────────────────────────────────────────────────
+                 2. MAIN 12-COLUMN WORKFLOW GRID (My Tasks 7 cols / Live Sessions 5 cols)
+                 ────────────────────────────────────────────────── */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                {/* ── LEFT: MY TASKS (7 Columns - Primary Focus) ── */}
+                <div className="lg:col-span-7 bg-[#121824]/90 border border-white/[0.08] rounded-2xl p-5 shadow-sm space-y-4">
+                  <div className="flex items-center justify-between pb-2.5 border-b border-white/[0.06]">
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-sm font-semibold text-white tracking-tight">
+                        My Tasks
+                      </h2>
+                      <span className="px-2 py-0.5 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-md text-[10px] font-medium">
+                        4 pending actions
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => setActiveTab("Tasks")}
+                      className="text-xs text-indigo-400 hover:text-indigo-300 font-medium inline-flex items-center gap-1 cursor-pointer transition-colors"
+                    >
+                      <span>View all</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
                   </div>
-                  <p className="text-xs text-subtext leading-relaxed">Schedule & host interactive live classes</p>
-                </button>
 
-                <button onClick={() => setActiveTab("Admin Inbox")} className="p-6 bg-gradient-to-br from-blue-500/10 to-indigo-500/5 border border-blue-500/20 rounded-2xl text-left hover:border-blue-500/40 transition-colors group">
-                  <ClipboardList className="w-8 h-8 text-blue-500 mb-3 group-hover:scale-110 transition-transform" />
-                  <div className="flex items-center justify-between gap-1 mb-1">
-                    <h3 className="font-bold text-text text-sm">Admin Instructions</h3>
-                    <span className="text-[10px] font-black bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded-full border border-amber-500/30 shrink-0">
-                      Review Feedback
-                    </span>
+                  <div className="space-y-2.5">
+                    {/* Task Row 1: Action Required */}
+                    <div className="bg-[#161E2E] border-l-2 border-l-amber-400 border border-white/[0.06] rounded-xl p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs transition-colors hover:border-white/[0.1]">
+                      <div className="space-y-1 min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5">
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
+                          <span className="text-[10px] font-semibold text-amber-400 uppercase tracking-wider">
+                            ACTION REQUIRED
+                          </span>
+                        </div>
+                        <h3 className="font-semibold text-white text-[14px] leading-snug">
+                          Create Assignment: Agentic AI Final Assessment
+                        </h3>
+                        <div className="flex items-center gap-2 text-[11px] text-slate-400">
+                          <span>Module 8 · Due in 2 days</span>
+                          <span className="text-slate-600">•</span>
+                          <span className="text-slate-300 font-medium">₹3,000 compensation</span>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => setActiveTab("Tasks")}
+                        className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-medium text-xs shadow-xs transition-colors shrink-0 cursor-pointer self-start sm:self-center"
+                      >
+                        Review Task →
+                      </button>
+                    </div>
+
+                    {/* Task Row 2: Pending Approval */}
+                    <div className="bg-[#161E2E] border-l-2 border-l-purple-400 border border-white/[0.06] rounded-xl p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs transition-colors hover:border-white/[0.1]">
+                      <div className="space-y-1 min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5">
+                          <span className="w-1.5 h-1.5 rounded-full bg-purple-400 shrink-0" />
+                          <span className="text-[10px] font-semibold text-purple-300 uppercase tracking-wider">
+                            PENDING APPROVAL
+                          </span>
+                        </div>
+                        <h3 className="font-semibold text-white text-[14px] leading-snug">
+                          Course Creation: Generative AI for Enterprise
+                        </h3>
+                        <div className="flex items-center gap-2 text-[11px] text-slate-400">
+                          <span>Accepted · Awaiting admin approval</span>
+                          <span className="text-slate-600">•</span>
+                          <span className="text-slate-300 font-medium">₹15,000</span>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => setActiveTab("Tasks")}
+                        className="px-3.5 py-2 bg-white/[0.04] hover:bg-white/[0.08] text-slate-300 hover:text-white rounded-xl font-medium text-xs border border-white/[0.08] transition-colors shrink-0 cursor-pointer self-start sm:self-center"
+                      >
+                        View Details →
+                      </button>
+                    </div>
+
+                    {/* Task Row 3: Active */}
+                    <div className="bg-[#161E2E] border-l-2 border-l-indigo-400 border border-white/[0.06] rounded-xl p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs transition-colors hover:border-white/[0.1]">
+                      <div className="space-y-1 min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5">
+                          <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 shrink-0" />
+                          <span className="text-[10px] font-semibold text-indigo-300 uppercase tracking-wider">
+                            ACTIVE
+                          </span>
+                        </div>
+                        <h3 className="font-semibold text-white text-[14px] leading-snug">
+                          1:1 Career Mentorship Session
+                        </h3>
+                        <div className="flex items-center gap-2 text-[11px] text-slate-400">
+                          <span>Tomorrow · 4:00 PM · Alex Rivera</span>
+                          <span className="text-slate-600">•</span>
+                          <span className="text-slate-300 font-medium">₹1,500</span>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => setActiveTab("Live Sessions")}
+                        className="px-3.5 py-2 bg-white/[0.04] hover:bg-white/[0.08] text-slate-300 hover:text-white rounded-xl font-medium text-xs border border-white/[0.08] transition-colors shrink-0 cursor-pointer self-start sm:self-center"
+                      >
+                        View Session →
+                      </button>
+                    </div>
                   </div>
-                  <p className="text-xs text-subtext leading-relaxed">Guidelines, course standards & admin review feedback</p>
-                </button>
+                </div>
 
-                <button onClick={() => setActiveTab("Students")} className="p-6 bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 border border-emerald-500/20 rounded-2xl text-left hover:border-emerald-500/40 transition-colors group">
-                  <Users className="w-8 h-8 text-emerald-500 mb-3 group-hover:scale-110 transition-transform" />
-                  <h3 className="font-bold text-text mb-1 text-sm">My Students</h3>
-                  <p className="text-xs text-subtext leading-relaxed">View enrollments and engagement data</p>
-                </button>
+                {/* ── RIGHT: LIVE SESSIONS (5 Columns - Approved Execution) ── */}
+                <div className="lg:col-span-5 bg-[#121824]/90 border border-white/[0.08] rounded-2xl p-5 shadow-sm space-y-4">
+                  <div className="flex items-center justify-between pb-2.5 border-b border-white/[0.06]">
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-sm font-semibold text-white tracking-tight">
+                        Live Sessions
+                      </h2>
+                      <span className="px-2 py-0.5 bg-rose-500/10 text-rose-300 border border-rose-500/20 rounded-md text-[10px] font-medium">
+                        1 Live Now
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => setActiveTab("Live Sessions")}
+                      className="text-xs text-indigo-400 hover:text-indigo-300 font-medium inline-flex items-center gap-1 cursor-pointer transition-colors"
+                    >
+                      <span>View schedule</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+
+                  <div className="space-y-3">
+                    {/* LIVE NOW CARD */}
+                    <div className="bg-[#151421] border border-rose-500/30 rounded-xl p-4 space-y-2.5">
+                      <div className="flex items-center justify-between">
+                        <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold text-rose-400 uppercase tracking-wider">
+                          <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
+                          LIVE NOW
+                        </span>
+                        <span className="text-[11px] text-slate-400 font-medium">10:45 AM – 12:00 PM</span>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-white text-[14px]">Agentic AI Q&A & Code Walkthrough</h4>
+                        <p className="text-[11px] text-slate-400 mt-0.5 truncate">Mastering Agentic AI & Autonomous Workflows</p>
+                      </div>
+                      <div className="pt-2 flex items-center justify-between border-t border-rose-500/20">
+                        <span className="text-[11px] text-slate-400">₹5,000 compensation</span>
+                        <a
+                          href="https://meet.google.com/glarus-ai-masterclass"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-500 text-white rounded-lg text-xs font-semibold shadow-xs transition-colors inline-flex items-center gap-1.5 cursor-pointer"
+                        >
+                          <Video className="w-3.5 h-3.5" /> Enter Live Room
+                        </a>
+                      </div>
+                    </div>
+
+                    {/* UPCOMING SESSION CARD */}
+                    <div className="bg-[#161E2E] border border-white/[0.06] rounded-xl p-3.5 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-semibold text-indigo-300 uppercase tracking-wider">UPCOMING</span>
+                        <span className="text-[11px] text-slate-400 font-medium">Tomorrow · 6:00 PM</span>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-slate-200 text-xs">Fullstack Next.js 15 Deployment</h4>
+                        <p className="text-[11px] text-slate-400 truncate">Full-Stack Web Development Bootcamp</p>
+                      </div>
+                      <div className="pt-1.5 flex justify-end border-t border-white/[0.04]">
+                        <button
+                          onClick={() => setActiveTab("Live Sessions")}
+                          className="text-[11px] text-indigo-400 hover:text-indigo-300 font-medium cursor-pointer"
+                        >
+                          View Details →
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              {/* Live Sessions & Webinars Section */}
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2">
-                    <h2 className="text-xl font-bold text-text">Live Sessions & Webinars</h2>
-                    <span className="px-2.5 py-0.5 text-xs font-bold bg-purple-500/10 text-purple-400 rounded-full border border-purple-500/20">
-                      2 Total
-                    </span>
+              {/* ──────────────────────────────────────────────────
+                 3. THIS MONTH PERFORMANCE STRIP
+                 ────────────────────────────────────────────────── */}
+              <div className="bg-[#121824]/90 border border-white/[0.08] rounded-2xl p-5 shadow-sm space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    This Month
+                  </h3>
+                  <span className="text-[11px] text-slate-500 font-medium">August 2026</span>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <div className="p-3 bg-white/[0.02] border border-white/[0.06] rounded-xl">
+                    <span className="text-[10px] font-medium text-slate-500 uppercase tracking-wider block">Total Earnings</span>
+                    <span className="text-lg font-semibold text-emerald-400 block mt-0.5">₹48,000</span>
                   </div>
-                  <button onClick={() => setActiveTab("Live Sessions")} className="text-sm font-bold text-primary flex items-center gap-1 hover:underline">
-                    View All <ArrowRight className="w-4 h-4" />
+
+                  <div className="p-3 bg-white/[0.02] border border-white/[0.06] rounded-xl">
+                    <span className="text-[10px] font-medium text-slate-500 uppercase tracking-wider block">Pending Payout</span>
+                    <span className="text-lg font-semibold text-slate-200 block mt-0.5">₹12,000</span>
+                  </div>
+
+                  <div className="p-3 bg-white/[0.02] border border-white/[0.06] rounded-xl">
+                    <span className="text-[10px] font-medium text-slate-500 uppercase tracking-wider block">Completed Tasks</span>
+                    <span className="text-lg font-semibold text-slate-200 block mt-0.5">8</span>
+                  </div>
+
+                  <div className="p-3 bg-white/[0.02] border border-white/[0.06] rounded-xl">
+                    <span className="text-[10px] font-medium text-slate-500 uppercase tracking-wider block">Live Sessions</span>
+                    <span className="text-lg font-semibold text-slate-200 block mt-0.5">3</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* ──────────────────────────────────────────────────
+                 4. UPCOMING SCHEDULE TIMELINE & QUICK ACTIONS
+                 ────────────────────────────────────────────────── */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                {/* Upcoming Schedule (8 cols) */}
+                <div className="lg:col-span-8 bg-[#121824]/90 border border-white/[0.08] rounded-2xl p-5 shadow-sm space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                      Upcoming Schedule
+                    </h3>
+                    <span className="text-[11px] text-slate-500 font-medium">Next 7 Days</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
+                    <div className="p-3 bg-white/[0.02] border border-white/[0.06] rounded-xl flex items-center justify-between gap-3">
+                      <div>
+                        <span className="text-[10px] font-semibold text-rose-400 block">Today · 10:45 AM</span>
+                        <span className="font-medium text-slate-200 block mt-0.5">Live Session: Agentic AI Q&A</span>
+                      </div>
+                      <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-rose-500/10 text-rose-400 shrink-0">Live</span>
+                    </div>
+
+                    <div className="p-3 bg-white/[0.02] border border-white/[0.06] rounded-xl flex items-center justify-between gap-3">
+                      <div>
+                        <span className="text-[10px] font-semibold text-indigo-400 block">Tomorrow · 4:00 PM</span>
+                        <span className="font-medium text-slate-200 block mt-0.5">1:1 Mentorship: Alex Rivera</span>
+                      </div>
+                      <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-indigo-500/10 text-indigo-400 shrink-0">1-on-1</span>
+                    </div>
+
+                    <div className="p-3 bg-white/[0.02] border border-white/[0.06] rounded-xl flex items-center justify-between gap-3">
+                      <div>
+                        <span className="text-[10px] font-semibold text-slate-400 block">24 Aug · 6:00 PM</span>
+                        <span className="font-medium text-slate-200 block mt-0.5">Next.js 15 Deployment Workshop</span>
+                      </div>
+                      <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-white/[0.06] text-slate-400 shrink-0">Workshop</span>
+                    </div>
+
+                    <div className="p-3 bg-white/[0.02] border border-white/[0.06] rounded-xl flex items-center justify-between gap-3">
+                      <div>
+                        <span className="text-[10px] font-semibold text-amber-400 block">25 Aug · 12:00 PM</span>
+                        <span className="font-medium text-slate-200 block mt-0.5">Agentic AI Capstone Assessment</span>
+                      </div>
+                      <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-amber-500/10 text-amber-400 shrink-0">Task</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Quick Actions (4 cols) */}
+                <div className="lg:col-span-4 bg-[#121824]/90 border border-white/[0.08] rounded-2xl p-5 shadow-sm space-y-3">
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    Quick Actions
+                  </h3>
+
+                  <div className="space-y-1.5">
+                    <button
+                      onClick={() => setActiveTab("Create Course")}
+                      className="w-full p-2.5 rounded-xl bg-white/[0.02] hover:bg-white/[0.06] border border-white/[0.06] flex items-center justify-between text-xs text-slate-200 transition-colors cursor-pointer"
+                    >
+                      <span className="flex items-center gap-2">
+                        <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+                        <span>Create Course</span>
+                      </span>
+                      <ChevronRight className="w-3.5 h-3.5 text-slate-500" />
+                    </button>
+
+                    <button
+                      onClick={() => setActiveTab("Tasks")}
+                      className="w-full p-2.5 rounded-xl bg-white/[0.02] hover:bg-white/[0.06] border border-white/[0.06] flex items-center justify-between text-xs text-slate-200 transition-colors cursor-pointer"
+                    >
+                      <span className="flex items-center gap-2">
+                        <CheckSquare className="w-3.5 h-3.5 text-amber-400" />
+                        <span>Admin Tasks</span>
+                      </span>
+                      <ChevronRight className="w-3.5 h-3.5 text-slate-500" />
+                    </button>
+
+                    <button
+                      onClick={() => setActiveTab("Assignments")}
+                      className="w-full p-2.5 rounded-xl bg-white/[0.02] hover:bg-white/[0.06] border border-white/[0.06] flex items-center justify-between text-xs text-slate-200 transition-colors cursor-pointer"
+                    >
+                      <span className="flex items-center gap-2">
+                        <ClipboardList className="w-3.5 h-3.5 text-blue-400" />
+                        <span>Assignments</span>
+                      </span>
+                      <ChevronRight className="w-3.5 h-3.5 text-slate-500" />
+                    </button>
+
+                    <button
+                      onClick={() => setActiveTab("Students")}
+                      className="w-full p-2.5 rounded-xl bg-white/[0.02] hover:bg-white/[0.06] border border-white/[0.06] flex items-center justify-between text-xs text-slate-200 transition-colors cursor-pointer"
+                    >
+                      <span className="flex items-center gap-2">
+                        <Users className="w-3.5 h-3.5 text-emerald-400" />
+                        <span>Students</span>
+                      </span>
+                      <ChevronRight className="w-3.5 h-3.5 text-slate-500" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* ──────────────────────────────────────────────────
+                 5. RECENT COURSES (Compact Horizontal Grid)
+                 ────────────────────────────────────────────────── */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-sm font-semibold text-white">Recent Courses</h2>
+                  <button
+                    onClick={() => setActiveTab("My Courses")}
+                    className="text-xs font-medium text-indigo-400 hover:text-indigo-300 flex items-center gap-1 cursor-pointer"
+                  >
+                    View all <ArrowRight className="w-3.5 h-3.5" />
                   </button>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="bg-card border border-card hover:border-purple-500/30 rounded-2xl p-5 shadow-md transition-all flex flex-col justify-between gap-4">
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between gap-2 flex-wrap">
-                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                          ⏰ UPCOMING
-                        </span>
-                        <span className="text-xs font-bold text-purple-400 bg-purple-500/10 px-2.5 py-0.5 rounded-full border border-purple-500/20">
-                          Mastering Agentic AI & Autonomous Workflows
-                        </span>
-                      </div>
-                      <h4 className="font-extrabold text-text text-base line-clamp-1">Agentic AI Q&A & Code Walkthrough</h4>
-                      <div className="flex items-center gap-4 text-xs text-subtext font-medium pt-1">
-                        <span className="flex items-center gap-1 text-text font-bold"><Calendar className="w-3.5 h-3.5 text-purple-400" /> 2026-08-08</span>
-                        <span className="flex items-center gap-1 text-text font-bold"><Clock className="w-3.5 h-3.5 text-amber-500" /> 18:00</span>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between pt-3 border-t border-card">
-                      <span className="text-xs text-emerald-400 font-bold flex items-center gap-1"><Users className="w-3.5 h-3.5" /> 24 Students</span>
-                      <button
-                        onClick={() => setActiveTab("Live Sessions")}
-                        className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-xl font-bold text-xs flex items-center gap-1.5 shadow-md shadow-purple-500/20"
-                      >
-                        <Video className="w-3.5 h-3.5" /> Join Session
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="bg-card border border-card hover:border-purple-500/30 rounded-2xl p-5 shadow-md transition-all flex flex-col justify-between gap-4">
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between gap-2 flex-wrap">
-                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                          ⏰ UPCOMING
-                        </span>
-                        <span className="text-xs font-bold text-purple-400 bg-purple-500/10 px-2.5 py-0.5 rounded-full border border-purple-500/20">
-                          Full-Stack Web Development Bootcamp
-                        </span>
-                      </div>
-                      <h4 className="font-extrabold text-text text-base line-clamp-1">Fullstack Next.js 15 Deployment Masterclass</h4>
-                      <div className="flex items-center gap-4 text-xs text-subtext font-medium pt-1">
-                        <span className="flex items-center gap-1 text-text font-bold"><Calendar className="w-3.5 h-3.5 text-purple-400" /> 2026-08-12</span>
-                        <span className="flex items-center gap-1 text-text font-bold"><Clock className="w-3.5 h-3.5 text-amber-500" /> 19:30</span>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between pt-3 border-t border-card">
-                      <span className="text-xs text-emerald-400 font-bold flex items-center gap-1"><Users className="w-3.5 h-3.5" /> 42 Students</span>
-                      <button
-                        onClick={() => setActiveTab("Live Sessions")}
-                        className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-xl font-bold text-xs flex items-center gap-1.5 shadow-md shadow-purple-500/20"
-                      >
-                        <Video className="w-3.5 h-3.5" /> Join Session
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Recent Courses Section */}
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-bold text-text">Recent Courses</h2>
-                  <button onClick={() => setActiveTab("My Courses")} className="text-sm font-bold text-primary flex items-center gap-1 hover:underline">View All <ArrowRight className="w-4 h-4" /></button>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                   {courses.slice(0, 3).map((course) => (
-                    <div key={course.id} className="bg-card border border-card rounded-2xl p-5 flex flex-col gap-3 group hover:-translate-y-1 transition-transform shadow-sm hover:shadow-lg">
-                      <div className="h-28 rounded-xl bg-gradient-to-br from-primary/20 to-accent/10 flex items-center justify-center">
-                        <BookOpen className="w-10 h-10 text-primary/30" />
+                    <div
+                      key={course.id}
+                      className="bg-[#121824]/90 border border-white/[0.08] hover:border-white/[0.14] rounded-2xl p-3.5 flex items-center gap-3 transition-all"
+                    >
+                      <div className="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center shrink-0">
+                        <BookOpen className="w-5 h-5 text-indigo-400" />
                       </div>
-                      <h3 className="font-bold text-text line-clamp-1">{course.title}</h3>
-                      <div className="flex items-center justify-between mt-auto">
-                        <span className={`px-2.5 py-1 text-[10px] font-black uppercase rounded-full border ${course.status === "APPROVED" ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" : course.status === "PENDING" ? "bg-amber-500/10 text-amber-500 border-amber-500/20" : "bg-red-500/10 text-red-500 border-red-500/20"}`}>{course.status}</span>
-                        <span className="font-bold text-text">₹{course.price?.toLocaleString()}</span>
+                      <div className="min-w-0 flex-1">
+                        <h3 className="font-semibold text-white text-xs truncate">{course.title}</h3>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className={`px-1.5 py-0.2 text-[10px] font-medium rounded ${
+                            course.status === "APPROVED"
+                              ? "bg-emerald-500/10 text-emerald-400"
+                              : "bg-amber-500/10 text-amber-400"
+                          }`}>
+                            {course.status}
+                          </span>
+                          <span className="text-[11px] text-slate-400 font-medium">₹{course.price?.toLocaleString()}</span>
+                        </div>
                       </div>
                     </div>
                   ))}
+
                   {courses.length === 0 && (
-                    <div className="col-span-full py-16 text-center text-subtext">
-                      <BookOpen className="w-12 h-12 mx-auto mb-4 opacity-20" />
-                      <p className="font-bold text-lg text-text">No courses yet</p>
-                      <p className="text-sm">Click "Create New Course" to get started.</p>
+                    <div className="col-span-full py-8 text-center bg-[#121824]/60 border border-white/[0.08] rounded-2xl text-slate-400 space-y-1">
+                      <BookOpen className="w-6 h-6 mx-auto text-slate-600" />
+                      <p className="font-medium text-xs text-slate-300">No courses yet</p>
+                      <button
+                        onClick={() => setActiveTab("Create Course")}
+                        className="text-xs text-indigo-400 hover:underline font-medium"
+                      >
+                        Create your first course →
+                      </button>
                     </div>
                   )}
                 </div>
               </div>
             </div>
+          )}
+
+          {/* ══════════════════════════════════════
+             TAB: TASKS (Admin Workflow Hub)
+             ══════════════════════════════════════ */}
+          {activeTab === "Tasks" && (
+            <InstructorTasksView onNavigateTab={(tab) => setActiveTab(tab)} />
           )}
 
           {/* ══════════════════════════════════════
@@ -1168,7 +1478,7 @@ export default function InstructorDashboard() {
              TAB: LIVE SESSIONS
              ══════════════════════════════════════ */}
           {activeTab === "Live Sessions" && (
-            <InstructorLiveSessionsView />
+            <InstructorLiveSessionsView onNavigateTab={(tab) => setActiveTab(tab)} />
           )}
 
           {/* ══════════════════════════════════════
@@ -1240,9 +1550,9 @@ export default function InstructorDashboard() {
           )}
 
           {/* ══════════════════════════════════════
-             TAB: AI WIZARD
+             TAB: CREATE COURSE
              ══════════════════════════════════════ */}
-          {activeTab === "AI Wizard" && (
+          {activeTab === "Create Course" && (
             <div className="flex gap-8 animate-in fade-in duration-300">
               {/* Left Stepper */}
               <div className="w-64 shrink-0 hidden lg:block">
@@ -1655,7 +1965,7 @@ export default function InstructorDashboard() {
                 <div className="flex items-center gap-3">
                   <Sparkles className="w-5 h-5 text-purple-500" />
                   <span className="font-bold text-text">Need a head start?</span>
-                  <button onClick={() => setActiveTab("AI Wizard")} className="text-sm font-bold text-purple-500 hover:underline flex items-center gap-1">Open AI Wizard <ArrowRight className="w-3.5 h-3.5" /></button>
+                  <button onClick={() => setActiveTab("Create Course")} className="text-sm font-bold text-purple-500 hover:underline flex items-center gap-1">Open Create Course <ArrowRight className="w-3.5 h-3.5" /></button>
                 </div>
               </div>
 
@@ -1953,53 +2263,14 @@ export default function InstructorDashboard() {
              TAB: STUDENTS
              ══════════════════════════════════════ */}
           {activeTab === "Students" && (
-            <div className="animate-in fade-in duration-300">
-              <div className="bg-card border border-card rounded-2xl overflow-hidden min-h-[400px] relative shadow-sm">
-                {loading ? (
-                  <div className="absolute inset-0 flex items-center justify-center"><Activity className="w-8 h-8 text-primary animate-spin" /></div>
-                ) : students.length === 0 ? (
-                  <div className="absolute inset-0 flex items-center justify-center flex-col gap-3 text-subtext">
-                    <Users className="w-12 h-12 opacity-20" />
-                    <p className="font-bold text-lg text-text">No students enrolled yet</p>
-                    <p className="text-sm">Students will appear here once they enroll in your courses.</p>
-                  </div>
-                ) : (
-                  <table className="w-full text-left border-collapse">
-                    <thead>
-                      <tr className="bg-background border-b border-card">
-                        <th className="p-4 text-xs font-black text-subtext uppercase tracking-widest">Student</th>
-                        <th className="p-4 text-xs font-black text-subtext uppercase tracking-widest">Course</th>
-                        <th className="p-4 text-xs font-black text-subtext uppercase tracking-widest">Progress</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {students.map((s: any, i: number) => (
-                        <tr key={i} className="border-b border-card hover:bg-background/50 transition-colors">
-                          <td className="p-4">
-                            <div className="flex items-center gap-3">
-                              <div className="w-9 h-9 bg-accent/10 rounded-full flex items-center justify-center text-accent font-black text-sm">{s.user?.name?.[0] || "?"}</div>
-                              <div>
-                                <span className="font-bold text-text">{s.user?.name || "N/A"}</span>
-                                <span className="text-xs text-subtext block">{s.user?.email}</span>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="p-4 text-text font-medium text-sm">{s.course?.title || "N/A"}</td>
-                          <td className="p-4">
-                            <div className="flex items-center gap-3">
-                              <div className="w-24 h-2 bg-card rounded-full overflow-hidden">
-                                <div className={`h-full rounded-full ${(s.progress || 0) === 100 ? "bg-emerald-500" : "bg-primary"}`} style={{ width: `${s.progress || 0}%` }} />
-                              </div>
-                              <span className="text-xs font-bold text-text">{s.progress || 0}%</span>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                )}
-              </div>
-            </div>
+            <InstructorStudentsView
+              onNavigateToAssignments={(params) => {
+                setActiveTab("Assignments");
+              }}
+              onNavigateToLiveSessions={() => {
+                setActiveTab("Live Sessions");
+              }}
+            />
           )}
 
           {/* ══════════════════════════════════════

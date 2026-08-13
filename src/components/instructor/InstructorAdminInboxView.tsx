@@ -161,17 +161,7 @@ export function InstructorAdminInboxView() {
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-300">
-      {/* ─── HEADER ─── */}
-      <div>
-        <h1 className="text-3xl font-extrabold text-text tracking-tight flex items-center gap-3">
-          <ShieldAlert className="w-8 h-8 text-primary" />
-          Admin Inbox
-        </h1>
-        <p className="text-sm text-subtext mt-1 font-medium">
-          Official communications, compliance notices, and course review feedback sent directly from platform administrators.
-        </p>
-      </div>
+    <div className="space-y-6 animate-in fade-in duration-300">
 
       {/* ─── STATISTICS CARDS ─── */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

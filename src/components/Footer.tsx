@@ -1,16 +1,19 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Logo } from "./Logo";
 
 export function Footer() {
+  const pathname = usePathname();
+  if (pathname?.startsWith("/admin")) return null;
+
   return (
-    <footer className="w-full border-t border-card py-12 mt-20">
+    <footer className="w-full bg-background border-t border-border/30 py-10 mt-0">
       <div className="max-w-[1650px] mx-auto px-6 sm:px-10 grid grid-cols-1 md:grid-cols-4 gap-8">
         <div className="space-y-4">
-          <Link href="/" className="flex items-center gap-2">
-            <Logo className="w-6 h-6" />
-            <span className="font-bold text-lg tracking-tight text-text">
-              Glarus<span className="text-primary">Academy</span>
-            </span>
+          <Link href="/" className="flex items-center select-none group">
+            <Logo className="h-7 w-auto" />
           </Link>
           <p className="text-subtext text-sm leading-relaxed">
             Master Artificial Intelligence from Beginner to Expert. The premium platform for modern learners.

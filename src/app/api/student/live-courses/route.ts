@@ -76,7 +76,7 @@ export async function GET() {
       status: "ONGOING" as const,
       courseTitle: "Generative AI & LLM Systems",
       instructor: "Dr. Alex Vance",
-      batchName: "Weekend AI Cohort #4",
+      batchName: "Weekend AI Class #4",
     };
 
     const sampleUpcoming = {

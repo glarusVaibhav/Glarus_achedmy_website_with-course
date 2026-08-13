@@ -27,10 +27,10 @@ const ENRICHED_LIVE_COURSES = [
     title: "Building Autonomous Agents with LangGraph",
     description: "Build production-ready AI agents using LangGraph, memory, tools, and multi-agent workflows.",
     category: "Agentic AI",
-    classType: "Live Cohort",
+    classType: "Live Class",
     level: "Intermediate",
     timeframeDays: 30,
-    tags: ["Live Cohort", "Limited Seats", "5 Projects"],
+    tags: ["Live Class", "Limited Seats", "5 Projects"],
     image: "/images/courses/generative-ai.png",
     linkUrl: "/courses/generative-ai",
     statusBadge: "Next Batch Starting Soon",
@@ -50,10 +50,10 @@ const ENRICHED_LIVE_COURSES = [
     title: "LLMOps Pipeline: From Training to Production",
     description: "Master MLOps for LLMs: data pipelines, evaluation, deployment, monitoring and scaling.",
     category: "LLMOps",
-    classType: "Live Cohort",
+    classType: "Live Class",
     level: "Advanced",
     timeframeDays: 60,
-    tags: ["Live Cohort", "Includes Projects", "Live Mentorship"],
+    tags: ["Live Class", "Includes Projects", "Live Mentorship"],
     image: "/images/courses/llm-architecture.png",
     linkUrl: "/courses/llm-architecture",
     statusBadge: "Filling Fast",
@@ -76,7 +76,7 @@ const ENRICHED_LIVE_COURSES = [
     classType: "Workshop",
     level: "Intermediate",
     timeframeDays: 60,
-    tags: ["Live Cohort", "Hands-on Labs", "Cloud Infra"],
+    tags: ["Live Class", "Hands-on Labs", "Cloud Infra"],
     image: "/images/courses/rag-vector-db.png",
     linkUrl: "/courses/rag-vector-db",
     statusBadge: "Seats Open",
@@ -186,7 +186,7 @@ function CoursesContent() {
               {activeTab === "self-paced" ? (
                 <>Self-Paced <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-indigo-400">Course Directory</span></>
               ) : (
-                <>Live Training <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-emerald-400">Cohort Batches</span></>
+                <>Live Training <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-emerald-400">Class Batches</span></>
               )}
             </h1>
             <p className="text-lg text-slate-300 font-medium">
@@ -363,7 +363,7 @@ function CoursesContent() {
                   <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2.5">Class Type</h4>
                   <div className="space-y-2">
                     {[
-                      { label: "Live Cohort", type: "Live Cohort", count: 3 },
+                      { label: "Live Class", type: "Live Class", count: 3 },
                       { label: "Full Bootcamp", type: "Full Bootcamp", count: 1 },
                       { label: "Workshop", type: "Workshop", count: 2 }
                     ].map((ct) => (
@@ -401,13 +401,13 @@ function CoursesContent() {
                 </div>
               </div>
 
-              {/* RIGHT MAIN COHORT CARDS */}
+              {/* RIGHT MAIN CLASS CARDS */}
               <div className="flex-1 w-full space-y-5">
                 {filteredLive.length === 0 ? (
                   <div className="w-full py-16 px-8 rounded-3xl border border-purple-500/20 bg-[#0c0922]/80 backdrop-blur-md flex flex-col items-center justify-center text-center">
                     <Calendar className="w-10 h-10 text-purple-400 mb-3" />
                     <h4 className="text-xl font-black text-white mb-1">No matching live batches</h4>
-                    <p className="text-xs text-slate-400">Try clearing your active filters to see all available cohorts.</p>
+                    <p className="text-xs text-slate-400">Try clearing your active filters to see all available classes.</p>
                   </div>
                 ) : (
                   filteredLive.map((item) => {

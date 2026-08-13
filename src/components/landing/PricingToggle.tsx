@@ -80,7 +80,7 @@ export default function PricingToggle() {
                </div>
 
                <ul className="space-y-4 mb-10 flex-1">
-                  {['Everything in Standard', 'Unlimited Advanced AI Tutor', 'Dedicated Docker Sandboxes', 'Live Cohort Access', 'Resume & Interview Prep'].map((f, i) => (
+                  {['Everything in Standard', 'Unlimited Advanced AI Tutor', 'Dedicated Docker Sandboxes', 'Live Class Access', 'Resume & Interview Prep'].map((f, i) => (
                      <li key={i} className="flex gap-3 text-sm font-semibold text-text items-center">
                         <Check className="w-5 h-5 text-primary shrink-0" /> {f}
                      </li>

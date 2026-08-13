@@ -4,10 +4,11 @@ import { useEffect, useState } from "react";
 import {
   BookOpen, Award, Clock, PlayCircle, Users, Activity,
   CheckCircle, Video, GraduationCap, Download, Share2,
-  ArrowRight, Calendar, Tv, Trophy, Sparkles, XCircle, FileText
+  ArrowRight, Calendar, Tv, Trophy, Sparkles, XCircle, FileText, Lock
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { RecommendedCourse } from "@/components/student/RecommendedCourse";
 
 interface LiveCourse {
   id: string;
@@ -290,18 +291,24 @@ export default function StudentDashboard() {
                         )}
                       </span>
 
-                      <a
-                        href={item.meetingLink}
-                        target="_blank"
-                        rel="noreferrer"
-                        className={`px-5 py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all active:scale-95 shadow-md ${
-                          isOngoing
-                            ? 'bg-red-600 hover:bg-red-500 text-white shadow-red-600/30 animate-pulse'
-                            : 'bg-orange-500 hover:bg-orange-600 text-white shadow-orange-500/20'
-                        }`}
-                      >
-                        <Video className="w-4 h-4" /> {isOngoing ? "Join Live Room" : "Join Class"}
-                      </a>
+                      {isOngoing ? (
+                        <a
+                          href={item.meetingLink}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="px-5 py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all active:scale-95 shadow-md bg-red-600 hover:bg-red-500 text-white shadow-red-600/30 animate-pulse"
+                        >
+                          <Video className="w-4 h-4" /> Join Live Room
+                        </a>
+                      ) : (
+                        <button
+                          disabled
+                          className="px-4 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 bg-card/60 text-subtext/70 border border-card/80 cursor-not-allowed opacity-75 select-none"
+                          title="Class has not started yet. Join button activates when the live session starts."
+                        >
+                          <Lock className="w-3.5 h-3.5 opacity-60" /> Starts at {classDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </button>
+                      )}
                     </div>
                   </div>
                 );
@@ -390,93 +397,8 @@ export default function StudentDashboard() {
           )}
         </section>
 
-        {/* ───────── 🧑‍🏫 Instructor-Led Courses Section ───────── */}
-        <section>
-          <div className="flex items-center gap-3 mb-6">
-            <div className="p-2.5 rounded-xl bg-purple-500/10">
-              <Users className="w-6 h-6 text-purple-500" />
-            </div>
-            <div>
-              <h2 className="text-2xl font-bold text-text">Instructor-Led Courses</h2>
-              <p className="text-subtext text-sm">Courses with scheduled live sessions and batch cohorts</p>
-            </div>
-          </div>
-
-          {liveCourses.length === 0 ? (
-            <div className="w-full py-16 border-2 border-dashed border-card rounded-3xl flex flex-col items-center justify-center bg-card/20">
-              <Tv className="w-12 h-12 text-subtext/30 mb-4" />
-              <p className="text-text font-bold text-lg">No instructor-led courses enrolled</p>
-              <p className="text-subtext text-sm mt-1 mb-4">Join an instructor-led batch to access live sessions.</p>
-              <Link href="/courses" className="px-6 py-2.5 bg-purple-500 hover:bg-purple-600 text-white font-bold rounded-xl shadow-lg transition-colors text-sm flex items-center gap-2">
-                Browse Live Courses <ArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {liveCourses.map((course) => (
-                <div key={course.id} className="bg-gradient-to-br from-card to-card border border-purple-500/20 rounded-3xl p-6 shadow-xl relative overflow-hidden group hover:-translate-y-1 transition-all hover:shadow-purple-500/5">
-                  <div className="absolute -right-10 -top-10 w-32 h-32 bg-purple-500/10 blur-[50px] -z-10 group-hover:bg-purple-500/20 transition-colors" />
-                  
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="p-2.5 bg-purple-500/10 rounded-xl">
-                      <Tv className="w-5 h-5 text-purple-500" />
-                    </div>
-                  </div>
-
-                  <h3 className="font-bold text-text text-xl mb-2 line-clamp-2">{course.title}</h3>
-                  
-                  <div className="flex items-center gap-2 text-subtext text-sm mb-5 font-medium">
-                    <Users className="w-4 h-4" />
-                    Instructor: <span className="text-text font-semibold">{course.instructor}</span>
-                  </div>
-
-                  <div className="space-y-3 mb-6 p-4 bg-background/50 rounded-2xl border border-card">
-                    <div className="flex items-center justify-between text-sm">
-                      <div className="flex items-center gap-2 text-subtext">
-                        <Calendar className="w-4 h-4" />
-                        <span>Schedule Batch</span>
-                      </div>
-                      <span className="font-bold text-text">{course.batchName}</span>
-                    </div>
-                    
-                    <div className="h-px w-full bg-card" />
-                    
-                    {course.nextClass ? (
-                      <div className="flex items-center justify-between text-sm">
-                        <div className="flex items-center gap-2 text-subtext">
-                          <Clock className="w-4 h-4 text-purple-500" />
-                          <span>Upcoming</span>
-                        </div>
-                        <span className="font-bold text-purple-500 text-xs">
-                          {new Date(course.nextClass.date).toLocaleString([], { weekday: "short", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
-                        </span>
-                      </div>
-                    ) : (
-                      <div className="text-center text-sm font-medium text-subtext">
-                        No upcoming sessions
-                      </div>
-                    )}
-                  </div>
-
-                  {course.nextClass ? (
-                    <a
-                      href={course.nextClass.meetingLink}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="w-full py-3 bg-purple-500 hover:bg-purple-600 text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all shadow-lg shadow-purple-500/20"
-                    >
-                      Join Live Session <Video className="w-4 h-4" />
-                    </a>
-                  ) : (
-                    <button className="w-full py-3 bg-card border border-card rounded-xl text-sm font-medium text-subtext flex items-center justify-center cursor-not-allowed">
-                      Waiting for schedule
-                    </button>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
+        {/* ───────── 🧑‍🏫 Dynamic Recommended Course Spotlight Section ───────── */}
+        <RecommendedCourse enrolledCourses={selfPaced} liveCourses={liveCourses} />
 
       </div>
 

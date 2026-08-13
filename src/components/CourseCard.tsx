@@ -95,12 +95,9 @@ export function CourseCard({ course }: { course: Course }) {
           </div>
 
           <div className="flex items-center justify-between mt-auto pt-4 border-t border-background">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-xs">
-                {course.instructor.charAt(0)}
-              </div>
-              <span className="text-sm font-medium text-text">{course.instructor}</span>
-            </div>
+            <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-primary/15 text-primary border border-primary/25">
+              Full Access
+            </span>
             <span className="font-bold text-lg text-text">₹{course.price.toLocaleString()}</span>
           </div>
         </div>

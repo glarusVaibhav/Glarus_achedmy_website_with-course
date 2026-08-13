@@ -195,17 +195,7 @@ export function InstructorNotificationsView() {
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-300">
-      {/* ─── PAGE HEADER ─── */}
-      <div>
-        <h1 className="text-3xl font-extrabold text-text tracking-tight flex items-center gap-3">
-          <Bell className="w-8 h-8 text-primary" />
-          Notification Center
-        </h1>
-        <p className="text-sm text-subtext mt-1 font-medium">
-          Stay updated with platform approvals, student activities, system alerts, and revenue updates.
-        </p>
-      </div>
+    <div className="space-y-6 animate-in fade-in duration-300">
 
       {/* ─── STATISTICS CARDS ─── */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
