@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 import {
   BookOpen,
   Search,
@@ -27,7 +28,8 @@ import {
   DollarSign,
   Radio,
   Star,
-  Loader2
+  Loader2,
+  Plus
 } from "lucide-react";
 import CourseReviewModal from "@/components/admin/CourseReviewModal";
 
@@ -306,23 +308,12 @@ function CoursesContent() {
 
   return (
     <div className="space-y-6 pb-12">
-      {/* Top Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-black text-text tracking-tight flex items-center gap-2.5">
-            <BookOpen className="w-7 h-7 text-purple-400" />
-            <span>Course Management</span>
-          </h1>
-          <p className="text-xs sm:text-sm text-subtext mt-0.5">
-            Validate course curriculums, review lecture video quality, manage pricing, and control catalog visibility.
-          </p>
-        </div>
-
-        {/* Tabs Selector */}
-        <div className="flex bg-card p-1 rounded-xl border border-white/10 shadow-inner overflow-x-auto custom-scrollbar shrink-0">
+      {/* Top Tabs Selector & Actions */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex bg-card p-1 rounded-xl border border-white/10 shadow-inner overflow-x-auto custom-scrollbar">
           <button
             onClick={() => setActiveTab("all")}
-            className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${
+            className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
               activeTab === "all"
                 ? "bg-purple-600 text-white shadow-sm"
                 : "text-subtext hover:text-text hover:bg-white/5"
@@ -333,7 +324,7 @@ function CoursesContent() {
 
           <button
             onClick={() => setActiveTab("approvals")}
-            className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+            className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap ${
               activeTab === "approvals"
                 ? "bg-purple-600 text-white shadow-sm"
                 : "text-subtext hover:text-text hover:bg-white/5"
@@ -349,7 +340,7 @@ function CoursesContent() {
 
           <button
             onClick={() => setActiveTab("published")}
-            className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${
+            className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
               activeTab === "published"
                 ? "bg-purple-600 text-white shadow-sm"
                 : "text-subtext hover:text-text hover:bg-white/5"
@@ -360,7 +351,7 @@ function CoursesContent() {
 
           <button
             onClick={() => setActiveTab("drafts")}
-            className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${
+            className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
               activeTab === "drafts"
                 ? "bg-purple-600 text-white shadow-sm"
                 : "text-subtext hover:text-text hover:bg-white/5"
@@ -371,7 +362,7 @@ function CoursesContent() {
 
           <button
             onClick={() => setActiveTab("rejected")}
-            className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${
+            className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
               activeTab === "rejected"
                 ? "bg-purple-600 text-white shadow-sm"
                 : "text-subtext hover:text-text hover:bg-white/5"
@@ -379,6 +370,17 @@ function CoursesContent() {
           >
             Rejected
           </button>
+        </div>
+
+        {/* Create Course Action */}
+        <div className="flex items-center gap-2">
+          <Link
+            href="/admin/create"
+            className="px-5 py-2.5 rounded-xl text-xs font-black bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-lg shadow-purple-500/25 flex items-center gap-2 transition-transform active:scale-95 whitespace-nowrap"
+          >
+            <Sparkles className="w-4 h-4" />
+            <span>+ Create Course</span>
+          </Link>
         </div>
       </div>
 

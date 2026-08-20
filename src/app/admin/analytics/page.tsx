@@ -78,20 +78,9 @@ export default function AnalyticsPage() {
 
   return (
     <div className="space-y-6 pb-12">
-      {/* Top Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-black text-text tracking-tight flex items-center gap-2.5">
-            <Activity className="w-7 h-7 text-purple-400" />
-            <span>Platform Analytics & Telemetry</span>
-          </h1>
-          <p className="text-xs sm:text-sm text-subtext mt-0.5">
-            Comprehensive telemetry across learner acquisition, curriculum completion, and revenue funnels.
-          </p>
-        </div>
-
-        {/* Time Filter Controls */}
-        <div className="flex items-center gap-2">
+      {/* Time Filter Controls & Export */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-end gap-3">
+        <div className="flex items-center gap-2 overflow-x-auto custom-scrollbar">
           <div className="flex bg-card p-1 rounded-xl border border-white/10 shadow-inner overflow-x-auto custom-scrollbar shrink-0">
             {(
               [
@@ -106,7 +95,7 @@ export default function AnalyticsPage() {
               <button
                 key={t.id}
                 onClick={() => setTimeRange(t.id)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
                   timeRange === t.id
                     ? "bg-purple-600 text-white shadow-sm"
                     : "text-subtext hover:text-text hover:bg-white/5"
@@ -117,7 +106,7 @@ export default function AnalyticsPage() {
             ))}
           </div>
 
-          <button className="px-3 py-2 rounded-xl bg-card border border-white/10 text-xs font-semibold text-subtext hover:text-text hover:bg-card-hover flex items-center gap-1.5 shadow-sm">
+          <button className="px-3.5 py-2 rounded-xl bg-card border border-white/10 text-xs font-semibold text-subtext hover:text-text hover:bg-card-hover flex items-center gap-1.5 shadow-sm shrink-0">
             <DownloadCloud className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Export Report</span>
           </button>

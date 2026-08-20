@@ -304,7 +304,7 @@ export function Sidebar() {
 
   if (loading || hierarchicalModules.length === 0) {
     return (
-      <div style={{ width: `${sidebarWidth}px` }} className="h-screen bg-[#03040B] border-r border-white/5 flex flex-col pt-6 pb-2 px-5 shrink-0 gap-4 animate-pulse select-none relative">
+      <div style={{ width: `${sidebarWidth}px` }} className="h-full bg-[#03040B] border-r border-white/5 flex flex-col pt-4 pb-2 px-5 shrink-0 gap-4 animate-pulse select-none relative">
         <div className="h-6 w-48 bg-white/5 rounded-md mt-2 ml-1" />
         <div className="h-px w-full bg-white/5 my-4" />
         <div className="h-16 w-full bg-white/5 rounded-xl" />
@@ -320,7 +320,7 @@ export function Sidebar() {
   const overallProgress = totalSlidesCount > 0 ? (completedSlidesCount / totalSlidesCount) * 100 : 0;
 
   return (
-    <div style={{ width: `${sidebarWidth}px` }} className="h-screen bg-[#03040B]/95 backdrop-blur-xl border-r border-white/[0.08] flex flex-col pt-6 pb-4 shrink-0 z-10 relative overflow-hidden select-none">
+    <div style={{ width: `${sidebarWidth}px` }} className="h-full bg-[#03040B]/95 backdrop-blur-xl border-r border-white/[0.08] flex flex-col pt-4 pb-4 shrink-0 z-10 relative overflow-hidden select-none">
       
       {/* Ambient background glows */}
       <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-600/10 blur-[100px] pointer-events-none rounded-full transform translate-x-1/2 -translate-y-1/2" />

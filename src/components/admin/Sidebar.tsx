@@ -16,7 +16,12 @@ import {
   ExternalLink,
   ChevronLeft,
   ChevronRight,
-  Sparkles
+  Sparkles,
+  Radio,
+  Video,
+  Calendar,
+  Layers,
+  UserCheck
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Logo } from "@/components/Logo";
@@ -27,7 +32,7 @@ export interface NavGroup {
     name: string;
     href: string;
     icon: React.ElementType;
-    badge?: number;
+    badge?: number | string;
     badgeColor?: string;
   }[];
 }
@@ -67,11 +72,49 @@ const SIDEBAR_NAVIGATION: NavGroup[] = [
         badgeColor: "bg-amber-500/20 text-amber-300 border-amber-500/30"
       },
       {
+        name: "Create Course",
+        href: "/admin/create",
+        icon: Sparkles,
+        badge: "AI",
+        badgeColor: "bg-purple-500/20 text-purple-300 border-purple-500/30"
+      },
+      {
         name: "Task Management",
         href: "/admin/tasks",
         icon: CheckSquare,
         badge: 8,
         badgeColor: "bg-red-500/20 text-red-300 border-red-500/30"
+      }
+    ]
+  },
+  {
+    groupTitle: "LIVE TRAINING",
+    items: [
+      {
+        name: "Live Courses",
+        href: "/admin/live-training",
+        icon: Radio,
+        badge: "LIVE",
+        badgeColor: "bg-emerald-500/20 text-emerald-300 border-emerald-500/30"
+      },
+      {
+        name: "Sessions",
+        href: "/admin/live-training/sessions",
+        icon: Video,
+        badge: 6,
+        badgeColor: "bg-purple-500/20 text-purple-300 border-purple-500/30"
+      },
+      {
+        name: "Instructor Assignments",
+        href: "/admin/live-training/instructor-assignments",
+        icon: UserCheck,
+        badge: 3,
+        badgeColor: "bg-amber-500/20 text-amber-300 border-amber-500/30"
+      },
+      {
+        name: "Calendar",
+        href: "/admin/live-training/calendar",
+        icon: Calendar
       }
     ]
   },
@@ -130,10 +173,21 @@ export default function Sidebar({
   const pathname = usePathname();
 
   const isRouteActive = (href: string) => {
+    if (pathname === href) return true;
+
     if (href === "/admin") {
       return pathname === "/admin";
     }
-    return pathname.startsWith(href);
+
+    if (href === "/admin/live-training") {
+      return (
+        pathname === "/admin/live-training" ||
+        pathname.startsWith("/admin/live-training/create") ||
+        pathname.startsWith("/admin/live-training/courses")
+      );
+    }
+
+    return pathname.startsWith(href + "/");
   };
 
   return (
@@ -162,9 +216,9 @@ export default function Sidebar({
         <div className="h-20 px-4 border-b border-white/10 flex items-center justify-between shrink-0 bg-background/40">
           {!collapsed ? (
             <Link
-              href="/admin"
-              className="flex items-center gap-2.5 group cursor-pointer overflow-hidden"
-              title="Glarus Academy Admin Portal"
+              href="/"
+              className="flex items-center gap-2.5 group cursor-pointer overflow-hidden hover:opacity-90 transition-opacity"
+              title="Go to Glarus Academy Site"
             >
               <Logo className="h-7 w-auto max-w-[130px]" />
               <span className="text-[10px] uppercase font-black tracking-widest px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-400 border border-purple-500/30 shrink-0">
@@ -172,7 +226,7 @@ export default function Sidebar({
               </span>
             </Link>
           ) : (
-            <Link href="/admin" className="mx-auto" title="Glarus Academy Admin">
+            <Link href="/" className="mx-auto hover:opacity-90 transition-opacity" title="Go to Glarus Academy Site">
               <div className="w-9 h-9 rounded-xl bg-purple-600/20 border border-purple-500/30 flex items-center justify-center text-purple-400 font-black text-sm">
                 GA
               </div>

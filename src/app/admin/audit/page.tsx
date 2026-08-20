@@ -171,19 +171,9 @@ export default function AuditLogsPage() {
 
   return (
     <div className="space-y-6 pb-12">
-      {/* Top Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-black text-text tracking-tight flex items-center gap-2.5">
-            <ShieldAlert className="w-7 h-7 text-purple-400" />
-            <span>Audit & Security Governance Logs</span>
-          </h1>
-          <p className="text-xs sm:text-sm text-subtext mt-0.5">
-            Immutable end-to-end ledger of administrative actions, policy edits, verification decisions, and API events.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-bold shrink-0">
+      {/* Top Status Indicator */}
+      <div className="flex items-center justify-end">
+        <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-bold shrink-0">
           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
           <span>Real-time Audit Stream Active</span>
         </div>

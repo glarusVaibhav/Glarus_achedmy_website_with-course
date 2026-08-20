@@ -105,25 +105,13 @@ export default function AdminSettingsPage() {
 
   return (
     <div className="space-y-6 pb-12">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-black text-text tracking-tight flex items-center gap-2.5">
-            <Settings className="w-7 h-7 text-purple-400" />
-            <span>Platform Governance & Settings</span>
-          </h1>
-          <p className="text-xs sm:text-sm text-subtext mt-0.5">
-            Configure enterprise rules, payment gateways, faculty revenue sharing, and security parameters.
-          </p>
+      {/* Save Success Alert */}
+      {savedSuccess && (
+        <div className="p-3 px-4 rounded-2xl bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-bold text-xs flex items-center gap-2 animate-in fade-in shadow-lg">
+          <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+          <span>Platform settings have been successfully updated and saved!</span>
         </div>
-
-        {savedSuccess && (
-          <div className="p-2 px-3 rounded-xl bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-bold text-xs flex items-center gap-1.5 animate-in fade-in">
-            <Check className="w-4 h-4" />
-            <span>Settings saved successfully!</span>
-          </div>
-        )}
-      </div>
+      )}
 
       {/* Main Settings Grid: Sub-navigation Sidebar + Content Pane */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6">

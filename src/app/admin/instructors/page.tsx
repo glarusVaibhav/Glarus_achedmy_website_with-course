@@ -290,23 +290,12 @@ function InstructorsContent() {
 
   return (
     <div className="space-y-6 pb-12">
-      {/* Top Header & Tab Controls */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-black text-text tracking-tight flex items-center gap-2.5">
-            <GraduationCap className="w-7 h-7 text-purple-400" />
-            <span>Instructor Management</span>
-          </h1>
-          <p className="text-xs sm:text-sm text-subtext mt-0.5">
-            Oversee instructor verifications, teaching quality, student reach, and live schedules.
-          </p>
-        </div>
-
-        {/* Tab Selector */}
-        <div className="flex bg-card p-1 rounded-xl border border-white/10 shadow-inner overflow-x-auto custom-scrollbar shrink-0">
+      {/* Top Tab Controls */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex bg-card p-1 rounded-xl border border-white/10 shadow-inner overflow-x-auto custom-scrollbar">
           <button
             onClick={() => setActiveTab("all")}
-            className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${
+            className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
               activeTab === "all"
                 ? "bg-purple-600 text-white shadow-sm"
                 : "text-subtext hover:text-text hover:bg-white/5"
@@ -317,7 +306,7 @@ function InstructorsContent() {
 
           <button
             onClick={() => setActiveTab("approvals")}
-            className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+            className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap ${
               activeTab === "approvals"
                 ? "bg-purple-600 text-white shadow-sm"
                 : "text-subtext hover:text-text hover:bg-white/5"
@@ -333,7 +322,7 @@ function InstructorsContent() {
 
           <button
             onClick={() => setActiveTab("verified")}
-            className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${
+            className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
               activeTab === "verified"
                 ? "bg-purple-600 text-white shadow-sm"
                 : "text-subtext hover:text-text hover:bg-white/5"
@@ -344,7 +333,7 @@ function InstructorsContent() {
 
           <button
             onClick={() => setActiveTab("suspended")}
-            className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${
+            className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
               activeTab === "suspended"
                 ? "bg-purple-600 text-white shadow-sm"
                 : "text-subtext hover:text-text hover:bg-white/5"
@@ -355,7 +344,7 @@ function InstructorsContent() {
 
           <button
             onClick={() => setActiveTab("live")}
-            className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+            className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap ${
               activeTab === "live"
                 ? "bg-purple-600 text-white shadow-sm"
                 : "text-subtext hover:text-text hover:bg-white/5"

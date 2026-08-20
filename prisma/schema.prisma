@@ -70,6 +70,9 @@ model User {
   instructorProfile  InstructorProfile?
   managedRefunds     Refund[]            @relation("AdminRefunds")
   instructorApproval InstructorApproval?
+  leadLiveCourses    LiveCourse[]        @relation("LeadInstructorLiveCourses")
+  createdLiveCourses LiveCourse[]        @relation("CreatorLiveCourses")
+  sessionAssignments SessionAssignment[]
 }
 
 model Course {
@@ -310,3 +313,177 @@ model CourseApproval {
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
 }
+
+enum LiveCourseStatus {
+  DRAFT
+  PUBLISHED
+  ACTIVE
+  COMPLETED
+  ARCHIVED
+}
+
+enum LiveSessionStatus {
+  DRAFT
+  SCHEDULED
+  LIVE
+  COMPLETED
+  CANCELLED
+  RESCHEDULED
+}
+
+model LiveCourse {
+  id                 String              @id @default(cuid())
+  title              String
+  slug               String?
+  shortDescription   String?
+  description        String
+  thumbnail          String?
+  thumbnailGradient  String?             @default("from-purple-900 via-indigo-950 to-slate-950")
+  category           String              @default("Generative AI")
+  level              String              @default("Intermediate")
+  duration           String?             @default("6 Weeks")
+  startDate          DateTime?
+  endDate            DateTime?
+  timezone           String              @default("Asia/Kolkata (IST)")
+  totalSessions      Int                 @default(0)
+  maxStudents        Int                 @default(50)
+  enrolledCount      Int                 @default(0)
+  status             LiveCourseStatus    @default(DRAFT)
+  leadInstructor     User?               @relation("LeadInstructorLiveCourses", fields: [leadInstructorId], references: [id])
+  leadInstructorId   String?
+  creator            User?               @relation("CreatorLiveCourses", fields: [createdById], references: [id])
+  createdById        String?
+  meetingPlatform    String              @default("Zoom")
+  meetingUrl         String?
+  prerequisites      String?
+  objectives         String?
+  tags               String?
+  targetAudience     String?
+  recordingAvailable Boolean             @default(true)
+  attendanceTracking Boolean             @default(true)
+  visibility         String              @default("PUBLIC")
+  sessions           LiveSession[]
+  assignments        SessionAssignment[]
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+}
+
+model LiveSession {
+  id              String                  @id @default(cuid())
+  liveCourse      LiveCourse              @relation(fields: [liveCourseId], references: [id], onDelete: Cascade)
+  liveCourseId    String
+  sessionNumber   Int
+  title           String
+  description     String?
+  date            DateTime?
+  startTime       String?
+  endTime         String?
+  timezone        String                  @default("Asia/Kolkata (IST)")
+  duration        String                  @default("120 min")
+  status          LiveSessionStatus       @default(SCHEDULED)
+  meetingUrl      String?
+  recordingUrl    String?
+  recordingStatus String?                 @default("unavailable")
+  agenda          SessionAgendaItem[]
+  topics          SessionTopic[]
+  learningOutcomes SessionLearningOutcome[]
+  activities      SessionActivity[]
+  resources       SessionResource[]
+  homework        SessionHomework[]
+  assignments     SessionAssignment[]
+  changeHistory   SessionChangeHistory[]
+  createdAt       DateTime                @default(now())
+  updatedAt       DateTime                @updatedAt
+}
+
+model SessionAgendaItem {
+  id          String      @id @default(cuid())
+  session     LiveSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  sessionId   String
+  title       String
+  description String?
+  startTime   String?
+  endTime     String?
+  duration    String?
+  order       Int         @default(0)
+}
+
+model SessionTopic {
+  id          String      @id @default(cuid())
+  session     LiveSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  sessionId   String
+  title       String
+  description String?
+  order       Int         @default(0)
+}
+
+model SessionLearningOutcome {
+  id        String      @id @default(cuid())
+  session   LiveSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  sessionId String
+  title     String
+  order     Int         @default(0)
+}
+
+model SessionActivity {
+  id           String      @id @default(cuid())
+  session      LiveSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  sessionId    String
+  title        String
+  instructions String?
+  duration     String?
+  order        Int         @default(0)
+}
+
+model SessionResource {
+  id        String      @id @default(cuid())
+  session   LiveSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  sessionId String
+  title     String
+  type      String      @default("URL")
+  url       String
+}
+
+model SessionHomework {
+  id          String      @id @default(cuid())
+  session     LiveSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  sessionId   String
+  title       String
+  description String?
+  dueDate     String?
+}
+
+model SessionAssignment {
+  id                  String       @id @default(cuid())
+  session             LiveSession? @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  sessionId           String?
+  liveCourse          LiveCourse?  @relation(fields: [liveCourseId], references: [id], onDelete: Cascade)
+  liveCourseId        String?
+  instructor          User         @relation(fields: [instructorId], references: [id], onDelete: Cascade)
+  instructorId        String
+  canView             Boolean      @default(true)
+  canEdit             Boolean      @default(false)
+  canEditAgenda       Boolean      @default(false)
+  canEditSchedule     Boolean      @default(false)
+  canEditResources    Boolean      @default(false)
+  canAddHomework      Boolean      @default(false)
+  canReschedule       Boolean      @default(false)
+  canCancel           Boolean      @default(false)
+  canManageAttendance Boolean      @default(false)
+  canManageRecording  Boolean      @default(false)
+  assignedBy          String?      @default("Academic Administration")
+  assignedAt          DateTime     @default(now())
+}
+
+model SessionChangeHistory {
+  id            String      @id @default(cuid())
+  session       LiveSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  sessionId     String
+  changedBy     String
+  changeType    String
+  previousValue String?
+  newValue      String?
+  reason        String?
+  createdAt     DateTime    @default(now())
+}
+

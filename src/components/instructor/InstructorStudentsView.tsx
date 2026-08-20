@@ -15,13 +15,19 @@ import {
   Eye,
   X,
   ArrowRight,
+  ArrowLeft,
   ExternalLink,
   ChevronRight,
   RotateCcw,
   Check,
   FileDown,
   Activity,
-  Layers
+  Layers,
+  Bot,
+  Sparkles,
+  Cpu,
+  Brain,
+  GraduationCap
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -127,6 +133,15 @@ const INITIAL_COURSES: CourseMetadata[] = [
     avgProgress: 84,
     avgAttendance: 94,
     pendingReviews: 0,
+  },
+  {
+    id: "c4",
+    title: "Agentic AI & Autonomous Workflows",
+    shortCode: "AGENTIC-AI",
+    totalStudents: 24,
+    avgProgress: 88,
+    avgAttendance: 96,
+    pendingReviews: 2,
   },
 ];
 
@@ -601,6 +616,101 @@ const INITIAL_STUDENTS: InstructorStudentItem[] = [
         recentActivities: [],
       }
     }
+  },
+  {
+    id: "stu-13",
+    name: "Alex Rivera",
+    email: "alex.rivera@example.com",
+    lastActive: "Today",
+    lastActiveDaysAgo: 0,
+    status: "Needs Attention",
+    attentionPriority: "Warning",
+    attentionReason: "1 capstone project pending review",
+    courses: {
+      c4: {
+        courseId: "c4",
+        courseTitle: "Agentic AI & Autonomous Workflows",
+        progress: 88,
+        modulesCompleted: 8,
+        totalModules: 10,
+        lessonsCompleted: 44,
+        totalLessons: 50,
+        attendanceRate: 95,
+        attendedClasses: 15,
+        totalClasses: 16,
+        liveSessions: [
+          { id: "live-1", title: "Q&A Masterclass: Agentic Workflows & Multi-Agent Swarms", date: "Today", time: "10:45 AM", status: "Attended", durationMinutes: 75 },
+          { id: "live-2", title: "LangGraph Multi-Agent Architecture", date: "2026-08-08", time: "18:00", status: "Attended", durationMinutes: 90 },
+        ],
+        assignments: [
+          { id: "asg-m8-1", title: "Module 8 Assessment — Agentic LangGraph Pipeline", dueDate: "Yesterday", status: "Submitted", score: null, totalMarks: 100, submittedText: "Implemented multi-agent supervisor graph with SQLite state checkpointing.", feedback: "" },
+          { id: "asg-m8-2", title: "Agentic AI Capstone Project", dueDate: "In 2 days", status: "Pending Review", score: null, totalMarks: 100, submittedText: "Created full autonomous code reviewer agent with GitHub webhook integration.", feedback: "Awaiting final evaluation." },
+          { id: "asg-m7-1", title: "ReAct Loop Implementation", dueDate: "03 Aug 2026", status: "Graded", score: 94, totalMarks: 100, submittedText: "Built deterministic reasoning steps with retry loops." },
+        ],
+        recentActivities: [
+          { id: "act-1", title: 'Submitted "Agentic AI Capstone Project"', timestamp: "Today at 08:30 AM", type: "assignment" },
+          { id: "act-2", title: 'Attended Live Class "Agentic Workflows"', timestamp: "Today at 10:45 AM", type: "live_session" }
+        ],
+      }
+    }
+  },
+  {
+    id: "stu-14",
+    name: "Sneha Reddy",
+    email: "sneha.reddy@example.com",
+    lastActive: "Today",
+    lastActiveDaysAgo: 0,
+    status: "Excellent",
+    courses: {
+      c4: {
+        courseId: "c4",
+        courseTitle: "Agentic AI & Autonomous Workflows",
+        progress: 94,
+        modulesCompleted: 9,
+        totalModules: 10,
+        lessonsCompleted: 48,
+        totalLessons: 50,
+        attendanceRate: 98,
+        attendedClasses: 16,
+        totalClasses: 16,
+        liveSessions: [
+          { id: "live-1", title: "Q&A Masterclass: Agentic Workflows & Multi-Agent Swarms", date: "Today", time: "10:45 AM", status: "Attended", durationMinutes: 75 }
+        ],
+        assignments: [
+          { id: "asg-m8-1", title: "Module 8 Assessment — Agentic LangGraph Pipeline", dueDate: "Yesterday", status: "Graded", score: 98, totalMarks: 100, submittedText: "Flawless LangGraph implementation with streaming token output.", feedback: "Exceptional code quality!" },
+        ],
+        recentActivities: [],
+      }
+    }
+  },
+  {
+    id: "stu-15",
+    name: "Priya Patel",
+    email: "priya.patel@example.com",
+    lastActive: "Today",
+    lastActiveDaysAgo: 0,
+    status: "On Track",
+    courses: {
+      c4: {
+        courseId: "c4",
+        courseTitle: "Agentic AI & Autonomous Workflows",
+        progress: 79,
+        modulesCompleted: 7,
+        totalModules: 10,
+        lessonsCompleted: 39,
+        totalLessons: 50,
+        attendanceRate: 90,
+        attendedClasses: 14,
+        totalClasses: 16,
+        liveSessions: [
+          { id: "live-1", title: "Q&A Masterclass: Agentic Workflows & Multi-Agent Swarms", date: "Today", time: "10:45 AM", status: "Attended", durationMinutes: 75 }
+        ],
+        assignments: [
+          { id: "asg-m8-1", title: "Module 8 Assessment — Agentic LangGraph Pipeline", dueDate: "Yesterday", status: "Graded", score: 92, totalMarks: 100 }
+        ],
+        recentActivities: [],
+      }
+    }
   }
 ];
 
@@ -608,20 +718,86 @@ const INITIAL_STUDENTS: InstructorStudentItem[] = [
    COMPONENT PROPS
    ═══════════════════════════════════════════════ */
 
+export interface InstructorStudentsFilter {
+  courseId?: string;
+  courseTitle?: string;
+  classId?: string;
+  className?: string;
+  batch?: string;
+  searchQuery?: string;
+  returnTab?: string;
+}
+
 interface InstructorStudentsViewProps {
-  onNavigateToAssignments?: (params?: { courseId?: string; courseTitle?: string; studentEmail?: string; assignmentId?: string }) => void;
+  onNavigateToAssignments?: (params?: {
+    courseId?: string;
+    courseTitle?: string;
+    studentEmail?: string;
+    studentName?: string;
+    assignmentId?: string;
+    assignmentTitle?: string;
+    returnTab?: string;
+  }) => void;
   onNavigateToLiveSessions?: () => void;
+  onBack?: () => void;
+  initialFilter?: InstructorStudentsFilter | null;
+  onClearFilter?: () => void;
 }
 
 export function InstructorStudentsView({
   onNavigateToAssignments,
   onNavigateToLiveSessions,
+  onBack,
+  initialFilter,
+  onClearFilter,
 }: InstructorStudentsViewProps) {
   /* ── Course Scoping State ── */
   const [selectedCourseId, setSelectedCourseId] = useState<string>("ALL");
   const [courses] = useState<CourseMetadata[]>(INITIAL_COURSES);
   const [students, setStudents] = useState<InstructorStudentItem[]>(INITIAL_STUDENTS);
   const [isCourseDropdownOpen, setIsCourseDropdownOpen] = useState(false);
+
+  /* ── Class Scoping / Deep Filtering State ── */
+  const [activeClassFilter, setActiveClassFilter] = useState<{
+    classId?: string;
+    className?: string;
+    courseTitle?: string;
+    batch?: string;
+  } | null>(null);
+
+  /* ── Sync Filter from props ── */
+  useEffect(() => {
+    if (initialFilter) {
+      if (initialFilter.courseId) {
+        setSelectedCourseId(initialFilter.courseId);
+      } else if (initialFilter.courseTitle) {
+        const matched = courses.find(c =>
+          c.title.toLowerCase().includes(initialFilter.courseTitle!.toLowerCase()) ||
+          initialFilter.courseTitle!.toLowerCase().includes(c.title.toLowerCase())
+        );
+        if (matched) setSelectedCourseId(matched.id);
+      }
+
+      if (initialFilter.className || initialFilter.classId) {
+        setActiveClassFilter({
+          classId: initialFilter.classId,
+          className: initialFilter.className,
+          courseTitle: initialFilter.courseTitle,
+          batch: initialFilter.batch
+        });
+      }
+      if (initialFilter.searchQuery) {
+        setSearchQuery(initialFilter.searchQuery);
+      }
+    }
+  }, [initialFilter, courses]);
+
+  const handleClearClassFilter = () => {
+    setActiveClassFilter(null);
+    setSelectedCourseId("ALL");
+    setSearchQuery("");
+    if (onClearFilter) onClearFilter();
+  };
 
   /* ── Filters State ── */
   const [searchQuery, setSearchQuery] = useState("");
@@ -718,11 +894,21 @@ export function InstructorStudentsView({
 
   /* ── Active Scoped Students (Before Filter/Search) ── */
   const courseScopedStudents = useMemo(() => {
-    if (selectedCourseId === "ALL") {
-      return students;
+    let list = students;
+    if (selectedCourseId !== "ALL") {
+      list = list.filter((s) => s.courses[selectedCourseId] !== undefined);
     }
-    return students.filter((s) => s.courses[selectedCourseId] !== undefined);
-  }, [selectedCourseId, students]);
+    if (activeClassFilter?.className) {
+      const cls = activeClassFilter.className.toLowerCase();
+      const byClass = list.filter((s) => {
+        return Object.values(s.courses).some(c =>
+          c.liveSessions.some(ls => ls.title.toLowerCase().includes(cls) || cls.includes(ls.title.toLowerCase()))
+        );
+      });
+      if (byClass.length > 0) return byClass;
+    }
+    return list;
+  }, [selectedCourseId, activeClassFilter, students]);
 
   /* ── Key Metrics Calculation ── */
   const stats = useMemo(() => {
@@ -939,6 +1125,18 @@ export function InstructorStudentsView({
     courseId: string,
     courseTitle: string
   ) => {
+    if (onNavigateToAssignments) {
+      onNavigateToAssignments({
+        courseId,
+        courseTitle,
+        studentEmail: student.email,
+        studentName: student.name,
+        assignmentId: assignment.id,
+        assignmentTitle: assignment.title,
+      });
+      return;
+    }
+
     setReviewModalData({
       student,
       assignment,
@@ -1038,10 +1236,37 @@ export function InstructorStudentsView({
         </div>
       )}
 
+      {/* ── Top Back Navigation Option ── */}
+      {(onBack || onNavigateToLiveSessions || initialFilter?.returnTab || activeClassFilter) && (
+        <div className="pt-1">
+          <button
+            onClick={() => {
+              if (onBack) {
+                onBack();
+              } else if (onNavigateToLiveSessions) {
+                onNavigateToLiveSessions();
+              } else if (typeof window !== "undefined") {
+                window.history.back();
+              }
+            }}
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-slate-300 hover:text-white border border-white/[0.08] hover:border-purple-500/30 text-xs font-semibold transition-all cursor-pointer group shadow-xs"
+          >
+            <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform text-purple-400" />
+            <span>
+              {initialFilter?.returnTab
+                ? `Back to ${initialFilter.returnTab}`
+                : activeClassFilter
+                ? "Back to Live Sessions"
+                : "Back to Previous Page"}
+            </span>
+          </button>
+        </div>
+      )}
+
       {/* ═══════════════════════════════════════════════
           1. PAGE HEADER (Editorial Style + Clean Dropdown)
           ═══════════════════════════════════════════════ */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pt-2">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pt-1">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-text">
             Students
@@ -1112,6 +1337,51 @@ export function InstructorStudentsView({
           )}
         </div>
       </div>
+
+      {/* ── Active Live Class Filter Banner ── */}
+      {activeClassFilter && (
+        <div className="bg-indigo-500/10 border border-indigo-500/30 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs animate-in fade-in slide-in-from-top-2 duration-200 shadow-sm">
+          <div className="flex items-start sm:items-center gap-3.5">
+            <div className="p-2.5 bg-indigo-500/20 text-indigo-400 rounded-xl shrink-0 mt-0.5 sm:mt-0 border border-indigo-500/30">
+              <CalendarCheck className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="font-semibold text-white text-sm">Filtered by Live Class:</span>
+                <span className="font-bold text-indigo-300 text-sm">{activeClassFilter.className}</span>
+                {activeClassFilter.batch && (
+                  <span className="px-2 py-0.5 rounded-md bg-white/[0.08] text-slate-200 font-mono text-[10px]">
+                    {activeClassFilter.batch}
+                  </span>
+                )}
+              </div>
+              <p className="text-slate-400 text-xs mt-1">
+                Showing all enrolled students, live session attendance, and assignments for this specific class ({activeClassFilter.courseTitle || currentCourse?.title || "Assigned Course"}).
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 self-start sm:self-center shrink-0 flex-wrap">
+            <button
+              onClick={() => {
+                if (onBack) onBack();
+                else if (onNavigateToLiveSessions) onNavigateToLiveSessions();
+                else if (typeof window !== "undefined") window.history.back();
+              }}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-200 border border-indigo-500/40 text-xs font-semibold transition-colors cursor-pointer shadow-xs"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Back to {initialFilter?.returnTab || "Live Sessions"}</span>
+            </button>
+            <button
+              onClick={handleClearClassFilter}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] text-slate-200 border border-white/[0.1] transition-colors cursor-pointer font-semibold text-xs shrink-0 shadow-xs"
+            >
+              <X className="w-3.5 h-3.5 text-slate-400" />
+              <span>Clear Filter (Show All)</span>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ═══════════════════════════════════════════════
           2. KEY METRICS (Single Clean Statistics Container)
@@ -1262,55 +1532,141 @@ export function InstructorStudentsView({
       </div>
 
       {/* ═══════════════════════════════════════════════
-          4. COURSE OVERVIEW (Subtle Horizontal List or Strip)
+          4. COURSE-FIRST SELECTION HUB OR ACTIVE COURSE HEADER
           ═══════════════════════════════════════════════ */}
       {selectedCourseId === "ALL" ? (
-        <div className="space-y-3">
-          <h2 className="text-sm font-semibold text-text">
-            Your Courses
-          </h2>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-base font-bold text-text flex items-center gap-2">
+                <BookOpen className="w-4 h-4 text-primary" />
+                <span>Select a Course to View Enrolled Students</span>
+              </h2>
+              <p className="text-xs text-subtext mt-0.5">
+                Click any course below to manage enrolled students, track attendance, and grade submissions.
+              </p>
+            </div>
+          </div>
 
-          <div className="bg-card/30 border border-border/70 rounded-xl divide-y divide-border/60 overflow-hidden">
-            {courses.map((course) => (
-              <div
-                key={course.id}
-                onClick={() => setSelectedCourseId(course.id)}
-                className="px-4 py-3.5 flex items-center justify-between gap-4 hover:bg-white/[0.02] cursor-pointer transition-colors group"
-              >
-                <div className="min-w-0">
-                  <span className="font-semibold text-xs text-text group-hover:text-primary transition-colors">
-                    {course.title}
-                  </span>
-                  <span className="text-xs text-subtext ml-2.5">
-                    {course.totalStudents} students · {course.avgProgress}% progress · {course.avgAttendance}% attendance
-                  </span>
-                </div>
+          {/* Interactive Course Grid Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {courses.map((course) => {
+              const studentsInCourse = students.filter((s) => s.courses[course.id]);
+              const pendingCount = studentsInCourse.reduce((acc, s) => {
+                const perf = s.courses[course.id];
+                return acc + (perf ? perf.assignments.filter(a => a.status === "Pending Review").length : 0);
+              }, 0);
 
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSelectedCourseId(course.id);
-                  }}
-                  className="text-xs font-medium text-subtext group-hover:text-primary transition-colors flex items-center gap-1 shrink-0"
+              const iconMeta = course.title.toLowerCase().includes("agentic")
+                ? { icon: Brain, color: "text-purple-400", bg: "bg-purple-500/10", border: "border-purple-500/20" }
+                : course.title.toLowerCase().includes("generative")
+                ? { icon: Sparkles, color: "text-pink-400", bg: "bg-pink-500/10", border: "border-pink-500/20" }
+                : course.title.toLowerCase().includes("machine")
+                ? { icon: Cpu, color: "text-blue-400", bg: "bg-blue-500/10", border: "border-blue-500/20" }
+                : { icon: Bot, color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/20" };
+
+              return (
+                <div
+                  key={course.id}
+                  onClick={() => setSelectedCourseId(course.id)}
+                  className="bg-card/40 hover:bg-card/70 border border-border/70 hover:border-primary/50 rounded-2xl p-5 transition-all flex flex-col justify-between space-y-4 group cursor-pointer shadow-xs hover:shadow-md"
                 >
-                  <span>View Students</span>
-                  <ArrowRight className="w-3 h-3" />
-                </button>
-              </div>
-            ))}
+                  <div className="space-y-3">
+                    {/* Top Tag & Pending Badge */}
+                    <div className="flex items-center justify-between gap-2">
+                      <div className={`p-2.5 rounded-xl ${iconMeta.bg} ${iconMeta.color} border ${iconMeta.border} shrink-0`}>
+                        <iconMeta.icon className="w-5 h-5" />
+                      </div>
+                      
+                      {pendingCount > 0 ? (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-500/10 text-amber-300 border border-amber-500/20">
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                          {pendingCount} Pending Review
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-medium text-subtext bg-white/[0.04]">
+                          All Graded
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Title & Enrolled Count */}
+                    <div>
+                      <h3 className="font-bold text-text text-base group-hover:text-primary transition-colors line-clamp-1">
+                        {course.title}
+                      </h3>
+                      <p className="text-xs text-subtext font-medium mt-1 flex items-center gap-1.5">
+                        <Users className="w-3.5 h-3.5 text-subtext/70" />
+                        <span><strong className="text-text font-semibold">{course.totalStudents} Students</strong> enrolled in this course</span>
+                      </p>
+                    </div>
+
+                    {/* Progress Bar & Attendance */}
+                    <div className="space-y-2 pt-1 border-t border-border/40">
+                      <div className="flex items-center justify-between text-xs text-subtext">
+                        <span>Average Progress</span>
+                        <span className="font-semibold text-text">{course.avgProgress}%</span>
+                      </div>
+                      <div className="w-full h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
+                        <div
+                          className="h-full rounded-full bg-primary"
+                          style={{ width: `${course.avgProgress}%` }}
+                        />
+                      </div>
+                      <div className="flex items-center justify-between text-[11px] text-subtext pt-0.5">
+                        <span>Attendance Rate: <strong className="text-text font-medium">{course.avgAttendance}%</strong></span>
+                        <span className="text-primary font-medium group-hover:underline flex items-center gap-1">
+                          View Roster <ArrowRight className="w-3 h-3" />
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       ) : (
-        <div className="px-4 py-2.5 bg-card/20 border border-border/60 rounded-xl flex items-center justify-between text-xs">
-          <span className="text-subtext">
-            <strong className="text-text font-semibold">{currentCourse?.title}</strong> · {currentCourse?.totalStudents} students · {currentCourse?.avgProgress}% progress · {currentCourse?.avgAttendance}% attendance
-          </span>
-          <button
-            onClick={() => setSelectedCourseId("ALL")}
-            className="text-xs font-medium text-subtext hover:text-primary transition-colors ml-4 shrink-0"
-          >
-            Show All Courses →
-          </button>
+        /* Active Course Header Bar when viewing a specific course */
+        <div className="bg-card/40 border border-border/80 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm animate-in fade-in">
+          <div className="flex items-center gap-3.5 min-w-0">
+            <button
+              onClick={() => setSelectedCourseId("ALL")}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] text-text border border-border text-xs font-semibold cursor-pointer transition-colors shrink-0 shadow-xs"
+            >
+              <ArrowLeft className="w-3.5 h-3.5 text-subtext" />
+              <span>All Courses</span>
+            </button>
+            
+            <div className="truncate">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-primary/15 text-primary uppercase">
+                  Course Students
+                </span>
+                <h2 className="text-base sm:text-lg font-bold text-text truncate">{currentCourse?.title}</h2>
+              </div>
+              <p className="text-xs text-subtext mt-0.5">
+                Showing all <strong className="text-text">{currentCourse?.totalStudents} students</strong> enrolled in this course · {currentCourse?.avgProgress}% avg progress · {currentCourse?.avgAttendance}% attendance
+              </p>
+            </div>
+          </div>
+
+          {/* Quick Switch to Other Courses */}
+          <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none shrink-0 self-start sm:self-center">
+            {courses.map((c) => (
+              <button
+                key={c.id}
+                onClick={() => setSelectedCourseId(c.id)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-colors cursor-pointer whitespace-nowrap ${
+                  selectedCourseId === c.id
+                    ? "bg-primary text-white font-semibold shadow-xs"
+                    : "bg-card/60 hover:bg-card border border-border text-subtext hover:text-text"
+                }`}
+              >
+                {c.title.split(" ")[0]} ({c.totalStudents})
+              </button>
+            ))}
+          </div>
         </div>
       )}
 
@@ -1351,7 +1707,21 @@ export function InstructorStudentsView({
               )}
             </div>
 
-            {/* Status Filter */}
+            {/* 1. COURSE FILTER (FIRST FILTER AS REQUESTED) */}
+            <select
+              value={selectedCourseId}
+              onChange={(e) => setSelectedCourseId(e.target.value)}
+              className="bg-card/60 border border-primary/30 text-primary font-semibold rounded-xl px-2.5 py-1.5 text-xs focus:outline-none focus:border-primary cursor-pointer max-w-[200px] truncate"
+            >
+              <option value="ALL">Course: All Courses</option>
+              {courses.map((course) => (
+                <option key={course.id} value={course.id}>
+                  Course: {course.title} ({course.totalStudents})
+                </option>
+              ))}
+            </select>
+
+            {/* 2. Status Filter */}
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
@@ -1364,7 +1734,7 @@ export function InstructorStudentsView({
               <option value="Inactive">Inactive</option>
             </select>
 
-            {/* Attendance Filter */}
+            {/* 3. Attendance Filter */}
             <select
               value={attendanceFilter}
               onChange={(e) => setAttendanceFilter(e.target.value)}
@@ -1376,7 +1746,7 @@ export function InstructorStudentsView({
               <option value="BELOW_75">Below 75%</option>
             </select>
 
-            {/* Assignment Status Filter */}
+            {/* 4. Assignment Status Filter */}
             <select
               value={assignmentFilter}
               onChange={(e) => setAssignmentFilter(e.target.value)}
@@ -1388,7 +1758,7 @@ export function InstructorStudentsView({
               <option value="MISSING">Missing Work</option>
             </select>
 
-            {/* Sort Filter */}
+            {/* 5. Sort Filter */}
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as any)}
@@ -1401,17 +1771,18 @@ export function InstructorStudentsView({
               <option value="NAME">Name</option>
             </select>
 
-            {/* Clear Filters */}
-            {(statusFilter !== "ALL" || attendanceFilter !== "ALL" || assignmentFilter !== "ALL" || searchQuery) && (
+            {/* Clear / Reset Filters */}
+            {(selectedCourseId !== "ALL" || statusFilter !== "ALL" || attendanceFilter !== "ALL" || assignmentFilter !== "ALL" || searchQuery) && (
               <button
                 onClick={() => {
+                  setSelectedCourseId("ALL");
                   setStatusFilter("ALL");
                   setAttendanceFilter("ALL");
                   setAssignmentFilter("ALL");
                   setSearchQuery("");
                 }}
-                className="text-xs text-subtext hover:text-text p-1.5"
-                title="Reset filters"
+                className="text-xs text-subtext hover:text-text p-1.5 cursor-pointer rounded-lg hover:bg-white/[0.04] transition-colors"
+                title="Reset all filters"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
               </button>
@@ -1459,7 +1830,7 @@ export function InstructorStudentsView({
                       <th className="py-3.5 px-4 font-normal">Assignments</th>
                       <th className="py-3.5 px-4 font-normal">Last Active</th>
                       <th className="py-3.5 px-4 font-normal">Status</th>
-                      <th className="py-3.5 px-4 font-normal text-right">Action</th>
+                      <th className="py-3.5 px-4 font-normal text-right">Assignment</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border/40">

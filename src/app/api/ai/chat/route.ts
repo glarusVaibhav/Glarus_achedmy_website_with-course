@@ -23,7 +23,7 @@ Format your responses with markdown for readability.`;
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "llama-3.3-70b-versatile",
+        model: "openai/gpt-oss-20b",
         messages: [
           { role: "system", content: systemPrompt },
           ...(context ? [{ role: "system", content: `Current course context: ${context}` }] : []),

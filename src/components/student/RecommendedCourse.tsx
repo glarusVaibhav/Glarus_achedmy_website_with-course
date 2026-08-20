@@ -97,20 +97,20 @@ export function RecommendedCourse({
               <span className="relative inline-flex rounded-full h-2 w-2 bg-purple-500"></span>
             </span>
             <span className="text-[11px] font-mono font-bold uppercase tracking-[0.2em] text-purple-400">
-              CURATED LEARNING
+              DISCOVER & GROW
             </span>
             <span className="text-white/20 text-xs">•</span>
             <span className="text-[11px] text-slate-400 font-medium tracking-wide">
-              4 personalized pathways selected for you
+              Curated pathways to elevate your skills
             </span>
           </div>
 
           {/* Heading & Supporting Text */}
           <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-            Recommended for You
+            Explore More Courses
           </h2>
           <p className="text-xs sm:text-sm text-slate-400 font-normal mt-1 max-w-xl leading-relaxed">
-            Take the next step with courses selected to match your engineering goals and interests.
+            Expand your knowledge with top-rated live bootcamps and self-paced certifications.
           </p>
         </div>
 
@@ -221,7 +221,7 @@ export function RecommendedCourse({
                   {/* Top Right Live / Self-Paced Badge */}
                   <div className="absolute top-3.5 right-3.5 z-10">
                     {isLive ? (
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-rose-500/90 text-white shadow-md backdrop-blur-md border border-rose-400/40">
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-rose-600 text-white shadow-lg shadow-rose-950/60 backdrop-blur-md border border-rose-400/50">
                         <span className="relative flex h-1.5 w-1.5">
                           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
                           <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-white"></span>
@@ -229,9 +229,9 @@ export function RecommendedCourse({
                         LIVE
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-black/70 text-indigo-300 border border-white/10 backdrop-blur-md">
-                        <Video className="w-2.5 h-2.5 text-indigo-400" />
-                        VOD
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-indigo-600 text-white shadow-lg shadow-indigo-950/60 backdrop-blur-md border border-indigo-400/50">
+                        <Video className="w-3 h-3 text-white" />
+                        SELF-PACED
                       </span>
                     )}
                   </div>
@@ -264,7 +264,7 @@ export function RecommendedCourse({
                   <div className="flex items-center justify-between text-xs font-semibold text-slate-300 mt-auto mb-3.5">
                     <span className="flex items-center gap-1.5 text-slate-300">
                       <Clock className="w-3.5 h-3.5 text-purple-400" />
-                      {course.duration} {isLive ? "Live" : "VOD"}
+                      {course.duration} {isLive ? "Live" : "Self-Paced"}
                     </span>
                     {isLive && course.scheduleInfo ? (
                       <span className="text-[10px] font-bold text-amber-300 bg-amber-500/15 border border-amber-500/30 px-2 py-0.5 rounded-full">

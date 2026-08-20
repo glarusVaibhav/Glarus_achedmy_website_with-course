@@ -77,6 +77,20 @@ export async function GET() {
       courseTitle: "Generative AI & LLM Systems",
       instructor: "Dr. Alex Vance",
       batchName: "Weekend AI Class #4",
+      duration: "120 Mins",
+      prerequisites: "Python 3.10+, PyTorch installed, basic Linear Algebra & Matrix Calculus",
+      agenda: [
+        "01. Neural Network Foundations & Multilayer Perceptrons (15 mins)",
+        "02. Custom Loss Functions, Gradient Descent & Backprop Calculus (25 mins)",
+        "03. Live PyTorch Implementation: Deep Feedforward & Residual Layers (40 mins)",
+        "04. Regularization Strategies: Dropout, BatchNorm & Gradient Clipping (25 mins)",
+        "05. Live Debugging, Q&A & Hands-On Homework Assignment (15 mins)",
+      ],
+      takeaways: [
+        "Build and train multi-layer perceptron neural nets from scratch in PyTorch",
+        "Implement and debug backpropagation algorithms with custom loss metrics",
+        "Master regularization to prevent overfitting in production AI models",
+      ],
     };
 
     const sampleUpcoming = {
@@ -88,6 +102,20 @@ export async function GET() {
       courseTitle: "Advanced Generative AI Masterclass",
       instructor: "Elena Rostova",
       batchName: "AI Fast-Track Batch A",
+      duration: "90 Mins",
+      prerequisites: "Basic OpenAI/Anthropic API knowledge, Python environment configured",
+      agenda: [
+        "01. Production RAG Architecture & Semantic Search Fundamentals (20 mins)",
+        "02. High-Performance Document Chunking & Embedding Strategies (20 mins)",
+        "03. Vector Database Integration: Pinecone, Qdrant & Hybrid Indexing (25 mins)",
+        "04. Autonomous Agent Orchestration with LangChain & Memory Tools (15 mins)",
+        "05. Live Interactive Q&A, Latency Tuning & Code Review (10 mins)",
+      ],
+      takeaways: [
+        "Design production-grade Retrieval-Augmented Generation (RAG) pipelines",
+        "Perform hybrid vector search with BM25 reranking for high accuracy",
+        "Deploy conversational AI agents with tool-calling and persistent state",
+      ],
     };
 
     const hasOngoing = liveClassesList.some((c) => c.status === "ONGOING");
@@ -118,19 +146,59 @@ export async function GET() {
       return {
         id: en.course.id,
         title: en.course.title,
-        instructor: en.course.instructor.name,
-        batchName: currentBatch?.name || "No batch assigned",
+        instructor: en.course.instructor?.name || "Senior Instructor",
+        batchName: currentBatch?.name || "Main Batch",
+        thumbnail:
+          en.course.title.toLowerCase().includes("generative ai")
+            ? "/images/courses/generative-ai.png"
+            : "/images/courses/llm-architecture.png",
         nextClass: nextClass
           ? {
               id: nextClass.id,
               title: nextClass.title,
-              date: nextClass.date,
+              date: new Date(nextClass.date).toISOString(),
               meetingLink: nextClass.meetingLink,
             }
           : null,
-        totalClasses: en.course.batches.flatMap((b) => b.liveClasses).length,
+        totalClasses: en.course.batches.flatMap((b) => b.liveClasses).length || 12,
+        status: "IN_PROGRESS",
       };
     });
+
+    if (courses.length === 0) {
+      courses.push(
+        {
+          id: "sample-live-course-1",
+          title: "Generative AI & LLM Systems",
+          instructor: "Dr. Alex Vance",
+          batchName: "Weekend AI Class #4",
+          thumbnail: "/images/courses/generative-ai.png",
+          nextClass: {
+            id: sampleOngoing.id,
+            title: sampleOngoing.title,
+            date: sampleOngoing.date,
+            meetingLink: sampleOngoing.meetingLink,
+          },
+          totalClasses: 12,
+          status: "IN_PROGRESS",
+        },
+        {
+          id: "sample-live-course-2",
+          title: "Advanced Generative AI Masterclass",
+          instructor: "Elena Rostova",
+          batchName: "AI Fast-Track Batch A",
+          thumbnail: "/images/courses/llm-architecture.png",
+          nextClass: {
+            id: sampleUpcoming.id,
+            title: sampleUpcoming.title,
+            date: sampleUpcoming.date,
+            meetingLink: sampleUpcoming.meetingLink,
+          },
+          totalClasses: 16,
+          status: "IN_PROGRESS",
+        }
+      );
+    }
 
     return NextResponse.json({ courses, classes: liveClassesList });
   } catch (err) {

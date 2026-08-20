@@ -28,7 +28,7 @@ import {
   Loader2
 } from "lucide-react";
 
-export type StudentTab = "all" | "progress" | "enrollments" | "certificates";
+export type StudentTab = "all" | "progress" | "enrollments" | "certificates" | "blocked";
 
 interface StudentItem {
   id: string;
@@ -167,6 +167,7 @@ function StudentsContent() {
       // Tab filter
       if (activeTab === "progress" && stu.status === "Blocked") return false;
       if (activeTab === "certificates" && stu.certificatesEarned === 0) return false;
+      if (activeTab === "blocked" && stu.status !== "Blocked") return false;
 
       // Search Query
       if (searchQuery.trim()) {
@@ -213,23 +214,12 @@ function StudentsContent() {
 
   return (
     <div className="space-y-6 pb-12">
-      {/* Top Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-black text-text tracking-tight flex items-center gap-2.5">
-            <Users className="w-7 h-7 text-purple-400" />
-            <span>Student Management</span>
-          </h1>
-          <p className="text-xs sm:text-sm text-subtext mt-0.5">
-            Track student progress, course completions, assignment grades, and manage student accounts.
-          </p>
-        </div>
-
-        {/* Tab Selector */}
-        <div className="flex bg-card p-1 rounded-xl border border-white/10 shadow-inner overflow-x-auto custom-scrollbar shrink-0">
+      {/* Top Tab Selector */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex bg-card p-1 rounded-xl border border-white/10 shadow-inner overflow-x-auto custom-scrollbar">
           <button
             onClick={() => setActiveTab("all")}
-            className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${
+            className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
               activeTab === "all"
                 ? "bg-purple-600 text-white shadow-sm"
                 : "text-subtext hover:text-text hover:bg-white/5"
@@ -239,7 +229,7 @@ function StudentsContent() {
           </button>
           <button
             onClick={() => setActiveTab("progress")}
-            className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${
+            className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
               activeTab === "progress"
                 ? "bg-purple-600 text-white shadow-sm"
                 : "text-subtext hover:text-text hover:bg-white/5"
@@ -249,7 +239,7 @@ function StudentsContent() {
           </button>
           <button
             onClick={() => setActiveTab("enrollments")}
-            className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${
+            className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
               activeTab === "enrollments"
                 ? "bg-purple-600 text-white shadow-sm"
                 : "text-subtext hover:text-text hover:bg-white/5"
@@ -259,13 +249,23 @@ function StudentsContent() {
           </button>
           <button
             onClick={() => setActiveTab("certificates")}
-            className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${
+            className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
               activeTab === "certificates"
                 ? "bg-purple-600 text-white shadow-sm"
                 : "text-subtext hover:text-text hover:bg-white/5"
             }`}
           >
             Certificates
+          </button>
+          <button
+            onClick={() => setActiveTab("blocked")}
+            className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
+              activeTab === "blocked"
+                ? "bg-purple-600 text-white shadow-sm"
+                : "text-subtext hover:text-text hover:bg-white/5"
+            }`}
+          >
+            Blocked
           </button>
         </div>
       </div>

@@ -513,17 +513,42 @@ export function getRecommendedCourseList(
     };
   }).sort((a, b) => b.score - a.score);
 
-  let filtered = scoredCourses;
   if (filterType === "LIVE") {
-    filtered = scoredCourses.filter((c) => c.type === "LIVE");
-  } else if (filterType === "SELF_PACED") {
-    filtered = scoredCourses.filter((c) => c.type === "SELF_PACED");
+    const liveOnly = scoredCourses.filter((c) => c.type === "LIVE");
+    const n = liveOnly.length;
+    if (n === 0) return scoredCourses.slice(0, count);
+    const normalizedOffset = ((offset % n) + n) % n;
+    const rotated = [...liveOnly.slice(normalizedOffset), ...liveOnly.slice(0, normalizedOffset)];
+    return rotated.slice(0, count);
   }
 
-  const n = filtered.length;
-  if (n === 0) return scoredCourses.slice(0, count);
+  if (filterType === "SELF_PACED") {
+    const spOnly = scoredCourses.filter((c) => c.type === "SELF_PACED");
+    const n = spOnly.length;
+    if (n === 0) return scoredCourses.slice(0, count);
+    const normalizedOffset = ((offset % n) + n) % n;
+    const rotated = [...spOnly.slice(normalizedOffset), ...spOnly.slice(0, normalizedOffset)];
+    return rotated.slice(0, count);
+  }
 
-  const normalizedOffset = ((offset % n) + n) % n;
-  const rotated = [...filtered.slice(normalizedOffset), ...filtered.slice(0, normalizedOffset)];
-  return rotated.slice(0, count);
+  // filterType === "ALL":
+  // Explicit User Requirement: Show Self-Paced on the LEFT (first 2 slots), and Live on the RIGHT (last 2 slots)
+  const selfPacedCourses = scoredCourses.filter((c) => c.type === "SELF_PACED");
+  const liveCourses = scoredCourses.filter((c) => c.type === "LIVE");
+
+  const halfCount = Math.floor(count / 2); // 2
+  const spCount = selfPacedCourses.length;
+  const liveCount = liveCourses.length;
+
+  const spOffset = spCount > 0 ? ((offset % spCount) + spCount) % spCount : 0;
+  const liveOffset = liveCount > 0 ? ((offset % liveCount) + liveCount) % liveCount : 0;
+
+  const rotatedSP = spCount > 0 ? [...selfPacedCourses.slice(spOffset), ...selfPacedCourses.slice(0, spOffset)] : [];
+  const rotatedLive = liveCount > 0 ? [...liveCourses.slice(liveOffset), ...liveCourses.slice(0, liveOffset)] : [];
+
+  // Grouping: Left = Self-Paced (VOD), Right = Live Classes
+  return [
+    ...rotatedSP.slice(0, halfCount),
+    ...rotatedLive.slice(0, count - halfCount),
+  ];
 }

@@ -30,7 +30,7 @@ export function PerformancePanel() {
 
   if (!isRightPanelOpen) {
     return (
-      <div className="w-12 h-screen glass-panel border-l border-white/10 border-y-0 border-r-0 flex flex-col pt-4 pb-2 items-center z-10 shrink-0 bg-black/40 transition-all duration-300">
+      <div className="w-12 h-full glass-panel border-l border-white/10 border-y-0 border-r-0 flex flex-col pt-4 pb-2 items-center z-10 shrink-0 bg-black/40 transition-all duration-300">
         <button
           onClick={toggleRightPanel}
           className="p-2 hover:bg-white/10 rounded-lg text-white/50 hover:text-white transition-colors"
@@ -53,7 +53,7 @@ export function PerformancePanel() {
   }
 
   return (
-    <div className="w-64 h-screen glass-panel border-l border-white/10 border-y-0 border-r-0 flex flex-col pt-4 pb-2 px-3 z-10 shrink-0 bg-black/40 transition-all duration-300">
+    <div className="w-64 h-full glass-panel border-l border-white/10 border-y-0 border-r-0 flex flex-col pt-4 pb-2 px-3 z-10 shrink-0 bg-black/40 transition-all duration-300">
       
       <div className="mb-6 flex items-center justify-between px-2">
         <h2 className="text-white/80 font-bold uppercase tracking-wider text-xs flex items-center gap-2">

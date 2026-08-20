@@ -84,11 +84,11 @@ export interface LiveCourseDetail {
 }
 
 const SELF_PACED_COURSES: Course[] = [
-  { id: "1", title: "Advanced LLM Architecture", category: "AI Engineering", difficulty: "Advanced", duration: "18h VOD", gradient: "from-purple-600/20 to-blue-600/20", linkUrl: "/course/ai-1", image: "/images/courses/llm-architecture.png", mode: "self-paced", price: 15999, originalPrice: 24999 },
-  { id: "2", title: "Generative AI Application Engineering", category: "Web Development", difficulty: "Intermediate", duration: "24h VOD", gradient: "from-sky-500/20 to-indigo-500/20", linkUrl: "/course/Generative_AI_Application_Engineer", image: "/images/courses/generative-ai.png", mode: "self-paced", price: 15999, originalPrice: 24999 },
-  { id: "3", title: "RAG & Vector Databases", category: "Data Science", difficulty: "Advanced", duration: "12h VOD", gradient: "from-emerald-500/20 to-teal-500/20", linkUrl: "/course/ai-3", image: "/images/courses/rag-vector-db.png", mode: "self-paced", price: 19999, originalPrice: 29999 },
-  { id: "4", title: "Machine Learning Math Foundations", category: "AI Engineering", difficulty: "Beginner", duration: "32h VOD", gradient: "from-orange-500/20 to-rose-500/20", linkUrl: "/course/ai-2", image: "/images/courses/ml-math.png", mode: "self-paced", price: 8999, originalPrice: 14999 },
-  { id: "5", title: "Smart Contract Security Testing", category: "Web3", difficulty: "Expert", duration: "15h VOD", gradient: "from-violet-500/20 to-fuchsia-500/20", linkUrl: "/course/ai-4", image: "/images/courses/smart-contracts.png", mode: "self-paced", price: 12999, originalPrice: 19999 }
+  { id: "1", title: "Advanced LLM Architecture", category: "AI Engineering", difficulty: "Advanced", duration: "18h Self-Paced", gradient: "from-purple-600/20 to-blue-600/20", linkUrl: "/course/ai-1", image: "/images/courses/llm-architecture.png", mode: "self-paced", price: 15999, originalPrice: 24999 },
+  { id: "2", title: "Generative AI Application Engineering", category: "Web Development", difficulty: "Intermediate", duration: "24h Self-Paced", gradient: "from-sky-500/20 to-indigo-500/20", linkUrl: "/course/Generative_AI_Application_Engineer", image: "/images/courses/generative-ai.png", mode: "self-paced", price: 15999, originalPrice: 24999 },
+  { id: "3", title: "RAG & Vector Databases", category: "Data Science", difficulty: "Advanced", duration: "12h Self-Paced", gradient: "from-emerald-500/20 to-teal-500/20", linkUrl: "/course/ai-3", image: "/images/courses/rag-vector-db.png", mode: "self-paced", price: 19999, originalPrice: 29999 },
+  { id: "4", title: "Machine Learning Math Foundations", category: "AI Engineering", difficulty: "Beginner", duration: "32h Self-Paced", gradient: "from-orange-500/20 to-rose-500/20", linkUrl: "/course/ai-2", image: "/images/courses/ml-math.png", mode: "self-paced", price: 8999, originalPrice: 14999 },
+  { id: "5", title: "Smart Contract Security Testing", category: "Web3", difficulty: "Expert", duration: "15h Self-Paced", gradient: "from-violet-500/20 to-fuchsia-500/20", linkUrl: "/course/ai-4", image: "/images/courses/smart-contracts.png", mode: "self-paced", price: 12999, originalPrice: 19999 }
 ];
 
 const ENRICHED_LIVE_COURSES: LiveCourseDetail[] = [
@@ -551,89 +551,118 @@ export default function InteractiveCourses() {
               )}
             </div>
 
-            {/* RIGHT COLUMN: Live Training Promotional Card (Vibrant Purple Spotlight) */}
+            {/* RIGHT COLUMN: Live Training Promotional Card (Featured Live Showcase Spotlight) */}
             <div className="w-full xl:w-[360px] 2xl:w-[380px] shrink-0 xl:sticky xl:top-24">
               <motion.div
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.5, delay: 0.15 }}
                 onClick={() => router.push("/courses?type=live")}
-                className="group relative rounded-3xl p-6 sm:p-7 md:p-8 bg-gradient-to-b from-[#1c1033] via-[#140b26] to-[#0e071c] backdrop-blur-xl border border-purple-500/40 hover:border-purple-400/80 shadow-2xl shadow-purple-950/50 hover:shadow-purple-900/40 transition-all duration-300 flex flex-col justify-between cursor-pointer select-none overflow-hidden hover:-translate-y-1"
+                className="group relative rounded-3xl bg-gradient-to-b from-[#230e12] via-[#16080b] to-[#0d0406] backdrop-blur-xl border-2 border-amber-500/40 hover:border-amber-400 shadow-2xl shadow-orange-950/50 hover:shadow-orange-900/60 transition-all duration-300 flex flex-col justify-between cursor-pointer select-none overflow-hidden hover:-translate-y-1.5"
               >
-                {/* Top Glowing Highlight Streak */}
-                <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-purple-400 to-transparent opacity-80 group-hover:opacity-100 transition-opacity" />
+                {/* Top Glowing Laser Streak */}
+                <div className="absolute top-0 left-0 right-0 h-[2.5px] bg-gradient-to-r from-transparent via-amber-400 to-transparent opacity-90 group-hover:opacity-100 transition-opacity" />
 
-                {/* Vibrant Purple Ambient Glows */}
-                <div className="absolute -top-16 -right-16 w-60 h-60 bg-purple-600/30 rounded-full blur-3xl pointer-events-none group-hover:bg-purple-600/45 transition-all duration-500" />
-                <div className="absolute -bottom-16 -left-16 w-60 h-60 bg-indigo-600/25 rounded-full blur-3xl pointer-events-none group-hover:bg-indigo-600/35 transition-all duration-500" />
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-purple-500/15 rounded-full blur-2xl pointer-events-none" />
+                {/* Warm Sunset Ambient Glows */}
+                <div className="absolute -top-16 -right-16 w-64 h-64 bg-orange-600/25 rounded-full blur-3xl pointer-events-none group-hover:bg-orange-600/35 transition-all duration-500" />
+                <div className="absolute -bottom-16 -left-16 w-64 h-64 bg-rose-600/25 rounded-full blur-3xl pointer-events-none group-hover:bg-rose-600/35 transition-all duration-500" />
 
-                <div className="relative z-10">
-                  {/* Live Badges */}
-                  <div className="flex items-center justify-between mb-5">
-                    <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-wider bg-rose-500/20 text-rose-300 border border-rose-500/40 shadow-sm shadow-rose-950/30">
+                {/* Visual Header: Live Broadcast Stage */}
+                <div className="relative h-36 w-full overflow-hidden bg-slate-950">
+                  <img
+                    src="/images/courses/generative-ai.png"
+                    alt="Live Bootcamp"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-60"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#230e12] via-[#230e12]/60 to-black/40" />
+
+                  {/* Top Live Broadcast Badges */}
+                  <div className="absolute top-3 left-3 right-3 flex items-center justify-between z-10">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-red-600 text-white shadow-lg shadow-red-950/60 border border-red-400/40">
                       <span className="relative flex h-2 w-2">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-500 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
                       </span>
-                      LIVE TRAINING
+                      LIVE BROADCAST
                     </span>
-                    <span className="text-[11px] font-bold text-purple-200 bg-purple-500/25 px-2.5 py-1 rounded-full border border-purple-400/40 shadow-xs">
-                      Live Classes
-                    </span>
-                  </div>
 
-                  {/* Strong Heading */}
-                  <h3 className="text-2xl sm:text-[26px] font-black text-white tracking-tight mb-3 leading-tight group-hover:text-purple-300 transition-colors">
-                    Learn Live. Build Together.
-                  </h3>
-
-                  {/* Short Supporting Text */}
-                  <p className="text-sm text-slate-300 leading-relaxed mb-6 font-medium">
-                    Join instructor-led live classes, interact with experts, ask questions in real time, and build practical projects.
-                  </p>
-
-                  {/* 3 Concise Benefits */}
-                  <div className="space-y-3 mb-6 pb-6 border-b border-purple-500/20">
-                    {[
-                      "Live Instructor Sessions",
-                      "Real-Time Q&A",
-                      "Hands-On Projects"
-                    ].map((benefit, i) => (
-                      <div key={i} className="flex items-center gap-2.5 text-xs sm:text-sm font-semibold text-slate-200">
-                        <div className="w-5 h-5 rounded-full bg-purple-500/25 border border-purple-400/50 flex items-center justify-center text-purple-300 shrink-0 shadow-xs">
-                          <Check className="w-3 h-3 stroke-[3]" />
-                        </div>
-                        <span>{benefit}</span>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Upcoming Class Information */}
-                  <div className="p-4 rounded-2xl bg-purple-950/50 border border-purple-500/35 mb-6 flex items-center justify-between gap-3 group-hover:border-purple-400/60 transition-colors shadow-inner shadow-purple-950/40">
-                    <div>
-                      <span className="text-[10px] font-black text-purple-300/80 uppercase tracking-widest block">Next Class</span>
-                      <span className="text-xs sm:text-sm font-extrabold text-white flex items-center gap-1.5 mt-0.5">
-                        <Calendar className="w-3.5 h-3.5 text-purple-400 shrink-0" /> Aug 18 · AI Engineering
-                      </span>
+                    {/* Equalizer soundwave animation */}
+                    <div className="flex items-end gap-0.5 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/15">
+                      <span className="w-1 h-3 bg-amber-400 rounded-full animate-pulse" />
+                      <span className="w-1 h-4 bg-orange-400 rounded-full animate-pulse delay-75" />
+                      <span className="w-1 h-2 bg-rose-400 rounded-full animate-pulse delay-150" />
+                      <span className="w-1 h-4 bg-amber-300 rounded-full animate-pulse delay-100" />
                     </div>
-                    <span className="text-[10px] font-black text-amber-300 bg-amber-500/20 px-2.5 py-1 rounded-full border border-amber-500/40 whitespace-nowrap">
-                      Filling Fast
+                  </div>
+
+                  {/* Bottom Cohort Proof */}
+                  <div className="absolute bottom-2 left-3 z-10 flex items-center gap-2">
+                    <div className="flex -space-x-1.5 overflow-hidden">
+                      <div className="w-5 h-5 rounded-full bg-amber-500 border border-[#230e12] flex items-center justify-center text-[9px] font-black text-black">A</div>
+                      <div className="w-5 h-5 rounded-full bg-orange-500 border border-[#230e12] flex items-center justify-center text-[9px] font-black text-black">E</div>
+                      <div className="w-5 h-5 rounded-full bg-rose-500 border border-[#230e12] flex items-center justify-center text-[9px] font-black text-white">M</div>
+                    </div>
+                    <span className="text-[11px] font-bold text-amber-200 drop-shadow-md">
+                      180+ Cohort Students
                     </span>
                   </div>
                 </div>
 
-                {/* Primary CTA */}
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    router.push("/courses?type=live");
-                  }}
-                  className="w-full py-3.5 px-5 rounded-2xl bg-gradient-to-r from-purple-600 via-purple-500 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-extrabold text-sm flex items-center justify-center gap-2 shadow-lg shadow-purple-600/35 hover:shadow-purple-500/50 transition-all group-hover:scale-[1.02] relative z-10"
-                >
-                  <span>Explore Live Training</span>
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                </button>
+                {/* Card Content Body */}
+                <div className="p-5 sm:p-6 flex flex-col justify-between flex-1 relative z-10">
+                  <div>
+                    {/* Strong Heading */}
+                    <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight mb-2 leading-tight group-hover:text-amber-300 transition-colors">
+                      Learn Live. Build Together.
+                    </h3>
+
+                    {/* Supporting Text */}
+                    <p className="text-xs sm:text-sm text-slate-300 leading-relaxed mb-5 font-medium">
+                      Join instructor-led live classes, interact with experts, ask questions in real time, and build production AI systems.
+                    </p>
+
+                    {/* 3 Concise Benefits */}
+                    <div className="space-y-2.5 mb-5 pb-5 border-b border-amber-500/20">
+                      {[
+                        "Interactive Instructor Sessions",
+                        "Real-Time Live Debugging & Q&A",
+                        "Hands-On Capstone Deployments"
+                      ].map((benefit, i) => (
+                        <div key={i} className="flex items-center gap-2.5 text-xs sm:text-sm font-semibold text-slate-200">
+                          <div className="w-5 h-5 rounded-full bg-amber-500/20 border border-amber-400/50 flex items-center justify-center text-amber-300 shrink-0 shadow-xs">
+                            <Check className="w-3 h-3 stroke-[3]" />
+                          </div>
+                          <span>{benefit}</span>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Next Class Schedule Bar */}
+                    <div className="p-3.5 rounded-2xl bg-[#2e1217]/80 border border-amber-500/30 mb-5 flex items-center justify-between gap-3 group-hover:border-amber-400/60 transition-colors shadow-inner">
+                      <div>
+                        <span className="text-[10px] font-black text-amber-300/80 uppercase tracking-widest block">Next Live Session</span>
+                        <span className="text-xs sm:text-sm font-extrabold text-white flex items-center gap-1.5 mt-0.5">
+                          <Calendar className="w-3.5 h-3.5 text-amber-400 shrink-0" /> Aug 18 · AI Engineering
+                        </span>
+                      </div>
+                      <span className="text-[10px] font-black text-amber-300 bg-amber-500/25 px-2.5 py-1 rounded-full border border-amber-400/40 whitespace-nowrap shadow-xs">
+                        Filling Fast
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Primary Flame CTA Button */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      router.push("/courses?type=live");
+                    }}
+                    className="w-full py-3 px-5 rounded-2xl bg-gradient-to-r from-amber-400 via-orange-500 to-rose-600 hover:from-amber-300 hover:to-rose-500 text-slate-950 font-black text-sm flex items-center justify-center gap-2 shadow-xl shadow-orange-600/40 hover:shadow-orange-500/60 transition-all group-hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+                  >
+                    <span>Explore Live Training</span>
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  </button>
+                </div>
               </motion.div>
             </div>
           </div>

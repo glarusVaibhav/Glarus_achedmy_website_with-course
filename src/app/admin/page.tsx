@@ -264,6 +264,42 @@ export default function AdminOverview() {
 
   return (
     <div className="space-y-8 pb-12">
+      {/* ── 0. HERO / QUICK ACTION BAR ── */}
+      <section className="bg-gradient-to-r from-purple-900/40 via-indigo-900/30 to-card border border-purple-500/30 rounded-3xl p-5 sm:p-6 shadow-xl backdrop-blur-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div className="flex items-center gap-3.5">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-600 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-purple-500/25 shrink-0">
+            <Sparkles className="w-6 h-6 animate-pulse" />
+          </div>
+          <div>
+            <h2 className="text-base sm:text-lg font-black text-text flex items-center gap-2">
+              <span>Admin AI Course Architect</span>
+              <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                New
+              </span>
+            </h2>
+            <p className="text-xs text-subtext">
+              Draft, generate complete curriculum with AI copilot, and publish courses live to Glarus Academy students.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2.5 w-full md:w-auto">
+          <Link
+            href="/admin/courses"
+            className="px-4 py-2.5 rounded-xl text-xs font-bold text-subtext hover:text-text bg-card hover:bg-white/5 border border-white/10 transition-colors whitespace-nowrap"
+          >
+            View Catalog
+          </Link>
+          <Link
+            href="/admin/create"
+            className="px-5 py-2.5 rounded-xl text-xs font-black bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-lg shadow-purple-500/25 flex items-center gap-2 transition-transform active:scale-95 whitespace-nowrap"
+          >
+            <Sparkles className="w-4 h-4" />
+            <span>+ Create Course</span>
+          </Link>
+        </div>
+      </section>
+
       {/* ── 1. TOP KPI CARDS (4-Card Row) ── */}
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
         <KPICard

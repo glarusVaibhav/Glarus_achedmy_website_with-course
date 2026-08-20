@@ -142,7 +142,7 @@ export default function AdminFeedbackCard({
     },
     NEEDS_CHANGES: {
       label: "Needs Changes",
-      color: "text-amber-400 bg-amber-500/10 border-amber-500/30 animate-pulse",
+      color: "text-orange-400 bg-orange-500/10 border-orange-500/30 animate-pulse",
       icon: AlertTriangle
     },
     REJECTED: {
@@ -152,7 +152,7 @@ export default function AdminFeedbackCard({
     },
     UNDER_REVIEW: {
       label: "Under Review",
-      color: "text-blue-400 bg-blue-500/10 border-blue-500/30",
+      color: "text-rose-400 bg-rose-500/10 border-rose-500/30",
       icon: Clock
     },
     NO_FEEDBACK: {

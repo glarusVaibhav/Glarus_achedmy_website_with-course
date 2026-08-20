@@ -154,12 +154,12 @@ export default function NotificationCenter() {
       {/* Bell Trigger Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2.5 rounded-xl bg-card border border-white/10 text-subtext hover:text-text hover:bg-card-hover transition-all focus:outline-none"
+        className="relative p-2 rounded-lg text-subtext hover:text-text hover:bg-white/5 transition-colors focus:outline-none"
         title="Admin Notifications"
       >
-        <Bell className="w-4 h-4" />
+        <Bell className="w-5 h-5" />
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-purple-600 text-white text-[10px] font-black flex items-center justify-center border-2 border-background animate-pulse">
+          <span className="absolute top-0.5 right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-purple-600 text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-card">
             {unreadCount}
           </span>
         )}

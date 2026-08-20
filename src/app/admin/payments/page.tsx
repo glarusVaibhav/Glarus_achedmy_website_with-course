@@ -299,23 +299,12 @@ function PaymentsContent() {
 
   return (
     <div className="space-y-6 pb-12">
-      {/* Top Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-black text-text tracking-tight flex items-center gap-2.5">
-            <CreditCard className="w-7 h-7 text-purple-400" />
-            <span>Payments & Refunds Command Center</span>
-          </h1>
-          <p className="text-xs sm:text-sm text-subtext mt-0.5">
-            Manage platform transactions, faculty commission payouts, student refund disputes, and gateway logs.
-          </p>
-        </div>
-
-        {/* Tab Controls */}
-        <div className="flex bg-card p-1 rounded-xl border border-white/10 shadow-inner overflow-x-auto custom-scrollbar shrink-0">
+      {/* Tab Controls */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex bg-card p-1 rounded-xl border border-white/10 shadow-inner overflow-x-auto custom-scrollbar">
           <button
             onClick={() => setActiveTab("transactions")}
-            className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${
+            className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
               activeTab === "transactions"
                 ? "bg-purple-600 text-white shadow-sm"
                 : "text-subtext hover:text-text hover:bg-white/5"

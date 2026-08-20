@@ -7,9 +7,14 @@ export const dynamic = "force-dynamic";
 
 const ALLOWED_TYPES: Record<string, { mimeTypes: string[]; extensions: string[]; maxSizeMB: number }> = {
   photo: {
-    mimeTypes: ["image/jpeg", "image/png", "image/webp", "image/gif"],
-    extensions: [".jpg", ".jpeg", ".png", ".webp", ".gif"],
-    maxSizeMB: 5,
+    mimeTypes: ["image/jpeg", "image/png", "image/webp", "image/gif", "image/svg+xml"],
+    extensions: [".jpg", ".jpeg", ".png", ".webp", ".gif", ".svg"],
+    maxSizeMB: 15,
+  },
+  image: {
+    mimeTypes: ["image/jpeg", "image/png", "image/webp", "image/gif", "image/svg+xml"],
+    extensions: [".jpg", ".jpeg", ".png", ".webp", ".gif", ".svg"],
+    maxSizeMB: 15,
   },
   resume: {
     mimeTypes: [
@@ -18,13 +23,47 @@ const ALLOWED_TYPES: Record<string, { mimeTypes: string[]; extensions: string[];
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
       "text/plain",
     ],
-    extensions: [".pdf", ".doc", ".docx"],
-    maxSizeMB: 15,
+    extensions: [".pdf", ".doc", ".docx", ".txt"],
+    maxSizeMB: 25,
+  },
+  resource: {
+    mimeTypes: [
+      "application/pdf",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "application/vnd.ms-powerpoint",
+      "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+      "application/zip",
+      "application/x-zip-compressed",
+      "text/plain",
+      "text/markdown",
+      "application/json",
+      "image/jpeg",
+      "image/png",
+    ],
+    extensions: [".pdf", ".doc", ".docx", ".ppt", ".pptx", ".zip", ".txt", ".md", ".json", ".jpg", ".png"],
+    maxSizeMB: 100,
+  },
+  document: {
+    mimeTypes: [
+      "application/pdf",
+      "text/plain",
+      "text/markdown",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ],
+    extensions: [".pdf", ".txt", ".md", ".doc", ".docx"],
+    maxSizeMB: 30,
+  },
+  article: {
+    mimeTypes: ["text/plain", "text/markdown", "application/pdf"],
+    extensions: [".txt", ".md", ".pdf"],
+    maxSizeMB: 20,
   },
   video: {
-    mimeTypes: ["video/mp4", "video/webm", "video/quicktime", "video/x-m4v"],
-    extensions: [".mp4", ".mov", ".webm", ".m4v"],
-    maxSizeMB: 100,
+    mimeTypes: ["video/mp4", "video/webm", "video/quicktime", "video/x-m4v", "video/mkv"],
+    extensions: [".mp4", ".mov", ".webm", ".m4v", ".mkv"],
+    maxSizeMB: 500,
   },
 };
 

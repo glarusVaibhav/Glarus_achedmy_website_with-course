@@ -278,18 +278,8 @@ function AdminTasksContent() {
 
   return (
     <div className="space-y-6 pb-12">
-      {/* Top Header & Assign Button */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-black text-text tracking-tight flex items-center gap-2.5">
-            <CheckSquare className="w-7 h-7 text-purple-400" />
-            <span>Instructor Task Management</span>
-          </h1>
-          <p className="text-xs sm:text-sm text-subtext mt-0.5">
-            Commission curriculum deliverables, manage milestone verification pipelines, and approve instructor payouts.
-          </p>
-        </div>
-
+      {/* Top Action Bar */}
+      <div className="flex items-center justify-end">
         <button
           onClick={() => setIsAssignModalOpen(true)}
           className="px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs sm:text-sm transition-all shadow-lg hover:shadow-purple-600/20 flex items-center gap-2 shrink-0"

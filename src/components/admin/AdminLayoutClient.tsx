@@ -33,7 +33,7 @@ export default function AdminLayoutClient({ children }: { children: React.ReactN
   };
 
   return (
-    <div className="min-h-screen bg-background text-text flex">
+    <div className="min-h-screen bg-background text-text flex admin-dashboard selection:bg-purple-500/30">
       {/* Dynamic Sidebar */}
       <Sidebar
         collapsed={collapsed}

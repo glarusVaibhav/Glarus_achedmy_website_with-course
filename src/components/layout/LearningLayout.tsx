@@ -160,7 +160,7 @@ export function LearningLayout({ courseData }: LearningLayoutProps) {
 
   return (
     <div
-      className="flex h-screen w-full bg-background text-foreground overflow-hidden"
+      className="flex h-[calc(100vh-3.5rem)] w-full bg-background text-foreground overflow-hidden"
       style={{
         '--color-primary': courseData.theme.primary,
         '--color-accent': courseData.theme.accent,
@@ -172,7 +172,7 @@ export function LearningLayout({ courseData }: LearningLayoutProps) {
       </div>
 
       {/* Main Content */}
-      <main className="flex-1 relative flex flex-col min-w-0 bg-[radial-gradient(ellipse_at_top,_var(--color-primary)_0%,_transparent_20%)] lg:bg-[radial-gradient(ellipse_at_top,_var(--color-primary)_0%,_transparent_15%)] transition-all duration-500 h-screen overflow-hidden"
+      <main className="flex-1 relative flex flex-col min-w-0 bg-[radial-gradient(ellipse_at_top,_var(--color-primary)_0%,_transparent_20%)] lg:bg-[radial-gradient(ellipse_at_top,_var(--color-primary)_0%,_transparent_15%)] transition-all duration-500 h-full overflow-hidden"
       >
         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-[0.03] pointer-events-none z-0" />
 

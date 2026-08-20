@@ -9,7 +9,7 @@ import {
   Activity, Bell, Edit3, RefreshCw, Check, Save, PlayCircle, Layout,
   CheckCircle2, IndianRupee, TrendingUp, Eye, Trash2, Clock, Calendar,
   Image as ImageIcon, UploadCloud, Paperclip, ShieldCheck, CheckSquare,
-  ArrowUpRight
+  ArrowUpRight, PlusCircle
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -21,6 +21,8 @@ import { InstructorNotificationsView } from "@/components/instructor/InstructorN
 import { InstructorAdminInboxView } from "@/components/instructor/InstructorAdminInboxView";
 import { InstructorLiveSessionsView } from "@/components/instructor/InstructorLiveSessionsView";
 import { InstructorStudentsView } from "@/components/instructor/InstructorStudentsView";
+import { InstructorLiveDashboard } from "@/components/instructor/InstructorLiveDashboard";
+import { InstructorSelfPacedCoursesView } from "@/components/instructor/InstructorSelfPacedCoursesView";
 
 /* ═══════════════════════════════════════════════
    TYPE DEFINITIONS
@@ -33,19 +35,30 @@ interface AIModule {
   status: "pending" | "accepted" | "editing" | "regenerating";
 }
 
+export interface LessonResourceItem {
+  id: string;
+  title: string;
+  url: string;
+  type: string;
+}
+
 interface StudioLesson {
   id: string;
   title: string;
-  type: "video" | "quiz" | "sandbox" | "resource" | "image" | "text" | "empty";
+  type: "video" | "quiz" | "sandbox" | "resource" | "image" | "text" | "empty" | "multi";
   isExpanded?: boolean;
   videoUrl?: string;
+  videoDuration?: string;
   sandboxLang?: string;
   sandboxCode?: string;
   quizQuestions?: any[];
   imageUrl1?: string;
   imageUrl2?: string;
+  imageCaption?: string;
   resourceFileUrl?: string;
   fileType?: string;
+  resources?: LessonResourceItem[];
+  articleContent?: string;
   description?: string;
 }
 
@@ -87,6 +100,50 @@ export default function InstructorDashboard() {
   const [stats, setStats] = useState({ totalCourses: 0, approvedCourses: 0, pendingCourses: 0, totalStudents: 0, totalRevenue: 0 });
   const [students, setStudents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [previousTab, setPreviousTab] = useState<string | null>(null);
+  const [studentsFilter, setStudentsFilter] = useState<{
+    courseId?: string;
+    courseTitle?: string;
+    classId?: string;
+    className?: string;
+    batch?: string;
+    searchQuery?: string;
+    returnTab?: string;
+  } | null>(null);
+
+  const [assignmentsFilter, setAssignmentsFilter] = useState<{
+    courseId?: string;
+    courseTitle?: string;
+    studentEmail?: string;
+    studentName?: string;
+    assignmentId?: string;
+    assignmentTitle?: string;
+    className?: string;
+    batch?: string;
+    returnTab?: string;
+  } | null>(null);
+
+  const [liveSessionsFilter, setLiveSessionsFilter] = useState<{
+    viewMode?: "COMMAND_CENTER" | "CALENDAR" | "RECORDINGS";
+    courseFilter?: string;
+    courseTitle?: string;
+    returnTab?: string;
+  } | null>(null);
+
+  const handleNavigateTab = (
+    tabName: string,
+    filterOptions?: any
+  ) => {
+    setPreviousTab(filterOptions?.returnTab || activeTab);
+    if (tabName === "Students") {
+      setStudentsFilter(filterOptions || null);
+    } else if (tabName === "Assignments") {
+      setAssignmentsFilter(filterOptions || null);
+    } else if (tabName === "Live Sessions") {
+      setLiveSessionsFilter(filterOptions || null);
+    }
+    setActiveTab(tabName);
+  };
 
   /* ── Create Course Modal ── */
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -158,26 +215,141 @@ export default function InstructorDashboard() {
   const [editingLesson, setEditingLesson] = useState<{
     moduleId: string;
     lesson: StudioLesson;
-    tab: "general" | "video" | "sandbox" | "quiz" | "resource" | "image";
+    tab: "general" | "video" | "sandbox" | "quiz" | "resource" | "image" | "article";
   } | null>(null);
+
+  const [newResourceItem, setNewResourceItem] = useState<{ title: string; url: string; type: string }>({
+    title: "",
+    url: "",
+    type: "PDF Document"
+  });
+
+  const [articlePreviewMode, setArticlePreviewMode] = useState(false);
+  const [articleAiGenerating, setArticleAiGenerating] = useState(false);
+  const [articleImagePanelOpen, setArticleImagePanelOpen] = useState(false);
+  const [articleImageUrl, setArticleImageUrl] = useState("");
+  const [articleImageCaption, setArticleImageCaption] = useState("");
+  const [uploadingTarget, setUploadingTarget] = useState<string | null>(null);
+
+  const handleFileUpload = async (
+    file: File,
+    category: "image" | "video" | "resource" | "article" | "photo"
+  ): Promise<string | null> => {
+    setUploadingTarget(category);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("category", category);
+
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Upload failed");
+      }
+
+      setToast({ message: `Uploaded ${file.name}!`, type: "success" });
+      return data.url;
+    } catch (err: any) {
+      setToast({ message: err.message || "Failed to upload file", type: "error" });
+      return null;
+    } finally {
+      setUploadingTarget(null);
+    }
+  };
+
+  const generateAiArticleForLesson = async () => {
+    if (!editingLesson) return;
+    setArticleAiGenerating(true);
+    try {
+      const topic = editingLesson.lesson.title || "Lesson";
+      const res = await fetch("/api/ai/syllabus", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ topic: `Comprehensive in-depth technical explanation, code examples, and study guide for: ${topic}` })
+      });
+      if (res.ok) {
+        const articleDraft = `# ${topic}\n\n## 1. Introduction & Overview\nIn this lesson, we will cover the core principles of **${topic}**. Understanding these concepts provides the essential foundation needed for building robust real-world applications.\n\n## 2. Core Concepts & Architecture\n- **Fundamental Concept**: Detailed explanation of how this operates.\n- **Design Best Practices**: Why this pattern is preferred in modern systems.\n- **Performance Considerations**: Key metrics to watch when deploying.\n\n## 3. Practical Implementation & Code Example\n\`\`\`javascript\n// Practical example for ${topic}\nfunction runDemo() {\n    console.log("Executing ${topic} demonstration...");\n    return { success: true, timestamp: Date.now() };\n}\nrunDemo();\n\`\`\`\n\n## 4. Common Pitfalls & How to Avoid Them\n> **Tip**: Avoid common misconceptions and ensure proper error handling and edge-case validation.\n\n## 5. Key Summary Takeaways\n- Mastered the core definition of **${topic}**.\n- Learned the architectural tradeoffs and practical implementation details.\n- Ready to proceed to the next interactive exercise!`;
+
+        setEditingLesson(prev => prev ? {
+          ...prev,
+          lesson: {
+            ...prev.lesson,
+            articleContent: articleDraft
+          }
+        } : null);
+        setToast({ message: `AI generated complete study article for "${topic}"!`, type: "success" });
+      } else {
+        setToast({ message: "Failed to generate AI article", type: "error" });
+      }
+    } catch {
+      setToast({ message: "Network error generating article", type: "error" });
+    } finally {
+      setArticleAiGenerating(false);
+    }
+  };
 
   const openLessonEditor = (
     moduleId: string,
     lesson: StudioLesson,
-    tab: "general" | "video" | "sandbox" | "quiz" | "resource" | "image" = "general"
+    tab: "general" | "video" | "sandbox" | "quiz" | "resource" | "image" | "article" = "general"
   ) => {
-    setEditingLesson({ moduleId, lesson: { ...lesson }, tab });
+    const initialResources = [...(lesson.resources || [])];
+    if (lesson.resourceFileUrl && !initialResources.some(r => r.url === lesson.resourceFileUrl)) {
+      initialResources.unshift({
+        id: `res-legacy-${Date.now()}`,
+        title: lesson.fileType ? `${lesson.fileType} Resource` : "Attached Download",
+        url: lesson.resourceFileUrl,
+        type: lesson.fileType || "PDF Document"
+      });
+    }
+    setEditingLesson({
+      moduleId,
+      lesson: {
+        ...lesson,
+        resources: initialResources
+      },
+      tab
+    });
+    setNewResourceItem({ title: "", url: "", type: "PDF Document" });
   };
 
   const saveLessonDetails = () => {
     if (!editingLesson) return;
     const { moduleId, lesson } = editingLesson;
+    const updatedLesson = { ...lesson };
+
+    // Compute attached items count & set type
+    let count = 0;
+    if (updatedLesson.videoUrl?.trim()) count++;
+    if (updatedLesson.sandboxCode?.trim() || updatedLesson.sandboxLang) count++;
+    if (updatedLesson.quizQuestions && updatedLesson.quizQuestions.length > 0) count++;
+    if ((updatedLesson.resources && updatedLesson.resources.length > 0) || updatedLesson.resourceFileUrl) count++;
+    if (updatedLesson.imageUrl1?.trim() || updatedLesson.imageUrl2?.trim()) count++;
+    if (updatedLesson.articleContent?.trim()) count++;
+
+    if (count > 1) {
+      updatedLesson.type = "multi";
+    } else if (count === 1) {
+      if (updatedLesson.videoUrl?.trim()) updatedLesson.type = "video";
+      else if (updatedLesson.sandboxCode?.trim()) updatedLesson.type = "sandbox";
+      else if (updatedLesson.quizQuestions && updatedLesson.quizQuestions.length > 0) updatedLesson.type = "quiz";
+      else if (updatedLesson.resources && updatedLesson.resources.length > 0) updatedLesson.type = "resource";
+      else if (updatedLesson.imageUrl1?.trim()) updatedLesson.type = "image";
+      else if (updatedLesson.articleContent?.trim()) updatedLesson.type = "text";
+    } else {
+      updatedLesson.type = "empty";
+    }
+
     setBuilderModules(prev => prev.map(m => m.id === moduleId ? {
       ...m,
-      lessons: m.lessons.map(l => l.id === lesson.id ? lesson : l)
+      lessons: m.lessons.map(l => l.id === lesson.id ? updatedLesson : l)
     } : m));
     setEditingLesson(null);
-    setToast({ message: `Updated content for "${lesson.title}"!`, type: "success" });
+    setToast({ message: `Saved learning materials for "${lesson.title}" (${count} material${count !== 1 ? "s" : ""} attached)!`, type: "success" });
   };
 
   /* ── Quiz State ── */
@@ -595,7 +767,7 @@ export default function InstructorDashboard() {
     try {
       const desc = builderModules.map(m => `${m.title}: ${m.lessons.map(l => l.title).join(", ")}`).join(" | ");
       const res = await fetch("/api/courses", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title: aiTopic || `Course - ${new Date().toLocaleDateString()}`, description: desc, price: "4999" }) });
-      if (res.ok) { setToast({ message: "Course submitted for admin review! It will appear on the landing page once approved.", type: "success" }); fetchAll(); setActiveTab("My Courses"); }
+      if (res.ok) { setToast({ message: "Course submitted for admin review! It will appear on the landing page once approved.", type: "success" }); fetchAll(); setActiveTab("Self-Paced Courses"); }
       else { setToast({ message: "Failed to submit course", type: "error" }); }
     } catch { setToast({ message: "Network error", type: "error" }); }
     finally { setSubmitLoading(false); }
@@ -858,16 +1030,51 @@ export default function InstructorDashboard() {
      ═══════════════════════════════════════════════ */
 
   const sidebarItems = [
-    { id: "Dashboard", icon: Activity, badge: null },
-    { id: "My Courses", icon: FileText, badge: courses.length },
-    { id: "Tasks", icon: CheckSquare, badge: 4 },
-    { id: "Assignments", icon: ClipboardList, badge: 12 },
-    { id: "Live Sessions", icon: Tv, badge: 2 },
-    { id: "Create Course", icon: Sparkles, badge: null },
-    { id: "Students", icon: Users, badge: students.length },
-    { id: "Analytics", icon: LineChart, badge: null },
-    { id: "Notifications", icon: Bell, badge: 5 },
-    { id: "Admin Inbox", icon: HelpCircle, badge: 2 },
+    {
+      id: "Dashboard",
+      icon: Activity,
+      badge: null,
+      iconColor: "text-sky-400",
+      iconBox: "bg-sky-500/10 border-sky-500/20 group-hover:border-sky-500/40 group-hover:bg-sky-500/15",
+      activeBg: "bg-gradient-to-r from-sky-600/20 via-sky-500/15 to-blue-600/10 border-sky-500/40 text-white shadow-lg shadow-sky-600/15",
+      badgeColor: "bg-sky-500/20 text-sky-300 border-sky-500/30",
+    },
+    {
+      id: "Self-Paced Courses",
+      icon: FileText,
+      badge: courses.length > 0 ? courses.length : null,
+      iconColor: "text-purple-400",
+      iconBox: "bg-purple-500/10 border-purple-500/20 group-hover:border-purple-500/40 group-hover:bg-purple-500/15",
+      activeBg: "bg-gradient-to-r from-purple-600/20 via-purple-500/15 to-indigo-600/10 border-purple-500/40 text-white shadow-lg shadow-purple-600/15",
+      badgeColor: "bg-purple-500/20 text-purple-300 border-purple-500/30",
+    },
+    {
+      id: "Live Sessions",
+      icon: Tv,
+      badge: 2,
+      iconColor: "text-rose-400",
+      iconBox: "bg-rose-500/10 border-rose-500/20 group-hover:border-rose-500/40 group-hover:bg-rose-500/15",
+      activeBg: "bg-gradient-to-r from-rose-600/20 via-rose-500/15 to-pink-600/10 border-rose-500/40 text-white shadow-lg shadow-rose-600/15",
+      badgeColor: "bg-rose-500/20 text-rose-300 border-rose-500/30",
+    },
+    {
+      id: "Class Recordings",
+      icon: PlayCircle,
+      badge: 9,
+      iconColor: "text-emerald-400",
+      iconBox: "bg-emerald-500/10 border-emerald-500/20 group-hover:border-emerald-500/40 group-hover:bg-emerald-500/15",
+      activeBg: "bg-gradient-to-r from-emerald-600/20 via-emerald-500/15 to-teal-600/10 border-emerald-500/40 text-white shadow-lg shadow-emerald-600/15",
+      badgeColor: "bg-emerald-500/20 text-emerald-300 border-emerald-500/30",
+    },
+    {
+      id: "Admin Inbox",
+      icon: HelpCircle,
+      badge: 2,
+      iconColor: "text-amber-400",
+      iconBox: "bg-amber-500/10 border-amber-500/20 group-hover:border-amber-500/40 group-hover:bg-amber-500/15",
+      activeBg: "bg-gradient-to-r from-amber-600/20 via-amber-500/15 to-orange-600/10 border-amber-500/40 text-white shadow-lg shadow-amber-600/15",
+      badgeColor: "bg-amber-500/20 text-amber-300 border-amber-500/30",
+    },
   ];
 
   const wizardSteps = [
@@ -920,31 +1127,56 @@ export default function InstructorDashboard() {
     <div className="w-full min-h-screen flex bg-background text-text font-sans">
 
       {/* ═══════ LEFT SIDEBAR ═══════ */}
-      <aside className="w-72 border-r border-card bg-card/5 h-screen sticky top-0 hidden md:flex flex-col pt-8 pb-6 shrink-0">
-        <div className="px-6 mb-10">
+      <aside className="w-72 border-r border-card bg-card/5 sticky top-0 h-screen hidden md:flex flex-col pt-8 pb-6 shrink-0 z-20">
+        <div className="px-6 mb-8">
           <h2 className="text-2xl font-black">
             <span className="text-primary">Instructor</span> Studio
           </h2>
           <p className="text-xs text-subtext font-bold tracking-widest uppercase mt-1">Teaching Dashboard</p>
         </div>
 
-        <nav className="flex-1 space-y-1.5 px-4 overflow-y-auto">
+        <nav className="flex-1 space-y-2 px-4 overflow-y-auto no-scrollbar">
           {sidebarItems.map((item) => {
             const isActive = activeTab === item.id;
             return (
               <button
                 key={item.id}
-                onClick={() => setActiveTab(item.id)}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-bold text-sm group cursor-pointer
-                  ${isActive
-                    ? "bg-primary text-white shadow-lg shadow-primary/25"
-                    : "text-subtext hover:bg-card hover:text-text"
-                  }`}
+                onClick={() => {
+                  if (item.id === "Live Sessions") {
+                    setLiveSessionsFilter({ viewMode: "COMMAND_CENTER" });
+                  } else if (item.id === "Class Recordings") {
+                    setLiveSessionsFilter({ viewMode: "RECORDINGS" });
+                  }
+                  setActiveTab(item.id);
+                }}
+                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl transition-all font-semibold text-sm group cursor-pointer border ${
+                  isActive
+                    ? item.activeBg
+                    : "text-slate-300 hover:text-white hover:bg-white/[0.04] border-transparent"
+                }`}
               >
-                <item.icon className={`w-5 h-5 ${isActive ? "text-white" : "opacity-60 group-hover:opacity-100"}`} />
-                <span className="flex-1 text-left">{item.id}</span>
-                {item.badge !== null && item.badge > 0 && (
-                  <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${isActive ? "bg-white/20 text-white" : "bg-primary/10 text-primary"}`}>
+                {/* Colorful Icon Box */}
+                <div
+                  className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 border transition-all ${
+                    item.iconBox
+                  } ${isActive ? "scale-105 shadow-sm" : "opacity-90 group-hover:opacity-100 group-hover:scale-105"}`}
+                >
+                  <item.icon className={`w-4 h-4 ${item.iconColor}`} />
+                </div>
+
+                <span className="flex-1 text-left font-medium text-xs sm:text-sm">
+                  {item.id}
+                </span>
+
+                {/* Colorful Badge */}
+                {item.badge !== null && (
+                  <span
+                    className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border shadow-xs ${
+                      isActive
+                        ? "bg-white/20 text-white border-white/30"
+                        : item.badgeColor
+                    }`}
+                  >
                     {item.badge}
                   </span>
                 )}
@@ -954,531 +1186,94 @@ export default function InstructorDashboard() {
         </nav>
       </aside>
 
-      {/* ═══════ MAIN CONTENT AREA ═══════ */}
-      <main className="flex-1 h-screen overflow-y-auto">
-        <div className="p-6 md:p-8 lg:p-10 max-w-[1320px] mx-auto pb-32">
+      {/* ═══════ MAIN CONTENT AREA (Single Clean Scroll) ═══════ */}
+      <main className="flex-1 min-w-0">
+        <div className="p-4 md:p-6 lg:p-7 max-w-[1550px] mx-auto pb-8">
 
-          {/* ─── Page Header / Command Center Greeting ─── */}
-          {activeTab === "Dashboard" ? (
-            <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 pb-4 border-b border-white/[0.06]">
-              <div>
-                <h1 className="text-2xl sm:text-[28px] font-semibold text-white tracking-tight">
-                  Good morning, {approvalData?.firstName || "Piyush"}
-                </h1>
-                <p className="text-xs sm:text-sm text-slate-400 mt-1 font-normal">
-                  Here’s what’s happening across your teaching workspace today.
-                </p>
-                <div className="flex items-center gap-2 mt-2">
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-amber-500/10 text-amber-300 border border-amber-500/20">
-                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-                    4 tasks need your attention
-                  </span>
-                  <span className="text-slate-600 text-xs">•</span>
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-rose-500/10 text-rose-300 border border-rose-500/20">
-                    <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping" />
-                    1 live session today
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2.5 shrink-0">
-                <button
-                  onClick={() => setActiveTab("Live Sessions")}
-                  className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-medium bg-white/[0.03] hover:bg-white/[0.07] text-slate-300 border border-white/[0.08] transition-colors cursor-pointer"
-                >
-                  <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                  <span>Calendar</span>
-                </button>
-
-                <button
-                  onClick={() => setActiveTab("Notifications")}
-                  className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-medium bg-white/[0.03] hover:bg-white/[0.07] text-slate-300 border border-white/[0.08] transition-colors cursor-pointer relative"
-                >
-                  <Bell className="w-3.5 h-3.5 text-slate-400" />
-                  <span>Notifications</span>
-                  <span className="w-2 h-2 rounded-full bg-indigo-500 absolute top-1.5 right-1.5" />
-                </button>
-              </div>
-            </header>
-          ) : ["My Courses", "Create Course", "Course Builder", "Analytics"].includes(activeTab) ? (
+          {/* ─── Page Header for Core Course Tabs ─── */}
+          {["Create Course", "Course Builder", "Analytics"].includes(activeTab) ? (
             <header className="flex items-center justify-between mb-8 pb-4 border-b border-white/[0.06]">
               <div>
                 <h1 className="text-2xl sm:text-[28px] font-semibold text-white tracking-tight">
-                  {activeTab === "Create Course" ? "Create Course" : activeTab}
+                  {activeTab === "Create Course" ? "Create Course with AI" : activeTab}
                 </h1>
                 <p className="text-xs sm:text-sm text-slate-400 mt-1 font-medium">
-                  {activeTab === "My Courses" && "Manage and monitor all your authored courses"}
                   {activeTab === "Create Course" && "Generate a complete syllabus with AI in seconds"}
                   {activeTab === "Course Builder" && "Design, build, and organize your curriculum"}
                   {activeTab === "Analytics" && "Deep insights into your teaching performance"}
                 </p>
               </div>
-              <button
-                onClick={() => setIsModalOpen(true)}
-                className="md:hidden flex items-center gap-2 bg-primary text-white px-4 py-2.5 rounded-xl font-bold shadow-lg shadow-primary/25 text-xs"
-              >
-                <Plus className="w-4 h-4" /> New
-              </button>
+
+              {activeTab === "Create Course" && (
+                <button
+                  onClick={() => setActiveTab("Self-Paced Courses")}
+                  className="flex items-center gap-1.5 bg-card hover:bg-card/80 border border-border text-subtext hover:text-text px-4 py-2 rounded-xl font-semibold text-xs transition-colors cursor-pointer"
+                >
+                  <span>Back to Self-Paced Courses</span>
+                </button>
+              )}
             </header>
           ) : null}
 
           {/* ══════════════════════════════════════
-             TAB: DASHBOARD (Command Center Overview)
+             TAB: DASHBOARD (Live Training Dashboard)
              ══════════════════════════════════════ */}
           {activeTab === "Dashboard" && (
-            <div className="space-y-6 animate-in fade-in duration-200 text-slate-200">
-              {/* ──────────────────────────────────────────────────
-                 1. SHARED NEUTRAL METRICS STRIP
-                 ────────────────────────────────────────────────── */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-                {[
-                  {
-                    label: "ACTIVE STUDENTS",
-                    value: stats.totalStudents || 24,
-                    desc: "+4 this month",
-                    icon: Users,
-                    accent: "text-slate-100",
-                    dot: "bg-indigo-400",
-                  },
-                  {
-                    label: "COURSES",
-                    value: courses.length || 1,
-                    desc: `${stats.pendingCourses || 1} pending approval`,
-                    icon: BookOpen,
-                    accent: "text-slate-100",
-                    dot: "bg-purple-400",
-                  },
-                  {
-                    label: "TASKS",
-                    value: 4,
-                    desc: "2 need action",
-                    icon: CheckSquare,
-                    accent: "text-amber-400",
-                    dot: "bg-amber-400",
-                  },
-                  {
-                    label: "LIVE SESSIONS",
-                    value: 3,
-                    desc: "1 live now",
-                    icon: Tv,
-                    accent: "text-rose-400",
-                    dot: "bg-rose-500 animate-ping",
-                  },
-                  {
-                    label: "EARNINGS",
-                    value: `₹48K`,
-                    desc: "This month",
-                    icon: IndianRupee,
-                    accent: "text-slate-100",
-                    dot: "bg-emerald-400",
-                  },
-                ].map((stat, i) => (
-                  <div
-                    key={i}
-                    className="bg-[#121824]/90 border border-white/[0.08] hover:border-white/[0.14] rounded-2xl p-4 transition-all duration-150 shadow-sm"
-                  >
-                    <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-[10px] font-semibold text-slate-400 tracking-wider">
-                        {stat.label}
-                      </span>
-                      <span className={`w-1.5 h-1.5 rounded-full ${stat.dot}`} />
-                    </div>
-                    <div className={`text-2xl font-bold tracking-tight ${stat.accent}`}>
-                      {stat.value}
-                    </div>
-                    <div className="text-[11px] text-slate-500 mt-0.5 font-normal">
-                      {stat.desc}
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* ──────────────────────────────────────────────────
-                 2. MAIN 12-COLUMN WORKFLOW GRID (My Tasks 7 cols / Live Sessions 5 cols)
-                 ────────────────────────────────────────────────── */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                {/* ── LEFT: MY TASKS (7 Columns - Primary Focus) ── */}
-                <div className="lg:col-span-7 bg-[#121824]/90 border border-white/[0.08] rounded-2xl p-5 shadow-sm space-y-4">
-                  <div className="flex items-center justify-between pb-2.5 border-b border-white/[0.06]">
-                    <div className="flex items-center gap-2">
-                      <h2 className="text-sm font-semibold text-white tracking-tight">
-                        My Tasks
-                      </h2>
-                      <span className="px-2 py-0.5 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-md text-[10px] font-medium">
-                        4 pending actions
-                      </span>
-                    </div>
-                    <button
-                      onClick={() => setActiveTab("Tasks")}
-                      className="text-xs text-indigo-400 hover:text-indigo-300 font-medium inline-flex items-center gap-1 cursor-pointer transition-colors"
-                    >
-                      <span>View all</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-
-                  <div className="space-y-2.5">
-                    {/* Task Row 1: Action Required */}
-                    <div className="bg-[#161E2E] border-l-2 border-l-amber-400 border border-white/[0.06] rounded-xl p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs transition-colors hover:border-white/[0.1]">
-                      <div className="space-y-1 min-w-0 flex-1">
-                        <div className="flex items-center gap-1.5">
-                          <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
-                          <span className="text-[10px] font-semibold text-amber-400 uppercase tracking-wider">
-                            ACTION REQUIRED
-                          </span>
-                        </div>
-                        <h3 className="font-semibold text-white text-[14px] leading-snug">
-                          Create Assignment: Agentic AI Final Assessment
-                        </h3>
-                        <div className="flex items-center gap-2 text-[11px] text-slate-400">
-                          <span>Module 8 · Due in 2 days</span>
-                          <span className="text-slate-600">•</span>
-                          <span className="text-slate-300 font-medium">₹3,000 compensation</span>
-                        </div>
-                      </div>
-                      <button
-                        onClick={() => setActiveTab("Tasks")}
-                        className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-medium text-xs shadow-xs transition-colors shrink-0 cursor-pointer self-start sm:self-center"
-                      >
-                        Review Task →
-                      </button>
-                    </div>
-
-                    {/* Task Row 2: Pending Approval */}
-                    <div className="bg-[#161E2E] border-l-2 border-l-purple-400 border border-white/[0.06] rounded-xl p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs transition-colors hover:border-white/[0.1]">
-                      <div className="space-y-1 min-w-0 flex-1">
-                        <div className="flex items-center gap-1.5">
-                          <span className="w-1.5 h-1.5 rounded-full bg-purple-400 shrink-0" />
-                          <span className="text-[10px] font-semibold text-purple-300 uppercase tracking-wider">
-                            PENDING APPROVAL
-                          </span>
-                        </div>
-                        <h3 className="font-semibold text-white text-[14px] leading-snug">
-                          Course Creation: Generative AI for Enterprise
-                        </h3>
-                        <div className="flex items-center gap-2 text-[11px] text-slate-400">
-                          <span>Accepted · Awaiting admin approval</span>
-                          <span className="text-slate-600">•</span>
-                          <span className="text-slate-300 font-medium">₹15,000</span>
-                        </div>
-                      </div>
-                      <button
-                        onClick={() => setActiveTab("Tasks")}
-                        className="px-3.5 py-2 bg-white/[0.04] hover:bg-white/[0.08] text-slate-300 hover:text-white rounded-xl font-medium text-xs border border-white/[0.08] transition-colors shrink-0 cursor-pointer self-start sm:self-center"
-                      >
-                        View Details →
-                      </button>
-                    </div>
-
-                    {/* Task Row 3: Active */}
-                    <div className="bg-[#161E2E] border-l-2 border-l-indigo-400 border border-white/[0.06] rounded-xl p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs transition-colors hover:border-white/[0.1]">
-                      <div className="space-y-1 min-w-0 flex-1">
-                        <div className="flex items-center gap-1.5">
-                          <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 shrink-0" />
-                          <span className="text-[10px] font-semibold text-indigo-300 uppercase tracking-wider">
-                            ACTIVE
-                          </span>
-                        </div>
-                        <h3 className="font-semibold text-white text-[14px] leading-snug">
-                          1:1 Career Mentorship Session
-                        </h3>
-                        <div className="flex items-center gap-2 text-[11px] text-slate-400">
-                          <span>Tomorrow · 4:00 PM · Alex Rivera</span>
-                          <span className="text-slate-600">•</span>
-                          <span className="text-slate-300 font-medium">₹1,500</span>
-                        </div>
-                      </div>
-                      <button
-                        onClick={() => setActiveTab("Live Sessions")}
-                        className="px-3.5 py-2 bg-white/[0.04] hover:bg-white/[0.08] text-slate-300 hover:text-white rounded-xl font-medium text-xs border border-white/[0.08] transition-colors shrink-0 cursor-pointer self-start sm:self-center"
-                      >
-                        View Session →
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                {/* ── RIGHT: LIVE SESSIONS (5 Columns - Approved Execution) ── */}
-                <div className="lg:col-span-5 bg-[#121824]/90 border border-white/[0.08] rounded-2xl p-5 shadow-sm space-y-4">
-                  <div className="flex items-center justify-between pb-2.5 border-b border-white/[0.06]">
-                    <div className="flex items-center gap-2">
-                      <h2 className="text-sm font-semibold text-white tracking-tight">
-                        Live Sessions
-                      </h2>
-                      <span className="px-2 py-0.5 bg-rose-500/10 text-rose-300 border border-rose-500/20 rounded-md text-[10px] font-medium">
-                        1 Live Now
-                      </span>
-                    </div>
-                    <button
-                      onClick={() => setActiveTab("Live Sessions")}
-                      className="text-xs text-indigo-400 hover:text-indigo-300 font-medium inline-flex items-center gap-1 cursor-pointer transition-colors"
-                    >
-                      <span>View schedule</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-
-                  <div className="space-y-3">
-                    {/* LIVE NOW CARD */}
-                    <div className="bg-[#151421] border border-rose-500/30 rounded-xl p-4 space-y-2.5">
-                      <div className="flex items-center justify-between">
-                        <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold text-rose-400 uppercase tracking-wider">
-                          <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
-                          LIVE NOW
-                        </span>
-                        <span className="text-[11px] text-slate-400 font-medium">10:45 AM – 12:00 PM</span>
-                      </div>
-                      <div>
-                        <h4 className="font-semibold text-white text-[14px]">Agentic AI Q&A & Code Walkthrough</h4>
-                        <p className="text-[11px] text-slate-400 mt-0.5 truncate">Mastering Agentic AI & Autonomous Workflows</p>
-                      </div>
-                      <div className="pt-2 flex items-center justify-between border-t border-rose-500/20">
-                        <span className="text-[11px] text-slate-400">₹5,000 compensation</span>
-                        <a
-                          href="https://meet.google.com/glarus-ai-masterclass"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-500 text-white rounded-lg text-xs font-semibold shadow-xs transition-colors inline-flex items-center gap-1.5 cursor-pointer"
-                        >
-                          <Video className="w-3.5 h-3.5" /> Enter Live Room
-                        </a>
-                      </div>
-                    </div>
-
-                    {/* UPCOMING SESSION CARD */}
-                    <div className="bg-[#161E2E] border border-white/[0.06] rounded-xl p-3.5 space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-semibold text-indigo-300 uppercase tracking-wider">UPCOMING</span>
-                        <span className="text-[11px] text-slate-400 font-medium">Tomorrow · 6:00 PM</span>
-                      </div>
-                      <div>
-                        <h4 className="font-semibold text-slate-200 text-xs">Fullstack Next.js 15 Deployment</h4>
-                        <p className="text-[11px] text-slate-400 truncate">Full-Stack Web Development Bootcamp</p>
-                      </div>
-                      <div className="pt-1.5 flex justify-end border-t border-white/[0.04]">
-                        <button
-                          onClick={() => setActiveTab("Live Sessions")}
-                          className="text-[11px] text-indigo-400 hover:text-indigo-300 font-medium cursor-pointer"
-                        >
-                          View Details →
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* ──────────────────────────────────────────────────
-                 3. THIS MONTH PERFORMANCE STRIP
-                 ────────────────────────────────────────────────── */}
-              <div className="bg-[#121824]/90 border border-white/[0.08] rounded-2xl p-5 shadow-sm space-y-3">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                    This Month
-                  </h3>
-                  <span className="text-[11px] text-slate-500 font-medium">August 2026</span>
-                </div>
-
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  <div className="p-3 bg-white/[0.02] border border-white/[0.06] rounded-xl">
-                    <span className="text-[10px] font-medium text-slate-500 uppercase tracking-wider block">Total Earnings</span>
-                    <span className="text-lg font-semibold text-emerald-400 block mt-0.5">₹48,000</span>
-                  </div>
-
-                  <div className="p-3 bg-white/[0.02] border border-white/[0.06] rounded-xl">
-                    <span className="text-[10px] font-medium text-slate-500 uppercase tracking-wider block">Pending Payout</span>
-                    <span className="text-lg font-semibold text-slate-200 block mt-0.5">₹12,000</span>
-                  </div>
-
-                  <div className="p-3 bg-white/[0.02] border border-white/[0.06] rounded-xl">
-                    <span className="text-[10px] font-medium text-slate-500 uppercase tracking-wider block">Completed Tasks</span>
-                    <span className="text-lg font-semibold text-slate-200 block mt-0.5">8</span>
-                  </div>
-
-                  <div className="p-3 bg-white/[0.02] border border-white/[0.06] rounded-xl">
-                    <span className="text-[10px] font-medium text-slate-500 uppercase tracking-wider block">Live Sessions</span>
-                    <span className="text-lg font-semibold text-slate-200 block mt-0.5">3</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* ──────────────────────────────────────────────────
-                 4. UPCOMING SCHEDULE TIMELINE & QUICK ACTIONS
-                 ────────────────────────────────────────────────── */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                {/* Upcoming Schedule (8 cols) */}
-                <div className="lg:col-span-8 bg-[#121824]/90 border border-white/[0.08] rounded-2xl p-5 shadow-sm space-y-3">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                      Upcoming Schedule
-                    </h3>
-                    <span className="text-[11px] text-slate-500 font-medium">Next 7 Days</span>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
-                    <div className="p-3 bg-white/[0.02] border border-white/[0.06] rounded-xl flex items-center justify-between gap-3">
-                      <div>
-                        <span className="text-[10px] font-semibold text-rose-400 block">Today · 10:45 AM</span>
-                        <span className="font-medium text-slate-200 block mt-0.5">Live Session: Agentic AI Q&A</span>
-                      </div>
-                      <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-rose-500/10 text-rose-400 shrink-0">Live</span>
-                    </div>
-
-                    <div className="p-3 bg-white/[0.02] border border-white/[0.06] rounded-xl flex items-center justify-between gap-3">
-                      <div>
-                        <span className="text-[10px] font-semibold text-indigo-400 block">Tomorrow · 4:00 PM</span>
-                        <span className="font-medium text-slate-200 block mt-0.5">1:1 Mentorship: Alex Rivera</span>
-                      </div>
-                      <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-indigo-500/10 text-indigo-400 shrink-0">1-on-1</span>
-                    </div>
-
-                    <div className="p-3 bg-white/[0.02] border border-white/[0.06] rounded-xl flex items-center justify-between gap-3">
-                      <div>
-                        <span className="text-[10px] font-semibold text-slate-400 block">24 Aug · 6:00 PM</span>
-                        <span className="font-medium text-slate-200 block mt-0.5">Next.js 15 Deployment Workshop</span>
-                      </div>
-                      <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-white/[0.06] text-slate-400 shrink-0">Workshop</span>
-                    </div>
-
-                    <div className="p-3 bg-white/[0.02] border border-white/[0.06] rounded-xl flex items-center justify-between gap-3">
-                      <div>
-                        <span className="text-[10px] font-semibold text-amber-400 block">25 Aug · 12:00 PM</span>
-                        <span className="font-medium text-slate-200 block mt-0.5">Agentic AI Capstone Assessment</span>
-                      </div>
-                      <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-amber-500/10 text-amber-400 shrink-0">Task</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Quick Actions (4 cols) */}
-                <div className="lg:col-span-4 bg-[#121824]/90 border border-white/[0.08] rounded-2xl p-5 shadow-sm space-y-3">
-                  <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                    Quick Actions
-                  </h3>
-
-                  <div className="space-y-1.5">
-                    <button
-                      onClick={() => setActiveTab("Create Course")}
-                      className="w-full p-2.5 rounded-xl bg-white/[0.02] hover:bg-white/[0.06] border border-white/[0.06] flex items-center justify-between text-xs text-slate-200 transition-colors cursor-pointer"
-                    >
-                      <span className="flex items-center gap-2">
-                        <Sparkles className="w-3.5 h-3.5 text-purple-400" />
-                        <span>Create Course</span>
-                      </span>
-                      <ChevronRight className="w-3.5 h-3.5 text-slate-500" />
-                    </button>
-
-                    <button
-                      onClick={() => setActiveTab("Tasks")}
-                      className="w-full p-2.5 rounded-xl bg-white/[0.02] hover:bg-white/[0.06] border border-white/[0.06] flex items-center justify-between text-xs text-slate-200 transition-colors cursor-pointer"
-                    >
-                      <span className="flex items-center gap-2">
-                        <CheckSquare className="w-3.5 h-3.5 text-amber-400" />
-                        <span>Admin Tasks</span>
-                      </span>
-                      <ChevronRight className="w-3.5 h-3.5 text-slate-500" />
-                    </button>
-
-                    <button
-                      onClick={() => setActiveTab("Assignments")}
-                      className="w-full p-2.5 rounded-xl bg-white/[0.02] hover:bg-white/[0.06] border border-white/[0.06] flex items-center justify-between text-xs text-slate-200 transition-colors cursor-pointer"
-                    >
-                      <span className="flex items-center gap-2">
-                        <ClipboardList className="w-3.5 h-3.5 text-blue-400" />
-                        <span>Assignments</span>
-                      </span>
-                      <ChevronRight className="w-3.5 h-3.5 text-slate-500" />
-                    </button>
-
-                    <button
-                      onClick={() => setActiveTab("Students")}
-                      className="w-full p-2.5 rounded-xl bg-white/[0.02] hover:bg-white/[0.06] border border-white/[0.06] flex items-center justify-between text-xs text-slate-200 transition-colors cursor-pointer"
-                    >
-                      <span className="flex items-center gap-2">
-                        <Users className="w-3.5 h-3.5 text-emerald-400" />
-                        <span>Students</span>
-                      </span>
-                      <ChevronRight className="w-3.5 h-3.5 text-slate-500" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* ──────────────────────────────────────────────────
-                 5. RECENT COURSES (Compact Horizontal Grid)
-                 ────────────────────────────────────────────────── */}
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-sm font-semibold text-white">Recent Courses</h2>
-                  <button
-                    onClick={() => setActiveTab("My Courses")}
-                    className="text-xs font-medium text-indigo-400 hover:text-indigo-300 flex items-center gap-1 cursor-pointer"
-                  >
-                    View all <ArrowRight className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {courses.slice(0, 3).map((course) => (
-                    <div
-                      key={course.id}
-                      className="bg-[#121824]/90 border border-white/[0.08] hover:border-white/[0.14] rounded-2xl p-3.5 flex items-center gap-3 transition-all"
-                    >
-                      <div className="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center shrink-0">
-                        <BookOpen className="w-5 h-5 text-indigo-400" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <h3 className="font-semibold text-white text-xs truncate">{course.title}</h3>
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className={`px-1.5 py-0.2 text-[10px] font-medium rounded ${
-                            course.status === "APPROVED"
-                              ? "bg-emerald-500/10 text-emerald-400"
-                              : "bg-amber-500/10 text-amber-400"
-                          }`}>
-                            {course.status}
-                          </span>
-                          <span className="text-[11px] text-slate-400 font-medium">₹{course.price?.toLocaleString()}</span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-
-                  {courses.length === 0 && (
-                    <div className="col-span-full py-8 text-center bg-[#121824]/60 border border-white/[0.08] rounded-2xl text-slate-400 space-y-1">
-                      <BookOpen className="w-6 h-6 mx-auto text-slate-600" />
-                      <p className="font-medium text-xs text-slate-300">No courses yet</p>
-                      <button
-                        onClick={() => setActiveTab("Create Course")}
-                        className="text-xs text-indigo-400 hover:underline font-medium"
-                      >
-                        Create your first course →
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
+            <InstructorLiveDashboard
+              instructorName={approvalData?.firstName || "Piyush"}
+              onNavigateTab={handleNavigateTab}
+              onOpenCalendar={() => setActiveTab("Live Sessions")}
+            />
           )}
 
           {/* ══════════════════════════════════════
              TAB: TASKS (Admin Workflow Hub)
              ══════════════════════════════════════ */}
           {activeTab === "Tasks" && (
-            <InstructorTasksView onNavigateTab={(tab) => setActiveTab(tab)} />
+            <InstructorTasksView onNavigateTab={handleNavigateTab} />
           )}
 
           {/* ══════════════════════════════════════
              TAB: ASSIGNMENTS
              ══════════════════════════════════════ */}
           {activeTab === "Assignments" && (
-            <InstructorAssignmentsView />
+            <InstructorAssignmentsView
+              initialFilter={assignmentsFilter}
+              onClearFilter={() => setAssignmentsFilter(null)}
+              onBack={() => {
+                const targetTab = assignmentsFilter?.returnTab || (previousTab && previousTab !== "Assignments" ? previousTab : "Live Sessions");
+                setActiveTab(targetTab);
+                setAssignmentsFilter(null);
+              }}
+            />
           )}
 
           {/* ══════════════════════════════════════
              TAB: LIVE SESSIONS
              ══════════════════════════════════════ */}
           {activeTab === "Live Sessions" && (
-            <InstructorLiveSessionsView onNavigateTab={(tab) => setActiveTab(tab)} />
+            <InstructorLiveSessionsView
+              key="live-sessions-tab-view"
+              initialFilter={
+                liveSessionsFilter?.viewMode === "RECORDINGS"
+                  ? { viewMode: "COMMAND_CENTER" }
+                  : liveSessionsFilter || { viewMode: "COMMAND_CENTER" }
+              }
+              onClearFilter={() => setLiveSessionsFilter(null)}
+              onNavigateTab={handleNavigateTab}
+            />
+          )}
+
+          {/* ══════════════════════════════════════
+             TAB: CLASS RECORDINGS (30-DAY VALIDITY)
+             ══════════════════════════════════════ */}
+          {activeTab === "Class Recordings" && (
+            <InstructorLiveSessionsView
+              key="class-recordings-tab-view"
+              initialFilter={{ viewMode: "RECORDINGS" }}
+              onClearFilter={() => setLiveSessionsFilter(null)}
+              onNavigateTab={handleNavigateTab}
+            />
           )}
 
           {/* ══════════════════════════════════════
@@ -1496,57 +1291,20 @@ export default function InstructorDashboard() {
           )}
 
           {/* ══════════════════════════════════════
-             TAB: MY COURSES
+             TAB: SELF-PACED COURSES
              ══════════════════════════════════════ */}
-          {activeTab === "My Courses" && (
-            <div className="animate-in fade-in duration-300">
-              <div className="bg-card border border-card rounded-2xl overflow-hidden min-h-[400px] relative shadow-sm">
-                {loading ? (
-                  <div className="absolute inset-0 flex items-center justify-center"><Activity className="w-8 h-8 text-primary animate-spin" /></div>
-                ) : courses.length === 0 ? (
-                  <div className="absolute inset-0 flex items-center justify-center flex-col gap-3 text-subtext">
-                    <BookOpen className="w-12 h-12 opacity-20" />
-                    <p className="font-bold text-lg text-text">No courses yet</p>
-                    <button onClick={() => setIsModalOpen(true)} className="px-6 py-2.5 bg-primary text-white rounded-xl font-bold text-sm flex items-center gap-2"><Plus className="w-4 h-4" />Create Course</button>
-                  </div>
-                ) : (
-                  <table className="w-full text-left border-collapse">
-                    <thead>
-                      <tr className="bg-background border-b border-card">
-                        <th className="p-4 text-xs font-black text-subtext uppercase tracking-widest">Course</th>
-                        <th className="p-4 text-xs font-black text-subtext uppercase tracking-widest">Price</th>
-                        <th className="p-4 text-xs font-black text-subtext uppercase tracking-widest">Status</th>
-                        <th className="p-4 text-xs font-black text-subtext uppercase tracking-widest">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {courses.map((course) => (
-                        <tr key={course.id} className="border-b border-card hover:bg-background/50 transition-colors group">
-                          <td className="p-4">
-                            <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 bg-primary/10 rounded-lg shrink-0 flex items-center justify-center text-primary font-black text-sm">{course.title?.[0]}</div>
-                              <div>
-                                <span className="font-bold text-text line-clamp-1">{course.title}</span>
-                                <span className="text-xs text-subtext block truncate max-w-[200px]">{course.description}</span>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="p-4 font-bold text-text">₹{course.price?.toLocaleString()}</td>
-                          <td className="p-4">
-                            <span className={`px-3 py-1 border rounded-full text-xs font-black uppercase ${course.status === "APPROVED" ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" : course.status === "PENDING" ? "bg-amber-500/10 text-amber-500 border-amber-500/20" : "bg-red-500/10 text-red-500 border-red-500/20"}`}>{course.status}</span>
-                          </td>
-                          <td className="p-4">
-                            <div className="flex items-center gap-2">
-                              <Link href={`/course/${course.id}`} className="p-2 text-subtext hover:text-primary hover:bg-primary/10 rounded-lg transition-colors" title="Preview"><Eye className="w-4 h-4" /></Link>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                )}
-              </div>
-            </div>
+          {activeTab === "Self-Paced Courses" && (
+            <InstructorSelfPacedCoursesView
+              dbCourses={courses}
+              onCreateCourse={() => {
+                setWizardStep(1);
+                setActiveTab("Create Course");
+              }}
+              onOpenCourseBuilder={(courseId) => {
+                setActiveTab("Course Builder");
+              }}
+              onNavigateTab={handleNavigateTab}
+            />
           )}
 
           {/* ══════════════════════════════════════
@@ -1641,17 +1399,6 @@ export default function InstructorDashboard() {
                           <option value="Intermediate">Intermediate</option>
                           <option value="Advanced">Advanced</option>
                         </select>
-                      </div>
-
-                      <div className="space-y-1.5">
-                        <label className="block text-xs font-bold text-text">Price (₹)</label>
-                        <input
-                          type="number"
-                          value={formData.price}
-                          onChange={e => setFormData({ ...formData, price: e.target.value })}
-                          placeholder="e.g. 4999"
-                          className="w-full bg-background border border-card rounded-2xl px-4 py-2.5 text-xs text-text font-bold focus:outline-none focus:border-primary"
-                        />
                       </div>
 
                       <div className="md:col-span-2 space-y-1.5">
@@ -1857,23 +1604,121 @@ export default function InstructorDashboard() {
 
                           {module.isExpanded && (
                             <div className="p-5 border-t border-card/60 space-y-3 bg-background/50">
-                              {module.lessons.map((lesson) => (
-                                <div key={lesson.id} className="p-3.5 bg-card/60 border border-card rounded-xl flex items-center justify-between">
-                                  <div className="flex items-center gap-3">
-                                    <PlayCircle className="w-4 h-4 text-purple-400" />
-                                    <div>
-                                      <span className="font-bold text-xs text-text block">{lesson.title}</span>
-                                      <span className="text-[10px] text-subtext uppercase font-semibold">{lesson.type || "Content Pending"}</span>
+                              {module.lessons.map((lesson) => {
+                                const attachedItems: { type: string; label: string; icon: any; color: string; tab: "general" | "video" | "sandbox" | "quiz" | "resource" | "image" | "article" }[] = [];
+                                if (lesson.videoUrl?.trim()) {
+                                  attachedItems.push({ type: "video", label: "Video", icon: Video, color: "text-blue-400 bg-blue-500/10 border-blue-500/25", tab: "video" });
+                                }
+                                if (lesson.sandboxLang || lesson.sandboxCode?.trim()) {
+                                  attachedItems.push({ type: "sandbox", label: `Sandbox (${lesson.sandboxLang || "Code"})`, icon: Code, color: "text-emerald-400 bg-emerald-500/10 border-emerald-500/25", tab: "sandbox" });
+                                }
+                                if (lesson.quizQuestions && lesson.quizQuestions.length > 0) {
+                                  attachedItems.push({ type: "quiz", label: `Quiz (${lesson.quizQuestions.length} Qs)`, icon: HelpCircle, color: "text-amber-400 bg-amber-500/10 border-amber-500/25", tab: "quiz" });
+                                }
+                                const totalRes = (lesson.resources?.length || 0) + (lesson.resourceFileUrl && !lesson.resources?.some(r => r.url === lesson.resourceFileUrl) ? 1 : 0);
+                                if (totalRes > 0) {
+                                  attachedItems.push({ type: "resource", label: `${totalRes} File${totalRes > 1 ? "s" : ""}`, icon: UploadCloud, color: "text-purple-400 bg-purple-500/10 border-purple-500/25", tab: "resource" });
+                                }
+                                if (lesson.imageUrl1?.trim() || lesson.imageUrl2?.trim()) {
+                                  const imgCount = (lesson.imageUrl1 ? 1 : 0) + (lesson.imageUrl2 ? 1 : 0);
+                                  attachedItems.push({ type: "image", label: `${imgCount} Diagram${imgCount > 1 ? "s" : ""}`, icon: ImageIcon, color: "text-rose-400 bg-rose-500/10 border-rose-500/25", tab: "image" });
+                                }
+                                if (lesson.articleContent?.trim()) {
+                                  attachedItems.push({ type: "article", label: "Article / Notes", icon: FileText, color: "text-cyan-400 bg-cyan-500/10 border-cyan-500/25", tab: "article" });
+                                }
+
+                                const hasContent = attachedItems.length > 0;
+
+                                return (
+                                  <div key={lesson.id} className="p-4 bg-card/60 hover:bg-card/80 border border-card rounded-2xl transition-all space-y-3 shadow-sm">
+                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                      <div className="flex items-start sm:items-center gap-3">
+                                        <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border ${hasContent ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30" : "bg-card text-subtext/60 border-card"}`}>
+                                          {hasContent ? <CheckCircle2 className="w-5 h-5" /> : <PlayCircle className="w-5 h-5 text-purple-400" />}
+                                        </div>
+                                        <div>
+                                          <div className="flex items-center gap-2 flex-wrap">
+                                            <span className="font-bold text-sm text-text">{lesson.title}</span>
+                                            {hasContent ? (
+                                              <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-primary/15 text-primary border border-primary/25">
+                                                {attachedItems.length} Material{attachedItems.length > 1 ? "s" : ""} Attached
+                                              </span>
+                                            ) : (
+                                              <span className="text-[10px] text-subtext uppercase font-semibold">Empty</span>
+                                            )}
+                                          </div>
+                                          <p className="text-[11px] text-subtext mt-0.5">
+                                            {hasContent ? "Contains multiple learning materials. Click any badge or manage button to edit." : "Attach video, sandbox, quiz, downloadable files, or diagrams."}
+                                          </p>
+                                        </div>
+                                      </div>
+
+                                      <div className="flex items-center gap-2 shrink-0">
+                                        <button
+                                          onClick={() => openLessonEditor(module.id, lesson, "general")}
+                                          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                                            hasContent
+                                              ? "bg-primary hover:bg-primary/90 text-white shadow-md shadow-primary/20"
+                                              : "bg-primary/10 hover:bg-primary/20 text-primary border border-primary/25"
+                                          }`}
+                                        >
+                                          <Plus className="w-3.5 h-3.5" />
+                                          <span>{hasContent ? "Manage / Add More" : "Add Content"}</span>
+                                        </button>
+                                      </div>
+                                    </div>
+
+                                    {/* Attached Content Badges / Quick Add Shortcuts */}
+                                    <div className="flex items-center gap-1.5 flex-wrap pt-2 border-t border-card/40">
+                                      {hasContent ? (
+                                        <>
+                                          <span className="text-[10px] font-extrabold text-subtext mr-1 uppercase tracking-wider">Materials in topic:</span>
+                                          {attachedItems.map((item, idx) => (
+                                            <button
+                                              key={idx}
+                                              onClick={() => openLessonEditor(module.id, lesson, item.tab)}
+                                              className={`px-2.5 py-1 rounded-lg border text-[11px] font-bold flex items-center gap-1.5 transition-all hover:scale-105 cursor-pointer ${item.color}`}
+                                              title={`Click to view & edit ${item.label}`}
+                                            >
+                                              <item.icon className="w-3 h-3" />
+                                              <span>{item.label}</span>
+                                              <span className="text-[9px] opacity-70">✎</span>
+                                            </button>
+                                          ))}
+                                          <button
+                                            onClick={() => openLessonEditor(module.id, lesson, "general")}
+                                            className="px-2.5 py-1 rounded-lg text-[10px] font-bold text-subtext hover:text-text bg-card hover:bg-card/80 border border-card transition-colors flex items-center gap-1 cursor-pointer"
+                                          >
+                                            <Plus className="w-3 h-3 text-primary" /> + Add Other Types
+                                          </button>
+                                        </>
+                                      ) : (
+                                        <>
+                                          <span className="text-[10px] font-bold text-subtext mr-1">Quick Attach:</span>
+                                          <button onClick={() => openLessonEditor(module.id, lesson, "video")} className="px-2.5 py-1 rounded-lg text-[10px] font-semibold text-blue-400 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 flex items-center gap-1 cursor-pointer">
+                                            <Video className="w-3 h-3" /> + Video
+                                          </button>
+                                          <button onClick={() => openLessonEditor(module.id, lesson, "sandbox")} className="px-2.5 py-1 rounded-lg text-[10px] font-semibold text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 flex items-center gap-1 cursor-pointer">
+                                            <Code className="w-3 h-3" /> + Sandbox
+                                          </button>
+                                          <button onClick={() => openLessonEditor(module.id, lesson, "quiz")} className="px-2.5 py-1 rounded-lg text-[10px] font-semibold text-amber-400 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 flex items-center gap-1 cursor-pointer">
+                                            <HelpCircle className="w-3 h-3" /> + Quiz
+                                          </button>
+                                          <button onClick={() => openLessonEditor(module.id, lesson, "resource")} className="px-2.5 py-1 rounded-lg text-[10px] font-semibold text-purple-400 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/20 flex items-center gap-1 cursor-pointer">
+                                            <UploadCloud className="w-3 h-3" /> + PDF / Files
+                                          </button>
+                                          <button onClick={() => openLessonEditor(module.id, lesson, "image")} className="px-2.5 py-1 rounded-lg text-[10px] font-semibold text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 flex items-center gap-1 cursor-pointer">
+                                            <ImageIcon className="w-3 h-3" /> + Diagram
+                                          </button>
+                                          <button onClick={() => openLessonEditor(module.id, lesson, "article")} className="px-2.5 py-1 rounded-lg text-[10px] font-semibold text-cyan-400 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/20 flex items-center gap-1 cursor-pointer">
+                                            <FileText className="w-3 h-3" /> + Article / Guide
+                                          </button>
+                                        </>
+                                      )}
                                     </div>
                                   </div>
-                                  <button
-                                    onClick={() => openLessonEditor(module.id, lesson, "general")}
-                                    className="px-3 py-1.5 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 rounded-lg text-xs font-bold transition-all"
-                                  >
-                                    Add Content
-                                  </button>
-                                </div>
-                              ))}
+                                );
+                              })}
                             </div>
                           )}
                         </div>
@@ -1908,7 +1753,6 @@ export default function InstructorDashboard() {
                           <h3 className="text-xl font-extrabold text-text mt-0.5">{formData.title || aiTopic || "Untitled Course"}</h3>
                           {formData.subtitle && <p className="text-xs text-subtext mt-0.5">{formData.subtitle}</p>}
                         </div>
-                        <span className="text-xl font-black text-emerald-400">₹{formData.price || "0"}</span>
                       </div>
 
                       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-xs">
@@ -2265,11 +2109,22 @@ export default function InstructorDashboard() {
           {activeTab === "Students" && (
             <InstructorStudentsView
               onNavigateToAssignments={(params) => {
+                setAssignmentsFilter({
+                  ...params,
+                  returnTab: "Students",
+                });
                 setActiveTab("Assignments");
               }}
               onNavigateToLiveSessions={() => {
                 setActiveTab("Live Sessions");
               }}
+              onBack={() => {
+                const targetTab = studentsFilter?.returnTab || (previousTab && previousTab !== "Students" ? previousTab : "Live Sessions");
+                setActiveTab(targetTab);
+                setStudentsFilter(null);
+              }}
+              initialFilter={studentsFilter}
+              onClearFilter={() => setStudentsFilter(null)}
             />
           )}
 
@@ -2349,10 +2204,6 @@ export default function InstructorDashboard() {
               <div>
                 <label className="block text-sm font-bold text-text mb-2">Description</label>
                 <textarea required value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} className="w-full bg-background border border-card rounded-xl px-4 py-3 text-text focus:ring-2 focus:ring-primary outline-none" placeholder="Enter course description" rows={3} />
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-text mb-2">Price (₹)</label>
-                <input required type="number" min="0" value={formData.price} onChange={e => setFormData({ ...formData, price: e.target.value })} className="w-full bg-background border border-card rounded-xl px-4 py-3 text-text focus:ring-2 focus:ring-primary outline-none" placeholder="e.g. 4999" />
               </div>
               <button disabled={createLoading} className="w-full py-4 mt-2 bg-primary hover:bg-primary/90 text-white rounded-xl font-bold transition-all flex items-center justify-center gap-2 shadow-lg shadow-primary/20">
                 {createLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Submit for Approval"}
@@ -3276,35 +3127,184 @@ export default function InstructorDashboard() {
         </div>
       )}
 
-      {/* ═══════ DIRECT LESSON EDITOR & ATTACHMENTS MODAL ═══════ */}
+      {/* ═══════ DIRECT MULTI-CONTENT LESSON EDITOR MODAL ═══════ */}
       {editingLesson && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 overflow-y-auto animate-in fade-in" onClick={() => setEditingLesson(null)}>
-          <div className="bg-background border border-card w-full max-w-2xl p-6 md:p-8 rounded-3xl shadow-2xl animate-in zoom-in-95 my-auto space-y-6" onClick={e => e.stopPropagation()}>
+          <div className="bg-background border border-card w-full max-w-3xl p-6 md:p-8 rounded-3xl shadow-2xl animate-in zoom-in-95 my-auto space-y-6" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between border-b border-card pb-4">
               <div>
-                <span className="text-[10px] font-black uppercase text-primary tracking-widest">Lesson Editor & Direct Attachments</span>
+                <span className="text-[10px] font-black uppercase text-primary tracking-widest flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5" /> Topic Content Studio • Multiple Materials Supported
+                </span>
                 <h3 className="text-xl font-bold text-text mt-0.5">{editingLesson.lesson.title}</h3>
+                <p className="text-xs text-subtext mt-0.5">Attach videos, coding sandbox, quizzes, multiple PDFs/files, and diagrams to this single topic.</p>
               </div>
               <button onClick={() => setEditingLesson(null)} className="p-2 text-subtext hover:text-text rounded-xl bg-card">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            {/* Attachment Tabs */}
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-2 no-scrollbar border-b border-card">
-              <button onClick={() => setEditingLesson({ ...editingLesson, tab: "general" })} className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shrink-0 ${editingLesson.tab === "general" ? "bg-primary text-white" : "bg-card text-subtext"}`}><BookOpen className="w-3.5 h-3.5" /> Title & Info</button>
-              <button onClick={() => setEditingLesson({ ...editingLesson, tab: "video" })} className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shrink-0 ${editingLesson.tab === "video" ? "bg-blue-500 text-white" : "bg-card text-subtext hover:text-blue-400"}`}><Video className="w-3.5 h-3.5" /> 📹 Video</button>
-              <button onClick={() => setEditingLesson({ ...editingLesson, tab: "sandbox" })} className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shrink-0 ${editingLesson.tab === "sandbox" ? "bg-emerald-500 text-white" : "bg-card text-subtext hover:text-emerald-400"}`}><Code className="w-3.5 h-3.5" /> &lt;/&gt; Code Sandbox</button>
-              <button onClick={() => setEditingLesson({ ...editingLesson, tab: "quiz" })} className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shrink-0 ${editingLesson.tab === "quiz" ? "bg-amber-500 text-white" : "bg-card text-subtext hover:text-amber-400"}`}><HelpCircle className="w-3.5 h-3.5" /> ❓ Quiz</button>
-              <button onClick={() => setEditingLesson({ ...editingLesson, tab: "resource" })} className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shrink-0 ${editingLesson.tab === "resource" ? "bg-purple-600 text-white" : "bg-card text-subtext hover:text-purple-400"}`}><UploadCloud className="w-3.5 h-3.5" /> 📁 Resource</button>
-              <button onClick={() => setEditingLesson({ ...editingLesson, tab: "image" })} className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shrink-0 ${editingLesson.tab === "image" ? "bg-rose-500 text-white" : "bg-card text-subtext hover:text-rose-400"}`}><ImageIcon className="w-3.5 h-3.5" /> 🖼 Images (1 & 2)</button>
+            {/* Active Materials in Topic Summary Bar */}
+            <div className="p-3.5 bg-card/60 border border-card rounded-2xl flex items-center justify-between flex-wrap gap-2 text-xs">
+              <span className="font-bold text-subtext text-[11px] uppercase tracking-wider">Attached to this Topic:</span>
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {editingLesson.lesson.videoUrl?.trim() && (
+                  <span className="px-2 py-0.5 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-400 font-bold text-[11px] flex items-center gap-1">
+                    <Video className="w-3 h-3" /> Video Attached
+                    <button
+                      type="button"
+                      onClick={() => setEditingLesson({ ...editingLesson, lesson: { ...editingLesson.lesson, videoUrl: "" } })}
+                      className="text-subtext hover:text-rose-400 ml-1"
+                      title="Remove Video"
+                    >
+                      ✕
+                    </button>
+                  </span>
+                )}
+                {(editingLesson.lesson.sandboxLang || editingLesson.lesson.sandboxCode?.trim()) && (
+                  <span className="px-2 py-0.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-bold text-[11px] flex items-center gap-1">
+                    <Code className="w-3 h-3" /> Sandbox ({editingLesson.lesson.sandboxLang || "Python"})
+                    <button
+                      type="button"
+                      onClick={() => setEditingLesson({ ...editingLesson, lesson: { ...editingLesson.lesson, sandboxCode: "", sandboxLang: "python" } })}
+                      className="text-subtext hover:text-rose-400 ml-1"
+                      title="Remove Sandbox"
+                    >
+                      ✕
+                    </button>
+                  </span>
+                )}
+                {editingLesson.lesson.quizQuestions && editingLesson.lesson.quizQuestions.length > 0 && (
+                  <span className="px-2 py-0.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400 font-bold text-[11px] flex items-center gap-1">
+                    <HelpCircle className="w-3 h-3" /> Quiz ({editingLesson.lesson.quizQuestions.length} Qs)
+                    <button
+                      type="button"
+                      onClick={() => setEditingLesson({ ...editingLesson, lesson: { ...editingLesson.lesson, quizQuestions: [] } })}
+                      className="text-subtext hover:text-rose-400 ml-1"
+                      title="Remove Quiz"
+                    >
+                      ✕
+                    </button>
+                  </span>
+                )}
+                {editingLesson.lesson.resources && editingLesson.lesson.resources.length > 0 && (
+                  <span className="px-2 py-0.5 rounded-lg bg-purple-500/10 border border-purple-500/20 text-purple-400 font-bold text-[11px] flex items-center gap-1">
+                    <UploadCloud className="w-3 h-3" /> {editingLesson.lesson.resources.length} File{editingLesson.lesson.resources.length > 1 ? "s" : ""}
+                  </span>
+                )}
+                {(editingLesson.lesson.imageUrl1?.trim() || editingLesson.lesson.imageUrl2?.trim()) && (
+                  <span className="px-2 py-0.5 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-400 font-bold text-[11px] flex items-center gap-1">
+                    <ImageIcon className="w-3 h-3" /> Diagram Attached
+                    <button
+                      type="button"
+                      onClick={() => setEditingLesson({ ...editingLesson, lesson: { ...editingLesson.lesson, imageUrl1: "", imageUrl2: "" } })}
+                      className="text-subtext hover:text-rose-400 ml-1"
+                      title="Remove Diagram"
+                    >
+                      ✕
+                    </button>
+                  </span>
+                )}
+                {editingLesson.lesson.articleContent?.trim() && (
+                  <span className="px-2 py-0.5 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 font-bold text-[11px] flex items-center gap-1">
+                    <FileText className="w-3 h-3" /> Notes Attached
+                  </span>
+                )}
+                {!editingLesson.lesson.videoUrl &&
+                  !editingLesson.lesson.sandboxCode &&
+                  (!editingLesson.lesson.quizQuestions || editingLesson.lesson.quizQuestions.length === 0) &&
+                  (!editingLesson.lesson.resources || editingLesson.lesson.resources.length === 0) &&
+                  !editingLesson.lesson.imageUrl1 &&
+                  !editingLesson.lesson.articleContent && (
+                    <span className="text-subtext/60 italic text-[11px]">No materials attached yet. Select tabs below to add multiple content.</span>
+                  )}
+              </div>
             </div>
 
-            {/* TAB CONTENTS */}
+            {/* Attachment Tabs with presence indicators */}
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-2 no-scrollbar border-b border-card">
+              <button
+                onClick={() => setEditingLesson({ ...editingLesson, tab: "general" })}
+                className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shrink-0 cursor-pointer ${
+                  editingLesson.tab === "general" ? "bg-primary text-white" : "bg-card text-subtext hover:text-text"
+                }`}
+              >
+                <BookOpen className="w-3.5 h-3.5" />
+                <span>Title & Info</span>
+              </button>
+
+              <button
+                onClick={() => setEditingLesson({ ...editingLesson, tab: "video" })}
+                className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shrink-0 cursor-pointer ${
+                  editingLesson.tab === "video" ? "bg-blue-500 text-white" : "bg-card text-subtext hover:text-blue-400"
+                }`}
+              >
+                <Video className="w-3.5 h-3.5" />
+                <span>📹 Video</span>
+                {editingLesson.lesson.videoUrl?.trim() && <span className="w-1.5 h-1.5 rounded-full bg-blue-300 animate-pulse" />}
+              </button>
+
+              <button
+                onClick={() => setEditingLesson({ ...editingLesson, tab: "sandbox" })}
+                className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shrink-0 cursor-pointer ${
+                  editingLesson.tab === "sandbox" ? "bg-emerald-500 text-white" : "bg-card text-subtext hover:text-emerald-400"
+                }`}
+              >
+                <Code className="w-3.5 h-3.5" />
+                <span>&lt;/&gt; Code Sandbox</span>
+                {editingLesson.lesson.sandboxCode?.trim() && <span className="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse" />}
+              </button>
+
+              <button
+                onClick={() => setEditingLesson({ ...editingLesson, tab: "quiz" })}
+                className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shrink-0 cursor-pointer ${
+                  editingLesson.tab === "quiz" ? "bg-amber-500 text-white" : "bg-card text-subtext hover:text-amber-400"
+                }`}
+              >
+                <HelpCircle className="w-3.5 h-3.5" />
+                <span>❓ Quiz Game</span>
+                {(editingLesson.lesson.quizQuestions?.length || 0) > 0 && <span className="w-1.5 h-1.5 rounded-full bg-amber-300 animate-pulse" />}
+              </button>
+
+              <button
+                onClick={() => setEditingLesson({ ...editingLesson, tab: "resource" })}
+                className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shrink-0 cursor-pointer ${
+                  editingLesson.tab === "resource" ? "bg-purple-600 text-white" : "bg-card text-subtext hover:text-purple-400"
+                }`}
+              >
+                <UploadCloud className="w-3.5 h-3.5" />
+                <span>📁 Files & PDFs</span>
+                {(editingLesson.lesson.resources?.length || 0) > 0 && <span className="w-1.5 h-1.5 rounded-full bg-purple-300 animate-pulse" />}
+              </button>
+
+              <button
+                onClick={() => setEditingLesson({ ...editingLesson, tab: "image" })}
+                className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shrink-0 cursor-pointer ${
+                  editingLesson.tab === "image" ? "bg-rose-500 text-white" : "bg-card text-subtext hover:text-rose-400"
+                }`}
+              >
+                <ImageIcon className="w-3.5 h-3.5" />
+                <span>🖼 Diagrams</span>
+                {(editingLesson.lesson.imageUrl1?.trim() || editingLesson.lesson.imageUrl2?.trim()) && <span className="w-1.5 h-1.5 rounded-full bg-rose-300 animate-pulse" />}
+              </button>
+
+              <button
+                onClick={() => setEditingLesson({ ...editingLesson, tab: "article" })}
+                className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shrink-0 cursor-pointer ${
+                  editingLesson.tab === "article" ? "bg-cyan-600 text-white" : "bg-card text-subtext hover:text-cyan-400"
+                }`}
+              >
+                <FileText className="w-3.5 h-3.5" />
+                <span>📝 Notes & Guide</span>
+                {editingLesson.lesson.articleContent?.trim() && <span className="w-1.5 h-1.5 rounded-full bg-cyan-300 animate-pulse" />}
+              </button>
+            </div>
+
+            {/* TAB 1: GENERAL INFO */}
             {editingLesson.tab === "general" && (
               <div className="space-y-4">
                 <div>
-                  <label className="block text-xs font-bold text-text mb-1">Lesson Title *</label>
+                  <label className="block text-xs font-bold text-text mb-1">Topic Title *</label>
                   <input
                     type="text"
                     value={editingLesson.lesson.title}
@@ -3313,43 +3313,64 @@ export default function InstructorDashboard() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-text mb-1">Lesson Description / Notes</label>
+                  <label className="block text-xs font-bold text-text mb-1">Short Lesson Objective / Summary</label>
                   <textarea
                     rows={3}
                     value={editingLesson.lesson.description || ""}
                     onChange={e => setEditingLesson({ ...editingLesson, lesson: { ...editingLesson.lesson, description: e.target.value } })}
                     className="w-full bg-card border border-card rounded-xl px-4 py-2.5 text-xs font-medium text-text outline-none focus:border-primary"
-                    placeholder="Brief notes or student objectives for this lesson..."
+                    placeholder="Brief notes or student learning objectives for this topic..."
                   />
+                </div>
+                <div className="p-4 bg-primary/5 border border-primary/20 rounded-2xl space-y-2">
+                  <p className="text-xs font-bold text-primary flex items-center gap-1.5">
+                    <Sparkles className="w-4 h-4" /> Multi-Content Lesson Architecture
+                  </p>
+                  <p className="text-[11px] text-subtext leading-relaxed">
+                    You can attach multiple materials to this single topic! For example, students can watch a video, practice live code in a sandbox, take a quiz, and download reference PDFs in the same lesson step.
+                  </p>
                 </div>
               </div>
             )}
 
+            {/* TAB 2: VIDEO */}
             {editingLesson.tab === "video" && (
               <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <Video className="w-5 h-5 text-blue-500" />
-                  <h4 className="font-bold text-sm text-text">Attach / Upload Video Lesson</h4>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Video className="w-5 h-5 text-blue-500" />
+                    <h4 className="font-bold text-sm text-text">Attach Video Lecture</h4>
+                  </div>
+                  {editingLesson.lesson.videoUrl?.trim() && (
+                    <button
+                      type="button"
+                      onClick={() => setEditingLesson({ ...editingLesson, lesson: { ...editingLesson.lesson, videoUrl: "" } })}
+                      className="text-xs text-rose-400 hover:underline"
+                    >
+                      Remove Video
+                    </button>
+                  )}
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-text mb-1">Video Stream or YouTube / Vimeo URL *</label>
+                  <label className="block text-xs font-bold text-text mb-1">Video Stream or YouTube / Vimeo / MP4 URL *</label>
                   <input
                     type="text"
                     value={editingLesson.lesson.videoUrl || ""}
-                    onChange={e => setEditingLesson({ ...editingLesson, lesson: { ...editingLesson.lesson, videoUrl: e.target.value, type: "video" } })}
+                    onChange={e => setEditingLesson({ ...editingLesson, lesson: { ...editingLesson.lesson, videoUrl: e.target.value } })}
                     className="w-full bg-card border border-card rounded-xl px-4 py-2.5 text-xs font-medium text-text outline-none focus:border-blue-500"
-                    placeholder="e.g. https://www.youtube.com/watch?v=dQw4w9WgXcQ or https://cdn.com/video.mp4"
+                    placeholder="e.g. https://www.youtube.com/watch?v=dQw4w9WgXcQ or https://cdn.example.com/video.mp4"
                   />
                 </div>
                 {editingLesson.lesson.videoUrl && (
-                  <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-xl space-y-2">
+                  <div className="p-3.5 bg-blue-500/10 border border-blue-500/20 rounded-xl space-y-2">
                     <span className="text-xs font-bold text-blue-400 flex items-center gap-1.5"><Video className="w-4 h-4" /> Video Attached</span>
-                    <p className="text-[11px] text-subtext truncate">{editingLesson.lesson.videoUrl}</p>
+                    <p className="text-[11px] text-subtext truncate font-mono">{editingLesson.lesson.videoUrl}</p>
                   </div>
                 )}
               </div>
             )}
 
+            {/* TAB 3: CODE SANDBOX */}
             {editingLesson.tab === "sandbox" && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
@@ -3357,26 +3378,37 @@ export default function InstructorDashboard() {
                     <Code className="w-5 h-5 text-emerald-500" />
                     <h4 className="font-bold text-sm text-text">Attach Interactive Code Sandbox</h4>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const lang = editingLesson.lesson.sandboxLang || "python";
-                      const defaultCode = lang === "python" ? `# Python Solution\ndef main():\n    print("Hello from ${editingLesson.lesson.title}")\n\nif __name__ == "__main__":\n    main()`
-                        : lang === "javascript" ? `// JS Code\nfunction main() {\n    console.log("Hello from ${editingLesson.lesson.title}");\n}\nmain();`
-                        : `// ${lang} Code\nconsole.log("Hello from ${editingLesson.lesson.title}");`;
-                      setEditingLesson({ ...editingLesson, lesson: { ...editingLesson.lesson, sandboxCode: defaultCode, type: "sandbox" } });
-                    }}
-                    className="text-[11px] font-bold text-emerald-400 hover:underline flex items-center gap-1"
-                  >
-                    <Sparkles className="w-3 h-3" /> Auto-Fill Starter Code
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const lang = editingLesson.lesson.sandboxLang || "python";
+                        const defaultCode = lang === "python" ? `# Python Solution\ndef main():\n    print("Hello from ${editingLesson.lesson.title}")\n\nif __name__ == "__main__":\n    main()`
+                          : lang === "javascript" ? `// JS Code\nfunction main() {\n    console.log("Hello from ${editingLesson.lesson.title}");\n}\nmain();`
+                          : `// ${lang} Code\nconsole.log("Hello from ${editingLesson.lesson.title}");`;
+                        setEditingLesson({ ...editingLesson, lesson: { ...editingLesson.lesson, sandboxCode: defaultCode } });
+                      }}
+                      className="text-[11px] font-bold text-emerald-400 hover:underline flex items-center gap-1"
+                    >
+                      <Sparkles className="w-3 h-3" /> Auto-Fill Starter Code
+                    </button>
+                    {editingLesson.lesson.sandboxCode?.trim() && (
+                      <button
+                        type="button"
+                        onClick={() => setEditingLesson({ ...editingLesson, lesson: { ...editingLesson.lesson, sandboxCode: "" } })}
+                        className="text-xs text-rose-400 hover:underline ml-2"
+                      >
+                        Clear Sandbox
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 <div>
                   <label className="block text-xs font-bold text-text mb-1">Programming Language</label>
                   <select
                     value={editingLesson.lesson.sandboxLang || "python"}
-                    onChange={e => setEditingLesson({ ...editingLesson, lesson: { ...editingLesson.lesson, sandboxLang: e.target.value, type: "sandbox" } })}
+                    onChange={e => setEditingLesson({ ...editingLesson, lesson: { ...editingLesson.lesson, sandboxLang: e.target.value } })}
                     className="w-full bg-card border border-card rounded-xl px-4 py-2.5 text-xs font-medium text-text outline-none focus:border-emerald-500"
                   >
                     <option value="python">Python</option>
@@ -3394,7 +3426,7 @@ export default function InstructorDashboard() {
                   <textarea
                     rows={6}
                     value={editingLesson.lesson.sandboxCode || ""}
-                    onChange={e => setEditingLesson({ ...editingLesson, lesson: { ...editingLesson.lesson, sandboxCode: e.target.value, type: "sandbox" } })}
+                    onChange={e => setEditingLesson({ ...editingLesson, lesson: { ...editingLesson.lesson, sandboxCode: e.target.value } })}
                     className="w-full bg-card border border-card rounded-xl px-4 py-2.5 text-xs font-mono text-emerald-400 outline-none focus:border-emerald-500 leading-relaxed"
                     placeholder="# Write or paste initial starter code for students here..."
                   />
@@ -3402,6 +3434,7 @@ export default function InstructorDashboard() {
               </div>
             )}
 
+            {/* TAB 4: QUIZ */}
             {editingLesson.tab === "quiz" && (
               <div className="space-y-5">
                 <div className="flex items-center justify-between">
@@ -3413,10 +3446,10 @@ export default function InstructorDashboard() {
                     <button
                       type="button"
                       onClick={() => openQuizWizardModal(editingLesson.lesson.title)}
-                      className="px-3.5 py-1.5 bg-amber-500/15 hover:bg-amber-500/25 text-amber-400 border border-amber-500/30 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm"
+                      className="px-3.5 py-1.5 bg-amber-500/15 hover:bg-amber-500/25 text-amber-400 border border-amber-500/30 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm cursor-pointer"
                     >
                       <Sparkles className="w-3.5 h-3.5" />
-                      <span>✨ Open AI Quiz Generator Wizard</span>
+                      <span>✨ AI Quiz Generator</span>
                     </button>
                     {(editingLesson.lesson.quizQuestions?.length || 0) > 0 && (
                       <button
@@ -3428,7 +3461,7 @@ export default function InstructorDashboard() {
                           setLessonQuizAnswered(false);
                           setLessonQuizScore(0);
                         }}
-                        className="px-3 py-1.5 bg-card hover:bg-card/80 text-text border border-card rounded-xl text-xs font-bold flex items-center gap-1.5"
+                        className="px-3 py-1.5 bg-card hover:bg-card/80 text-text border border-card rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer"
                       >
                         <PlayCircle className="w-3.5 h-3.5 text-amber-500" />
                         <span>{lessonQuizPreview ? "Exit Preview" : "Test Quiz Game"}</span>
@@ -3438,7 +3471,6 @@ export default function InstructorDashboard() {
                 </div>
 
                 {lessonQuizPreview && (editingLesson.lesson.quizQuestions?.length || 0) > 0 ? (
-                  /* Game-like Quiz Test Preview inside modal */
                   <div className="p-4 bg-amber-500/5 border border-amber-500/20 rounded-2xl space-y-4 animate-in fade-in">
                     <div className="flex items-center justify-between text-xs font-bold">
                       <span className="text-amber-500">Question {lessonQuizCurrentQ + 1} of {editingLesson.lesson.quizQuestions!.length}</span>
@@ -3506,7 +3538,6 @@ export default function InstructorDashboard() {
                   </div>
                 ) : (
                   <>
-                    {/* Attached Quiz Questions List */}
                     {(editingLesson.lesson.quizQuestions?.length || 0) > 0 ? (
                       <div className="space-y-3">
                         <div className="flex items-center justify-between text-xs font-bold text-subtext">
@@ -3516,7 +3547,7 @@ export default function InstructorDashboard() {
                             onClick={() => setEditingLesson({ ...editingLesson, lesson: { ...editingLesson.lesson, quizQuestions: [] } })}
                             className="text-rose-400 hover:underline"
                           >
-                            Clear All
+                            Clear All Questions
                           </button>
                         </div>
                         <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
@@ -3542,11 +3573,10 @@ export default function InstructorDashboard() {
                       <div className="p-4 border-2 border-dashed border-card rounded-2xl text-center space-y-2">
                         <HelpCircle className="w-8 h-8 text-amber-500/30 mx-auto" />
                         <p className="text-xs font-bold text-text">No quiz questions attached to this lesson yet</p>
-                        <p className="text-[11px] text-subtext">Use "AI Auto-Generate Quiz" above or add questions manually below.</p>
+                        <p className="text-[11px] text-subtext">Use "AI Quiz Generator" above or add questions manually below.</p>
                       </div>
                     )}
 
-                    {/* Manual Question Creator Form */}
                     <div className="p-4 bg-card/40 border border-card rounded-2xl space-y-3">
                       <p className="text-xs font-extrabold text-text flex items-center gap-1.5"><Plus className="w-4 h-4 text-amber-500" /> Add Custom Question Manually</p>
                       <input
@@ -3602,7 +3632,7 @@ export default function InstructorDashboard() {
                           type="button"
                           onClick={addManualQToLesson}
                           disabled={!manualQForm.question.trim() || !manualQForm.optA.trim()}
-                          className="ml-auto px-4 py-1.5 bg-amber-500 hover:bg-amber-400 disabled:opacity-40 text-white font-bold text-xs rounded-xl shadow-md"
+                          className="ml-auto px-4 py-1.5 bg-amber-500 hover:bg-amber-400 disabled:opacity-40 text-white font-bold text-xs rounded-xl shadow-md cursor-pointer"
                         >
                           + Add Question
                         </button>
@@ -3613,74 +3643,282 @@ export default function InstructorDashboard() {
               </div>
             )}
 
+            {/* TAB 5: MULTIPLE DOWNLOADABLE RESOURCES / PDFS */}
             {editingLesson.tab === "resource" && (
-              <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <UploadCloud className="w-5 h-5 text-purple-400" />
-                  <h4 className="font-bold text-sm text-text">Upload Downloadable Lesson Resource</h4>
+              <div className="space-y-5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <UploadCloud className="w-5 h-5 text-purple-400" />
+                    <h4 className="font-bold text-sm text-text">Downloadable Files & Resources (Add Multiple)</h4>
+                  </div>
+                  <span className="text-xs font-bold text-purple-400 bg-purple-500/10 px-2.5 py-1 rounded-lg border border-purple-500/20">
+                    {editingLesson.lesson.resources?.length || 0} Attached File{(editingLesson.lesson.resources?.length || 0) !== 1 ? "s" : ""}
+                  </span>
                 </div>
-                <div>
-                  <label className="block text-xs font-bold text-text mb-1">Resource Category / Type</label>
-                  <select
-                    value={editingLesson.lesson.fileType || "PDF Document"}
-                    onChange={e => setEditingLesson({ ...editingLesson, lesson: { ...editingLesson.lesson, fileType: e.target.value, type: "resource" } })}
-                    className="w-full bg-card border border-card rounded-xl px-4 py-2.5 text-xs font-medium text-text outline-none focus:border-purple-500"
-                  >
-                    <option value="PDF Document">PDF Document</option>
-                    <option value="Source Code ZIP">Source Code ZIP</option>
-                    <option value="Presentation Slides">Presentation Slides (PPT/PDF)</option>
-                    <option value="Documentation">Documentation / Article</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-text mb-1">Resource Download Link / URL *</label>
+
+                {/* Resource File Upload Dropzone */}
+                <div className="p-4 bg-card/40 border-2 border-dashed border-purple-500/30 hover:border-purple-500/60 rounded-2xl text-center space-y-2 transition-all">
                   <input
-                    type="text"
-                    value={editingLesson.lesson.resourceFileUrl || ""}
-                    onChange={e => setEditingLesson({ ...editingLesson, lesson: { ...editingLesson.lesson, resourceFileUrl: e.target.value, type: "resource" } })}
-                    className="w-full bg-card border border-card rounded-xl px-4 py-2.5 text-xs font-medium text-text outline-none focus:border-purple-500"
-                    placeholder="https://example.com/downloads/cheatsheet.pdf"
+                    type="file"
+                    id="resource-upload-file"
+                    accept=".pdf,.doc,.docx,.ppt,.pptx,.zip,.txt,.md,.json,.jpg,.png"
+                    className="hidden"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      const url = await handleFileUpload(file, "resource");
+                      if (url && editingLesson) {
+                        const ext = file.name.split(".").pop()?.toUpperCase() || "FILE";
+                        let detectedType = "PDF Document";
+                        if (ext === "ZIP" || ext === "RAR") detectedType = "Source Code ZIP";
+                        else if (ext === "PPT" || ext === "PPTX") detectedType = "Presentation Slides";
+                        else if (ext === "MD" || ext === "TXT") detectedType = "Documentation";
+                        else if (ext === "DOC" || ext === "DOCX") detectedType = "Document";
+                        else if (ext === "PDF") detectedType = "PDF Document";
+
+                        const newRes: LessonResourceItem = {
+                          id: `res-${Date.now()}`,
+                          title: file.name.replace(/\.[^/.]+$/, ""),
+                          url: url,
+                          type: detectedType
+                        };
+                        const currentRes = editingLesson.lesson.resources || [];
+                        setEditingLesson({
+                          ...editingLesson,
+                          lesson: {
+                            ...editingLesson.lesson,
+                            resources: [...currentRes, newRes]
+                          }
+                        });
+                      }
+                    }}
                   />
-                </div>
-                {editingLesson.lesson.resourceFileUrl && (
-                  <a
-                    href={editingLesson.lesson.resourceFileUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-2 p-2.5 bg-purple-500/10 border border-purple-500/20 text-purple-400 rounded-xl text-xs font-bold hover:underline"
+                  <label
+                    htmlFor="resource-upload-file"
+                    className="cursor-pointer flex flex-col items-center justify-center gap-1.5"
                   >
-                    <Paperclip className="w-4 h-4" /> Test Download Resource Link ↗
-                  </a>
+                    {uploadingTarget === "resource" ? (
+                      <div className="flex items-center gap-2 text-purple-400 font-bold text-xs py-2">
+                        <Loader2 className="w-5 h-5 animate-spin" /> Uploading & Attaching File...
+                      </div>
+                    ) : (
+                      <>
+                        <div className="w-10 h-10 rounded-xl bg-purple-500/15 text-purple-400 flex items-center justify-center shadow-sm">
+                          <UploadCloud className="w-5 h-5" />
+                        </div>
+                        <p className="text-xs font-bold text-text">Click or Drag & Drop to Upload Resource File</p>
+                        <p className="text-[10px] text-subtext">Auto-attaches PDF, ZIP code, PPT slides, or documentation</p>
+                      </>
+                    )}
+                  </label>
+                </div>
+
+                {/* Attached Files List */}
+                {(editingLesson.lesson.resources?.length || 0) > 0 ? (
+                  <div className="space-y-2.5">
+                    <label className="block text-[11px] font-extrabold text-subtext uppercase tracking-wider">Currently Attached Files for Students</label>
+                    <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                      {editingLesson.lesson.resources!.map((r, ri) => (
+                        <div key={r.id || ri} className="p-3 bg-card border border-card rounded-xl flex items-center justify-between gap-3 text-xs">
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <span className="p-2 rounded-lg bg-purple-500/15 text-purple-400 font-bold shrink-0">
+                              <Paperclip className="w-3.5 h-3.5" />
+                            </span>
+                            <div className="min-w-0">
+                              <p className="font-bold text-text truncate">{r.title}</p>
+                              <p className="text-[10px] text-subtext truncate">{r.type} • {r.url}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0">
+                            <a
+                              href={r.url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="p-1.5 text-subtext hover:text-purple-400 bg-background rounded-lg text-[11px]"
+                              title="Test link"
+                            >
+                              <ArrowUpRight className="w-3.5 h-3.5" />
+                            </a>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const updated = (editingLesson.lesson.resources || []).filter((_, i) => i !== ri);
+                                setEditingLesson({ ...editingLesson, lesson: { ...editingLesson.lesson, resources: updated } });
+                              }}
+                              className="p-1.5 text-subtext hover:text-rose-400 bg-background rounded-lg"
+                              title="Delete file"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-3 border-2 border-dashed border-card rounded-2xl text-center space-y-1">
+                    <p className="text-xs font-bold text-text">No downloadable files attached yet</p>
+                    <p className="text-[11px] text-subtext">Upload files above or paste links below.</p>
+                  </div>
                 )}
+
+                {/* Add New Resource Form */}
+                <div className="p-4 bg-card/40 border border-card rounded-2xl space-y-3">
+                  <p className="text-xs font-extrabold text-text flex items-center gap-1.5">
+                    <Plus className="w-4 h-4 text-purple-400" /> + Add Resource from Link / URL
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[11px] font-bold text-text mb-1">Resource Title *</label>
+                      <input
+                        type="text"
+                        value={newResourceItem.title}
+                        onChange={e => setNewResourceItem({ ...newResourceItem, title: e.target.value })}
+                        placeholder="e.g. Chapter 1 Cheatsheet & Summary"
+                        className="w-full bg-background border border-card rounded-xl px-3 py-2 text-xs text-text outline-none focus:border-purple-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-bold text-text mb-1">Resource Category</label>
+                      <select
+                        value={newResourceItem.type}
+                        onChange={e => setNewResourceItem({ ...newResourceItem, type: e.target.value })}
+                        className="w-full bg-background border border-card rounded-xl px-3 py-2 text-xs text-text outline-none focus:border-purple-500"
+                      >
+                        <option value="PDF Document">PDF Document</option>
+                        <option value="Source Code ZIP">Source Code ZIP</option>
+                        <option value="Presentation Slides">Presentation Slides (PPT/PDF)</option>
+                        <option value="Documentation">Documentation / Article</option>
+                        <option value="Cheatsheet">Cheatsheet / Guide</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-text mb-1">File / Download URL *</label>
+                    <input
+                      type="text"
+                      value={newResourceItem.url}
+                      onChange={e => setNewResourceItem({ ...newResourceItem, url: e.target.value })}
+                      placeholder="https://example.com/downloads/cheatsheet.pdf or /uploads/..."
+                      className="w-full bg-background border border-card rounded-xl px-3 py-2 text-xs text-text outline-none focus:border-purple-500 font-mono"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    disabled={!newResourceItem.title.trim() || !newResourceItem.url.trim()}
+                    onClick={() => {
+                      const newRes: LessonResourceItem = {
+                        id: `res-${Date.now()}`,
+                        title: newResourceItem.title.trim(),
+                        url: newResourceItem.url.trim(),
+                        type: newResourceItem.type
+                      };
+                      const currentRes = editingLesson.lesson.resources || [];
+                      setEditingLesson({
+                        ...editingLesson,
+                        lesson: {
+                          ...editingLesson.lesson,
+                          resources: [...currentRes, newRes]
+                        }
+                      });
+                      setNewResourceItem({ title: "", url: "", type: "PDF Document" });
+                      setToast({ message: `Added "${newRes.title}" to lesson resources!`, type: "success" });
+                    }}
+                    className="w-full py-2.5 bg-purple-600 hover:bg-purple-500 disabled:opacity-40 text-white rounded-xl font-bold text-xs shadow-md shadow-purple-500/20 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <Plus className="w-4 h-4" /> Add File to Lesson
+                  </button>
+                </div>
               </div>
             )}
 
+            {/* TAB 6: DIAGRAMS & IMAGES */}
             {editingLesson.tab === "image" && (
               <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <ImageIcon className="w-5 h-5 text-rose-400" />
-                  <h4 className="font-bold text-sm text-text">Attach Images & Visual Diagrams (Primary & 2nd Image)</h4>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <ImageIcon className="w-5 h-5 text-rose-400" />
+                    <h4 className="font-bold text-sm text-text">Attach Images & Visual Diagrams (Primary & 2nd Image)</h4>
+                  </div>
+                  {(editingLesson.lesson.imageUrl1?.trim() || editingLesson.lesson.imageUrl2?.trim()) && (
+                    <button
+                      type="button"
+                      onClick={() => setEditingLesson({ ...editingLesson, lesson: { ...editingLesson.lesson, imageUrl1: "", imageUrl2: "" } })}
+                      className="text-xs text-rose-400 hover:underline"
+                    >
+                      Remove Diagrams
+                    </button>
+                  )}
                 </div>
+
+                {/* Primary Diagram */}
                 <div>
-                  <label className="block text-xs font-bold text-text mb-1">Primary Image / Diagram URL *</label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-xs font-bold text-text">Primary Image / Diagram URL *</label>
+                    <label htmlFor="primary-diagram-upload" className="text-[11px] text-rose-400 hover:underline cursor-pointer flex items-center gap-1 font-bold">
+                      <UploadCloud className="w-3.5 h-3.5" /> Upload Image File
+                    </label>
+                    <input
+                      type="file"
+                      id="primary-diagram-upload"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        const url = await handleFileUpload(file, "image");
+                        if (url && editingLesson) {
+                          setEditingLesson({
+                            ...editingLesson,
+                            lesson: { ...editingLesson.lesson, imageUrl1: url }
+                          });
+                        }
+                      }}
+                    />
+                  </div>
                   <input
                     type="text"
                     value={editingLesson.lesson.imageUrl1 || ""}
-                    onChange={e => setEditingLesson({ ...editingLesson, lesson: { ...editingLesson.lesson, imageUrl1: e.target.value, type: "image" } })}
-                    className="w-full bg-card border border-card rounded-xl px-4 py-2.5 text-xs font-medium text-text outline-none focus:border-rose-500"
-                    placeholder="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe"
+                    onChange={e => setEditingLesson({ ...editingLesson, lesson: { ...editingLesson.lesson, imageUrl1: e.target.value } })}
+                    className="w-full bg-card border border-card rounded-xl px-4 py-2.5 text-xs font-medium text-text outline-none focus:border-rose-500 font-mono"
+                    placeholder="https://images.unsplash.com/... or click Upload Image File above"
                   />
                 </div>
+
+                {/* Secondary Diagram */}
                 <div>
-                  <label className="block text-xs font-bold text-purple-400 mb-1">📷 Second Image / Secondary Diagram URL (Optional)</label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-xs font-bold text-purple-400">📷 Second Image / Secondary Diagram URL (Optional)</label>
+                    <label htmlFor="secondary-diagram-upload" className="text-[11px] text-purple-400 hover:underline cursor-pointer flex items-center gap-1 font-bold">
+                      <UploadCloud className="w-3.5 h-3.5" /> Upload 2nd Image
+                    </label>
+                    <input
+                      type="file"
+                      id="secondary-diagram-upload"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        const url = await handleFileUpload(file, "image");
+                        if (url && editingLesson) {
+                          setEditingLesson({
+                            ...editingLesson,
+                            lesson: { ...editingLesson.lesson, imageUrl2: url }
+                          });
+                        }
+                      }}
+                    />
+                  </div>
                   <input
                     type="text"
                     value={editingLesson.lesson.imageUrl2 || ""}
-                    onChange={e => setEditingLesson({ ...editingLesson, lesson: { ...editingLesson.lesson, imageUrl2: e.target.value, type: "image" } })}
-                    className="w-full bg-card border border-purple-500/30 rounded-xl px-4 py-2.5 text-xs font-medium text-text outline-none focus:border-purple-500"
-                    placeholder="https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5 (Optional)"
+                    onChange={e => setEditingLesson({ ...editingLesson, lesson: { ...editingLesson.lesson, imageUrl2: e.target.value } })}
+                    className="w-full bg-card border border-purple-500/30 rounded-xl px-4 py-2.5 text-xs font-medium text-text outline-none focus:border-purple-500 font-mono"
+                    placeholder="https://images.unsplash.com/... or click Upload 2nd Image above"
                   />
                 </div>
+
                 {(editingLesson.lesson.imageUrl1 || editingLesson.lesson.imageUrl2) && (
                   <div className="grid grid-cols-2 gap-3 pt-2">
                     {editingLesson.lesson.imageUrl1 && (
@@ -3696,6 +3934,7 @@ export default function InstructorDashboard() {
                       <div className="space-y-1">
                         <span className="text-[10px] font-bold text-purple-400 uppercase">2nd Image</span>
                         <div className="h-28 rounded-xl overflow-hidden border border-purple-500/30 bg-black/40 relative">
+                          {/* eslint-disable-next-html-element-suppression */}
                           <img src={editingLesson.lesson.imageUrl2} alt="2nd preview" className="w-full h-full object-cover" />
                         </div>
                       </div>
@@ -3705,18 +3944,372 @@ export default function InstructorDashboard() {
               </div>
             )}
 
+            {/* TAB 7: ARTICLE / READING NOTES */}
+            {editingLesson.tab === "article" && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <div className="flex items-center gap-2">
+                    <FileText className="w-5 h-5 text-cyan-400" />
+                    <div>
+                      <h4 className="font-bold text-sm text-text">Lesson Article, Theory & Study Explanation</h4>
+                      <p className="text-[11px] text-subtext">Students will read this in-depth guide directly in their learning dashboard.</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {/* Upload Pre-written Article / Markdown file */}
+                    <input
+                      type="file"
+                      id="article-file-upload"
+                      accept=".md,.txt"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        const reader = new FileReader();
+                        reader.onload = (evt) => {
+                          const content = evt.target?.result as string;
+                          if (content && editingLesson) {
+                            setEditingLesson({
+                              ...editingLesson,
+                              lesson: {
+                                ...editingLesson.lesson,
+                                articleContent: content
+                              }
+                            });
+                            setToast({ message: `Imported ${file.name} into article!`, type: "success" });
+                          }
+                        };
+                        reader.readAsText(file);
+                      }}
+                    />
+                    <label
+                      htmlFor="article-file-upload"
+                      className="px-3 py-1.5 bg-card hover:bg-card/80 text-subtext hover:text-text border border-card rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer"
+                      title="Upload .md or .txt notes from your computer"
+                    >
+                      <UploadCloud className="w-3.5 h-3.5 text-cyan-400" />
+                      <span>Upload Notes (.md/.txt)</span>
+                    </label>
+
+                    <button
+                      type="button"
+                      disabled={articleAiGenerating}
+                      onClick={generateAiArticleForLesson}
+                      className="px-3 py-1.5 bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-400 border border-cyan-500/30 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm cursor-pointer disabled:opacity-50"
+                    >
+                      {articleAiGenerating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
+                      <span>✨ AI Write Study Guide</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setArticlePreviewMode(!articlePreviewMode)}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer flex items-center gap-1.5 ${
+                        articlePreviewMode
+                          ? "bg-cyan-500 text-white border-cyan-500"
+                          : "bg-card hover:bg-card/80 text-subtext border-card"
+                      }`}
+                    >
+                      <Eye className="w-3.5 h-3.5" />
+                      <span>{articlePreviewMode ? "Edit Markdown" : "Student Reading View"}</span>
+                    </button>
+                    {editingLesson.lesson.articleContent?.trim() && (
+                      <button
+                        type="button"
+                        onClick={() => setEditingLesson({ ...editingLesson, lesson: { ...editingLesson.lesson, articleContent: "" } })}
+                        className="text-xs text-rose-400 hover:underline ml-1"
+                      >
+                        Clear
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Markdown Toolbar (when editing) */}
+                {!articlePreviewMode && (
+                  <div className="flex items-center gap-1.5 flex-wrap p-2 bg-card/60 border border-card rounded-xl text-[11px] text-subtext">
+                    <span className="font-extrabold text-[10px] uppercase text-subtext/60 mr-1">Quick Format:</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const cur = editingLesson.lesson.articleContent || "";
+                        setEditingLesson({ ...editingLesson, lesson: { ...editingLesson.lesson, articleContent: `${cur}\n\n## New Section Heading\n` } });
+                      }}
+                      className="px-2 py-1 bg-background hover:bg-card border border-card rounded-lg text-text font-bold"
+                    >
+                      + ## Heading
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setArticleImagePanelOpen(!articleImagePanelOpen)}
+                      className={`px-2.5 py-1 rounded-lg font-bold flex items-center gap-1 transition-all cursor-pointer ${
+                        articleImagePanelOpen
+                          ? "bg-rose-500 text-white shadow-sm"
+                          : "bg-background hover:bg-card border border-card text-rose-400 hover:text-rose-300"
+                      }`}
+                    >
+                      <ImageIcon className="w-3.5 h-3.5" /> + 🖼 Insert Image
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const cur = editingLesson.lesson.articleContent || "";
+                        setEditingLesson({ ...editingLesson, lesson: { ...editingLesson.lesson, articleContent: `${cur}\n\`\`\`javascript\n// Code snippet\nconst result = true;\n\`\`\`\n` } });
+                      }}
+                      className="px-2 py-1 bg-background hover:bg-card border border-card rounded-lg text-emerald-400 font-mono font-bold"
+                    >
+                      + &lt;/&gt; Code Block
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const cur = editingLesson.lesson.articleContent || "";
+                        setEditingLesson({ ...editingLesson, lesson: { ...editingLesson.lesson, articleContent: `${cur}\n> **Key Takeaway**: Highlighted note for learners.\n` } });
+                      }}
+                      className="px-2 py-1 bg-background hover:bg-card border border-card rounded-lg text-cyan-400 font-bold"
+                    >
+                      + 💡 Callout Tip
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const cur = editingLesson.lesson.articleContent || "";
+                        setEditingLesson({ ...editingLesson, lesson: { ...editingLesson.lesson, articleContent: `${cur}\n- Key Point 1\n- Key Point 2\n- Key Point 3\n` } });
+                      }}
+                      className="px-2 py-1 bg-background hover:bg-card border border-card rounded-lg text-purple-400 font-bold"
+                    >
+                      + • Bullet List
+                    </button>
+                  </div>
+                )}
+
+                {/* Inline Image Inserter Tool */}
+                {articleImagePanelOpen && !articlePreviewMode && (
+                  <div className="p-4 bg-gradient-to-r from-rose-500/10 via-card to-card border border-rose-500/30 rounded-2xl space-y-3 animate-in fade-in">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <ImageIcon className="w-4 h-4 text-rose-400" />
+                        <span className="text-xs font-extrabold text-text">Insert Image / Diagram into Article</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setArticleImagePanelOpen(false)}
+                        className="text-subtext hover:text-text text-xs"
+                      >
+                        ✕
+                      </button>
+                    </div>
+
+                    {/* Image Upload Input */}
+                    <div className="p-3 bg-background/80 border border-dashed border-rose-500/30 rounded-xl text-center">
+                      <input
+                        type="file"
+                        id="article-image-file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          const url = await handleFileUpload(file, "image");
+                          if (url) {
+                            setArticleImageUrl(url);
+                            if (!articleImageCaption.trim()) {
+                              setArticleImageCaption(file.name.replace(/\.[^/.]+$/, ""));
+                            }
+                          }
+                        }}
+                      />
+                      <label
+                        htmlFor="article-image-file"
+                        className="cursor-pointer flex items-center justify-center gap-2 text-xs text-rose-400 font-bold hover:underline"
+                      >
+                        {uploadingTarget === "image" ? (
+                          <span className="flex items-center gap-1.5"><Loader2 className="w-4 h-4 animate-spin" /> Uploading Image...</span>
+                        ) : (
+                          <span className="flex items-center gap-1.5"><UploadCloud className="w-4 h-4" /> Click to Upload Image from Device</span>
+                        )}
+                      </label>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[10px] font-bold text-text mb-1">Image URL / Link *</label>
+                        <input
+                          type="text"
+                          value={articleImageUrl}
+                          onChange={e => setArticleImageUrl(e.target.value)}
+                          placeholder="https://images.unsplash.com/... or uploaded path"
+                          className="w-full bg-background border border-card rounded-xl px-3 py-2 text-xs text-text outline-none focus:border-rose-500 font-mono"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-text mb-1">Image Caption / Alt Text</label>
+                        <input
+                          type="text"
+                          value={articleImageCaption}
+                          onChange={e => setArticleImageCaption(e.target.value)}
+                          placeholder="e.g. Architecture Flowchart & Data Pipeline"
+                          className="w-full bg-background border border-card rounded-xl px-3 py-2 text-xs text-text outline-none focus:border-rose-500"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Quick Presets */}
+                    <div className="flex items-center gap-2 flex-wrap text-[10px]">
+                      <span className="text-subtext font-bold">Sample Presets:</span>
+                      {[
+                        { label: "Architecture Diagram", url: "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800&auto=format&fit=crop&q=60" },
+                        { label: "Code Flowchart", url: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&auto=format&fit=crop&q=60" },
+                        { label: "AI Neural Net", url: "https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=800&auto=format&fit=crop&q=60" },
+                        { label: "Tech Setup", url: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=800&auto=format&fit=crop&q=60" },
+                      ].map((preset) => (
+                        <button
+                          key={preset.label}
+                          type="button"
+                          onClick={() => {
+                            setArticleImageUrl(preset.url);
+                            setArticleImageCaption(preset.label);
+                          }}
+                          className="px-2 py-0.5 rounded-md bg-background hover:bg-card border border-card text-subtext hover:text-text font-medium cursor-pointer"
+                        >
+                          {preset.label}
+                        </button>
+                      ))}
+                    </div>
+
+                    {articleImageUrl && (
+                      <div className="flex items-center gap-3 p-2 bg-background rounded-xl border border-card">
+                        <div className="w-16 h-12 rounded-lg overflow-hidden border border-card bg-black/40 shrink-0">
+                          {/* eslint-disable-next-html-element-suppression */}
+                          <img src={articleImageUrl} alt="Preview" className="w-full h-full object-cover" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs font-bold text-text truncate">{articleImageCaption || "Embedded Image"}</p>
+                          <p className="text-[10px] text-subtext truncate font-mono">{articleImageUrl}</p>
+                        </div>
+                      </div>
+                    )}
+
+                    <button
+                      type="button"
+                      disabled={!articleImageUrl.trim()}
+                      onClick={() => {
+                        const caption = articleImageCaption.trim() || "Illustration Diagram";
+                        const imgMd = `\n\n![${caption}](${articleImageUrl.trim()})\n*Figure: ${caption}*\n\n`;
+                        const cur = editingLesson.lesson.articleContent || "";
+                        setEditingLesson({
+                          ...editingLesson,
+                          lesson: {
+                            ...editingLesson.lesson,
+                            articleContent: `${cur}${imgMd}`
+                          }
+                        });
+                        setArticleImageUrl("");
+                        setArticleImageCaption("");
+                        setArticleImagePanelOpen(false);
+                        setToast({ message: `Inserted image "${caption}" into article!`, type: "success" });
+                      }}
+                      className="w-full py-2 bg-rose-500 hover:bg-rose-400 disabled:opacity-40 text-white rounded-xl font-bold text-xs shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                    >
+                      <Plus className="w-4 h-4" /> Insert Image at Bottom of Article
+                    </button>
+                  </div>
+                )}
+
+                {/* Editor or Preview Mode */}
+                {articlePreviewMode ? (
+                  <div className="p-5 bg-card/40 border border-card rounded-2xl max-h-80 overflow-y-auto space-y-3 text-xs leading-relaxed text-text">
+                    <div className="flex items-center justify-between pb-2 border-b border-card text-[11px] text-subtext font-bold">
+                      <span className="text-cyan-400 flex items-center gap-1.5"><Eye className="w-3.5 h-3.5" /> Rendered Student Reading View</span>
+                      <span>📖 ~{Math.max(1, Math.round(((editingLesson.lesson.articleContent || "").split(/\s+/).length || 1) / 200))} min read</span>
+                    </div>
+                    {editingLesson.lesson.articleContent ? (
+                      <div className="space-y-3 font-sans">
+                        {editingLesson.lesson.articleContent.split("\n\n").map((block, bIdx) => {
+                          const imgMatch = block.match(/!\[(.*?)\]\((.*?)\)/);
+                          if (imgMatch) {
+                            const altText = imgMatch[1] || "Diagram";
+                            const srcUrl = imgMatch[2];
+                            const captionLine = block.split("\n").find(l => l.startsWith("*Figure:"));
+                            return (
+                              <div key={bIdx} className="my-4 p-2 bg-background border border-card rounded-2xl space-y-1.5 text-center shadow-sm">
+                                <div className="rounded-xl overflow-hidden max-h-72 bg-black/40 border border-card">
+                                  {/* eslint-disable-next-html-element-suppression */}
+                                  <img src={srcUrl} alt={altText} className="w-full h-auto max-h-72 object-contain mx-auto" />
+                                </div>
+                                <p className="text-[11px] text-subtext font-medium italic">
+                                  {captionLine ? captionLine.replace(/\*/g, "") : altText}
+                                </p>
+                              </div>
+                            );
+                          }
+                          if (block.startsWith("# ")) {
+                            return <h1 key={bIdx} className="text-xl font-extrabold text-text pt-2 pb-1 border-b border-card">{block.replace("# ", "")}</h1>;
+                          }
+                          if (block.startsWith("## ")) {
+                            return <h2 key={bIdx} className="text-base font-bold text-text pt-2 text-cyan-400">{block.replace("## ", "")}</h2>;
+                          }
+                          if (block.startsWith("### ")) {
+                            return <h3 key={bIdx} className="text-sm font-bold text-text pt-1 text-purple-400">{block.replace("### ", "")}</h3>;
+                          }
+                          if (block.startsWith("> ")) {
+                            return (
+                              <div key={bIdx} className="p-3 bg-cyan-500/10 border-l-4 border-cyan-500 rounded-r-xl text-xs text-text italic">
+                                {block.replace("> ", "")}
+                              </div>
+                            );
+                          }
+                          if (block.startsWith("```")) {
+                            const codeLines = block.replace(/```[a-z]*/g, "").trim();
+                            return (
+                              <pre key={bIdx} className="p-3 bg-background border border-card rounded-xl font-mono text-[11px] text-emerald-400 overflow-x-auto">
+                                {codeLines}
+                              </pre>
+                            );
+                          }
+                          return <p key={bIdx} className="text-text/90 leading-relaxed whitespace-pre-line">{block}</p>;
+                        })}
+                      </div>
+                    ) : (
+                      <p className="text-subtext/60 italic">No article text written yet. Click "Edit Markdown" to write content.</p>
+                    )}
+                  </div>
+                ) : (
+                  <div>
+                    <label className="block text-xs font-bold text-text mb-1 flex items-center justify-between">
+                      <span>Article & Explanation Content (Markdown Supported)</span>
+                      <span className="text-[11px] text-subtext font-medium">
+                        {(editingLesson.lesson.articleContent || "").split(/\s+/).filter(Boolean).length} words
+                      </span>
+                    </label>
+                    <textarea
+                      rows={9}
+                      value={editingLesson.lesson.articleContent || ""}
+                      onChange={e => setEditingLesson({ ...editingLesson, lesson: { ...editingLesson.lesson, articleContent: e.target.value } })}
+                      className="w-full bg-card border border-card rounded-xl p-4 text-xs font-mono text-text outline-none focus:border-cyan-500 leading-relaxed"
+                      placeholder={`# ${editingLesson.lesson.title}\n\n## 1. Overview\nExplain core theoretical concepts in depth for students to read along with video and coding exercises...\n\n## 2. Practical Explanation\nProvide step-by-step guidance, code samples, and architectural breakdowns...\n\n### Key Takeaways\n- Point 1\n- Point 2`}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Bottom Modal Action Buttons */}
-            <div className="flex items-center justify-end gap-2 pt-4 border-t border-card">
-              <button type="button" onClick={() => setEditingLesson(null)} className="px-5 py-2.5 bg-card text-subtext rounded-xl font-bold text-xs">
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={saveLessonDetails}
-                className="px-6 py-2.5 bg-primary hover:bg-primary/90 text-white font-extrabold text-xs rounded-xl shadow-lg shadow-primary/20 flex items-center gap-2"
-              >
-                <Save className="w-4 h-4" /> Save Lesson Content
-              </button>
+            <div className="flex items-center justify-between pt-4 border-t border-card">
+              <span className="text-xs text-subtext">
+                All attached materials will be saved to this topic.
+              </span>
+              <div className="flex items-center gap-2">
+                <button type="button" onClick={() => setEditingLesson(null)} className="px-5 py-2.5 bg-card text-subtext rounded-xl font-bold text-xs cursor-pointer">
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={saveLessonDetails}
+                  className="px-6 py-2.5 bg-primary hover:bg-primary/90 text-white font-extrabold text-xs rounded-xl shadow-lg shadow-primary/20 flex items-center gap-2 cursor-pointer transition-all hover:scale-[1.02]"
+                >
+                  <Save className="w-4 h-4" /> Save All Materials
+                </button>
+              </div>
             </div>
           </div>
         </div>

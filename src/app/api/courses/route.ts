@@ -35,20 +35,44 @@ export async function POST(req: Request) {
       }
     }
 
-    const { title, description, price } = await req.json();
+    const body = await req.json();
+    const { title, description, price, status, instructorId, modules } = body;
+
+    const courseStatus = session.role === "ADMIN" && status ? status : (session.role === "ADMIN" ? "APPROVED" : "PENDING");
+    const targetInstructorId = (session.role === "ADMIN" && instructorId) ? instructorId : session.id;
 
     const course = await prisma.course.create({
       data: {
         title,
-        description,
-        price: parseFloat(price),
-        instructorId: session.id,
-        status: "PENDING"
+        description: description || "",
+        price: parseFloat(price) || 0,
+        instructorId: targetInstructorId,
+        status: courseStatus,
+        modules: modules && Array.isArray(modules) && modules.length > 0 ? {
+          create: modules.map((m: any, mIdx: number) => ({
+            title: m.title || `Module ${mIdx + 1}`,
+            order: mIdx + 1,
+            lectures: m.lessons && Array.isArray(m.lessons) ? {
+              create: m.lessons.map((l: any, lIdx: number) => ({
+                title: typeof l === "string" ? l : (l.title || `Lesson ${lIdx + 1}`),
+                videoUrl: typeof l === "object" ? l.videoUrl || null : null,
+                order: lIdx + 1
+              }))
+            } : undefined
+          }))
+        } : undefined
+      },
+      include: {
+        modules: {
+          include: { lectures: true }
+        },
+        instructor: { select: { name: true, email: true } }
       }
     });
 
     return NextResponse.json({ success: true, course });
-  } catch (err) {
-    return NextResponse.json({ error: "Failed to create course" }, { status: 500 });
+  } catch (err: any) {
+    console.error("Course creation error:", err);
+    return NextResponse.json({ error: "Failed to create course", details: err?.message }, { status: 500 });
   }
 }

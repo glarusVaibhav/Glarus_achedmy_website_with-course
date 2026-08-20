@@ -32,12 +32,13 @@ export async function POST(req: Request) {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        model: "llama-3.3-70b-versatile",
+        model: "openai/gpt-oss-20b",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: `Generate a syllabus for: ${topic}` }
         ],
         temperature: 0.7,
+        max_tokens: 2048,
         response_format: { type: "json_object" }
       })
     });
