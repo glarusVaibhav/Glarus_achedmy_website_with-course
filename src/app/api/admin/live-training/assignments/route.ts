@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { getSession } from "@/lib/auth";
+import { emitDomainEvent } from "@/lib/notifications/eventDispatcher";
+import { DOMAIN_EVENT_TYPES } from "@/lib/notifications/events";
 
 export async function GET(req: Request) {
   try {
@@ -87,61 +89,144 @@ export async function POST(req: Request) {
 
     const body = await req.json();
     const {
-      type = "SESSION", // "COURSE" | "SESSION"
+      type = "SESSION", // "COURSE" | "SESSION" | "BULK_COURSE_PERMISSIONS" | "CHANGE_LEAD"
       liveCourseId,
       sessionId,
       instructorId,
+      targetInstructorId,
+      assignToAllSessions = true,
+      overwriteExisting = true,
+      reassignReason = "",
       permissions = {
         canView: true,
-        canEdit: false,
-        canEditAgenda: false,
-        canEditSchedule: false,
-        canEditResources: false,
-        canAddHomework: false,
-        canReschedule: false,
+        canEdit: true,
+        canEditAgenda: true,
+        canEditSchedule: true,
+        canEditResources: true,
+        canAddHomework: true,
+        canReschedule: true,
         canCancel: false,
         canManageAttendance: true,
         canManageRecording: true
       }
     } = body;
 
-    if (!instructorId || !liveCourseId) {
-      return NextResponse.json({ error: "Instructor ID and Live Course ID are required" }, { status: 400 });
-    }
-
-    const instructor = await prisma.user.findUnique({ where: { id: instructorId } });
-    if (!instructor) {
-      return NextResponse.json({ error: "Instructor not found" }, { status: 404 });
+    if (!liveCourseId) {
+      return NextResponse.json({ error: "Live Course ID is required" }, { status: 400 });
     }
 
     const course = await prisma.liveCourse.findUnique({
       where: { id: liveCourseId },
-      include: { sessions: true }
+      include: {
+        sessions: {
+          orderBy: { sessionNumber: "asc" }
+        },
+        leadInstructor: true
+      }
     });
 
     if (!course) {
-      return NextResponse.json({ error: "Course not found" }, { status: 404 });
+      return NextResponse.json({ error: "Live Course not found" }, { status: 404 });
     }
 
-    if (type === "COURSE") {
-      // Assign lead instructor to course
+    // ─────────────────────────────────────────────────────────────
+    // CASE 1: BULK PERMISSION UPDATE ACROSS ALL SESSIONS OF A COURSE
+    // ─────────────────────────────────────────────────────────────
+    if (type === "BULK_COURSE_PERMISSIONS" || type === "COURSE_PERMISSIONS") {
+      const whereCondition: any = { liveCourseId };
+      if (targetInstructorId && targetInstructorId !== "ALL") {
+        whereCondition.instructorId = targetInstructorId;
+      }
+
+      // Update all session assignments for this course
+      const updatedBatch = await prisma.sessionAssignment.updateMany({
+        where: whereCondition,
+        data: {
+          canView: permissions.canView ?? true,
+          canEdit: permissions.canEdit ?? true,
+          canEditAgenda: permissions.canEditAgenda ?? true,
+          canEditSchedule: permissions.canEditSchedule ?? false,
+          canEditResources: permissions.canEditResources ?? true,
+          canAddHomework: permissions.canAddHomework ?? true,
+          canReschedule: permissions.canReschedule ?? false,
+          canCancel: permissions.canCancel ?? false,
+          canManageAttendance: permissions.canManageAttendance ?? true,
+          canManageRecording: permissions.canManageRecording ?? true
+        }
+      });
+
+      // Audit Log
+      await prisma.auditLog.create({
+        data: {
+          adminId: session.id,
+          action: `Admin updated permissions for all sessions in Live Course: "${course.title}"`,
+          details: `Updated ${updatedBatch.count} session assignments. canEdit=${permissions.canEdit}, canEditSchedule=${permissions.canEditSchedule}, canReschedule=${permissions.canReschedule}`
+        }
+      });
+
+      // Notify unique instructors in this course via Domain Event
+      const allCourseAssignments = await prisma.sessionAssignment.findMany({
+        where: whereCondition,
+        select: { id: true, instructorId: true },
+        distinct: ["instructorId"]
+      });
+
+      for (const item of allCourseAssignments) {
+        await emitDomainEvent({
+          eventType: DOMAIN_EVENT_TYPES.PERMISSIONS_UPDATED,
+          actorId: session.id,
+          payload: {
+            assignmentId: item.id,
+            liveCourseId: course.id,
+            targetTitle: course.title,
+            instructorId: item.instructorId,
+            permissions,
+          },
+        });
+      }
+
+      return NextResponse.json({
+        success: true,
+        message: `Updated permissions for ${updatedBatch.count} session assignments in "${course.title}"`,
+        count: updatedBatch.count
+      });
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // CASE 2: ASSIGN LEAD INSTRUCTOR / CHANGE LEAD & APPLY TO SESSIONS
+    // ─────────────────────────────────────────────────────────────
+    if (type === "COURSE" || type === "CHANGE_LEAD") {
+      if (!instructorId) {
+        return NextResponse.json({ error: "Instructor ID is required" }, { status: 400 });
+      }
+
+      const instructor = await prisma.user.findUnique({ where: { id: instructorId } });
+      if (!instructor) {
+        return NextResponse.json({ error: "Instructor not found" }, { status: 404 });
+      }
+
+      // Update lead instructor on the Live Course record
       await prisma.liveCourse.update({
         where: { id: liveCourseId },
         data: { leadInstructorId: instructorId }
       });
 
       // Upsert course-level assignment
+      await prisma.sessionAssignment.deleteMany({
+        where: { liveCourseId, sessionId: null, instructorId }
+      });
+
       const courseAssignment = await prisma.sessionAssignment.create({
         data: {
           liveCourseId,
           instructorId,
           canView: permissions.canView ?? true,
-          canEdit: permissions.canEdit ?? false,
-          canEditAgenda: permissions.canEditAgenda ?? false,
-          canEditSchedule: permissions.canEditSchedule ?? false,
-          canEditResources: permissions.canEditResources ?? false,
-          canAddHomework: permissions.canAddHomework ?? false,
-          canReschedule: permissions.canReschedule ?? false,
+          canEdit: permissions.canEdit ?? true,
+          canEditAgenda: permissions.canEditAgenda ?? true,
+          canEditSchedule: permissions.canEditSchedule ?? true,
+          canEditResources: permissions.canEditResources ?? true,
+          canAddHomework: permissions.canAddHomework ?? true,
+          canReschedule: permissions.canReschedule ?? true,
           canCancel: permissions.canCancel ?? false,
           canManageAttendance: permissions.canManageAttendance ?? true,
           canManageRecording: permissions.canManageRecording ?? true,
@@ -149,123 +234,160 @@ export async function POST(req: Request) {
         }
       });
 
-      // Also assign to all sessions in this course
-      for (const sess of course.sessions) {
-        await prisma.sessionAssignment.deleteMany({
-          where: { sessionId: sess.id, instructorId }
-        });
-
-        await prisma.sessionAssignment.create({
-          data: {
-            sessionId: sess.id,
-            liveCourseId,
-            instructorId,
-            canView: permissions.canView ?? true,
-            canEdit: permissions.canEdit ?? false,
-            canEditAgenda: permissions.canEditAgenda ?? false,
-            canEditSchedule: permissions.canEditSchedule ?? false,
-            canEditResources: permissions.canEditResources ?? false,
-            canAddHomework: permissions.canAddHomework ?? false,
-            canReschedule: permissions.canReschedule ?? false,
-            canCancel: permissions.canCancel ?? false,
-            canManageAttendance: permissions.canManageAttendance ?? true,
-            canManageRecording: permissions.canManageRecording ?? true,
-            assignedBy: session.name || "Super Admin"
+      // If assignToAllSessions is true, assign to all sessions of this class
+      if (assignToAllSessions && course.sessions.length > 0) {
+        for (const sess of course.sessions) {
+          if (overwriteExisting) {
+            // Remove previous assignments for this session to make the lead the dedicated instructor
+            await prisma.sessionAssignment.deleteMany({
+              where: { sessionId: sess.id }
+            });
+          } else {
+            // Only remove if this instructor already had an assignment
+            await prisma.sessionAssignment.deleteMany({
+              where: { sessionId: sess.id, instructorId }
+            });
           }
-        });
+
+          // Create new session assignment for the lead instructor
+          await prisma.sessionAssignment.create({
+            data: {
+              sessionId: sess.id,
+              liveCourseId,
+              instructorId,
+              canView: permissions.canView ?? true,
+              canEdit: permissions.canEdit ?? true,
+              canEditAgenda: permissions.canEditAgenda ?? true,
+              canEditSchedule: permissions.canEditSchedule ?? true,
+              canEditResources: permissions.canEditResources ?? true,
+              canAddHomework: permissions.canAddHomework ?? true,
+              canReschedule: permissions.canReschedule ?? true,
+              canCancel: permissions.canCancel ?? false,
+              canManageAttendance: permissions.canManageAttendance ?? true,
+              canManageRecording: permissions.canManageRecording ?? true,
+              assignedBy: session.name || "Super Admin"
+            }
+          });
+        }
       }
 
-      await prisma.notification.create({
-        data: {
-          userId: instructorId,
-          type: "COURSE_ASSIGNED",
-          message: `You were assigned as lead instructor for the entire live course: "${course.title}". (${course.sessions.length} sessions)`
-        }
+      await emitDomainEvent({
+        eventType: DOMAIN_EVENT_TYPES.LIVE_COURSE_ASSIGNED,
+        actorId: session.id,
+        payload: {
+          liveCourseId: course.id,
+          liveCourseTitle: course.title,
+          instructorId,
+          assignedBy: session.name || "Super Admin",
+          totalSessions: course.sessions.length,
+        },
       });
 
       await prisma.auditLog.create({
         data: {
           adminId: session.id,
-          action: `Admin assigned ${instructor.name} to entire Live Course: "${course.title}"`,
-          details: `Granted permissions: canEdit=${permissions.canEdit}, canReschedule=${permissions.canReschedule}`
+          action: `Admin assigned ${instructor.name} as Lead Instructor for "${course.title}"`,
+          details: `Assigned to all ${course.sessions.length} sessions: ${assignToAllSessions}. Overwrite: ${overwriteExisting}. Reason: ${reassignReason || "Lead mentor assignment"}. Permissions: canEdit=${permissions.canEdit}`
         }
       });
 
-      return NextResponse.json({ success: true, assignment: courseAssignment });
-    } else {
-      // Individual session assignment
-      if (!sessionId) {
-        return NextResponse.json({ error: "Session ID is required for session assignment" }, { status: 400 });
-      }
-
-      const targetSession = await prisma.liveSession.findUnique({ where: { id: sessionId } });
-      if (!targetSession) {
-        return NextResponse.json({ error: "Session not found" }, { status: 404 });
-      }
-
-      // Check if already assigned
-      const existing = await prisma.sessionAssignment.findFirst({
-        where: { sessionId, instructorId }
+      return NextResponse.json({
+        success: true,
+        message: `Lead mentor ${instructor.name} successfully assigned to "${course.title}" and all sessions!`,
+        assignment: courseAssignment
       });
-
-      let assignment;
-      if (existing) {
-        assignment = await prisma.sessionAssignment.update({
-          where: { id: existing.id },
-          data: {
-            canView: permissions.canView ?? true,
-            canEdit: permissions.canEdit ?? false,
-            canEditAgenda: permissions.canEditAgenda ?? false,
-            canEditSchedule: permissions.canEditSchedule ?? false,
-            canEditResources: permissions.canEditResources ?? false,
-            canAddHomework: permissions.canAddHomework ?? false,
-            canReschedule: permissions.canReschedule ?? false,
-            canCancel: permissions.canCancel ?? false,
-            canManageAttendance: permissions.canManageAttendance ?? true,
-            canManageRecording: permissions.canManageRecording ?? true,
-            assignedBy: session.name || "Super Admin",
-            assignedAt: new Date()
-          }
-        });
-      } else {
-        assignment = await prisma.sessionAssignment.create({
-          data: {
-            sessionId,
-            liveCourseId,
-            instructorId,
-            canView: permissions.canView ?? true,
-            canEdit: permissions.canEdit ?? false,
-            canEditAgenda: permissions.canEditAgenda ?? false,
-            canEditSchedule: permissions.canEditSchedule ?? false,
-            canEditResources: permissions.canEditResources ?? false,
-            canAddHomework: permissions.canAddHomework ?? false,
-            canReschedule: permissions.canReschedule ?? false,
-            canCancel: permissions.canCancel ?? false,
-            canManageAttendance: permissions.canManageAttendance ?? true,
-            canManageRecording: permissions.canManageRecording ?? true,
-            assignedBy: session.name || "Super Admin"
-          }
-        });
-      }
-
-      await prisma.notification.create({
-        data: {
-          userId: instructorId,
-          type: "SESSION_ASSIGNED",
-          message: `You were assigned to Live Session ${targetSession.sessionNumber}: "${targetSession.title}" in course "${course.title}".`
-        }
-      });
-
-      await prisma.auditLog.create({
-        data: {
-          adminId: session.id,
-          action: `Admin assigned ${instructor.name} to Session ${targetSession.sessionNumber}: "${targetSession.title}"`,
-          details: `Course: ${course.title}. Permissions: canEdit=${permissions.canEdit}, canEditAgenda=${permissions.canEditAgenda}`
-        }
-      });
-
-      return NextResponse.json({ success: true, assignment });
     }
+
+    // ─────────────────────────────────────────────────────────────
+    // CASE 3: INDIVIDUAL SESSION ASSIGNMENT
+    // ─────────────────────────────────────────────────────────────
+    if (!sessionId) {
+      return NextResponse.json({ error: "Session ID is required for session assignment" }, { status: 400 });
+    }
+
+    if (!instructorId) {
+      return NextResponse.json({ error: "Instructor ID is required" }, { status: 400 });
+    }
+
+    const instructor = await prisma.user.findUnique({ where: { id: instructorId } });
+    if (!instructor) {
+      return NextResponse.json({ error: "Instructor not found" }, { status: 404 });
+    }
+
+    const targetSession = await prisma.liveSession.findUnique({ where: { id: sessionId } });
+    if (!targetSession) {
+      return NextResponse.json({ error: "Session not found" }, { status: 404 });
+    }
+
+    const existing = await prisma.sessionAssignment.findFirst({
+      where: { sessionId, instructorId }
+    });
+
+    let assignment;
+    if (existing) {
+      assignment = await prisma.sessionAssignment.update({
+        where: { id: existing.id },
+        data: {
+          canView: permissions.canView ?? true,
+          canEdit: permissions.canEdit ?? true,
+          canEditAgenda: permissions.canEditAgenda ?? true,
+          canEditSchedule: permissions.canEditSchedule ?? false,
+          canEditResources: permissions.canEditResources ?? true,
+          canAddHomework: permissions.canAddHomework ?? true,
+          canReschedule: permissions.canReschedule ?? false,
+          canCancel: permissions.canCancel ?? false,
+          canManageAttendance: permissions.canManageAttendance ?? true,
+          canManageRecording: permissions.canManageRecording ?? true,
+          assignedBy: session.name || "Super Admin",
+          assignedAt: new Date()
+        }
+      });
+    } else {
+      assignment = await prisma.sessionAssignment.create({
+        data: {
+          sessionId,
+          liveCourseId,
+          instructorId,
+          canView: permissions.canView ?? true,
+          canEdit: permissions.canEdit ?? true,
+          canEditAgenda: permissions.canEditAgenda ?? true,
+          canEditSchedule: permissions.canEditSchedule ?? false,
+          canEditResources: permissions.canEditResources ?? true,
+          canAddHomework: permissions.canAddHomework ?? true,
+          canReschedule: permissions.canReschedule ?? false,
+          canCancel: permissions.canCancel ?? false,
+          canManageAttendance: permissions.canManageAttendance ?? true,
+          canManageRecording: permissions.canManageRecording ?? true,
+          assignedBy: session.name || "Super Admin"
+        }
+      });
+    }
+
+    await emitDomainEvent({
+      eventType: DOMAIN_EVENT_TYPES.LIVE_SESSION_ASSIGNED,
+      actorId: session.id,
+      payload: {
+        sessionId: targetSession.id,
+        sessionTitle: targetSession.title,
+        liveCourseId: course.id,
+        liveCourseTitle: course.title,
+        instructorId,
+        sessionNumber: targetSession.sessionNumber,
+        date: targetSession.date,
+        startTime: targetSession.startTime,
+        assignedBy: session.name || "Super Admin",
+      },
+    });
+
+    await prisma.auditLog.create({
+      data: {
+        adminId: session.id,
+        action: `Admin assigned ${instructor.name} to Session ${targetSession.sessionNumber}: "${targetSession.title}"`,
+        details: `Course: ${course.title}. Permissions: canEdit=${permissions.canEdit}, canEditAgenda=${permissions.canEditAgenda}`
+      }
+    });
+
+    return NextResponse.json({ success: true, assignment });
   } catch (error: any) {
     console.error("Admin Create Assignment Error:", error);
     return NextResponse.json({ error: error.message || "Failed to create assignment" }, { status: 500 });
@@ -282,20 +404,50 @@ export async function PUT(req: Request) {
     const body = await req.json();
     const {
       assignmentId,
+      liveCourseId,
       newInstructorId,
       reassignReason,
       permissions
     } = body;
 
+    // Bulk Course Permissions Update via PUT
+    if (liveCourseId && permissions && !assignmentId) {
+      const updated = await prisma.sessionAssignment.updateMany({
+        where: { liveCourseId },
+        data: {
+          canView: permissions.canView ?? true,
+          canEdit: permissions.canEdit ?? true,
+          canEditAgenda: permissions.canEditAgenda ?? true,
+          canEditSchedule: permissions.canEditSchedule ?? false,
+          canEditResources: permissions.canEditResources ?? true,
+          canAddHomework: permissions.canAddHomework ?? true,
+          canReschedule: permissions.canReschedule ?? false,
+          canCancel: permissions.canCancel ?? false,
+          canManageAttendance: permissions.canManageAttendance ?? true,
+          canManageRecording: permissions.canManageRecording ?? true
+        }
+      });
+
+      await prisma.auditLog.create({
+        data: {
+          adminId: session.id,
+          action: `Admin updated permissions for all sessions in Live Course ID: ${liveCourseId}`,
+          details: `Updated ${updated.count} assignments.`
+        }
+      });
+
+      return NextResponse.json({ success: true, count: updated.count });
+    }
+
     if (!assignmentId) {
-      return NextResponse.json({ error: "Assignment ID is required" }, { status: 400 });
+      return NextResponse.json({ error: "Assignment ID or Live Course ID is required" }, { status: 400 });
     }
 
     const currentAssignment = await prisma.sessionAssignment.findUnique({
       where: { id: assignmentId },
       include: {
         instructor: true,
-        session: true,
+        session: { include: { liveCourse: true } },
         liveCourse: true
       }
     });
@@ -344,23 +496,33 @@ export async function PUT(req: Request) {
         });
       }
 
-      // Notify old instructor
-      await prisma.notification.create({
-        data: {
-          userId: currentAssignment.instructorId,
-          type: "INSTRUCTOR_REASSIGNED",
-          message: `Your assignment for ${currentAssignment.session ? `Live Session "${currentAssignment.session.title}"` : `Live Course "${currentAssignment.liveCourse?.title}"`} was reassigned to ${newInstructor.name}.`
-        }
-      });
-
-      // Notify new instructor
-      await prisma.notification.create({
-        data: {
-          userId: newInstructorId,
-          type: "SESSION_ASSIGNED",
-          message: `You were assigned to ${currentAssignment.session ? `Live Session "${currentAssignment.session.title}"` : `Live Course "${currentAssignment.liveCourse?.title}"`}.`
-        }
-      });
+      // Notify new instructor via Domain Event
+      if (currentAssignment.sessionId && currentAssignment.session) {
+        await emitDomainEvent({
+          eventType: DOMAIN_EVENT_TYPES.LIVE_SESSION_ASSIGNED,
+          actorId: session.id,
+          payload: {
+            sessionId: currentAssignment.sessionId,
+            sessionTitle: currentAssignment.session.title,
+            liveCourseId: currentAssignment.liveCourseId || "",
+            liveCourseTitle: currentAssignment.session.liveCourse?.title || "",
+            instructorId: newInstructorId,
+            sessionNumber: currentAssignment.session.sessionNumber,
+            assignedBy: session.name || "Super Admin",
+          },
+        });
+      } else if (currentAssignment.liveCourseId && currentAssignment.liveCourse) {
+        await emitDomainEvent({
+          eventType: DOMAIN_EVENT_TYPES.LIVE_COURSE_ASSIGNED,
+          actorId: session.id,
+          payload: {
+            liveCourseId: currentAssignment.liveCourseId,
+            liveCourseTitle: currentAssignment.liveCourse.title,
+            instructorId: newInstructorId,
+            assignedBy: session.name || "Super Admin",
+          },
+        });
+      }
 
       // Log to Audit Log
       await prisma.auditLog.create({

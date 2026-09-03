@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { getSession } from "@/lib/auth";
+import { emitDomainEvent } from "@/lib/notifications/eventDispatcher";
+import { DOMAIN_EVENT_TYPES } from "@/lib/notifications/events";
 
 // GET — Fetch all instructor approval applications for admin
 export async function GET() {
@@ -17,6 +19,8 @@ export async function GET() {
             id: true,
             name: true,
             email: true,
+            role: true,
+            status: true,
             createdAt: true,
           },
         },
@@ -24,7 +28,21 @@ export async function GET() {
       orderBy: { createdAt: "desc" },
     });
 
-    return NextResponse.json({ approvals });
+    const instructors = await prisma.user.findMany({
+      where: {
+        OR: [
+          { role: "INSTRUCTOR" },
+          { instructorApproval: { isNot: null } }
+        ]
+      },
+      include: {
+        instructorApproval: true,
+        instructorProfile: true,
+      },
+      orderBy: { createdAt: "desc" }
+    });
+
+    return NextResponse.json({ approvals, instructors });
   } catch (err) {
     console.error("Admin approvals GET error:", err);
     return NextResponse.json({ error: "Failed to fetch approvals" }, { status: 500 });
@@ -73,6 +91,25 @@ export async function POST(request: Request) {
       },
     });
 
+    // If approved, ensure user has INSTRUCTOR role
+    if (decision === "APPROVED") {
+      await prisma.user.update({
+        where: { id: instructorId },
+        data: { role: "INSTRUCTOR" }
+      });
+    }
+
+    // Emit Domain Event for Notification Engine
+    await emitDomainEvent({
+      eventType: DOMAIN_EVENT_TYPES.VERIFICATION_APPROVED,
+      actorId: session.id,
+      payload: {
+        instructorId,
+        decision,
+        feedback: feedback || null,
+      },
+    });
+
     // Log the admin action
     await prisma.auditLog.create({
       data: {
@@ -92,3 +129,4 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Failed to process approval" }, { status: 500 });
   }
 }
+

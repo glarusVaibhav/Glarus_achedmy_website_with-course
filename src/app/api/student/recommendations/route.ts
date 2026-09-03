@@ -21,7 +21,10 @@ export async function GET() {
 
     const recommendations = await prisma.course.findMany({
       where: {
-        status: "APPROVED",
+        OR: [
+          { status: "PUBLISHED" },
+          { isPublished: true }
+        ],
         id: { notIn: enrolledIds },
       },
       take: 3,

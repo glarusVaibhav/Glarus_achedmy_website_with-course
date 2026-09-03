@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { 
   User, 
@@ -23,10 +23,17 @@ export default function SettingsPage() {
   const { user } = useAuth();
   
   const [name, setName] = useState(user?.name || "");
-  const [email] = useState(user?.email || "");
+  const [email, setEmail] = useState(user?.email || "");
   const [bio, setBio] = useState("Lifelong learner & tech enthusiast.");
   const [headline, setHeadline] = useState("");
   const [isSaved, setIsSaved] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      if (user.name) setName(user.name);
+      if (user.email) setEmail(user.email);
+    }
+  }, [user]);
 
   // Tab state
   const [activeTab, setActiveTab] = useState<"profile" | "security" | "notifications">("profile");

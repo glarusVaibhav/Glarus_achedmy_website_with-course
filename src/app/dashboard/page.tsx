@@ -69,7 +69,20 @@ export default function StudentDashboard() {
   const [liveClasses, setLiveClasses] = useState<LiveClassItem[]>([]);
   const [selfPaced, setSelfPaced] = useState<SelfPacedCourse[]>([]);
   const [certificates, setCertificates] = useState<CertificateData[]>([]);
-  const [stats, setStats] = useState({ total: 0, inProgress: 0, completed: 0 });
+  const [stats, setStats] = useState({
+    total: 0,
+    selfPacedCount: 0,
+    liveCoursesCount: 0,
+    inProgress: 0,
+    completed: 0,
+    streak: 0,
+    bestStreak: 0,
+    totalHours: 0,
+    selfPacedHours: 0,
+    liveHours: 0,
+    weeklyHoursAdded: 0,
+    totalXP: 0
+  });
   const [loading, setLoading] = useState(true);
   const [isCertModalOpen, setIsCertModalOpen] = useState(false);
   const [selectedAgendaClass, setSelectedAgendaClass] = useState<LiveClassItem | null>(null);
@@ -100,32 +113,21 @@ export default function StudentDashboard() {
         ]);
 
         const fetchedSelfPaced: SelfPacedCourse[] = spData.courses || [];
-        const hasFlagship = fetchedSelfPaced.some(
-          (c) =>
-            c.id === "Generative_AI_Application_Engineer" ||
-            c.id === "2" ||
-            c.id === "course-1" ||
-            c.title.includes("Generative AI")
-        );
-
-        if (!hasFlagship) {
-          fetchedSelfPaced.unshift({
-            id: "Generative_AI_Application_Engineer",
-            title: "Generative AI Application Engineering",
-            instructor: "Alex Chen",
-            progress: 78,
-            totalLectures: 24,
-            completedLectures: 18,
-            lastWatchedLecture: "Module 4: RAG & Vector DBs",
-            status: "IN_PROGRESS",
-          });
-        }
-
-        const rawStats = dashData.stats || { total: 0, inProgress: 0, completed: 0 };
+        const rawStats = dashData.stats || {};
+        
         setStats({
-          total: Math.max(rawStats.total || 0, fetchedSelfPaced.length + (liveData.courses?.length || 0)),
-          inProgress: Math.max(rawStats.inProgress || 0, 1),
-          completed: rawStats.completed || 0,
+          total: rawStats.total ?? (fetchedSelfPaced.length + (liveData.courses?.length || 0)),
+          selfPacedCount: rawStats.selfPacedCount ?? fetchedSelfPaced.length,
+          liveCoursesCount: rawStats.liveCoursesCount ?? (liveData.courses?.length || 0),
+          inProgress: rawStats.inProgress ?? 0,
+          completed: rawStats.completed ?? 0,
+          streak: rawStats.streak ?? 0,
+          bestStreak: rawStats.bestStreak ?? 0,
+          totalHours: rawStats.totalHours ?? 0,
+          selfPacedHours: rawStats.selfPacedHours ?? 0,
+          liveHours: rawStats.liveHours ?? 0,
+          weeklyHoursAdded: rawStats.weeklyHoursAdded ?? 0,
+          totalXP: rawStats.totalXP ?? 0,
         });
 
         setLiveCourses(liveData.courses || []);
@@ -152,21 +154,21 @@ export default function StudentDashboard() {
 
   const selfPacedCount = selfPaced.length;
   const liveCoursesCount = liveCourses.length;
-  const totalCourses = Math.max(stats.total, selfPacedCount + liveCoursesCount);
+  const totalCourses = stats.total || (selfPacedCount + liveCoursesCount);
 
   const selfPacedInProgress = selfPaced.filter(
     (c) => (c.progress || 0) < 100
-  ).length || (selfPacedCount > 0 ? 1 : 0);
+  ).length;
 
   const liveCoursesInProgress = liveCoursesCount;
-  const totalInProgress = Math.max(stats.inProgress, selfPacedInProgress + liveCoursesInProgress);
+  const totalInProgress = stats.inProgress || (selfPacedInProgress + liveCoursesInProgress);
 
   const selfPacedCompleted = selfPaced.filter(
     (c) => (c.progress || 0) >= 100
   ).length;
 
   const liveCoursesCompleted = 0;
-  const totalCompleted = selfPacedCompleted + liveCoursesCompleted;
+  const totalCompleted = stats.completed || (selfPacedCompleted + liveCoursesCompleted);
 
   return (
     <StudentPortalLayout>
@@ -192,6 +194,39 @@ export default function StudentDashboard() {
               <p className="text-xs sm:text-sm text-subtext mt-1 font-medium">Welcome back. Let's pick up right where you left off.</p>
             </div>
           </div>
+
+          {/* ───────── New Student Onboarding Discovery Banner ───────── */}
+          {totalCourses === 0 && (
+            <div className="relative overflow-hidden rounded-2xl p-6 sm:p-8 bg-gradient-to-r from-purple-950/40 via-card to-indigo-950/40 border border-purple-500/30 shadow-xl">
+              <div className="max-w-2xl space-y-3 relative z-10">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/40 text-[11px] font-extrabold uppercase tracking-wider">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  New Student Onboarding
+                </div>
+                <h2 className="text-2xl sm:text-3xl font-black text-text leading-tight">
+                  Ready to master AI Engineering?
+                </h2>
+                <p className="text-xs sm:text-sm text-subtext leading-relaxed">
+                  You haven&apos;t enrolled in any courses or live cohorts yet. Explore our recommended career pathways below. Once you enroll, your live classrooms, video modules, and assignments will unlock immediately.
+                </p>
+                <div className="flex items-center gap-3 pt-2">
+                  <Link
+                    href="/courses"
+                    className="px-5 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-white font-bold text-xs transition-all shadow-md shadow-primary/20 flex items-center gap-2"
+                  >
+                    <span>Explore All Programs</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </Link>
+                  <Link
+                    href="/calendar"
+                    className="px-5 py-2.5 rounded-xl bg-card hover:bg-card/80 border border-border text-text font-bold text-xs transition-all flex items-center gap-2"
+                  >
+                    <span>Live Cohort Calendar</span>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 items-stretch">
             {/* Card 1: Enrolled Courses (Clickable Hub) */}
@@ -257,27 +292,27 @@ export default function StudentDashboard() {
               <div>
                 <div className="flex items-baseline justify-between">
                   <div className="text-xl sm:text-2xl font-black text-text">
-                    48.5 hrs
+                    {stats.totalHours.toFixed(1)} hrs
                   </div>
                   <span className="text-[11px] text-emerald-400 font-semibold">
-                    +6.2 hrs this week
+                    {stats.weeklyHoursAdded > 0 ? `+${stats.weeklyHoursAdded.toFixed(1)} hrs this week` : '0.0 hrs this week'}
                   </span>
                 </div>
                 <div className="text-[11px] text-subtext font-medium mt-1 flex items-center gap-1.5 flex-wrap">
                   <span className="text-amber-400 font-semibold flex items-center gap-1">
                     <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-                    28.5 hrs Self-Paced
+                    {stats.selfPacedHours.toFixed(1)} hrs Self-Paced
                   </span>
                   <span className="text-subtext/40">•</span>
                   <span className="text-orange-400 font-semibold flex items-center gap-1">
                     <span className="w-1.5 h-1.5 rounded-full bg-orange-400" />
-                    20.0 hrs Live
+                    {stats.liveHours.toFixed(1)} hrs Live
                   </span>
                 </div>
               </div>
             </div>
 
-            {/* Card 3: Active Streak (From Image 1) */}
+            {/* Card 3: Active Streak */}
             <div className="bg-card/60 border border-border/70 hover:border-orange-500/40 rounded-xl px-4 py-3 shadow-xs transition-all hover:shadow-sm relative overflow-hidden group flex flex-col justify-between">
               <div className="flex items-center justify-between mb-1.5">
                 <span className="text-subtext font-semibold text-[11px] tracking-wider uppercase">Active Streak</span>
@@ -287,11 +322,11 @@ export default function StudentDashboard() {
               </div>
               <div>
                 <div className="text-xl sm:text-2xl font-black text-orange-400 flex items-center gap-1.5">
-                  <span>5 Days</span>
+                  <span>{stats.streak} {stats.streak === 1 ? 'Day' : 'Days'}</span>
                   <Flame className="w-4 h-4 text-orange-400 fill-orange-400/30" />
                 </div>
                 <div className="text-[11px] text-subtext font-medium mt-0.5">
-                  Personal best: 14 days
+                  Personal best: {stats.bestStreak} {stats.bestStreak === 1 ? 'day' : 'days'}
                 </div>
               </div>
             </div>
@@ -479,14 +514,12 @@ export default function StudentDashboard() {
                       </div>
 
                       {isOngoing ? (
-                        <a
-                          href={item.meetingLink}
-                          target="_blank"
-                          rel="noreferrer"
+                        <Link
+                          href={`/live-classes/room/${item.id}`}
                           className="px-5 py-2 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all active:scale-95 shadow-md bg-red-600 hover:bg-red-500 text-white shadow-red-600/30 animate-pulse"
                         >
                           <Video className="w-4 h-4" /> Join Live Room
-                        </a>
+                        </Link>
                       ) : (
                         <button
                           disabled

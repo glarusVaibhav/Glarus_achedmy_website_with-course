@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -39,7 +39,9 @@ import {
   UserCheck,
   AlertTriangle,
   Copy,
-  ExternalLink
+  ExternalLink,
+  Briefcase,
+  Building2
 } from "lucide-react";
 
 export interface AISessionItem {
@@ -90,20 +92,41 @@ export interface LiveCourseFormData {
   targetAudience: string;
   thumbnailGradient: string;
   recordingAvailable: boolean;
-  attendanceTracking: boolean;
+  attendanceTracking?: boolean;
   visibility: string;
   leadInstructorId: string;
+  hasInternship: boolean;
+  internshipType: string;
+  internshipDuration: string;
+  internshipStipend: string;
+  internshipCompanyPartner: string;
+  internshipDescription: string;
 }
 
-const GRADIENT_OPTIONS = [
-  { label: "Purple Indigo", value: "from-purple-900 via-indigo-950 to-slate-950", border: "border-purple-500/40" },
-  { label: "Neon Emerald", value: "from-emerald-950 via-teal-950 to-slate-950", border: "border-emerald-500/40" },
-  { label: "Cyan Sky", value: "from-cyan-950 via-blue-950 to-slate-950", border: "border-cyan-500/40" },
-  { label: "Sunset Amber", value: "from-amber-950 via-orange-950 to-slate-950", border: "border-amber-500/40" },
-  { label: "Rose Violet", value: "from-rose-950 via-purple-950 to-slate-950", border: "border-rose-500/40" }
-];
-
 const DAYS_OF_WEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+
+const STARTER_PROMPTS = [
+  {
+    label: "🤖 Agentic AI Bootcamp",
+    prompt: "Create a 6-week live Generative AI & Autonomous Multi-Agent Systems Bootcamp for intermediate developers covering Transformers, LangGraph, ReAct loops, Multi-Agent Collaboration, and Capstone Deployment.",
+    sessions: 6
+  },
+  {
+    label: "⚡ Full-Stack Next.js 15",
+    prompt: "Create an 8-week production Next.js 15 App Router & Server Actions bootcamp covering PostgreSQL Prisma, Auth, Real-time WebSockets, and Cloud Deployments.",
+    sessions: 8
+  },
+  {
+    label: "🚀 LLM Fine-Tuning & RAG",
+    prompt: "Create a 10-session deep dive into Advanced Retrieval-Augmented Generation (RAG), vector databases, LoRA/QLoRA fine-tuning, and production evaluation.",
+    sessions: 10
+  },
+  {
+    label: "🛡️ Cloud DevOps & Kubernetes",
+    prompt: "Create a 6-session hands-on Cloud DevOps workshop covering Docker containerization, Kubernetes orchestration, CI/CD GitHub Actions, and Terraform IaC.",
+    sessions: 6
+  }
+];
 
 export default function AdminLiveCourseCreator() {
   const router = useRouter();
@@ -141,7 +164,13 @@ export default function AdminLiveCourseCreator() {
     recordingAvailable: true,
     attendanceTracking: true,
     visibility: "PUBLIC",
-    leadInstructorId: ""
+    leadInstructorId: "",
+    hasInternship: false,
+    internshipType: "Guaranteed Live Project Internship (Upon Completion)",
+    internshipDuration: "2 Months",
+    internshipStipend: "Paid (₹20,000 / month)",
+    internshipCompanyPartner: "Partner AI Startups & Tech Incubators",
+    internshipDescription: "Live cohort participants who complete all session assignments and capstone defense receive direct onboarding into a 2-month mentored industry internship."
   });
 
   // Prerequisites / Objectives / Tags inputs
@@ -172,6 +201,7 @@ export default function AdminLiveCourseCreator() {
     canManageAttendance: true,
     canManageRecording: true
   });
+  const [showAdvancedPermissions, setShowAdvancedPermissions] = useState(false);
 
   // Publishing & Saving state
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -191,6 +221,19 @@ export default function AdminLiveCourseCreator() {
     objectives?: string[];
     tags?: string[];
   } | null>(null);
+
+  // Post AI Generation Decision State (Sessions Only vs Sessions + Basic Info)
+  const [aiPostGenModalOpen, setAiPostGenModalOpen] = useState(false);
+  const [pendingAiCourseInfo, setPendingAiCourseInfo] = useState<{
+    title?: string;
+    shortDescription?: string;
+    description?: string;
+    targetAudience?: string;
+    prerequisites?: string[];
+    objectives?: string[];
+    tags?: string[];
+  } | null>(null);
+  const [pendingAiSessionsCount, setPendingAiSessionsCount] = useState(0);
 
   const handleGenerateOverviewAI = async () => {
     if (!formData.title.trim()) {
@@ -255,6 +298,31 @@ export default function AdminLiveCourseCreator() {
     setAiOverviewPreview(null);
   };
 
+  // Post AI Generation Decision Handlers
+  const handleKeepBasicInfoSessionsOnly = () => {
+    setAiPostGenModalOpen(false);
+    setSaveSuccessMsg(`Imported ${aiGeneratedSessions.length} live sessions. Your Course Basic Info was kept intact.`);
+    setTimeout(() => setSaveSuccessMsg(""), 4500);
+  };
+
+  const handleApplyAllAiCourseInfo = () => {
+    if (pendingAiCourseInfo) {
+      setFormData((prev) => ({
+        ...prev,
+        title: pendingAiCourseInfo.title || prev.title,
+        shortDescription: pendingAiCourseInfo.shortDescription || prev.shortDescription,
+        description: pendingAiCourseInfo.description || prev.description,
+        targetAudience: pendingAiCourseInfo.targetAudience || prev.targetAudience,
+        prerequisites: pendingAiCourseInfo.prerequisites?.length ? pendingAiCourseInfo.prerequisites : prev.prerequisites,
+        objectives: pendingAiCourseInfo.objectives?.length ? pendingAiCourseInfo.objectives : prev.objectives,
+        tags: pendingAiCourseInfo.tags?.length ? pendingAiCourseInfo.tags : prev.tags
+      }));
+    }
+    setAiPostGenModalOpen(false);
+    setSaveSuccessMsg(`Imported ${aiGeneratedSessions.length} live sessions & updated Course Basic Info with AI suggestions!`);
+    setTimeout(() => setSaveSuccessMsg(""), 4500);
+  };
+
   // Fetch instructors on load
   useEffect(() => {
     async function loadInstructors() {
@@ -276,17 +344,69 @@ export default function AdminLiveCourseCreator() {
     loadInstructors();
   }, []);
 
-  // Handle Day Toggle
+  // Handle Day Toggle (Automatically calculates session frequency from selected workshop days)
   const togglePreferredDay = (day: string) => {
     setFormData((prev) => {
       const exists = prev.preferredDays.includes(day);
-      if (exists) {
-        return { ...prev, preferredDays: prev.preferredDays.filter((d) => d !== day) };
-      } else {
-        return { ...prev, preferredDays: [...prev.preferredDays, day] };
-      }
+      const updatedDays = exists
+        ? prev.preferredDays.filter((d) => d !== day)
+        : [...prev.preferredDays, day];
+      const sessionFrequency = updatedDays.length > 0
+        ? `${updatedDays.length} session${updatedDays.length > 1 ? "s" : ""} per week (${updatedDays.join(", ")})`
+        : "Flexible Schedule";
+      return { ...prev, preferredDays: updatedDays, sessionFrequency };
     });
   };
+
+  // Calculate suggested sessions and calendar distribution based on startDate, endDate, and preferredDays
+  const calculatedScheduleMetrics = useMemo(() => {
+    if (!formData.startDate || !formData.endDate) {
+      return { totalSessions: 6, weeks: 6, sessionDates: [], targetDays: formData.preferredDays || ["Monday", "Wednesday"] };
+    }
+
+    const start = new Date(formData.startDate);
+    const end = new Date(formData.endDate);
+    if (isNaN(start.getTime()) || isNaN(end.getTime()) || end < start) {
+      return { totalSessions: 6, weeks: 6, sessionDates: [], targetDays: formData.preferredDays || ["Monday", "Wednesday"] };
+    }
+
+    const dayMap: Record<string, number> = {
+      Sunday: 0,
+      Monday: 1,
+      Tuesday: 2,
+      Wednesday: 3,
+      Thursday: 4,
+      Friday: 5,
+      Saturday: 6
+    };
+
+    const targetDays = formData.preferredDays && formData.preferredDays.length > 0 ? formData.preferredDays : ["Monday", "Wednesday"];
+    const targetDayIndices = targetDays.map((d) => dayMap[d]);
+
+    const sessionDates: string[] = [];
+    const current = new Date(start);
+
+    // Count matching days across the date range
+    let safety = 0;
+    while (current <= end && safety < 365) {
+      safety++;
+      if (targetDayIndices.includes(current.getDay())) {
+        sessionDates.push(current.toISOString().split("T")[0]);
+      }
+      current.setDate(current.getDate() + 1);
+    }
+
+    const diffDays = Math.max(1, Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)));
+    const weeks = Math.max(1, Math.round(diffDays / 7));
+    const totalSessions = sessionDates.length > 0 ? sessionDates.length : Math.max(2, weeks * targetDays.length);
+
+    return {
+      totalSessions,
+      weeks,
+      sessionDates,
+      targetDays
+    };
+  }, [formData.startDate, formData.endDate, formData.preferredDays]);
 
   // Add Item Helpers
   const addPrerequisite = () => {
@@ -452,24 +572,18 @@ export default function AdminLiveCourseCreator() {
         };
       });
 
-      // Update Form Data with AI Course Data
-      if (data.course) {
-        setFormData((prev) => ({
-          ...prev,
-          title: data.course.title || prev.title,
-          shortDescription: data.course.shortDescription || prev.shortDescription,
-          description: data.course.description || prev.description,
-          targetAudience: data.course.targetAudience || prev.targetAudience,
-          prerequisites: data.course.prerequisites?.length ? data.course.prerequisites : prev.prerequisites,
-          objectives: data.course.objectives?.length ? data.course.objectives : prev.objectives,
-          tags: data.course.tags?.length ? data.course.tags : prev.tags
-        }));
-      }
-
+      // Store generated sessions
       setAiGeneratedSessions(mergedSessions);
       setAiOriginalBackup(JSON.parse(JSON.stringify(mergedSessions)));
       setHasUnsavedAIChanges(true);
       setActiveSessionIndex(0);
+
+      // Check if AI generated course basic info (Ask user if they want sessions only or basic info too)
+      if (data.course && (data.course.title || data.course.description || data.course.objectives?.length)) {
+        setPendingAiCourseInfo(data.course);
+        setPendingAiSessionsCount(mergedSessions.length);
+        setAiPostGenModalOpen(true);
+      }
     } catch (err: any) {
       console.error(err);
       setErrorMessage(err.message || "Failed to generate with AI copilot.");
@@ -571,8 +685,8 @@ export default function AdminLiveCourseCreator() {
     }
   };
 
-  // Submit Handler (Save as Draft or Publish)
-  const handleSubmitLiveCourse = async (publishStatus: "DRAFT" | "PUBLISHED") => {
+  // Submit Handler (Save as Draft or Assign/Publish)
+  const handleSubmitLiveCourse = async (publishStatus: "DRAFT" | "ASSIGNED" | "PUBLISHED") => {
     if (!formData.title.trim()) {
       setErrorMessage("Please provide a course title in Step 1.");
       setCurrentStep(1);
@@ -609,7 +723,11 @@ export default function AdminLiveCourseCreator() {
 
       const result = await res.json();
       setPublishModalOpen(false);
-      setSaveSuccessMsg(`Live Course "${formData.title}" saved successfully as ${publishStatus}!`);
+      setSaveSuccessMsg(
+        publishStatus === "ASSIGNED"
+          ? `Live Course "${formData.title}" assigned to instructor successfully!`
+          : `Live Course "${formData.title}" saved successfully as ${publishStatus}!`
+      );
 
       setTimeout(() => {
         router.push(`/admin/live-training/courses/${result.course.id}`);
@@ -661,8 +779,8 @@ export default function AdminLiveCourseCreator() {
             disabled={isSubmitting}
             className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-bold transition-all shadow-lg shadow-purple-600/20 hover:scale-105 disabled:opacity-50"
           >
-            <Radio className="w-3.5 h-3.5" />
-            <span>Publish Live Course</span>
+            <UserCheck className="w-3.5 h-3.5" />
+            <span>Assign to Instructor</span>
           </button>
         </div>
       </div>
@@ -692,7 +810,7 @@ export default function AdminLiveCourseCreator() {
         {[
           { step: 1, label: "Basic Info", icon: FileText },
           { step: 2, label: "Schedule", icon: Calendar },
-          { step: 3, label: "AI Architect", icon: Sparkles },
+          { step: 3, label: "Sessions", icon: Sparkles },
           { step: 4, label: "Review Timeline", icon: Layers },
           { step: 5, label: "Instructor & Publish", icon: UserCheck }
         ].map((item) => {
@@ -827,27 +945,6 @@ export default function AdminLiveCourseCreator() {
                   className="w-full h-10 px-3.5 rounded-xl bg-background border border-white/10 text-text text-xs focus:outline-none focus:border-purple-500/50"
                 />
               </div>
-
-              {/* Thumbnail Gradient Selector */}
-              <div className="md:col-span-2 space-y-2">
-                <label className="text-xs font-bold text-text">Course Banner Theme / Gradient</label>
-                <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-                  {GRADIENT_OPTIONS.map((grad) => (
-                    <button
-                      key={grad.value}
-                      type="button"
-                      onClick={() => setFormData({ ...formData, thumbnailGradient: grad.value })}
-                      className={`h-14 rounded-xl bg-gradient-to-br ${grad.value} border-2 flex items-center justify-center p-2 text-left transition-all ${
-                        formData.thumbnailGradient === grad.value
-                          ? "border-purple-400 ring-2 ring-purple-500/30 scale-105"
-                          : "border-white/10 hover:border-white/30"
-                      }`}
-                    >
-                      <span className="text-[11px] font-bold text-white shadow-sm truncate">{grad.label}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
             </div>
           </div>
 
@@ -944,6 +1041,114 @@ export default function AdminLiveCourseCreator() {
                 ))}
               </div>
             </div>
+
+            {/* 💼 Live Cohort Internship & Hiring Partner Program */}
+            <div className="md:col-span-2 p-5 rounded-2xl bg-gradient-to-br from-card via-card/90 to-purple-950/20 border border-white/10 space-y-4 shadow-md">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0 shadow-inner">
+                    <Briefcase className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-sm font-bold text-text">Live Cohort Internship Program</h3>
+                      <span className="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[9px] font-black uppercase tracking-wider">
+                        Placement Perk
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-subtext mt-0.5">
+                      Pair this live training cohort with a guaranteed or performance-based industry project internship.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Internship Toggle */}
+                <label className="relative inline-flex items-center cursor-pointer select-none self-start sm:self-auto">
+                  <input
+                    type="checkbox"
+                    checked={formData.hasInternship}
+                    onChange={(e) => setFormData({ ...formData, hasInternship: e.target.checked })}
+                    className="sr-only peer"
+                  />
+                  <div className="w-12 h-6 bg-background peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600 border border-white/10" />
+                  <span className="ml-2.5 text-xs font-bold text-text">
+                    {formData.hasInternship ? "Internship Included" : "No Internship"}
+                  </span>
+                </label>
+              </div>
+
+              {/* Expandable Internship Configuration */}
+              {formData.hasInternship && (
+                <div className="pt-3 border-t border-white/10 grid grid-cols-1 sm:grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2 duration-200">
+                  {/* Internship Track / Model */}
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-text">Internship Opportunity Model *</label>
+                    <select
+                      value={formData.internshipType}
+                      onChange={(e) => setFormData({ ...formData, internshipType: e.target.value })}
+                      className="w-full bg-background border border-white/10 focus:border-purple-500 rounded-xl px-3.5 py-2 text-xs font-semibold text-text outline-none"
+                    >
+                      <option value="Guaranteed Live Project Internship (Upon Completion)">Guaranteed Live Project Internship (Upon Completion)</option>
+                      <option value="Performance-Based Internship (Top 20% Performers)">Performance-Based Internship (Top 20% Performers)</option>
+                      <option value="Direct Project Internship with Partner Startups">Direct Project Internship with Partner Startups</option>
+                      <option value="Virtual AI Research & Engineering Lab">Virtual AI Research & Engineering Lab</option>
+                      <option value="Paid Industry Fellowship">Paid Industry Fellowship</option>
+                    </select>
+                  </div>
+
+                  {/* Internship Duration */}
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-text">Internship Duration</label>
+                    <select
+                      value={formData.internshipDuration}
+                      onChange={(e) => setFormData({ ...formData, internshipDuration: e.target.value })}
+                      className="w-full bg-background border border-white/10 focus:border-purple-500 rounded-xl px-3.5 py-2 text-xs font-semibold text-text outline-none"
+                    >
+                      <option value="1 Month (Sprint)">1 Month (Sprint)</option>
+                      <option value="2 Months (Standard)">2 Months (Standard)</option>
+                      <option value="3 Months (Comprehensive)">3 Months (Comprehensive)</option>
+                      <option value="6 Months (Co-Op Fellowship)">6 Months (Co-Op Fellowship)</option>
+                    </select>
+                  </div>
+
+                  {/* Internship Stipend / Compensation */}
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-text">Stipend / Perks Offered</label>
+                    <input
+                      type="text"
+                      value={formData.internshipStipend}
+                      onChange={(e) => setFormData({ ...formData, internshipStipend: e.target.value })}
+                      placeholder="e.g. Paid (₹20,000/mo) or Certificate + Verified LOR"
+                      className="w-full bg-background border border-white/10 focus:border-purple-500 rounded-xl px-3.5 py-2 text-xs text-text outline-none"
+                    />
+                  </div>
+
+                  {/* Partner Companies / Hiring Network */}
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-text">Partner Companies / Hiring Network</label>
+                    <input
+                      type="text"
+                      value={formData.internshipCompanyPartner}
+                      onChange={(e) => setFormData({ ...formData, internshipCompanyPartner: e.target.value })}
+                      placeholder="e.g. Partner AI Startups & Tech Incubators"
+                      className="w-full bg-background border border-white/10 focus:border-purple-500 rounded-xl px-3.5 py-2 text-xs text-text outline-none"
+                    />
+                  </div>
+
+                  {/* Internship Scope & Eligibility */}
+                  <div className="sm:col-span-2 space-y-1.5">
+                    <label className="text-xs font-bold text-text">Internship Scope & Eligibility Criteria</label>
+                    <textarea
+                      rows={2}
+                      value={formData.internshipDescription}
+                      onChange={(e) => setFormData({ ...formData, internshipDescription: e.target.value })}
+                      placeholder="Detail requirements for students to qualify (e.g. 80%+ attendance, capstone review, etc.)..."
+                      className="w-full bg-background border border-white/10 focus:border-purple-500 rounded-xl p-3 text-xs text-text outline-none"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="flex justify-end">
@@ -997,21 +1202,6 @@ export default function AdminLiveCourseCreator() {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-text">Session Frequency</label>
-                <select
-                  value={formData.sessionFrequency}
-                  onChange={(e) => setFormData({ ...formData, sessionFrequency: e.target.value })}
-                  className="w-full h-10 px-3 rounded-xl bg-background border border-white/10 text-text text-xs focus:outline-none focus:border-purple-500/50"
-                >
-                  <option value="1 session per week">1 session per week</option>
-                  <option value="2 sessions per week">2 sessions per week</option>
-                  <option value="3 sessions per week">3 sessions per week</option>
-                  <option value="Weekend Fast Track (Sat + Sun)">Weekend Fast Track (Sat + Sun)</option>
-                  <option value="Daily Bootcamp (Mon-Fri)">Daily Bootcamp (Mon-Fri)</option>
-                </select>
-              </div>
-
-              <div className="space-y-1.5">
                 <label className="text-xs font-bold text-text">Default Session Duration</label>
                 <select
                   value={formData.defaultDuration}
@@ -1054,8 +1244,14 @@ export default function AdminLiveCourseCreator() {
               </div>
 
               {/* Preferred Days Checkboxes */}
-              <div className="md:col-span-3 space-y-2">
-                <label className="text-xs font-bold text-text">Preferred Workshop Days</label>
+              <div className="md:col-span-3 space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-text">Preferred Workshop Days</label>
+                  <span className="text-[11px] text-purple-300 font-bold bg-purple-500/15 px-2.5 py-0.5 rounded-lg border border-purple-500/30">
+                    {calculatedScheduleMetrics.targetDays.length} Days / Week
+                  </span>
+                </div>
+
                 <div className="flex flex-wrap gap-2">
                   {DAYS_OF_WEEK.map((day) => {
                     const isSelected = formData.preferredDays.includes(day);
@@ -1074,6 +1270,31 @@ export default function AdminLiveCourseCreator() {
                       </button>
                     );
                   })}
+                </div>
+
+                {/* Live Calculated Schedule Banner */}
+                <div className="p-3.5 rounded-2xl bg-gradient-to-r from-purple-950/30 via-card to-background border border-purple-500/25 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-sm">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-xl bg-purple-500/20 border border-purple-500/30 text-purple-300 flex items-center justify-center shrink-0">
+                      <Calendar className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-white flex items-center gap-2">
+                        <span>Calculated Cohort Schedule:</span>
+                        <span className="text-emerald-400 font-black">
+                          {calculatedScheduleMetrics.totalSessions} Live Sessions
+                        </span>
+                      </h4>
+                      <p className="text-[11px] text-subtext mt-0.5">
+                        Based on {calculatedScheduleMetrics.targetDays.join(", ")} across {calculatedScheduleMetrics.weeks} weeks ({formData.startDate} to {formData.endDate})
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="px-2.5 py-1 rounded-lg bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 text-[10px] font-black uppercase tracking-wider">
+                      Auto-Calculated
+                    </span>
+                  </div>
                 </div>
               </div>
 
@@ -1125,10 +1346,15 @@ export default function AdminLiveCourseCreator() {
             </button>
             <button
               type="button"
-              onClick={() => setCurrentStep(3)}
+              onClick={() => {
+                if (calculatedScheduleMetrics.totalSessions > 0) {
+                  setSessionCount(calculatedScheduleMetrics.totalSessions);
+                }
+                setCurrentStep(3);
+              }}
               className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs shadow-lg shadow-purple-600/20 transition-all hover:scale-105"
             >
-              <span>Next: AI Curriculum Architect</span>
+              <span>Next: Sessions ({calculatedScheduleMetrics.totalSessions} Sessions)</span>
               <ChevronRight className="w-4 h-4" />
             </button>
           </div>
@@ -1140,336 +1366,481 @@ export default function AdminLiveCourseCreator() {
           ═══════════════════════════════════════════════════════════════ */}
       {currentStep === 3 && (
         <div className="space-y-6 animate-in fade-in duration-200">
-          {/* AI Generator Control Box */}
-          <div className="p-6 rounded-2xl bg-gradient-to-br from-purple-950/40 via-card to-card border border-purple-500/30 space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-purple-500/20 border border-purple-500/40 flex items-center justify-center text-purple-300">
-                  <Sparkles className="w-4 h-4" />
+          {aiGeneratedSessions.length === 0 ? (
+            /* ── UNIFIED CURRICULUM ARCHITECT STUDIO (INITIAL STATE) ── */
+            <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-card via-card to-purple-950/20 border border-purple-500/30 shadow-2xl backdrop-blur-xl space-y-6">
+              {/* Studio Header */}
+              <div className="text-center max-w-2xl mx-auto space-y-2">
+                <div className="w-12 h-12 rounded-2xl bg-purple-500/20 border border-purple-500/40 flex items-center justify-center mx-auto text-purple-300 shadow-lg shadow-purple-500/20">
+                  <Sparkles className="w-6 h-6" />
                 </div>
-                <div>
-                  <h2 className="text-base font-bold text-text">Groq AI Live Course Copilot</h2>
-                  <p className="text-xs text-subtext">
-                    Auto-generate deep technical sessions, timeline agendas, topics, outcomes, and take-home exercises.
-                  </p>
+                <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+                  Curriculum Architect Studio
+                </h2>
+                <p className="text-xs sm:text-sm text-subtext leading-relaxed">
+                  Auto-generate complete interactive sessions with timed agendas, coding exercises, and take-home assignments using AI — or start building your syllabus manually.
+                </p>
+              </div>
+
+              {/* Quick Starter Templates */}
+              <div className="space-y-2">
+                <label className="text-[11px] font-bold uppercase tracking-wider text-subtext flex items-center gap-1.5">
+                  <Zap className="w-3.5 h-3.5 text-amber-400" />
+                  <span>One-Click Quick Starter Templates:</span>
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
+                  {STARTER_PROMPTS.map((t, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => {
+                        setAiPrompt(t.prompt);
+                        setSessionCount(t.sessions);
+                      }}
+                      className="p-3 rounded-xl bg-background/80 hover:bg-purple-600/15 border border-white/10 hover:border-purple-500/40 text-left transition-all group shadow-sm"
+                    >
+                      <p className="text-xs font-bold text-white group-hover:text-purple-300 transition-colors">
+                        {t.label}
+                      </p>
+                      <p className="text-[10px] text-subtext mt-0.5 font-medium">
+                        {t.sessions} Sessions · Click to load
+                      </p>
+                    </button>
+                  ))}
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 shrink-0">
-                <div className="flex items-center gap-1 px-3 py-1 rounded-xl bg-background border border-white/10 text-xs">
-                  <span className="text-subtext">Sessions:</span>
-                  <input
-                    type="number"
-                    min={2}
-                    max={24}
-                    value={sessionCount}
-                    onChange={(e) => setSessionCount(Number(e.target.value))}
-                    className="w-10 bg-transparent text-center font-bold text-text focus:outline-none"
+              {/* Prompt Input Box */}
+              <div className="space-y-3">
+                <div className="relative">
+                  <textarea
+                    rows={3}
+                    value={aiPrompt}
+                    onChange={(e) => setAiPrompt(e.target.value)}
+                    placeholder={`Enter prompt or topic vision (e.g. 'Create a ${sessionCount}-session live bootcamp on ${formData.title || "Generative AI"} covering foundations, real-time architectures, and hands-on capstone')`}
+                    className="w-full p-4 rounded-2xl bg-background/90 border border-white/15 text-white text-xs sm:text-sm focus:outline-none focus:border-purple-500/60 leading-relaxed placeholder:text-subtext/50 shadow-inner"
                   />
+                  <span className="absolute right-3.5 bottom-3 text-[10px] text-subtext/60 font-semibold flex items-center gap-1">
+                    <Sparkles className="w-3 h-3 text-purple-400" />
+                    Powered by Groq Llama-3
+                  </span>
                 </div>
-                <button
-                  type="button"
-                  onClick={handleGenerateWithAI}
-                  disabled={isGeneratingAI}
-                  className="flex items-center gap-2 px-5 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs shadow-lg shadow-purple-600/30 transition-all hover:scale-105 disabled:opacity-50"
-                >
-                  {isGeneratingAI ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>Architecting Cohort...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="w-4 h-4" />
-                      <span>Generate with AI</span>
-                    </>
-                  )}
-                </button>
+
+                {/* Primary Controls & Action Bar */}
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-2xl bg-background/50 border border-white/10">
+                  {/* Sessions Count Stepper & Suggested Badge */}
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-white">Sessions:</span>
+                      <div className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-card border border-white/15">
+                        <button
+                          type="button"
+                          onClick={() => setSessionCount(Math.max(2, sessionCount - 1))}
+                          className="w-6 h-6 rounded-lg bg-background hover:bg-white/10 text-white font-bold text-sm flex items-center justify-center transition-colors"
+                        >
+                          -
+                        </button>
+                        <span className="w-8 text-center font-black text-sm text-purple-300">
+                          {sessionCount}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setSessionCount(Math.min(36, sessionCount + 1))}
+                          className="w-6 h-6 rounded-lg bg-background hover:bg-white/10 text-white font-bold text-sm flex items-center justify-center transition-colors"
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Suggested Sessions Button / Badge */}
+                    <button
+                      type="button"
+                      onClick={() => setSessionCount(calculatedScheduleMetrics.totalSessions)}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 border shadow-sm ${
+                        sessionCount === calculatedScheduleMetrics.totalSessions
+                          ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40 ring-1 ring-emerald-500/30"
+                          : "bg-purple-600/20 text-purple-200 border-purple-500/40 hover:bg-purple-600/30 hover:border-purple-400"
+                      }`}
+                      title={`Schedule Calculation: ${calculatedScheduleMetrics.totalSessions} sessions across ${calculatedScheduleMetrics.weeks} weeks on ${calculatedScheduleMetrics.targetDays.join(", ")}`}
+                    >
+                      <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                      <span>
+                        Suggested: <strong className="text-white">{calculatedScheduleMetrics.totalSessions} Sessions</strong>
+                      </span>
+                      {sessionCount === calculatedScheduleMetrics.totalSessions ? (
+                        <span className="text-[10px] bg-emerald-500/30 text-emerald-200 px-1.5 py-0.2 rounded font-black">
+                          Active
+                        </span>
+                      ) : (
+                        <span className="text-[10px] bg-purple-500/30 text-white px-1.5 py-0.2 rounded font-black hover:bg-purple-500/50">
+                          Apply
+                        </span>
+                      )}
+                    </button>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
+                    {/* Manual Builder Button */}
+                    <button
+                      type="button"
+                      onClick={handleAddNewSession}
+                      className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-card hover:bg-card-hover border border-white/15 text-white font-bold text-xs transition-all shadow-sm"
+                    >
+                      <Plus className="w-4 h-4 text-purple-400" />
+                      <span>Create Session Manually</span>
+                    </button>
+
+                    {/* AI Generate Button */}
+                    <button
+                      type="button"
+                      onClick={handleGenerateWithAI}
+                      disabled={isGeneratingAI}
+                      className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs shadow-lg shadow-purple-600/30 transition-all hover:scale-105 disabled:opacity-50"
+                    >
+                      {isGeneratingAI ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          <span>Architecting Curriculum...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="w-4 h-4" />
+                          <span>Generate with Groq Copilot</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Feature Preview Highlights */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+                <div className="p-3.5 rounded-xl bg-background/40 border border-white/5 flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-purple-500/10 text-purple-400 flex items-center justify-center shrink-0">
+                    <Clock className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-white">Timed Agendas</h4>
+                    <p className="text-[10px] text-subtext mt-0.5">Minute-by-minute breakdown for instructor and students.</p>
+                  </div>
+                </div>
+
+                <div className="p-3.5 rounded-xl bg-background/40 border border-white/5 flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center shrink-0">
+                    <Zap className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-white">Hands-On Labs</h4>
+                    <p className="text-[10px] text-subtext mt-0.5">Live pair-coding activities, learning goals, and checkpoints.</p>
+                  </div>
+                </div>
+
+                <div className="p-3.5 rounded-xl bg-background/40 border border-white/5 flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center shrink-0">
+                    <Award className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-white">Homework & Exercises</h4>
+                    <p className="text-[10px] text-subtext mt-0.5">Structured take-home challenges with rubrics & starter repos.</p>
+                  </div>
+                </div>
               </div>
             </div>
+          ) : (
+            /* ── ACTIVE CURRICULUM WORKSPACE (SESSIONS LOADED) ── */
+            <>
+              {/* Compact AI Re-generation & Add Toolbar */}
+              <div className="p-4 rounded-2xl bg-card border border-purple-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-xl bg-purple-500/20 text-purple-300 flex items-center justify-center shrink-0">
+                    <Sparkles className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-xs font-bold text-white flex items-center gap-2">
+                      <span>Curriculum Workspace</span>
+                      <span className="px-2 py-0.5 rounded-md bg-purple-500/20 text-purple-300 border border-purple-500/30 text-[10px] font-black">
+                        {aiGeneratedSessions.length} Sessions Active
+                      </span>
+                    </h3>
+                    <p className="text-[11px] text-subtext">
+                      Select any session on the left to edit topics, timed agenda steps, and assignments.
+                    </p>
+                  </div>
+                </div>
 
-            <div className="relative">
-              <textarea
-                rows={2}
-                value={aiPrompt}
-                onChange={(e) => setAiPrompt(e.target.value)}
-                placeholder="Enter prompt (e.g. 'Create a 6-week live Generative AI course for intermediate developers with 12 sessions covering transformers, RAG, and LangGraph')"
-                className="w-full p-3.5 pr-20 rounded-xl bg-background/80 border border-white/10 text-text text-xs focus:outline-none focus:border-purple-500/50 leading-relaxed"
-              />
-              <span className="absolute right-3 bottom-3 text-[10px] text-subtext/60 font-semibold">
-                Powered by Groq
-              </span>
-            </div>
-
-            {hasUnsavedAIChanges && (
-              <div className="flex items-center justify-between p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs">
-                <span className="flex items-center gap-2">
-                  <Info className="w-4 h-4 text-amber-400 shrink-0" />
-                  AI generated {aiGeneratedSessions.length} sessions. Every session and agenda item is fully editable below!
-                </span>
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
-                    onClick={handleDiscardAIChanges}
-                    className="px-3 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-xs font-semibold text-subtext hover:text-text"
-                  >
-                    Discard Changes
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setHasUnsavedAIChanges(false)}
-                    className="px-3 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-xs font-bold text-amber-200 border border-amber-500/30"
-                  >
-                    Accept Draft
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Session Explorer & Interactive Agenda Editor */}
-          {aiGeneratedSessions.length > 0 ? (
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-              {/* Left Column: Sessions List Sidebar */}
-              <div className="lg:col-span-4 space-y-3">
-                <div className="flex items-center justify-between px-1">
-                  <h3 className="text-xs font-bold text-text uppercase tracking-wider">
-                    Cohort Sessions ({aiGeneratedSessions.length})
-                  </h3>
-                  <button
-                    type="button"
                     onClick={handleAddNewSession}
-                    className="flex items-center gap-1 text-xs text-purple-400 hover:text-purple-300 font-bold"
+                    className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-card hover:bg-card-hover border border-white/10 text-white text-xs font-bold transition-all shadow-sm"
                   >
-                    <Plus className="w-3.5 h-3.5" />
+                    <Plus className="w-3.5 h-3.5 text-purple-400" />
                     <span>Add Session</span>
                   </button>
-                </div>
-
-                <div className="space-y-2 max-h-[600px] overflow-y-auto custom-scrollbar pr-1">
-                  {aiGeneratedSessions.map((sess, idx) => {
-                    const isSelected = activeSessionIndex === idx;
-                    return (
-                      <div
-                        key={idx}
-                        onClick={() => setActiveSessionIndex(idx)}
-                        className={`p-3.5 rounded-xl border transition-all cursor-pointer text-left ${
-                          isSelected
-                            ? "bg-purple-600/20 border-purple-500/50 shadow-md ring-1 ring-purple-500/30"
-                            : "bg-card hover:bg-card-hover border-white/10"
-                        }`}
-                      >
-                        <div className="flex items-center justify-between gap-2 mb-1">
-                          <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md bg-white/5 text-purple-300 border border-white/10">
-                            Session {sess.sessionNumber}
-                          </span>
-                          <div className="flex items-center gap-1">
-                            <span className="text-[10px] text-subtext font-semibold flex items-center gap-1">
-                              <Clock className="w-2.5 h-2.5" />
-                              {sess.duration}
-                            </span>
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDeleteSession(idx);
-                              }}
-                              className="p-1 rounded text-subtext/60 hover:text-red-400 transition-colors"
-                              title="Delete Session"
-                            >
-                              <Trash2 className="w-3 h-3" />
-                            </button>
-                          </div>
-                        </div>
-                        <h4 className="text-xs font-bold text-text line-clamp-1">{sess.title}</h4>
-                        <p className="text-[11px] text-subtext line-clamp-1 mt-0.5">{sess.description}</p>
-                        <div className="flex items-center gap-2 mt-2 pt-2 border-t border-white/5 text-[10px] text-subtext">
-                          <span>{sess.date || "Date TBA"}</span>
-                          <span>•</span>
-                          <span>{sess.startTime || "07:00 PM"}</span>
-                          <span>•</span>
-                          <span className="text-emerald-400 font-semibold">{sess.agenda?.length || 0} agenda items</span>
-                        </div>
-                      </div>
-                    );
-                  })}
+                  <button
+                    type="button"
+                    onClick={handleGenerateWithAI}
+                    disabled={isGeneratingAI}
+                    className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/40 text-purple-200 text-xs font-bold transition-all"
+                  >
+                    <Sparkles className="w-3.5 h-3.5 text-purple-300" />
+                    <span>Re-Generate with AI</span>
+                  </button>
                 </div>
               </div>
 
-              {/* Right Column: Active Session Editor */}
-              {aiGeneratedSessions[activeSessionIndex] && (
-                <div className="lg:col-span-8 p-6 rounded-2xl bg-card border border-white/10 space-y-6">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4">
-                    <div>
-                      <span className="text-[10px] font-black uppercase tracking-widest text-purple-400">
-                        Editing Session {aiGeneratedSessions[activeSessionIndex].sessionNumber}
-                      </span>
-                      <h3 className="text-base font-bold text-text mt-0.5">
-                        {aiGeneratedSessions[activeSessionIndex].title}
-                      </h3>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-300 border border-emerald-500/20">
-                        100% Fully Editable
-                      </span>
-                    </div>
+              {hasUnsavedAIChanges && (
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs gap-3">
+                  <div className="flex items-center gap-2">
+                    <Info className="w-4 h-4 text-amber-400 shrink-0" />
+                    <span>
+                      AI generated {aiGeneratedSessions.length} sessions. Every session and agenda item is fully editable below!
+                    </span>
                   </div>
-
-                  {/* Basic Session Fields */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="sm:col-span-2 space-y-1.5">
-                      <label className="text-xs font-bold text-text">Session Title</label>
-                      <input
-                        type="text"
-                        value={aiGeneratedSessions[activeSessionIndex].title}
-                        onChange={(e) => handleUpdateActiveSession("title", e.target.value)}
-                        className="w-full h-10 px-3.5 rounded-xl bg-background border border-white/10 text-text text-xs focus:outline-none focus:border-purple-500/50"
-                      />
-                    </div>
-
-                    <div className="sm:col-span-2 space-y-1.5">
-                      <label className="text-xs font-bold text-text">Session Summary / Scope</label>
-                      <textarea
-                        rows={2}
-                        value={aiGeneratedSessions[activeSessionIndex].description}
-                        onChange={(e) => handleUpdateActiveSession("description", e.target.value)}
-                        className="w-full p-3 rounded-xl bg-background border border-white/10 text-text text-xs focus:outline-none focus:border-purple-500/50"
-                      />
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-text">Session Date</label>
-                      <input
-                        type="date"
-                        value={aiGeneratedSessions[activeSessionIndex].date || ""}
-                        onChange={(e) => handleUpdateActiveSession("date", e.target.value)}
-                        className="w-full h-10 px-3.5 rounded-xl bg-background border border-white/10 text-text text-xs focus:outline-none focus:border-purple-500/50"
-                      />
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-text">Start Time – End Time</label>
-                      <div className="flex gap-2">
-                        <input
-                          type="text"
-                          value={aiGeneratedSessions[activeSessionIndex].startTime}
-                          onChange={(e) => handleUpdateActiveSession("startTime", e.target.value)}
-                          placeholder="07:00 PM"
-                          className="w-1/2 h-10 px-3 rounded-xl bg-background border border-white/10 text-text text-xs focus:outline-none focus:border-purple-500/50"
-                        />
-                        <input
-                          type="text"
-                          value={aiGeneratedSessions[activeSessionIndex].endTime}
-                          onChange={(e) => handleUpdateActiveSession("endTime", e.target.value)}
-                          placeholder="09:00 PM"
-                          className="w-1/2 h-10 px-3 rounded-xl bg-background border border-white/10 text-text text-xs focus:outline-none focus:border-purple-500/50"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Interactive Agenda Timeline Builder */}
-                  <div className="space-y-3 pt-2 border-t border-white/10">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="text-xs font-bold text-text flex items-center gap-1.5">
-                          <Clock className="w-3.5 h-3.5 text-purple-400" />
-                          Live Session Agenda Timeline ({aiGeneratedSessions[activeSessionIndex].agenda?.length || 0} Steps)
-                        </h4>
-                        <p className="text-[11px] text-subtext">
-                          Step-by-step minute breakdown for instructor and learners.
-                        </p>
-                      </div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {pendingAiCourseInfo && (
                       <button
                         type="button"
-                        onClick={handleAddAgendaItem}
-                        className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 border border-purple-500/30 text-xs font-bold"
+                        onClick={() => setAiPostGenModalOpen(true)}
+                        className="px-3 py-1 rounded-lg bg-purple-600/30 hover:bg-purple-600/40 text-xs font-bold text-purple-200 border border-purple-500/40 flex items-center gap-1 shadow-sm"
                       >
-                        <Plus className="w-3 h-3" />
-                        <span>Add Step</span>
+                        <Sparkles className="w-3 h-3 text-amber-400" />
+                        <span>Update Course Basic Info?</span>
                       </button>
-                    </div>
-
-                    <div className="space-y-2.5">
-                      {aiGeneratedSessions[activeSessionIndex].agenda?.map((ag, agIdx) => (
-                        <div
-                          key={agIdx}
-                          className="p-3 rounded-xl bg-background/60 border border-white/5 space-y-2"
-                        >
-                          <div className="flex items-center justify-between gap-2">
-                            <div className="flex items-center gap-2 flex-1 min-w-0">
-                              <span className="w-6 h-6 rounded-lg bg-purple-500/20 text-purple-300 flex items-center justify-center text-[10px] font-black shrink-0">
-                                {agIdx + 1}
-                              </span>
-                              <input
-                                type="text"
-                                value={ag.title}
-                                onChange={(e) => handleUpdateAgendaItem(agIdx, "title", e.target.value)}
-                                placeholder="Step Title"
-                                className="flex-1 h-8 px-2.5 rounded-lg bg-card border border-white/10 text-xs font-bold text-text focus:outline-none focus:border-purple-500/50"
-                              />
-                            </div>
-                            <div className="flex items-center gap-2 shrink-0">
-                              <input
-                                type="text"
-                                value={ag.duration}
-                                onChange={(e) => handleUpdateAgendaItem(agIdx, "duration", e.target.value)}
-                                placeholder="15 min"
-                                className="w-20 h-8 px-2 rounded-lg bg-card border border-white/10 text-xs font-bold text-center text-subtext focus:outline-none focus:border-purple-500/50"
-                              />
-                              <button
-                                type="button"
-                                onClick={() => handleRemoveAgendaItem(agIdx)}
-                                className="p-1.5 rounded text-subtext hover:text-red-400 transition-colors"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
-                            </div>
-                          </div>
-                          <input
-                            type="text"
-                            value={ag.description}
-                            onChange={(e) => handleUpdateAgendaItem(agIdx, "description", e.target.value)}
-                            placeholder="Detailed teaching instructions, live code focus, or interactive checkpoints..."
-                            className="w-full h-7 px-2.5 rounded-lg bg-card/60 border border-white/5 text-[11px] text-subtext focus:outline-none focus:border-purple-500/50"
-                          />
-                        </div>
-                      ))}
-                    </div>
+                    )}
+                    <button
+                      type="button"
+                      onClick={handleDiscardAIChanges}
+                      className="px-3 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-xs font-semibold text-subtext hover:text-text"
+                    >
+                      Discard Changes
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setHasUnsavedAIChanges(false)}
+                      className="px-3 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-xs font-bold text-amber-200 border border-amber-500/30"
+                    >
+                      Accept Draft
+                    </button>
                   </div>
                 </div>
               )}
-            </div>
-          ) : (
-            <div className="p-12 text-center rounded-2xl bg-card border border-dashed border-white/15 space-y-4">
-              <div className="w-12 h-12 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center mx-auto text-purple-400">
-                <Sparkles className="w-6 h-6" />
+
+              {/* Session Explorer & Interactive Agenda Editor */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                {/* Left Column: Sessions List Sidebar */}
+                <div className="lg:col-span-4 space-y-3">
+                  <div className="flex items-center justify-between px-1">
+                    <h3 className="text-xs font-bold text-text uppercase tracking-wider">
+                      Cohort Sessions ({aiGeneratedSessions.length})
+                    </h3>
+                    <button
+                      type="button"
+                      onClick={handleAddNewSession}
+                      className="flex items-center gap-1 text-xs text-purple-400 hover:text-purple-300 font-bold"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Add Session</span>
+                    </button>
+                  </div>
+
+                  <div className="space-y-2 max-h-[600px] overflow-y-auto custom-scrollbar pr-1">
+                    {aiGeneratedSessions.map((sess, idx) => {
+                      const isSelected = activeSessionIndex === idx;
+                      return (
+                        <div
+                          key={idx}
+                          onClick={() => setActiveSessionIndex(idx)}
+                          className={`p-3.5 rounded-xl border transition-all cursor-pointer text-left ${
+                            isSelected
+                              ? "bg-purple-600/20 border-purple-500/50 shadow-md ring-1 ring-purple-500/30"
+                              : "bg-card hover:bg-card-hover border-white/10"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between gap-2 mb-1">
+                            <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md bg-white/5 text-purple-300 border border-white/10">
+                              Session {sess.sessionNumber}
+                            </span>
+                            <div className="flex items-center gap-1">
+                              <span className="text-[10px] text-subtext font-semibold flex items-center gap-1">
+                                <Clock className="w-2.5 h-2.5" />
+                                {sess.duration}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteSession(idx);
+                                }}
+                                className="p-1 rounded text-subtext/60 hover:text-red-400 transition-colors"
+                                title="Delete Session"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </button>
+                            </div>
+                          </div>
+                          <h4 className="text-xs font-bold text-text line-clamp-1">{sess.title}</h4>
+                          <p className="text-[11px] text-subtext line-clamp-1 mt-0.5">{sess.description}</p>
+                          <div className="flex items-center gap-2 mt-2 pt-2 border-t border-white/5 text-[10px] text-subtext">
+                            <span>{sess.date || "Date TBA"}</span>
+                            <span>•</span>
+                            <span>{sess.startTime || "07:00 PM"}</span>
+                            <span>•</span>
+                            <span className="text-emerald-400 font-semibold">{sess.agenda?.length || 0} agenda items</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Right Column: Active Session Editor */}
+                {aiGeneratedSessions[activeSessionIndex] && (
+                  <div className="lg:col-span-8 p-6 rounded-2xl bg-card border border-white/10 space-y-6">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4">
+                      <div>
+                        <span className="text-[10px] font-black uppercase tracking-widest text-purple-400">
+                          Editing Session {aiGeneratedSessions[activeSessionIndex].sessionNumber}
+                        </span>
+                        <h3 className="text-base font-bold text-text mt-0.5">
+                          {aiGeneratedSessions[activeSessionIndex].title}
+                        </h3>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-300 border border-emerald-500/20">
+                          100% Fully Editable
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Basic Session Fields */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="sm:col-span-2 space-y-1.5">
+                        <label className="text-xs font-bold text-text">Session Title</label>
+                        <input
+                          type="text"
+                          value={aiGeneratedSessions[activeSessionIndex].title}
+                          onChange={(e) => handleUpdateActiveSession("title", e.target.value)}
+                          className="w-full h-10 px-3.5 rounded-xl bg-background border border-white/10 text-text text-xs focus:outline-none focus:border-purple-500/50"
+                        />
+                      </div>
+
+                      <div className="sm:col-span-2 space-y-1.5">
+                        <label className="text-xs font-bold text-text">Session Summary / Scope</label>
+                        <textarea
+                          rows={2}
+                          value={aiGeneratedSessions[activeSessionIndex].description}
+                          onChange={(e) => handleUpdateActiveSession("description", e.target.value)}
+                          className="w-full p-3 rounded-xl bg-background border border-white/10 text-text text-xs focus:outline-none focus:border-purple-500/50"
+                        />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-bold text-text">Session Date</label>
+                        <input
+                          type="date"
+                          value={aiGeneratedSessions[activeSessionIndex].date || ""}
+                          onChange={(e) => handleUpdateActiveSession("date", e.target.value)}
+                          className="w-full h-10 px-3.5 rounded-xl bg-background border border-white/10 text-text text-xs focus:outline-none focus:border-purple-500/50"
+                        />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-bold text-text">Start Time – End Time</label>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={aiGeneratedSessions[activeSessionIndex].startTime}
+                            onChange={(e) => handleUpdateActiveSession("startTime", e.target.value)}
+                            placeholder="07:00 PM"
+                            className="w-1/2 h-10 px-3 rounded-xl bg-background border border-white/10 text-text text-xs focus:outline-none focus:border-purple-500/50"
+                          />
+                          <input
+                            type="text"
+                            value={aiGeneratedSessions[activeSessionIndex].endTime}
+                            onChange={(e) => handleUpdateActiveSession("endTime", e.target.value)}
+                            placeholder="09:00 PM"
+                            className="w-1/2 h-10 px-3 rounded-xl bg-background border border-white/10 text-text text-xs focus:outline-none focus:border-purple-500/50"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Interactive Agenda Timeline Builder */}
+                    <div className="space-y-3 pt-2 border-t border-white/10">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h4 className="text-xs font-bold text-text flex items-center gap-1.5">
+                            <Clock className="w-3.5 h-3.5 text-purple-400" />
+                            Live Session Agenda Timeline ({aiGeneratedSessions[activeSessionIndex].agenda?.length || 0} Steps)
+                          </h4>
+                          <p className="text-[11px] text-subtext">
+                            Step-by-step minute breakdown for instructor and learners.
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={handleAddAgendaItem}
+                          className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 border border-purple-500/30 text-xs font-bold"
+                        >
+                          <Plus className="w-3 h-3" />
+                          <span>Add Step</span>
+                        </button>
+                      </div>
+
+                      <div className="space-y-2.5">
+                        {aiGeneratedSessions[activeSessionIndex].agenda?.map((ag, agIdx) => (
+                          <div
+                            key={agIdx}
+                            className="p-3 rounded-xl bg-background/60 border border-white/5 space-y-2"
+                          >
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="flex items-center gap-2 flex-1 min-w-0">
+                                <span className="w-6 h-6 rounded-lg bg-purple-500/20 text-purple-300 flex items-center justify-center text-[10px] font-black shrink-0">
+                                  {agIdx + 1}
+                                </span>
+                                <input
+                                  type="text"
+                                  value={ag.title}
+                                  onChange={(e) => handleUpdateAgendaItem(agIdx, "title", e.target.value)}
+                                  placeholder="Step Title"
+                                  className="flex-1 h-8 px-2.5 rounded-lg bg-card border border-white/10 text-xs font-bold text-text focus:outline-none focus:border-purple-500/50"
+                                />
+                              </div>
+                              <div className="flex items-center gap-2 shrink-0">
+                                <input
+                                  type="text"
+                                  value={ag.duration}
+                                  onChange={(e) => handleUpdateAgendaItem(agIdx, "duration", e.target.value)}
+                                  placeholder="15 min"
+                                  className="w-20 h-8 px-2 rounded-lg bg-card border border-white/10 text-xs font-bold text-center text-subtext focus:outline-none focus:border-purple-500/50"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveAgendaItem(agIdx)}
+                                  className="p-1.5 rounded text-subtext hover:text-red-400 transition-colors"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            </div>
+                            <input
+                              type="text"
+                              value={ag.description}
+                              onChange={(e) => handleUpdateAgendaItem(agIdx, "description", e.target.value)}
+                              placeholder="Detailed teaching instructions, live code focus, or interactive checkpoints..."
+                              className="w-full h-7 px-2.5 rounded-lg bg-card/60 border border-white/5 text-[11px] text-subtext focus:outline-none focus:border-purple-500/50"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
-              <div>
-                <h3 className="text-sm font-bold text-text">No live sessions generated yet</h3>
-                <p className="text-xs text-subtext mt-1 max-w-md mx-auto">
-                  Click <strong>&quot;Generate with AI&quot;</strong> above to have the Groq AI architect generate a full curriculum, or create sessions manually.
-                </p>
-              </div>
-              <div className="flex items-center justify-center gap-3">
-                <button
-                  type="button"
-                  onClick={handleGenerateWithAI}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold shadow-md shadow-purple-600/20"
-                >
-                  <Sparkles className="w-4 h-4" />
-                  <span>Generate with Groq Copilot</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={handleAddNewSession}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-card hover:bg-card-hover text-text border border-white/10 text-xs font-bold"
-                >
-                  <Plus className="w-4 h-4" />
-                  <span>Create Session Manually</span>
-                </button>
-              </div>
-            </div>
+            </>
           )}
 
           <div className="flex justify-between items-center">
@@ -1700,61 +2071,225 @@ export default function AdminLiveCourseCreator() {
               </div>
             </div>
 
-            {/* Granular Permissions Config */}
-            <div className="p-5 rounded-xl bg-background/50 border border-white/5 space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="text-xs font-bold text-text flex items-center gap-1.5">
-                    <ShieldCheck className="w-3.5 h-3.5 text-purple-400" />
-                    Instructor Access & Edit Permissions
-                  </h4>
-                  <p className="text-[11px] text-subtext">
-                    Control what the assigned instructor is permitted to modify on their dashboard.
-                  </p>
-                </div>
+            {/* Instructor Access & Permissions */}
+            <div className="p-6 rounded-2xl bg-background/50 border border-white/10 space-y-5">
+              <div>
+                <h4 className="text-sm font-bold text-text flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4 text-purple-400" />
+                  Instructor Permissions & Super Instructor Privileges
+                </h4>
+                <p className="text-xs text-subtext mt-0.5">
+                  Control whether the instructor can edit sessions or hold elevated Super Instructor privileges to reschedule and create classes.
+                </p>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                {[
-                  { key: "canView", label: "View Sessions & Roster", desc: "Allow instructor to view session details" },
-                  { key: "canEdit", label: "Can Edit Session (Master)", desc: "Primary edit permission toggle" },
-                  { key: "canEditAgenda", label: "Edit Session Agenda", desc: "Modify step-by-step agenda timeline" },
-                  { key: "canEditSchedule", label: "Edit Schedule Directly", desc: "Modify session dates and times" },
-                  { key: "canEditResources", label: "Edit Session Resources", desc: "Upload and attach resource links" },
-                  { key: "canAddHomework", label: "Add & Edit Homework", desc: "Create take-home coding challenges" },
-                  { key: "canReschedule", label: "Request / Reschedule", desc: "Initiate session rescheduling" },
-                  { key: "canCancel", label: "Cancel Live Session", desc: "Emergency cancellation rights" },
-                  { key: "canManageAttendance", label: "Manage Attendance", desc: "Mark student present/absent" },
-                  { key: "canManageRecording", label: "Manage Recordings", desc: "Upload session video replay" }
-                ].map((perm) => {
-                  const isChecked = (leadInstructorPermissions as any)[perm.key];
-                  return (
-                    <label
-                      key={perm.key}
-                      className={`flex items-start gap-2.5 p-3 rounded-xl border transition-all cursor-pointer ${
-                        isChecked
-                          ? "bg-purple-600/10 border-purple-500/30 text-text"
-                          : "bg-card/40 border-white/5 text-subtext"
+              {/* 2 Primary Modern Cards: Master Edit & Super Instructor Slider */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                
+                {/* 1. Master Edit Permission Card */}
+                <div
+                  onClick={() => {
+                    const newEdit = !leadInstructorPermissions.canEdit;
+                    setLeadInstructorPermissions((prev) => ({
+                      ...prev,
+                      canEdit: newEdit,
+                      canEditAgenda: newEdit,
+                      canEditResources: newEdit,
+                      canAddHomework: newEdit,
+                      canManageAttendance: newEdit,
+                      canManageRecording: newEdit
+                    }));
+                  }}
+                  className={`p-5 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between gap-4 ${
+                    leadInstructorPermissions.canEdit
+                      ? "bg-purple-600/15 border-purple-500/40 ring-1 ring-purple-500/20 shadow-md"
+                      : "bg-card/60 border-white/10 hover:border-white/20"
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-start gap-3">
+                      <div
+                        className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm shrink-0 ${
+                          leadInstructorPermissions.canEdit
+                            ? "bg-purple-500/25 text-purple-300 border border-purple-500/40"
+                            : "bg-white/5 text-subtext border border-white/10"
+                        }`}
+                      >
+                        <Edit3 className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h5 className="text-xs sm:text-sm font-bold text-white flex items-center gap-2">
+                          <span>Edit Permission</span>
+                          <span
+                            className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider ${
+                              leadInstructorPermissions.canEdit
+                                ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
+                                : "bg-white/10 text-subtext"
+                            }`}
+                          >
+                            {leadInstructorPermissions.canEdit ? "Can Edit" : "Read Only"}
+                          </span>
+                        </h5>
+                        <p className="text-[11px] text-subtext mt-1 leading-relaxed">
+                          Allow instructor to edit session topics, update timed agendas, upload resources, and assign homework.
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Clean Switch Slider */}
+                    <div
+                      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out ${
+                        leadInstructorPermissions.canEdit ? "bg-purple-600" : "bg-white/15"
                       }`}
                     >
-                      <input
-                        type="checkbox"
-                        checked={isChecked}
-                        onChange={(e) =>
-                          setLeadInstructorPermissions({
-                            ...leadInstructorPermissions,
-                            [perm.key]: e.target.checked
-                          })
-                        }
-                        className="mt-0.5 accent-purple-500 rounded"
+                      <span
+                        className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${
+                          leadInstructorPermissions.canEdit ? "translate-x-5" : "translate-x-0"
+                        }`}
                       />
-                      <div className="text-left leading-tight min-w-0">
-                        <p className="text-xs font-bold text-text truncate">{perm.label}</p>
-                        <p className="text-[10px] text-subtext/70 mt-0.5 line-clamp-1">{perm.desc}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 pt-3 border-t border-white/5 text-[11px] text-subtext">
+                    <CheckCircle2 className={`w-3.5 h-3.5 ${leadInstructorPermissions.canEdit ? "text-emerald-400" : "text-subtext"}`} />
+                    <span>
+                      {leadInstructorPermissions.canEdit
+                        ? "Full editing access enabled for all session contents & materials."
+                        : "Instructor has view-only access to curriculum and student roster."}
+                    </span>
+                  </div>
+                </div>
+
+                {/* 2. Super Instructor Slider Switch Card */}
+                <div
+                  onClick={() => {
+                    const isSuper = !(leadInstructorPermissions.canReschedule && leadInstructorPermissions.canEditSchedule);
+                    setLeadInstructorPermissions((prev) => ({
+                      ...prev,
+                      canReschedule: isSuper,
+                      canEditSchedule: isSuper,
+                      canCancel: isSuper,
+                      // If super instructor is enabled, also ensure canEdit is true
+                      ...(isSuper ? { canEdit: true, canEditAgenda: true, canEditResources: true } : {})
+                    }));
+                  }}
+                  className={`p-5 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between gap-4 ${
+                    leadInstructorPermissions.canReschedule && leadInstructorPermissions.canEditSchedule
+                      ? "bg-gradient-to-br from-amber-500/15 via-purple-600/15 to-card border-amber-500/40 ring-1 ring-amber-500/30 shadow-md"
+                      : "bg-card/60 border-white/10 hover:border-white/20"
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-start gap-3">
+                      <div
+                        className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm shrink-0 ${
+                          leadInstructorPermissions.canReschedule && leadInstructorPermissions.canEditSchedule
+                            ? "bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm"
+                            : "bg-white/5 text-subtext border border-white/10"
+                        }`}
+                      >
+                        <Zap className="w-5 h-5" />
                       </div>
-                    </label>
-                  );
-                })}
+                      <div>
+                        <h5 className="text-xs sm:text-sm font-bold text-white flex items-center gap-2">
+                          <span>Super Instructor Privileges</span>
+                          <span
+                            className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider ${
+                              leadInstructorPermissions.canReschedule && leadInstructorPermissions.canEditSchedule
+                                ? "bg-amber-500/25 text-amber-300 border border-amber-500/40"
+                                : "bg-white/10 text-subtext"
+                            }`}
+                          >
+                            {leadInstructorPermissions.canReschedule && leadInstructorPermissions.canEditSchedule ? "⚡ Super Active" : "Standard"}
+                          </span>
+                        </h5>
+                        <p className="text-[11px] text-subtext mt-1 leading-relaxed">
+                          Elevate instructor to reschedule class dates/times, add & create new sessions, and manage cohort schedules.
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Clean Slider Switch */}
+                    <div
+                      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out ${
+                        leadInstructorPermissions.canReschedule && leadInstructorPermissions.canEditSchedule ? "bg-amber-500" : "bg-white/15"
+                      }`}
+                    >
+                      <span
+                        className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${
+                          leadInstructorPermissions.canReschedule && leadInstructorPermissions.canEditSchedule ? "translate-x-5" : "translate-x-0"
+                        }`}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 pt-3 border-t border-white/5 text-[11px] text-subtext">
+                    <Sparkles className={`w-3.5 h-3.5 ${leadInstructorPermissions.canReschedule && leadInstructorPermissions.canEditSchedule ? "text-amber-400" : "text-subtext"}`} />
+                    <span>
+                      {leadInstructorPermissions.canReschedule && leadInstructorPermissions.canEditSchedule
+                        ? "Can reschedule sessions, modify dates, and create new sessions directly."
+                        : "Cannot reschedule or add classes without admin approval."}
+                    </span>
+                  </div>
+                </div>
+
+              </div>
+
+              {/* Collapsible Advanced Granular Controls */}
+              <div className="pt-2 border-t border-white/5">
+                <button
+                  type="button"
+                  onClick={() => setShowAdvancedPermissions(!showAdvancedPermissions)}
+                  className="flex items-center gap-1.5 text-xs font-bold text-subtext hover:text-white transition-colors"
+                >
+                  <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showAdvancedPermissions ? "rotate-180" : ""}`} />
+                  <span>{showAdvancedPermissions ? "Hide Advanced Permission Matrix" : "Fine-Tune Individual Permissions (Advanced)"}</span>
+                </button>
+
+                {showAdvancedPermissions && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 pt-3 animate-in fade-in">
+                    {[
+                      { key: "canView", label: "View Sessions & Roster", desc: "Allow instructor to view session details" },
+                      { key: "canEdit", label: "Can Edit Session", desc: "Primary edit permission toggle" },
+                      { key: "canEditAgenda", label: "Edit Session Agenda", desc: "Modify step-by-step agenda timeline" },
+                      { key: "canEditSchedule", label: "Edit Schedule Directly", desc: "Modify session dates and times" },
+                      { key: "canEditResources", label: "Edit Session Resources", desc: "Upload and attach resource links" },
+                      { key: "canAddHomework", label: "Add & Edit Homework", desc: "Create take-home coding challenges" },
+                      { key: "canReschedule", label: "Request / Reschedule", desc: "Initiate session rescheduling" },
+                      { key: "canCancel", label: "Cancel Live Session", desc: "Emergency cancellation rights" },
+                      { key: "canManageAttendance", label: "Manage Attendance", desc: "Mark student present/absent" },
+                      { key: "canManageRecording", label: "Manage Recordings", desc: "Upload session video replay" }
+                    ].map((perm) => {
+                      const isChecked = (leadInstructorPermissions as any)[perm.key];
+                      return (
+                        <label
+                          key={perm.key}
+                          className={`flex items-start gap-2.5 p-3 rounded-xl border transition-all cursor-pointer ${
+                            isChecked
+                              ? "bg-purple-600/10 border-purple-500/30 text-text"
+                              : "bg-card/40 border-white/5 text-subtext"
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            onChange={(e) =>
+                              setLeadInstructorPermissions({
+                                ...leadInstructorPermissions,
+                                [perm.key]: e.target.checked
+                              })
+                            }
+                            className="mt-0.5 accent-purple-500 rounded"
+                          />
+                          <div className="text-left leading-tight min-w-0">
+                            <p className="text-xs font-bold text-text truncate">{perm.label}</p>
+                            <p className="text-[10px] text-subtext/70 mt-0.5 line-clamp-1">{perm.desc}</p>
+                          </div>
+                        </label>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -1784,8 +2319,8 @@ export default function AdminLiveCourseCreator() {
                 disabled={isSubmitting}
                 className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs shadow-lg shadow-purple-600/20 transition-all hover:scale-105"
               >
-                <Radio className="w-3.5 h-3.5" />
-                <span>Publish Live Course</span>
+                <UserCheck className="w-3.5 h-3.5" />
+                <span>Assign to Instructor</span>
               </button>
             </div>
           </div>
@@ -1793,7 +2328,7 @@ export default function AdminLiveCourseCreator() {
       )}
 
       {/* ═══════════════════════════════════════════════════════════════
-          CONFIRMATION PUBLISH MODAL
+          CONFIRMATION ASSIGN & PUBLISH MODAL
           ═══════════════════════════════════════════════════════════════ */}
       {publishModalOpen && (
         <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-md flex items-center justify-center p-4">
@@ -1801,11 +2336,11 @@ export default function AdminLiveCourseCreator() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
                 <div className="w-9 h-9 rounded-xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-purple-300">
-                  <Radio className="w-4 h-4" />
+                  <UserCheck className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-text">Publish Live Course</h3>
-                  <p className="text-xs text-subtext">Confirm details before opening cohort to students</p>
+                  <h3 className="text-base font-bold text-text">Assign to Instructor & Publish</h3>
+                  <p className="text-xs text-subtext">Select lead instructor and verify cohort details before launch</p>
                 </div>
               </div>
               <button
@@ -1833,15 +2368,32 @@ export default function AdminLiveCourseCreator() {
                 <span className="text-subtext">Meeting Platform:</span>
                 <span className="font-bold text-text">{formData.meetingPlatform}</span>
               </div>
-              <div className="flex justify-between">
+              <div className="flex justify-between items-center">
                 <span className="text-subtext">Capacity:</span>
                 <span className="font-bold text-text">{formData.maxStudents} Students</span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-subtext">Lead Instructor:</span>
-                <span className="font-bold text-purple-300">
-                  {instructors.find((i) => i.id === formData.leadInstructorId)?.name || "Assigned by Admin"}
+              <div className="flex justify-between items-center pt-2 border-t border-white/5 gap-3">
+                <span className="text-subtext flex items-center gap-1.5 font-medium">
+                  <UserCheck className="w-3.5 h-3.5 text-purple-400" />
+                  Assign to Instructor:
                 </span>
+                {instructors.length > 0 ? (
+                  <select
+                    value={formData.leadInstructorId}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, leadInstructorId: e.target.value }))}
+                    className="px-3 py-1.5 rounded-lg bg-[#0E131F] border border-purple-500/40 text-purple-300 font-bold text-xs focus:outline-none focus:ring-1 focus:ring-purple-400 cursor-pointer max-w-[240px]"
+                  >
+                    {instructors.map((inst) => (
+                      <option key={inst.id} value={inst.id} className="bg-[#0E131F] text-white">
+                        {inst.name} ({inst.email})
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <span className="font-bold text-purple-300">
+                    {instructors.find((i) => i.id === formData.leadInstructorId)?.name || "Assigned by Admin"}
+                  </span>
+                )}
               </div>
             </div>
 
@@ -1855,19 +2407,19 @@ export default function AdminLiveCourseCreator() {
               </button>
               <button
                 type="button"
-                onClick={() => handleSubmitLiveCourse("PUBLISHED")}
+                onClick={() => handleSubmitLiveCourse("ASSIGNED")}
                 disabled={isSubmitting}
                 className="flex items-center gap-2 px-5 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs font-bold shadow-lg shadow-purple-600/30 hover:scale-105 disabled:opacity-50"
               >
                 {isSubmitting ? (
                   <>
                     <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    <span>Publishing...</span>
+                    <span>Assigning...</span>
                   </>
                 ) : (
                   <>
                     <Check className="w-3.5 h-3.5" />
-                    <span>Confirm & Publish</span>
+                    <span>Confirm & Assign</span>
                   </>
                 )}
               </button>
@@ -1998,6 +2550,122 @@ export default function AdminLiveCourseCreator() {
                   Apply All Fields
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ═══════════════════════════════════════════════════════════════
+          MODAL: AI GENERATION DECISION (SESSIONS ONLY VS BASIC INFO TOO)
+          ═══════════════════════════════════════════════════════════════ */}
+      {aiPostGenModalOpen && pendingAiCourseInfo && (
+        <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="w-full max-w-xl rounded-3xl bg-card border border-purple-500/40 shadow-2xl p-6 sm:p-7 space-y-6 animate-in fade-in zoom-in-95 max-h-[90vh] overflow-y-auto custom-scrollbar">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-purple-500/20 border border-purple-500/40 flex items-center justify-center text-purple-300 shadow-md">
+                  <Sparkles className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base sm:text-lg font-black text-white">
+                    AI Curriculum Generated!
+                  </h3>
+                  <p className="text-xs text-subtext">
+                    {pendingAiSessionsCount} interactive sessions are ready. How should we apply the course details?
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setAiPostGenModalOpen(false)}
+                className="text-subtext hover:text-white p-1 rounded-lg transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Generated Course Details Comparison Preview */}
+            <div className="p-4 rounded-2xl bg-background/70 border border-white/10 space-y-3">
+              <span className="text-[10px] font-black uppercase tracking-wider text-purple-300 flex items-center gap-1.5">
+                <FileText className="w-3.5 h-3.5" />
+                AI Generated Course Overview:
+              </span>
+
+              <div className="space-y-1.5 text-xs">
+                <div className="flex items-start justify-between gap-2">
+                  <span className="text-subtext shrink-0">Title:</span>
+                  <span className="font-bold text-white text-right">{pendingAiCourseInfo.title || formData.title}</span>
+                </div>
+                {pendingAiCourseInfo.shortDescription && (
+                  <div className="flex items-start justify-between gap-2 pt-1 border-t border-white/5">
+                    <span className="text-subtext shrink-0">Summary:</span>
+                    <span className="text-subtext text-right line-clamp-2">{pendingAiCourseInfo.shortDescription}</span>
+                  </div>
+                )}
+                {pendingAiCourseInfo.objectives && pendingAiCourseInfo.objectives.length > 0 && (
+                  <div className="pt-1.5 border-t border-white/5">
+                    <span className="text-[11px] font-bold text-subtext">Objectives ({pendingAiCourseInfo.objectives.length}):</span>
+                    <div className="flex flex-wrap gap-1.5 mt-1">
+                      {pendingAiCourseInfo.objectives.slice(0, 3).map((obj, i) => (
+                        <span key={i} className="text-[10px] bg-purple-500/15 text-purple-200 px-2 py-0.5 rounded-md border border-purple-500/25">
+                          ✓ {obj}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Decision Cards: Option 1 vs Option 2 */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              {/* Option A: Sessions Only */}
+              <button
+                type="button"
+                onClick={handleKeepBasicInfoSessionsOnly}
+                className="p-4 rounded-2xl bg-card hover:bg-card-hover border border-white/15 hover:border-purple-500/40 text-left transition-all group flex flex-col justify-between shadow-sm"
+              >
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md bg-white/10 text-white border border-white/10">
+                      Option 1
+                    </span>
+                  </div>
+                  <h4 className="text-xs sm:text-sm font-bold text-white group-hover:text-purple-300 transition-colors">
+                    🎯 Only Go with Sessions
+                  </h4>
+                  <p className="text-[11px] text-subtext leading-relaxed">
+                    Keep your original Course Title & Basic Info. Only import the {pendingAiSessionsCount} generated sessions.
+                  </p>
+                </div>
+                <span className="text-[11px] font-bold text-purple-300 mt-3 flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
+                  Keep My Basic Info →
+                </span>
+              </button>
+
+              {/* Option B: Sessions + Basic Info */}
+              <button
+                type="button"
+                onClick={handleApplyAllAiCourseInfo}
+                className="p-4 rounded-2xl bg-purple-600/15 hover:bg-purple-600/25 border border-purple-500/40 hover:border-purple-400 text-left transition-all group flex flex-col justify-between shadow-md ring-1 ring-purple-500/20"
+              >
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md bg-purple-500/30 text-purple-200 border border-purple-500/40">
+                      Option 2
+                    </span>
+                  </div>
+                  <h4 className="text-xs sm:text-sm font-bold text-white group-hover:text-purple-200 transition-colors">
+                    ✨ Change Basic Info Too
+                  </h4>
+                  <p className="text-[11px] text-subtext leading-relaxed">
+                    Import all {pendingAiSessionsCount} sessions AND update Course Title, Description, and Objectives with AI suggestions.
+                  </p>
+                </div>
+                <span className="text-[11px] font-bold text-emerald-400 mt-3 flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
+                  Update Everything →
+                </span>
+              </button>
             </div>
           </div>
         </div>

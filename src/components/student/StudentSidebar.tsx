@@ -9,14 +9,11 @@ import {
   Calendar,
   PlaySquare,
   FileCheck,
-  TrendingUp,
   Award,
   CreditCard,
-  Bell,
   Settings,
   ChevronLeft,
   ChevronRight,
-  GraduationCap,
   Sparkles,
   ExternalLink,
   Flame,
@@ -29,8 +26,6 @@ export interface StudentNavItem {
   name: string;
   href: string;
   icon: React.ElementType;
-  badge?: string | number;
-  badgeColor?: string;
   isSpecial?: boolean;
 }
 
@@ -46,24 +41,18 @@ export const STUDENT_NAV_ITEMS: StudentNavItem[] = [
     name: "Self-Paced Courses",
     href: "/student/courses",
     icon: BookOpen,
-    badge: "4 Active",
-    badgeColor: "bg-blue-500/15 text-blue-300 border-blue-500/30",
   },
   {
     id: "live-classes",
     name: "Live Training",
     href: "/calendar",
     icon: Calendar,
-    badge: "LIVE",
-    badgeColor: "bg-orange-500/15 text-orange-400 border-orange-500/30 animate-pulse",
   },
   {
     id: "recorded-sessions",
     name: "Class Recordings",
     href: "/student/recorded-sessions",
     icon: PlaySquare,
-    badge: "9 Ready",
-    badgeColor: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30",
     isSpecial: true,
   },
   {
@@ -71,16 +60,12 @@ export const STUDENT_NAV_ITEMS: StudentNavItem[] = [
     name: "Assignments",
     href: "/student/assignments",
     icon: FileCheck,
-    badge: 2,
-    badgeColor: "bg-amber-500/15 text-amber-300 border-amber-500/30",
   },
   {
     id: "certificates",
     name: "Certificates",
     href: "/student/certificates",
     icon: Award,
-    badge: 1,
-    badgeColor: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30",
   },
   {
     id: "payments",
@@ -111,6 +96,83 @@ export function StudentSidebar({
 }: StudentSidebarProps) {
   const pathname = usePathname();
 
+  const [navBadges, setNavBadges] = useState<{
+    selfPacedCount: number;
+    hasLiveNow: boolean;
+    recordingsCount: number;
+    assignmentsCount: number;
+    certificatesCount: number;
+    streak: number;
+  }>({
+    selfPacedCount: 0,
+    hasLiveNow: false,
+    recordingsCount: 0,
+    assignmentsCount: 0,
+    certificatesCount: 0,
+    streak: 0,
+  });
+
+  useEffect(() => {
+    let isMounted = true;
+    async function loadDynamicBadges() {
+      try {
+        const [dashRes, liveRes, asgRes, recRes] = await Promise.all([
+          fetch("/api/student/dashboard"),
+          fetch("/api/student/live-courses"),
+          fetch("/api/student/assignments"),
+          fetch("/api/student/recordings"),
+        ]);
+
+        if (!isMounted) return;
+
+        let selfPaced = 0;
+        let hasLive = false;
+        let certs = 0;
+        let streakVal = 0;
+        let asgCount = 0;
+        let recCount = 0;
+
+        if (dashRes.ok) {
+          const d = await dashRes.json();
+          selfPaced = d.stats?.selfPacedCount || 0;
+          certs = d.certificatesCount || 0;
+          streakVal = d.stats?.streak || 0;
+        }
+
+        if (liveRes.ok) {
+          const l = await liveRes.json();
+          hasLive = (l.classes || []).some((c: any) => c.status === "ONGOING");
+        }
+
+        if (asgRes.ok) {
+          const a = await asgRes.json();
+          asgCount = (a.assignments || []).length;
+        }
+
+        if (recRes.ok) {
+          const r = await recRes.json();
+          recCount = (r.recordings || []).length;
+        }
+
+        setNavBadges({
+          selfPacedCount: selfPaced,
+          hasLiveNow: hasLive,
+          recordingsCount: recCount,
+          assignmentsCount: asgCount,
+          certificatesCount: certs,
+          streak: streakVal,
+        });
+      } catch {
+        /* silent */
+      }
+    }
+
+    loadDynamicBadges();
+    return () => {
+      isMounted = false;
+    };
+  }, [pathname]);
+
   const isItemActive = (item: StudentNavItem) => {
     if (item.href === "/dashboard") {
       return pathname === "/dashboard" || pathname === "/student/dashboard";
@@ -125,6 +187,33 @@ export function StudentSidebar({
       );
     }
     return pathname?.startsWith(item.href);
+  };
+
+  const getItemBadge = (itemId: string) => {
+    switch (itemId) {
+      case "courses":
+        return navBadges.selfPacedCount > 0
+          ? { label: `${navBadges.selfPacedCount} Active`, color: "bg-blue-500/15 text-blue-300 border-blue-500/30" }
+          : null;
+      case "live-classes":
+        return navBadges.hasLiveNow
+          ? { label: "LIVE", color: "bg-orange-500/15 text-orange-400 border-orange-500/30 animate-pulse" }
+          : null;
+      case "recorded-sessions":
+        return navBadges.recordingsCount > 0
+          ? { label: `${navBadges.recordingsCount} Ready`, color: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30" }
+          : null;
+      case "assignments":
+        return navBadges.assignmentsCount > 0
+          ? { label: `${navBadges.assignmentsCount}`, color: "bg-amber-500/15 text-amber-300 border-amber-500/30" }
+          : null;
+      case "certificates":
+        return navBadges.certificatesCount > 0
+          ? { label: `${navBadges.certificatesCount}`, color: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30" }
+          : null;
+      default:
+        return null;
+    }
   };
 
   return (
@@ -200,6 +289,7 @@ export function StudentSidebar({
             const active = isItemActive(item);
             const Icon = item.icon;
             const isRecorded = item.id === "recorded-sessions";
+            const badgeData = getItemBadge(item.id);
 
             return (
               <Link
@@ -257,13 +347,13 @@ export function StudentSidebar({
                       {item.name}
                     </span>
 
-                    {item.badge && (
+                    {badgeData && (
                       <span
                         className={`text-[10px] font-bold px-2 py-0.5 rounded-full border shrink-0 ${
-                          item.badgeColor || "bg-card text-subtext border-border"
+                          badgeData.color || "bg-card text-subtext border-border"
                         }`}
                       >
-                        {item.badge}
+                        {badgeData.label}
                       </span>
                     )}
                   </div>
@@ -278,14 +368,16 @@ export function StudentSidebar({
           <div className="p-3 border-t border-border/60 bg-background/20 space-y-2">
             <div className="p-2.5 rounded-xl bg-gradient-to-br from-purple-950/30 via-card to-indigo-950/20 border border-purple-500/20 text-xs flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-lg bg-orange-500/15 border border-orange-500/30 flex items-center justify-center text-orange-400 shrink-0 shadow-xs">
-                <Flame className="w-4 h-4 animate-bounce" />
+                <Flame className={`w-4 h-4 ${navBadges.streak > 0 ? "animate-bounce" : ""}`} />
               </div>
               <div className="min-w-0 flex-1 leading-tight">
                 <div className="font-bold text-text text-[11px] flex items-center gap-1">
-                  <span>5-Day Streak</span>
+                  <span>{navBadges.streak > 0 ? `${navBadges.streak}-Day Streak` : "Start Your Streak"}</span>
                   <Sparkles className="w-3 h-3 text-amber-400" />
                 </div>
-                <div className="text-[10px] text-subtext truncate mt-0.5">Top 5% active learner</div>
+                <div className="text-[10px] text-subtext truncate mt-0.5">
+                  {navBadges.streak > 0 ? "Continuous active learner" : "Learn today to build momentum"}
+                </div>
               </div>
             </div>
 
@@ -299,7 +391,7 @@ export function StudentSidebar({
           </div>
         ) : (
           <div className="p-3 border-t border-border/60 flex justify-center">
-            <div className="w-8 h-8 rounded-xl bg-orange-500/15 border border-orange-500/30 flex items-center justify-center text-orange-400 shadow-xs" title="5-Day Streak Active">
+            <div className="w-8 h-8 rounded-xl bg-orange-500/15 border border-orange-500/30 flex items-center justify-center text-orange-400 shadow-xs" title={`${navBadges.streak}-Day Streak Active`}>
               <Flame className="w-4 h-4" />
             </div>
           </div>

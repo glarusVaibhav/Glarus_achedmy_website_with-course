@@ -32,13 +32,13 @@ async function main() {
     },
   })
 
-  // Upsert Student
+  // Upsert Student (Demo User)
   const student = await prisma.user.upsert({
     where: { email: 'arun.sharma@gmail.com' },
     update: {},
     create: {
       email: 'arun.sharma@gmail.com',
-      name: 'Learner Student',
+      name: 'Arun Sharma',
       password: studentPassword,
       role: 'STUDENT',
     },
@@ -56,20 +56,8 @@ async function main() {
       description: "Learn how to build production-grade agentic platforms.",
       price: 24999,
       instructorId: instructor.id,
-      status: "PENDING"
-    }
-  });
-
-  const course2 = await prisma.course.upsert({
-    where: { id: "test-course-2" },
-    update: {},
-    create: {
-      id: "test-course-2",
-      title: "Full-Stack Next.js 14 Masterclass",
-      description: "App router, Server Actions, Tailwind, Prisma.",
-      price: 14999,
-      instructorId: instructor.id,
-      status: "PENDING"
+      status: "APPROVED",
+      type: "SELF_PACED"
     }
   });
 
@@ -82,102 +70,50 @@ async function main() {
       description: "Start your journey in Data Science.",
       price: 4999,
       instructorId: instructor.id,
-      status: "APPROVED"
-    }
-  });
-
-  const course4 = await prisma.course.upsert({
-    where: { id: "test-course-4" },
-    update: {},
-    create: {
-      id: "test-course-4",
-      title: "Python Automation Tricks",
-      description: "Automate everything with Python scripts.",
-      price: 2999,
-      instructorId: instructor.id,
-      status: "REJECTED",
+      status: "APPROVED",
       type: "SELF_PACED"
     }
   });
 
-  // Add Curriculum to Course 3 (Approved Self Paced) - idempotent
-  const existingModule = await prisma.module.findUnique({ where: { id: "module-1" } });
-  if (!existingModule) {
-    await prisma.module.create({
-      data: {
-        id: "module-1",
-        title: "Getting Started with ML",
-        courseId: course3.id,
-        order: 1,
-        lectures: {
-          create: [
-            { title: "What is Machine Learning?", videoUrl: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4", order: 1 },
-            { title: "Setting up Python", videoUrl: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", order: 2 }
-          ]
-        }
-      }
-    });
-  }
-
-  // Make Course 1 Instructor Led and add Batches
-  await prisma.course.update({
-    where: { id: course1.id },
-    data: { type: "INSTRUCTOR_LED" }
+  const courseFlagship = await prisma.course.upsert({
+    where: { id: "Generative_AI_Application_Engineer" },
+    update: {},
+    create: {
+      id: "Generative_AI_Application_Engineer",
+      title: "Generative AI Application Engineering",
+      description: "Complete hands-on enterprise LLM and agentic system architecture.",
+      price: 15999,
+      instructorId: instructor.id,
+      status: "APPROVED",
+      type: "SELF_PACED"
+    }
   });
 
-  const existingBatch = await prisma.batch.findUnique({ where: { id: "batch-1" } });
-  if (!existingBatch) {
-    await prisma.batch.create({
-      data: {
-        id: "batch-1",
-        name: "Weekend Fast Track",
-        courseId: course1.id,
-        startDate: new Date(),
-        liveClasses: {
-          create: [
-            { 
-              title: "Deep Learning & Neural Network Architecture (Live Workshop)", 
-              date: new Date(Date.now() - 15 * 60 * 1000), 
-              meetingLink: "https://zoom.us/j/sample-ongoing-live-class" 
-            },
-            { 
-              title: "RAG Indexing, Vector Databases & LangChain Agents", 
-              date: new Date(Date.now() + 2.5 * 60 * 60 * 1000), 
-              meetingLink: "https://zoom.us/j/sample-upcoming-live-class" 
-            }
-          ]
-        }
-      }
-    });
-  } else {
-    await prisma.liveClass.deleteMany({ where: { batchId: "batch-1" } });
-    await prisma.liveClass.createMany({
-      data: [
-        {
-          batchId: "batch-1",
-          title: "Deep Learning & Neural Network Architecture (Live Workshop)",
-          date: new Date(Date.now() - 15 * 60 * 1000),
-          meetingLink: "https://zoom.us/j/sample-ongoing-live-class"
-        },
-        {
-          batchId: "batch-1",
-          title: "RAG Indexing, Vector Databases & LangChain Agents",
-          date: new Date(Date.now() + 2.5 * 60 * 60 * 1000),
-          meetingLink: "https://zoom.us/j/sample-upcoming-live-class"
-        }
-      ]
-    });
-  }
-
-  // Enroll the student into Course 1 & Course 3
-  for (const cId of [course1.id, course3.id]) {
-    const exists = await prisma.enrollment.findFirst({ where: { userId: student.id, courseId: cId } });
-    if (!exists) {
-      await prisma.enrollment.create({ data: { userId: student.id, courseId: cId } });
+  // Add Curriculum to Course 3
+  const module1 = await prisma.module.upsert({
+    where: { id: "module-1" },
+    update: {},
+    create: {
+      id: "module-1",
+      title: "Getting Started with ML",
+      courseId: course3.id,
+      order: 1,
     }
-  }
+  });
 
-  // Create a completed self-paced course for certificate demo
+  const lec1 = await prisma.lecture.upsert({
+    where: { id: "lec-1" },
+    update: {},
+    create: {
+      id: "lec-1",
+      moduleId: module1.id,
+      title: "What is Machine Learning?",
+      videoUrl: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+      order: 1
+    }
+  });
+
+  // Completed self-paced course for certificate demo
   const completedCourse = await prisma.course.upsert({
     where: { id: "test-course-5" },
     update: {},
@@ -192,51 +128,75 @@ async function main() {
     }
   });
 
-  await prisma.enrollment.upsert({
-    where: { id: "enrollment-completed" },
-    update: {},
-    create: {
-      id: "enrollment-completed",
-      userId: student.id,
-      courseId: completedCourse.id,
-      progress: 100
-    }
-  });
+  // Enroll demo student into Course 1, Course 3, Flagship, and Completed Course
+  for (const cId of [course1.id, course3.id, courseFlagship.id]) {
+    await prisma.enrollment.upsert({
+      where: { userId_courseId: { userId: student.id, courseId: cId } },
+      update: {},
+      create: { userId: student.id, courseId: cId, progress: 78 }
+    });
+  }
 
-  // Issue a certificate for the completed course
-  await prisma.certificate.upsert({
+  await prisma.enrollment.upsert({
     where: { userId_courseId: { userId: student.id, courseId: completedCourse.id } },
     update: {},
     create: {
       userId: student.id,
       courseId: completedCourse.id,
-      issueDate: new Date(),
-      certificateUrl: null
+      progress: 100,
+      isCompleted: true,
     }
   });
 
-  // Seed UserActivity (continue learning data)
+  // Issue a verified certificate for the completed course
+  await prisma.certificate.upsert({
+    where: { userId_courseId: { userId: student.id, courseId: completedCourse.id } },
+    update: { credentialId: "GA-CERT-2026-ARUN01" },
+    create: {
+      userId: student.id,
+      courseId: completedCourse.id,
+      credentialId: "GA-CERT-2026-ARUN01",
+      issueDate: new Date(),
+      certificateUrl: "/api/student/certificates/GA-CERT-2026-ARUN01/download"
+    }
+  });
+
+  // Video Progress for demo student
+  await prisma.videoProgress.upsert({
+    where: { userId_lectureId: { userId: student.id, lectureId: "lec-1" } },
+    update: {},
+    create: {
+      userId: student.id,
+      lectureId: "lec-1",
+      progressSeconds: 3600,
+      isCompleted: true
+    }
+  });
+
+  // UserActivity (Streak & Continue learning)
+  await prisma.userActivity.upsert({
+    where: { userId_courseId: { userId: student.id, courseId: courseFlagship.id } },
+    update: { updatedAt: new Date() },
+    create: {
+      userId: student.id,
+      courseId: courseFlagship.id,
+      lastLectureTitle: "Module 4: RAG & Vector DBs",
+      lastTimestamp: 45.5,
+      totalSeconds: 7200,
+      updatedAt: new Date()
+    }
+  });
+
   await prisma.userActivity.upsert({
     where: { userId_courseId: { userId: student.id, courseId: course3.id } },
-    update: { updatedAt: new Date() },
+    update: { updatedAt: new Date(Date.now() - 24 * 60 * 60 * 1000) },
     create: {
       userId: student.id,
       courseId: course3.id,
       lastLectureTitle: "What is Machine Learning?",
       lastTimestamp: 45.5,
-      totalSeconds: 1800,
-    }
-  });
-
-  await prisma.userActivity.upsert({
-    where: { userId_courseId: { userId: student.id, courseId: course1.id } },
-    update: { updatedAt: new Date() },
-    create: {
-      userId: student.id,
-      courseId: course1.id,
-      lastLectureTitle: "Kickoff Session",
-      lastTimestamp: 0,
       totalSeconds: 3600,
+      updatedAt: new Date(Date.now() - 24 * 60 * 60 * 1000)
     }
   });
 
@@ -262,27 +222,31 @@ async function main() {
 
   // Seed Notifications
   const notifData = [
-    { message: "Welcome to EduAI! Start your learning journey today.", type: "WELCOME" },
-    { message: "New live session scheduled: Deep Learning Foundations", type: "CLASS" },
-    { message: "Congratulations! You earned the 'Course Completed' badge!", type: "ACHIEVEMENT" },
-    { message: "Your certificate for Python Fundamentals Bootcamp is ready!", type: "CERTIFICATE" },
+    { message: "Welcome to Glarus Academy! Start your AI engineering journey.", type: "WELCOME" },
+    { message: "New live session starting soon: Transformer Attention Deep Dive", type: "CLASS" },
+    { message: "Congratulations! You earned the '3-Day Streak' badge!", type: "ACHIEVEMENT" },
+    { message: "Your verified certificate for Python Fundamentals Bootcamp is ready!", type: "CERTIFICATE" },
   ];
 
   for (const notif of notifData) {
     const exists = await prisma.notification.findFirst({
-      where: { userId: student.id, message: notif.message }
+      where: { recipientId: student.id, message: notif.message }
     });
     if (!exists) {
       await prisma.notification.create({
-        data: { userId: student.id, ...notif }
+        data: {
+          recipientId: student.id,
+          title: notif.type,
+          message: notif.message,
+          category: 'STUDENT',
+          type: 'SYSTEM_ANNOUNCEMENT',
+        }
       });
     }
   }
 
-  // Seed additional instructors
+  // Seed instructors
   const sarahPassword = await bcrypt.hash('Sarah@123', 10);
-  const johnPassword = await bcrypt.hash('John@123', 10);
-  
   const sarah = await prisma.user.upsert({
     where: { email: 'sarah.chen@glarus.edu' },
     update: {},
@@ -294,18 +258,7 @@ async function main() {
     }
   });
 
-  const john = await prisma.user.upsert({
-    where: { email: 'john.doe@glarus.edu' },
-    update: {},
-    create: {
-      email: 'john.doe@glarus.edu',
-      name: 'John Doe',
-      password: johnPassword,
-      role: 'INSTRUCTOR',
-    }
-  });
-
-  // Seed Live Courses
+  // Live Course Cohort 1
   const liveCourse1 = await prisma.liveCourse.upsert({
     where: { id: 'live-course-genai' },
     update: {},
@@ -318,6 +271,7 @@ async function main() {
       category: 'Generative AI',
       level: 'Intermediate to Advanced',
       duration: '6 Weeks (12 Live Sessions)',
+      price: 19999,
       startDate: new Date('2026-09-01T19:00:00Z'),
       endDate: new Date('2026-10-10T21:00:00Z'),
       timezone: 'Asia/Kolkata (IST)',
@@ -329,9 +283,9 @@ async function main() {
       createdById: admin.id,
       meetingPlatform: 'Zoom Enterprise',
       meetingUrl: 'https://zoom.us/j/glarus-live-genai-bootcamp',
-      prerequisites: JSON.stringify(['Python 3.10+', 'Basic PyTorch & Neural Networks', 'REST API fundamentals']),
-      objectives: JSON.stringify(['Build multi-agent state machines with LangGraph', 'Implement production RAG with hybrid search', 'Deploy self-correcting autonomous coding agents']),
-      tags: JSON.stringify(['AI Agents', 'LangGraph', 'RAG', 'LLMOps', 'PyTorch']),
+      prerequisites: 'Python 3.10+, PyTorch installed, basic Linear Algebra & Matrix Calculus',
+      objectives: 'Build multi-agent state machines with LangGraph, deploy production RAG, master LLMOps',
+      tags: 'AI Agents, LangGraph, RAG, LLMOps, PyTorch',
       targetAudience: 'Senior Software Engineers, Data Scientists & AI Engineers looking to build production-grade agentic systems.',
       thumbnailGradient: 'from-purple-900 via-indigo-950 to-slate-950',
       recordingAvailable: true,
@@ -340,231 +294,246 @@ async function main() {
     }
   });
 
-  const liveCourse2 = await prisma.liveCourse.upsert({
-    where: { id: 'live-course-nextjs' },
-    update: {},
+  // Enroll demo student in Live Course
+  await prisma.liveCourseEnrollment.upsert({
+    where: { userId_liveCourseId: { userId: student.id, liveCourseId: liveCourse1.id } },
+    update: { status: 'ACTIVE' },
     create: {
-      id: 'live-course-nextjs',
-      title: 'Full-Stack Next.js 15 & Real-Time Distributed Systems',
-      slug: 'nextjs-15-live-masterclass',
-      shortDescription: 'Build scalable web architectures with App Router, Server Actions, WebSockets, and Edge Caching.',
-      description: 'Master server components, streaming SSR, PostgreSQL optimization, micro-frontends, and distributed state management.',
-      category: 'Web Development',
-      level: 'Intermediate',
-      duration: '4 Weeks (8 Live Sessions)',
-      startDate: new Date('2026-09-15T18:00:00Z'),
-      endDate: new Date('2026-10-15T20:00:00Z'),
-      timezone: 'Asia/Kolkata (IST)',
-      totalSessions: 4,
-      maxStudents: 50,
-      enrolledCount: 28,
-      status: 'DRAFT',
-      leadInstructorId: instructor.id,
-      createdById: admin.id,
-      meetingPlatform: 'Google Meet',
-      meetingUrl: 'https://meet.google.com/abc-defg-hij',
-      prerequisites: JSON.stringify(['React 18/19 basics', 'JavaScript ES6+', 'Basic TypeScript']),
-      objectives: JSON.stringify(['Master Next.js App Router & Server Actions', 'Implement distributed real-time caching', 'Deploy on Vercel & AWS']),
-      tags: JSON.stringify(['Next.js', 'React 19', 'TypeScript', 'TailwindCSS']),
-      targetAudience: 'Full-Stack Developers and Frontend Engineers transitioning to enterprise Next.js.',
-      thumbnailGradient: 'from-cyan-950 via-blue-950 to-slate-950',
-      recordingAvailable: true,
-      attendanceTracking: true,
-      visibility: 'PUBLIC'
+      userId: student.id,
+      liveCourseId: liveCourse1.id,
+      batchName: 'Weekend AI Class #4',
+      status: 'ACTIVE',
+      progress: 50
     }
   });
 
   // Seed Live Sessions for Course 1
+  // Session 1: ONGOING right now
   const session1 = await prisma.liveSession.upsert({
     where: { id: 'session-genai-1' },
-    update: {},
+    update: {
+      date: new Date(Date.now() - 15 * 60 * 1000), // started 15 min ago
+      status: 'LIVE'
+    },
     create: {
       id: 'session-genai-1',
       liveCourseId: liveCourse1.id,
       sessionNumber: 1,
-      title: 'Transformer Attention Deep Dive & Scaled Dot-Product Math',
-      description: 'Dissecting transformer architecture from theoretical matrix multiplication to PyTorch multi-head attention implementations.',
-      date: new Date('2026-09-01T19:00:00Z'),
-      startTime: '07:00 PM',
-      endTime: '09:00 PM',
+      title: 'Deep Learning & Neural Network Architecture (Live Workshop)',
+      description: 'Hands-on deep dive into transformer attention mechanisms and custom PyTorch neural networks.',
+      date: new Date(Date.now() - 15 * 60 * 1000),
+      startTime: '10:00 AM',
+      endTime: '12:00 PM',
       timezone: 'Asia/Kolkata (IST)',
       duration: '120 min',
-      status: 'SCHEDULED',
-      meetingUrl: 'https://zoom.us/j/glarus-session-1',
-      recordingStatus: 'unavailable',
+      status: 'LIVE',
+      meetingId: '7b8f4a21-5c91-4e32-9a77-123456789abc',
+      meetingPasscode: 'Kx82PmQ1',
+      meetingUrl: 'https://zoom.us/j/sample-ongoing-live-class',
+      recordingUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
+      recordingStatus: 'available',
       agenda: {
         create: [
-          { title: 'Cohort Welcome & Curriculum Roadmap', description: 'Orientation, tools setup, and GPU environment checks.', startTime: '07:00 PM', endTime: '07:15 PM', duration: '15 min', order: 1 },
-          { title: 'Mathematical Foundations of Self-Attention', description: 'Query, Key, Value tensor projections and scaled dot-product calculus.', startTime: '07:15 PM', endTime: '07:55 PM', duration: '40 min', order: 2 },
-          { title: 'Mid-Session Break & Code Setup', description: 'Short break and cloning hands-on repo.', startTime: '07:55 PM', endTime: '08:05 PM', duration: '10 min', order: 3 },
-          { title: 'Live PyTorch Coding: Multi-Head Attention', description: 'Building the Attention module from scratch with tensor batching.', startTime: '08:05 PM', endTime: '08:45 PM', duration: '40 min', order: 4 },
-          { title: 'Interactive Q&A & Homework Overview', description: 'Live debugging with students and assignment briefing.', startTime: '08:45 PM', endTime: '09:00 PM', duration: '15 min', order: 5 }
-        ]
-      },
-      topics: {
-        create: [
-          { title: 'Scaled Dot-Product Attention', description: 'Softmax normalization, masking for causal decoders.', order: 1 },
-          { title: 'Multi-Head Projections', description: 'Linear transformations, dimension splitting, and concatenation.', order: 2 },
-          { title: 'Positional Encodings', description: 'Sinusoidal vs learned rotary positional embeddings (RoPE).', order: 3 }
+          { title: 'Neural Network Foundations & Multilayer Perceptrons', description: 'Orientation, tools setup, and GPU environment checks.', startTime: '10:00 AM', endTime: '10:15 AM', duration: '15 min', order: 1 },
+          { title: 'Custom Loss Functions, Gradient Descent & Backprop Calculus', description: 'Query, Key, Value tensor projections and scaled dot-product calculus.', startTime: '10:15 AM', endTime: '10:40 AM', duration: '25 min', order: 2 },
+          { title: 'Live PyTorch Implementation: Deep Feedforward & Residual Layers', description: 'Building the Attention module from scratch with tensor batching.', startTime: '10:40 AM', endTime: '11:20 AM', duration: '40 min', order: 3 },
+          { title: 'Regularization Strategies: Dropout, BatchNorm & Gradient Clipping', description: 'Techniques for stabilizing gradient propagation.', startTime: '11:20 AM', endTime: '11:45 AM', duration: '25 min', order: 4 },
+          { title: 'Live Debugging, Q&A & Hands-On Homework Assignment', description: 'Live debugging with students and assignment briefing.', startTime: '11:45 AM', endTime: '12:00 PM', duration: '15 min', order: 5 }
         ]
       },
       learningOutcomes: {
         create: [
-          { title: 'Calculate self-attention matrix equations by hand', order: 1 },
-          { title: 'Write production-ready PyTorch Attention layers', order: 2 },
-          { title: 'Understand causal masking in auto-regressive models', order: 3 }
-        ]
-      },
-      activities: {
-        create: [
-          { title: 'Attention Layer Pair Programming', instructions: 'Implement scaled dot-product attention in Google Colab with test vectors.', duration: '30 min', order: 1 }
-        ]
-      },
-      resources: {
-        create: [
-          { title: 'Attention Is All You Need (Paper PDF)', type: 'PDF', url: 'https://arxiv.org/abs/1706.03762' },
-          { title: 'Starter GitHub Repository', type: 'GITHUB', url: 'https://github.com/glarus-academy/transformers-from-scratch' }
-        ]
-      },
-      homework: {
-        create: [
-          { title: 'Implement Rotary Positional Embedding (RoPE)', description: 'Extend the baseline attention module with RoPE and benchmark inference speed.', dueDate: '04 Sep 2026' }
+          { title: 'Build and train multi-layer perceptron neural nets from scratch in PyTorch', order: 1 },
+          { title: 'Implement and debug backpropagation algorithms with custom loss metrics', order: 2 },
+          { title: 'Master regularization to prevent overfitting in production AI models', order: 3 }
         ]
       }
     }
   });
 
-  const session2 = await prisma.liveSession.upsert({
+  // Session 2: UPCOMING today in 2.5 hours
+  await prisma.liveSession.upsert({
     where: { id: 'session-genai-2' },
-    update: {},
+    update: {
+      date: new Date(Date.now() + 2.5 * 60 * 60 * 1000),
+      status: 'SCHEDULED',
+      meetingId: '8c9e5b32-6d02-4f43-ab88-234567890bcd',
+      meetingPasscode: 'Lz93QnB2'
+    },
     create: {
       id: 'session-genai-2',
       liveCourseId: liveCourse1.id,
       sessionNumber: 2,
-      title: 'Production RAG Architectures: Hybrid Search & BM25 Reranking',
+      title: 'RAG Indexing, Vector Databases & LangChain Agents',
       description: 'Designing resilient retrieval pipelines with vector databases, cross-encoder rerankers, and contextual compression.',
-      date: new Date('2026-09-04T19:00:00Z'),
-      startTime: '07:00 PM',
-      endTime: '09:00 PM',
+      date: new Date(Date.now() + 2.5 * 60 * 60 * 1000),
+      startTime: '02:00 PM',
+      endTime: '03:30 PM',
       timezone: 'Asia/Kolkata (IST)',
-      duration: '120 min',
+      duration: '90 min',
       status: 'SCHEDULED',
-      meetingUrl: 'https://zoom.us/j/glarus-session-2',
+      meetingId: '8c9e5b32-6d02-4f43-ab88-234567890bcd',
+      meetingPasscode: 'Lz93QnB2',
+      meetingUrl: 'https://zoom.us/j/sample-upcoming-live-class',
       recordingStatus: 'unavailable',
       agenda: {
         create: [
-          { title: 'RAG Pitfalls: Why Naive Vector Search Fails', description: 'Chunking boundary loss, embedding hallucinations, and out-of-domain queries.', startTime: '07:00 PM', endTime: '07:30 PM', duration: '30 min', order: 1 },
-          { title: 'Hybrid Retrieval: Sparse (BM25) + Dense (Vector)', description: 'Reciprocal Rank Fusion (RRF) math and index synchronization.', startTime: '07:30 PM', endTime: '08:15 PM', duration: '45 min', order: 2 },
-          { title: 'Break & Sandbox Refresh', description: 'Take a break and open Qdrant instance.', startTime: '08:15 PM', endTime: '08:25 PM', duration: '10 min', order: 3 },
-          { title: 'Cross-Encoder Reranking in Python', description: 'Building low-latency Cohere / HuggingFace reranker wrappers.', startTime: '08:25 PM', endTime: '09:00 PM', duration: '35 min', order: 4 }
+          { title: 'Production RAG Architecture & Semantic Search Fundamentals', duration: '20 mins', order: 1 },
+          { title: 'High-Performance Document Chunking & Embedding Strategies', duration: '20 mins', order: 2 },
+          { title: 'Vector Database Integration: Pinecone, Qdrant & Hybrid Indexing', duration: '25 mins', order: 3 },
+          { title: 'Autonomous Agent Orchestration with LangChain & Memory Tools', duration: '15 mins', order: 4 },
+          { title: 'Live Interactive Q&A, Latency Tuning & Code Review', duration: '10 mins', order: 5 }
+        ]
+      },
+      learningOutcomes: {
+        create: [
+          { title: 'Design production-grade Retrieval-Augmented Generation (RAG) pipelines', order: 1 },
+          { title: 'Perform hybrid vector search with BM25 reranking for high accuracy', order: 2 },
+          { title: 'Deploy conversational AI agents with tool-calling and persistent state', order: 3 }
         ]
       }
     }
   });
 
-  const session3 = await prisma.liveSession.upsert({
-    where: { id: 'session-genai-3' },
+  // Seed Live Attendance for demo student
+  await prisma.liveSessionAttendance.upsert({
+    where: { sessionId_userId: { sessionId: session1.id, userId: student.id } },
     update: {},
     create: {
-      id: 'session-genai-3',
-      liveCourseId: liveCourse1.id,
-      sessionNumber: 3,
-      title: 'Stateful Multi-Agent Orchestration with LangGraph',
-      description: 'Building cyclic graphs, agent supervisors, human-in-the-loop approvals, and checkpoint persistence.',
-      date: new Date('2026-09-08T19:00:00Z'),
-      startTime: '07:00 PM',
-      endTime: '09:00 PM',
-      timezone: 'Asia/Kolkata (IST)',
-      duration: '120 min',
-      status: 'SCHEDULED',
-      meetingUrl: 'https://zoom.us/j/glarus-session-3',
-      recordingStatus: 'unavailable'
-    }
-  });
-
-  // Seed Session Assignments
-  // Session 1 -> Dr. Sarah Chen with Edit Permissions
-  await prisma.sessionAssignment.upsert({
-    where: { id: 'assign-genai-s1' },
-    update: {},
-    create: {
-      id: 'assign-genai-s1',
       sessionId: session1.id,
-      liveCourseId: liveCourse1.id,
-      instructorId: sarah.id,
-      canView: true,
-      canEdit: true,
-      canEditAgenda: true,
-      canEditSchedule: true,
-      canEditResources: true,
-      canAddHomework: true,
-      canReschedule: true,
-      canCancel: false,
-      canManageAttendance: true,
-      canManageRecording: true,
-      assignedBy: 'Super Admin',
-      assignedAt: new Date()
+      userId: student.id,
+      status: 'PRESENT',
+      durationMinutes: 90,
+      joinedAt: new Date(Date.now() - 15 * 60 * 1000)
     }
   });
 
-  // Session 2 -> John Doe with View Only (canEdit: false)
-  await prisma.sessionAssignment.upsert({
-    where: { id: 'assign-genai-s2' },
+  // Seed Recording Progress for demo student
+  await prisma.sessionRecordingProgress.upsert({
+    where: { sessionId_userId: { sessionId: session1.id, userId: student.id } },
     update: {},
     create: {
-      id: 'assign-genai-s2',
-      sessionId: session2.id,
-      liveCourseId: liveCourse1.id,
-      instructorId: john.id,
-      canView: true,
-      canEdit: false,
-      canEditAgenda: false,
-      canEditSchedule: false,
-      canEditResources: false,
-      canAddHomework: false,
-      canReschedule: false,
-      canCancel: false,
-      canManageAttendance: true,
-      canManageRecording: false,
-      assignedBy: 'Super Admin',
-      assignedAt: new Date()
+      sessionId: session1.id,
+      userId: student.id,
+      secondsWatched: 4178,
+      totalDurationSeconds: 6120,
+      percent: 68,
+      status: 'IN_PROGRESS',
+      resumeTimestampSeconds: 4178
     }
   });
 
-  // Session 3 -> Dr. Sarah Chen
-  await prisma.sessionAssignment.upsert({
-    where: { id: 'assign-genai-s3' },
+  // Seed Assignments for demo student
+  const asg1 = await prisma.assignment.upsert({
+    where: { id: 'asg-demo-1' },
     update: {},
     create: {
-      id: 'assign-genai-s3',
-      sessionId: session3.id,
+      id: 'asg-demo-1',
       liveCourseId: liveCourse1.id,
-      instructorId: sarah.id,
-      canView: true,
-      canEdit: true,
-      canEditAgenda: true,
-      canEditSchedule: false,
-      canEditResources: true,
-      canAddHomework: true,
-      canReschedule: false,
-      canCancel: false,
-      canManageAttendance: true,
-      canManageRecording: true,
-      assignedBy: 'Super Admin',
-      assignedAt: new Date()
+      title: 'Building an Autonomous Research Agent with LangGraph',
+      description: 'Implement a cyclical multi-agent graph with supervisor routing and persistent SQLite checkpointing in Python.',
+      moduleName: 'Module 6: Multi-Agent Graphs & Workflows',
+      dueDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
+      totalMarks: 100,
+      pointsLabel: '100 Pts',
+      instructions: [
+        'Use LangGraph with StateGraph to construct supervisor and worker agents.',
+        'Integrate Tavily or SerpAPI tool nodes for live web retrieval.',
+        'Implement thread memory and checkpoint resumption.'
+      ]
     }
   });
 
-  // Log to AuditLog
-  await prisma.auditLog.create({
-    data: {
-      action: 'Admin seeded Live Training & Cohort Management System',
-      details: 'Initialized LiveCourse, LiveSessions, Agendas, and Granular Instructor Assignments for Glarus Academy Live Training portal.',
-      adminId: admin.id
+  const asg2 = await prisma.assignment.upsert({
+    where: { id: 'asg-demo-2' },
+    update: {},
+    create: {
+      id: 'asg-demo-2',
+      liveCourseId: liveCourse1.id,
+      title: 'Custom PyTorch Loss & Transformer Block Implementation',
+      description: 'Implement scaled dot-product multi-head attention with causal masking, LayerNorm, and RoPE positional encodings in PyTorch.',
+      moduleName: 'Module 3: Transformer Deep-Dive',
+      dueDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
+      totalMarks: 100,
+      pointsLabel: '100 Pts'
     }
   });
 
-  console.log("Seeded complete next-gen live training data!");
+  // Seed Submissions for demo student
+  await prisma.assignmentSubmission.upsert({
+    where: { assignmentId_userId: { assignmentId: asg1.id, userId: student.id } },
+    update: {},
+    create: {
+      assignmentId: asg1.id,
+      userId: student.id,
+      status: 'IN_REVIEW',
+      githubUrl: 'https://github.com/arun-sharma/autonomous-research-agent-langgraph',
+      liveUrl: 'https://langgraph-agent.demo.glarus.ai',
+      fileName: 'research_agent_architecture.pdf',
+      notes: 'Implemented supervisor routing with Tavily web search and SQLite persistent memory.',
+    }
+  });
+
+  await prisma.assignmentSubmission.upsert({
+    where: { assignmentId_userId: { assignmentId: asg2.id, userId: student.id } },
+    update: {},
+    create: {
+      assignmentId: asg2.id,
+      userId: student.id,
+      status: 'GRADED',
+      scoreNumeric: 98,
+      scoreLabel: '98/100',
+      feedback: 'Outstanding work! Your RoPE vector rotation and causal mask tensors are cleanly vectorized with zero CPU bottlenecks.',
+      githubUrl: 'https://github.com/arun-sharma/pytorch-transformer-from-scratch',
+      fileName: 'transformer_blocks_submission.zip',
+      gradedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000)
+    }
+  });
+
+  // Seed Purchase and Invoice for demo student
+  const purchase = await prisma.purchase.upsert({
+    where: { transactionId: 'TXN_ARUN_DEMO_01' },
+    update: {},
+    create: {
+      userId: student.id,
+      courseId: courseFlagship.id,
+      amount: 15999,
+      currency: 'INR',
+      paymentMethod: 'Credit Card (•••• 4242)',
+      transactionId: 'TXN_ARUN_DEMO_01',
+      paymentStatus: 'COMPLETED'
+    }
+  });
+
+  await prisma.invoice.upsert({
+    where: { purchaseId: purchase.id },
+    update: {},
+    create: {
+      invoiceNumber: 'INV-2026-0801',
+      purchaseId: purchase.id,
+      subtotal: 13558,
+      taxAmount: 2441,
+      totalAmount: 15999,
+      billingName: 'Arun Sharma',
+      billingEmail: 'arun.sharma@gmail.com',
+      gstin: '29AAACG1234F1Z5',
+      issuedAt: new Date()
+    }
+  });
+
+  // Initialize global settings
+  await prisma.settings.upsert({
+    where: { id: "global" },
+    update: {},
+    create: {
+      id: "global",
+      platformName: "Glarus Academy",
+      currency: "INR",
+      commissionPercent: 15.0,
+    }
+  });
+
+  console.log("Seeded complete demo student data for arun.sharma@gmail.com!");
 }
 
 main()

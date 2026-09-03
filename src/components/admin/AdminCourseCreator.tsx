@@ -34,7 +34,10 @@ import {
   ArrowUp,
   ArrowDown,
   Info,
-  X
+  X,
+  Radio,
+  Briefcase,
+  Building2
 } from "lucide-react";
 
 export interface AIModuleItem {
@@ -55,6 +58,7 @@ export interface LessonContent {
   quizQuestion?: string;
   quizOptions?: string[];
   quizCorrectIndex?: number;
+  quizExplanation?: string;
   starterCode?: string;
   codeLanguage?: string;
   resourceFileName?: string;
@@ -86,6 +90,12 @@ export interface CourseFormData {
   featureOnHomepage: boolean;
   issueCertificate: boolean;
   drmProtection: boolean;
+  hasInternship: boolean;
+  internshipType: string;
+  internshipDuration: string;
+  internshipStipend: string;
+  internshipCompanyPartner: string;
+  internshipDescription: string;
 }
 
 const GRADIENT_OPTIONS = [
@@ -135,7 +145,13 @@ export default function AdminCourseCreator() {
     thumbnailGradient: GRADIENT_OPTIONS[0].value,
     featureOnHomepage: true,
     issueCertificate: true,
-    drmProtection: true
+    drmProtection: true,
+    hasInternship: false,
+    internshipType: "Guaranteed Internship (Post-Completion)",
+    internshipDuration: "2 Months",
+    internshipStipend: "Paid (₹15,000 / month)",
+    internshipCompanyPartner: "Partner AI Startups & Tech Incubators",
+    internshipDescription: "Learners who complete all course milestones and achieve >= 75% on the capstone project receive direct onboarding into a 2-month mentored industry internship."
   });
 
   // New Outcome input
@@ -191,6 +207,76 @@ export default function AdminCourseCreator() {
     moduleId: string;
     lesson: LessonContent;
   } | null>(null);
+
+  // AI Lesson Assistant State
+  const [aiLessonPrompt, setAiLessonPrompt] = useState("");
+  const [aiLessonDifficulty, setAiLessonDifficulty] = useState<"Beginner" | "Intermediate" | "Advanced">("Intermediate");
+  const [isGeneratingLessonAi, setIsGeneratingLessonAi] = useState(false);
+
+  const handleGenerateLessonWithAi = async (customPromptOverride?: string) => {
+    if (!activeLessonModal) return;
+    const promptToUse = customPromptOverride !== undefined ? customPromptOverride : aiLessonPrompt;
+    setIsGeneratingLessonAi(true);
+
+    try {
+      const moduleItem = builderModules.find(m => m.id === activeLessonModal.moduleId);
+      const res = await fetch("/api/ai/lesson-assist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          lessonTitle: activeLessonModal.lesson.title,
+          contentType: activeLessonModal.lesson.type,
+          courseTitle: formData.title,
+          moduleTitle: moduleItem?.title || "",
+          difficulty: aiLessonDifficulty,
+          customPrompt: promptToUse,
+          currentData: activeLessonModal.lesson
+        })
+      });
+
+      const data = await res.json();
+      if (data.success && data.generated) {
+        const gen = data.generated;
+        setActiveLessonModal(prev => {
+          if (!prev) return null;
+          const updatedLesson = { ...prev.lesson };
+
+          if (prev.lesson.type === "quiz") {
+            updatedLesson.quizQuestion = gen.quizQuestion || updatedLesson.quizQuestion;
+            if (Array.isArray(gen.options) && gen.options.length > 0) {
+              updatedLesson.quizOptions = gen.options;
+            }
+            if (typeof gen.correctIndex === "number") {
+              updatedLesson.quizCorrectIndex = gen.correctIndex;
+            }
+            if (gen.explanation) {
+              updatedLesson.quizExplanation = gen.explanation;
+            }
+          } else if (prev.lesson.type === "article") {
+            updatedLesson.content = gen.content || updatedLesson.content;
+          } else if (prev.lesson.type === "sandbox") {
+            updatedLesson.starterCode = gen.starterCode || updatedLesson.starterCode;
+          } else if (prev.lesson.type === "video") {
+            if (gen.suggestedDuration) updatedLesson.duration = gen.suggestedDuration;
+            if (gen.videoUrl) updatedLesson.videoUrl = gen.videoUrl;
+          } else if (prev.lesson.type === "resource") {
+            if (gen.resourceFileName) updatedLesson.resourceFileName = gen.resourceFileName;
+          }
+
+          return { ...prev, lesson: updatedLesson };
+        });
+
+        showToast(`✨ AI generated ${activeLessonModal.lesson.type} content applied!`, "success");
+      } else {
+        showToast("Could not generate content with AI", "error");
+      }
+    } catch (err) {
+      console.error(err);
+      showToast("Error connecting to AI Assistant", "error");
+    } finally {
+      setIsGeneratingLessonAi(false);
+    }
+  };
 
   // Publishing / Submission State
   const [isPublishing, setIsPublishing] = useState(false);
@@ -787,26 +873,57 @@ export default function AdminCourseCreator() {
                   {/* Delivery Format */}
                   <div className="md:col-span-2 space-y-2">
                     <label className="block text-xs font-bold text-text">Delivery Format</label>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                      {[
-                        { id: "SELF_PACED", title: "Self-Paced Course", desc: "On-demand recorded lessons, assignments & sandbox" },
-                        { id: "INSTRUCTOR_LED", title: "Instructor Cohort", desc: "Weekly scheduled milestones with instructor office hours" },
-                        { id: "LIVE_BOOTCAMP", title: "Live Bootcamp", desc: "Synchronous live stream training & pair coding" }
-                      ].map(mode => (
-                        <button
-                          key={mode.id}
-                          type="button"
-                          onClick={() => setFormData({ ...formData, courseType: mode.id as any })}
-                          className={`p-3.5 rounded-2xl border text-left transition-all ${
-                            formData.courseType === mode.id
-                              ? "bg-purple-500/15 border-purple-500 text-purple-300 ring-2 ring-purple-500/20"
-                              : "bg-background/50 border-white/10 text-subtext hover:border-white/20"
-                          }`}
-                        >
-                          <span className="text-xs font-bold block text-text">{mode.title}</span>
-                          <span className="text-[10px] text-subtext mt-0.5 block">{mode.desc}</span>
-                        </button>
-                      ))}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                      {/* Option 1: Self-Paced Course */}
+                      <button
+                        type="button"
+                        onClick={() => setFormData({ ...formData, courseType: "SELF_PACED" })}
+                        className={`p-4 rounded-2xl border text-left transition-all relative overflow-hidden group ${
+                          formData.courseType === "SELF_PACED"
+                            ? "bg-purple-500/15 border-purple-500 text-purple-300 ring-2 ring-purple-500/20 shadow-lg shadow-purple-500/10"
+                            : "bg-background/50 border-white/10 text-subtext hover:border-white/20"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between gap-2 mb-1">
+                          <div className="flex items-center gap-2">
+                            <div className="w-7 h-7 rounded-xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-purple-400">
+                              <BookOpen className="w-3.5 h-3.5" />
+                            </div>
+                            <span className="text-xs font-bold text-text">Self-Paced Course</span>
+                          </div>
+                          <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                            Active
+                          </span>
+                        </div>
+                        <span className="text-[11px] text-subtext block mt-1 leading-relaxed">
+                          On-demand recorded video lessons, assignments, modular quizzes & sandbox coding.
+                        </span>
+                      </button>
+
+                      {/* Option 2: Live Classes */}
+                      <button
+                        type="button"
+                        onClick={() => router.push("/admin/live-training/create")}
+                        className="p-4 rounded-2xl border border-white/10 bg-background/50 hover:bg-card hover:border-emerald-500/50 text-left transition-all group relative overflow-hidden shadow-sm hover:shadow-emerald-500/10 hover:scale-[1.01]"
+                      >
+                        <div className="flex items-center justify-between gap-2 mb-1">
+                          <div className="flex items-center gap-2">
+                            <div className="w-7 h-7 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+                              <Radio className="w-3.5 h-3.5" />
+                            </div>
+                            <span className="text-xs font-bold text-text group-hover:text-emerald-300 transition-colors">
+                              Live Classes
+                            </span>
+                          </div>
+                          <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                            Live Creator ↗
+                          </span>
+                        </div>
+                        <span className="text-[11px] text-subtext block mt-1 leading-relaxed group-hover:text-subtext/90">
+                          Synchronous live cohort batches, scheduled live workshops, meeting rooms & AI agenda architect.
+                        </span>
+                      </button>
                     </div>
                   </div>
 
@@ -855,6 +972,114 @@ export default function AdminCourseCreator() {
                         </span>
                       ))}
                     </div>
+                  </div>
+
+                  {/* 💼 Internship Availability & Career Placement Section */}
+                  <div className="md:col-span-2 p-5 rounded-3xl bg-gradient-to-br from-card via-card/90 to-purple-950/20 border border-white/10 space-y-4 shadow-md">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0 shadow-inner">
+                          <Briefcase className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h3 className="text-sm font-bold text-text">Industry Internship Program</h3>
+                            <span className="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[9px] font-black uppercase tracking-wider">
+                              Career Perk
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-subtext mt-0.5">
+                            Offer direct industry project internship or research placement upon course completion.
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Internship Toggle */}
+                      <label className="relative inline-flex items-center cursor-pointer select-none self-start sm:self-auto">
+                        <input
+                          type="checkbox"
+                          checked={formData.hasInternship}
+                          onChange={(e) => setFormData({ ...formData, hasInternship: e.target.checked })}
+                          className="sr-only peer"
+                        />
+                        <div className="w-12 h-6 bg-background peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600 border border-white/10" />
+                        <span className="ml-2.5 text-xs font-bold text-text">
+                          {formData.hasInternship ? "Internship Included" : "No Internship"}
+                        </span>
+                      </label>
+                    </div>
+
+                    {/* Expandable Internship Configuration */}
+                    {formData.hasInternship && (
+                      <div className="pt-3 border-t border-white/10 grid grid-cols-1 sm:grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2 duration-200">
+                        {/* Internship Track / Model */}
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-bold text-text">Internship Opportunity Model *</label>
+                          <select
+                            value={formData.internshipType}
+                            onChange={(e) => setFormData({ ...formData, internshipType: e.target.value })}
+                            className="w-full bg-background border border-white/10 focus:border-purple-500 rounded-2xl px-3.5 py-2.5 text-xs font-semibold text-text outline-none"
+                          >
+                            <option value="Guaranteed Internship (Post-Completion)">Guaranteed Internship (Post-Completion)</option>
+                            <option value="Performance-Based Internship (Top 20% Performers)">Performance-Based Internship (Top 20% Performers)</option>
+                            <option value="Direct Project Internship with Partner Startups">Direct Project Internship with Partner Startups</option>
+                            <option value="Virtual AI Research & Engineering Lab">Virtual AI Research & Engineering Lab</option>
+                            <option value="Paid Industry Fellowship">Paid Industry Fellowship</option>
+                          </select>
+                        </div>
+
+                        {/* Internship Duration */}
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-bold text-text">Internship Duration</label>
+                          <select
+                            value={formData.internshipDuration}
+                            onChange={(e) => setFormData({ ...formData, internshipDuration: e.target.value })}
+                            className="w-full bg-background border border-white/10 focus:border-purple-500 rounded-2xl px-3.5 py-2.5 text-xs font-semibold text-text outline-none"
+                          >
+                            <option value="1 Month (Sprint)">1 Month (Sprint)</option>
+                            <option value="2 Months (Standard)">2 Months (Standard)</option>
+                            <option value="3 Months (Comprehensive)">3 Months (Comprehensive)</option>
+                            <option value="6 Months (Co-Op Fellowship)">6 Months (Co-Op Fellowship)</option>
+                          </select>
+                        </div>
+
+                        {/* Internship Stipend / Compensation */}
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-bold text-text">Stipend / Perks Offered</label>
+                          <input
+                            type="text"
+                            value={formData.internshipStipend}
+                            onChange={(e) => setFormData({ ...formData, internshipStipend: e.target.value })}
+                            placeholder="e.g. Paid (₹15,000/mo) or Certificate + Verified LOR"
+                            className="w-full bg-background border border-white/10 focus:border-purple-500 rounded-2xl px-3.5 py-2.5 text-xs text-text outline-none"
+                          />
+                        </div>
+
+                        {/* Partner Companies / Hiring Network */}
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-bold text-text">Partner Companies / Hiring Network</label>
+                          <input
+                            type="text"
+                            value={formData.internshipCompanyPartner}
+                            onChange={(e) => setFormData({ ...formData, internshipCompanyPartner: e.target.value })}
+                            placeholder="e.g. Partner AI Startups & Tech Incubators"
+                            className="w-full bg-background border border-white/10 focus:border-purple-500 rounded-2xl px-3.5 py-2.5 text-xs text-text outline-none"
+                          />
+                        </div>
+
+                        {/* Internship Scope & Eligibility */}
+                        <div className="sm:col-span-2 space-y-1.5">
+                          <label className="text-xs font-bold text-text">Internship Scope & Eligibility Criteria</label>
+                          <textarea
+                            rows={2}
+                            value={formData.internshipDescription}
+                            onChange={(e) => setFormData({ ...formData, internshipDescription: e.target.value })}
+                            placeholder="Detail requirements for students to qualify (e.g. 75%+ project score, capstone review, etc.)..."
+                            className="w-full bg-background border border-white/10 focus:border-purple-500 rounded-2xl p-3 text-xs text-text outline-none"
+                          />
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -1353,17 +1578,33 @@ export default function AdminCourseCreator() {
                     </div>
 
                     <div className="p-3.5 bg-background/50 rounded-2xl border border-white/10">
-                      <span className="text-[10px] font-bold text-subtext uppercase block">Delivery</span>
-                      <span className="text-sm font-black text-purple-400 truncate">
-                        {formData.courseType.replace("_", " ")}
+                      <span className="text-[10px] font-bold text-subtext uppercase block">Internship</span>
+                      <span className={`text-sm font-black truncate ${formData.hasInternship ? "text-emerald-400" : "text-subtext"}`}>
+                        {formData.hasInternship ? formData.internshipDuration : "Not Included"}
                       </span>
                     </div>
 
                     <div className="p-3.5 bg-background/50 rounded-2xl border border-white/10">
                       <span className="text-[10px] font-bold text-subtext uppercase block">Admin Action</span>
-                      <span className="text-sm font-black text-emerald-400">Instant Deploy</span>
+                      <span className="text-sm font-black text-purple-400">Instant Deploy</span>
                     </div>
                   </div>
+
+                  {/* Internship Highlight Card in Review */}
+                  {formData.hasInternship && (
+                    <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between gap-3 text-xs">
+                      <div className="flex items-center gap-2.5">
+                        <Briefcase className="w-4 h-4 text-emerald-400 shrink-0" />
+                        <div>
+                          <span className="font-bold text-emerald-300 block">{formData.internshipType} ({formData.internshipDuration})</span>
+                          <span className="text-[10px] text-emerald-400/80">{formData.internshipStipend} • {formData.internshipCompanyPartner}</span>
+                        </div>
+                      </div>
+                      <span className="px-2 py-0.5 rounded text-[9px] font-black uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 shrink-0">
+                        Internship Enabled
+                      </span>
+                    </div>
+                  )}
 
                   {/* Outcomes checklist */}
                   {formData.outcomes.length > 0 && (
@@ -1479,6 +1720,184 @@ export default function AdminCourseCreator() {
               </button>
             </div>
 
+            {/* ═════════════════════════════════════════════
+                AI LESSON ASSISTANT STUDIO BANNER
+                ═════════════════════════════════════════════ */}
+            <div className="rounded-2xl bg-gradient-to-br from-purple-950/40 via-indigo-950/30 to-slate-950/60 border border-purple-500/30 p-4 space-y-3 shadow-lg shadow-purple-950/30 relative overflow-hidden">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-purple-600/30 border border-purple-400/30 flex items-center justify-center text-purple-300 shadow-sm shrink-0">
+                    <Sparkles className="w-4 h-4 text-purple-300 animate-pulse" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h4 className="text-xs font-black text-white tracking-wide uppercase">AI Lesson Assistant</h4>
+                      <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                        {activeLessonModal.lesson.type.toUpperCase()} Copilot
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-subtext mt-0.5">
+                      Auto-generate curriculum materials tailored for &quot;{activeLessonModal.lesson.title || "this lesson"}&quot;
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => handleGenerateLessonWithAi()}
+                  disabled={isGeneratingLessonAi}
+                  className="px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 disabled:opacity-50 text-white text-xs font-black flex items-center justify-center gap-2 shadow-md shadow-purple-600/25 transition-all hover:scale-105 active:scale-95 shrink-0"
+                >
+                  {isGeneratingLessonAi ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      <span>Writing Content...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-3.5 h-3.5" />
+                      <span>Generate with AI</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {/* Format-Aware Quick Prompt Chips */}
+              <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                <span className="text-[10px] font-bold text-subtext/70 uppercase mr-1">Quick Prompts:</span>
+
+                {activeLessonModal.lesson.type === "quiz" && (
+                  <>
+                    {[
+                      { label: "✨ Comprehensive Quiz Question", prompt: "Generate a concept mastery question testing key principles with 4 distinct choices." },
+                      { label: "🎯 Tricky Edge-Case Question", prompt: "Create a challenging, high-order thinking question testing common pitfalls." },
+                      { label: "🟢 Beginner Fundamentals", prompt: "Generate a clean, foundational concept question suitable for beginners." }
+                    ].map((chip, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        disabled={isGeneratingLessonAi}
+                        onClick={() => {
+                          setAiLessonPrompt(chip.prompt);
+                          handleGenerateLessonWithAi(chip.prompt);
+                        }}
+                        className="text-[10px] px-2.5 py-1 rounded-lg bg-background/80 hover:bg-purple-600/20 text-subtext hover:text-purple-200 border border-white/10 hover:border-purple-500/30 transition-all font-medium"
+                      >
+                        {chip.label}
+                      </button>
+                    ))}
+                  </>
+                )}
+
+                {activeLessonModal.lesson.type === "article" && (
+                  <>
+                    {[
+                      { label: "📝 In-Depth Markdown Article", prompt: "Write an exhaustive, structured markdown article with theory, code snippets, and key takeaways." },
+                      { label: "⚡ Step-by-Step Tutorial", prompt: "Create an action-oriented step-by-step tutorial with practical code examples." },
+                      { label: "💡 Conceptual Deep Dive", prompt: "Explain the underlying architecture and theoretical foundation clearly." }
+                    ].map((chip, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        disabled={isGeneratingLessonAi}
+                        onClick={() => {
+                          setAiLessonPrompt(chip.prompt);
+                          handleGenerateLessonWithAi(chip.prompt);
+                        }}
+                        className="text-[10px] px-2.5 py-1 rounded-lg bg-background/80 hover:bg-purple-600/20 text-subtext hover:text-purple-200 border border-white/10 hover:border-purple-500/30 transition-all font-medium"
+                      >
+                        {chip.label}
+                      </button>
+                    ))}
+                  </>
+                )}
+
+                {activeLessonModal.lesson.type === "sandbox" && (
+                  <>
+                    {[
+                      { label: "💻 Starter Code & TODOs", prompt: "Generate clean starter code with clear TODO tasks and function signature for students to complete." },
+                      { label: "🧪 Code Lab with Assertions", prompt: "Generate exercise boilerplate along with sample unit test assertions." }
+                    ].map((chip, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        disabled={isGeneratingLessonAi}
+                        onClick={() => {
+                          setAiLessonPrompt(chip.prompt);
+                          handleGenerateLessonWithAi(chip.prompt);
+                        }}
+                        className="text-[10px] px-2.5 py-1 rounded-lg bg-background/80 hover:bg-purple-600/20 text-subtext hover:text-purple-200 border border-white/10 hover:border-purple-500/30 transition-all font-medium"
+                      >
+                        {chip.label}
+                      </button>
+                    ))}
+                  </>
+                )}
+
+                {activeLessonModal.lesson.type === "video" && (
+                  <>
+                    {[
+                      { label: "🎬 Lecture Script & Timeline", prompt: "Generate video talking points outline and estimated duration breakdown." }
+                    ].map((chip, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        disabled={isGeneratingLessonAi}
+                        onClick={() => {
+                          setAiLessonPrompt(chip.prompt);
+                          handleGenerateLessonWithAi(chip.prompt);
+                        }}
+                        className="text-[10px] px-2.5 py-1 rounded-lg bg-background/80 hover:bg-purple-600/20 text-subtext hover:text-purple-200 border border-white/10 hover:border-purple-500/30 transition-all font-medium"
+                      >
+                        {chip.label}
+                      </button>
+                    ))}
+                  </>
+                )}
+
+                {activeLessonModal.lesson.type === "resource" && (
+                  <>
+                    {[
+                      { label: "📄 Cheatsheet & Summary Pack", prompt: "Generate a downloadable PDF cheatsheet naming and key reference bullet points." }
+                    ].map((chip, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        disabled={isGeneratingLessonAi}
+                        onClick={() => {
+                          setAiLessonPrompt(chip.prompt);
+                          handleGenerateLessonWithAi(chip.prompt);
+                        }}
+                        className="text-[10px] px-2.5 py-1 rounded-lg bg-background/80 hover:bg-purple-600/20 text-subtext hover:text-purple-200 border border-white/10 hover:border-purple-500/30 transition-all font-medium"
+                      >
+                        {chip.label}
+                      </button>
+                    ))}
+                  </>
+                )}
+              </div>
+
+              {/* Optional Prompt & Difficulty Selector */}
+              <div className="flex items-center gap-2 pt-1">
+                <input
+                  type="text"
+                  value={aiLessonPrompt}
+                  onChange={e => setAiLessonPrompt(e.target.value)}
+                  placeholder={`Optional custom instructions (e.g. "Focus on phonetics", "Write in TypeScript")...`}
+                  className="flex-1 bg-background/70 border border-white/10 rounded-xl px-3 py-1.5 text-xs text-text placeholder-subtext/60 outline-none focus:border-purple-500"
+                />
+                <select
+                  value={aiLessonDifficulty}
+                  onChange={e => setAiLessonDifficulty(e.target.value as any)}
+                  className="bg-background/70 border border-white/10 rounded-xl px-2.5 py-1.5 text-xs text-subtext hover:text-text outline-none focus:border-purple-500 shrink-0 cursor-pointer"
+                >
+                  <option value="Beginner">Beginner</option>
+                  <option value="Intermediate">Intermediate</option>
+                  <option value="Advanced">Advanced</option>
+                </select>
+              </div>
+            </div>
+
             {/* Lesson Title */}
             <div className="space-y-1.5">
               <label className="block text-xs font-bold text-text">Lesson Title</label>
@@ -1573,7 +1992,7 @@ export default function AdminCourseCreator() {
               <div className="space-y-1.5">
                 <label className="block text-xs font-bold text-text">Markdown Article Body</label>
                 <textarea
-                  rows={6}
+                  rows={8}
                   value={activeLessonModal.lesson.content || ""}
                   onChange={e => setActiveLessonModal({
                     ...activeLessonModal,
@@ -1586,7 +2005,7 @@ export default function AdminCourseCreator() {
             )}
 
             {activeLessonModal.lesson.type === "quiz" && (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <div className="space-y-1.5">
                   <label className="block text-xs font-bold text-text">Quiz Question</label>
                   <input
@@ -1599,6 +2018,73 @@ export default function AdminCourseCreator() {
                     className="w-full bg-background border border-white/10 rounded-xl px-4 py-2.5 text-xs text-text outline-none focus:border-purple-500"
                   />
                 </div>
+
+                {/* Multiple Choice Options */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-xs font-bold text-text">Options & Correct Answer</label>
+                    <span className="text-[10px] text-subtext font-normal">Click letter icon to mark correct</span>
+                  </div>
+                  <div className="space-y-2">
+                    {(activeLessonModal.lesson.quizOptions && activeLessonModal.lesson.quizOptions.length > 0
+                      ? activeLessonModal.lesson.quizOptions
+                      : ["Option A", "Option B", "Option C", "Option D"]
+                    ).map((opt, idx) => {
+                      const isCorrect = (activeLessonModal.lesson.quizCorrectIndex ?? 0) === idx;
+                      return (
+                        <div key={idx} className="flex items-center gap-2.5">
+                          <button
+                            type="button"
+                            onClick={() => setActiveLessonModal({
+                              ...activeLessonModal,
+                              lesson: { ...activeLessonModal.lesson, quizCorrectIndex: idx }
+                            })}
+                            className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 border text-xs font-black transition-all ${
+                              isCorrect
+                                ? "bg-emerald-500 border-emerald-400 text-black shadow-md shadow-emerald-500/20"
+                                : "border-white/20 text-subtext hover:border-purple-400 hover:text-white"
+                            }`}
+                            title={isCorrect ? "Correct Answer" : "Mark as Correct"}
+                          >
+                            {isCorrect ? "✓" : String.fromCharCode(65 + idx)}
+                          </button>
+                          <input
+                            value={opt}
+                            onChange={e => {
+                              const currentOpts = [
+                                ...(activeLessonModal.lesson.quizOptions || ["Option A", "Option B", "Option C", "Option D"])
+                              ];
+                              currentOpts[idx] = e.target.value;
+                              setActiveLessonModal({
+                                ...activeLessonModal,
+                                lesson: { ...activeLessonModal.lesson, quizOptions: currentOpts }
+                              });
+                            }}
+                            placeholder={`Option ${String.fromCharCode(65 + idx)}`}
+                            className={`flex-1 bg-background border rounded-xl px-3.5 py-2 text-xs text-text outline-none transition-all ${
+                              isCorrect ? "border-emerald-500/50 bg-emerald-950/10" : "border-white/10 focus:border-purple-500"
+                            }`}
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Explanation */}
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-bold text-text">Explanation & Hint</label>
+                  <textarea
+                    rows={2}
+                    value={activeLessonModal.lesson.quizExplanation || ""}
+                    onChange={e => setActiveLessonModal({
+                      ...activeLessonModal,
+                      lesson: { ...activeLessonModal.lesson, quizExplanation: e.target.value }
+                    })}
+                    placeholder="Pedagogical explanation shown to students after answering..."
+                    className="w-full bg-background border border-white/10 rounded-xl p-3 text-xs text-text outline-none focus:border-purple-500"
+                  />
+                </div>
               </div>
             )}
 
@@ -1606,7 +2092,7 @@ export default function AdminCourseCreator() {
               <div className="space-y-1.5">
                 <label className="block text-xs font-bold text-text">Starter Code</label>
                 <textarea
-                  rows={6}
+                  rows={8}
                   value={activeLessonModal.lesson.starterCode || "def agent_orchestrator(task):\n    # TODO: Implement LangGraph loop\n    pass"}
                   onChange={e => setActiveLessonModal({
                     ...activeLessonModal,

@@ -24,7 +24,8 @@ import {
   Cpu,
   MessageSquare,
   Sparkles,
-  Video
+  Video,
+  X
 } from "lucide-react";
 import Link from "next/link";
 
@@ -310,24 +311,39 @@ export default function HeroAdvanced() {
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
                       onMouseLeave={() => setShowCriteria(false)}
-                      className="absolute top-full left-0 mt-3 w-[320px] sm:w-[360px] p-5 rounded-2xl bg-white/95 dark:bg-[#0d0926]/95 border border-amber-400/40 backdrop-blur-2xl shadow-[0_10px_40px_rgba(0,0,0,0.3)] dark:shadow-[0_10px_40px_rgba(0,0,0,0.8)] z-50 text-left normal-case tracking-normal"
+                      className="absolute top-full left-0 mt-3 w-[330px] sm:w-[380px] p-5 rounded-2xl bg-white/95 dark:bg-[#0d0926]/95 border border-amber-400/40 backdrop-blur-2xl shadow-[0_10px_40px_rgba(0,0,0,0.3)] dark:shadow-[0_10px_40px_rgba(0,0,0,0.8)] z-50 text-left normal-case tracking-normal"
                     >
-                      <div className="flex items-center gap-2 mb-3 text-amber-600 dark:text-amber-400 font-black text-sm uppercase tracking-wider">
-                        <Sparkles className="w-4 h-4" />
-                        <span>Internship Eligibility Criteria *</span>
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400 font-black text-sm uppercase tracking-wider">
+                          <Sparkles className="w-4 h-4" />
+                          <span>Internship Eligibility Criteria *</span>
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setShowCriteria(false);
+                          }}
+                          className="p-1 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
                       </div>
                       <ol className="space-y-2.5 text-xs sm:text-sm text-slate-800 dark:text-slate-200 font-medium">
                         <li className="flex items-start gap-2">
-                          <span className="flex items-center justify-center w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-bold text-xs shrink-0 mt-0.5">1</span>
-                          <span><strong>Complete Course:</strong> Finish 100% of curriculum &amp; capstone projects.</span>
+                          <span className="flex items-center justify-center w-5 h-5 rounded-full bg-purple-500/20 text-purple-600 dark:text-purple-400 font-bold text-xs shrink-0 mt-0.5">1</span>
+                          <span><strong>Selected Courses Only:</strong> Available exclusively on designated flagship programs &amp; live bootcamps.</span>
                         </li>
                         <li className="flex items-start gap-2">
-                          <span className="flex items-center justify-center w-5 h-5 rounded-full bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 font-bold text-xs shrink-0 mt-0.5">2</span>
-                          <span><strong>Pass Internal Interview:</strong> Clear the technical assessment &amp; mock interview.</span>
+                          <span className="flex items-center justify-center w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-bold text-xs shrink-0 mt-0.5">2</span>
+                          <span><strong>Complete Course:</strong> Finish 100% of curriculum, practical labs &amp; capstone projects.</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="flex items-center justify-center w-5 h-5 rounded-full bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 font-bold text-xs shrink-0 mt-0.5">3</span>
+                          <span><strong>Pass Internal Interview:</strong> Clear the technical assessment &amp; mock evaluation interview.</span>
                         </li>
                       </ol>
                       <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-3 pt-2 border-t border-slate-200 dark:border-white/10 italic">
-                        * Guaranteed placement assistance upon meeting both conditions.
+                        * Guaranteed internship &amp; placement assistance upon meeting all conditions for eligible selected courses.
                       </p>
                     </motion.div>
                   )}

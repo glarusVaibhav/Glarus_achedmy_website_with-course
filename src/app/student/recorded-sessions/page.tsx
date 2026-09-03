@@ -46,13 +46,13 @@ export default function RecordedSessionsPage() {
   // State
   const [recordings, setRecordings] = useState<RecordingItem[]>([]);
   const [stats, setStats] = useState({
-    totalRecordings: 14,
-    unwatchedCount: 3,
-    inProgressCount: 4,
-    watchedCount: 7,
-    expiringSoonCount: 2,
-    expiredCount: 2,
-    totalWatchTime: "21h 48m",
+    totalRecordings: 0,
+    unwatchedCount: 0,
+    inProgressCount: 0,
+    watchedCount: 0,
+    expiringSoonCount: 0,
+    expiredCount: 0,
+    totalWatchTime: "0h 0m",
   });
   const [availableFilters, setAvailableFilters] = useState<{
     courses: string[];

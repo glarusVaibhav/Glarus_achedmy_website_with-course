@@ -63,6 +63,7 @@ export interface InstructorAssignmentsFilter {
 }
 
 interface InstructorAssignmentsViewProps {
+  isDemoUser?: boolean;
   initialFilter?: InstructorAssignmentsFilter | null;
   onClearFilter?: () => void;
   onBack?: () => void;
@@ -615,11 +616,12 @@ const PRESET_FEEDBACKS = [
    ═══════════════════════════════════════════════ */
 
 export function InstructorAssignmentsView({
+  isDemoUser = false,
   initialFilter,
   onClearFilter,
   onBack,
 }: InstructorAssignmentsViewProps = {}) {
-  const [assignments, setAssignments] = useState<AssignmentItem[]>(INITIAL_ASSIGNMENTS);
+  const [assignments, setAssignments] = useState<AssignmentItem[]>(isDemoUser ? INITIAL_ASSIGNMENTS : []);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCourseFilter, setSelectedCourseFilter] = useState("All");
   const [selectedStatusFilter, setSelectedStatusFilter] = useState("All");
@@ -630,9 +632,16 @@ export function InstructorAssignmentsView({
   /* Modal States */
   const [isWizardOpen, setIsWizardOpen] = useState(false);
   const [selectedAssignmentDetails, setSelectedAssignmentDetails] = useState<AssignmentItem | null>(null);
-  const [submissionsList, setSubmissionsList] = useState<StudentSubmission[]>(INITIAL_SUBMISSIONS);
+  const [submissionsList, setSubmissionsList] = useState<StudentSubmission[]>(isDemoUser ? INITIAL_SUBMISSIONS : []);
   const [submissionSearch, setSubmissionSearch] = useState("");
   const [submissionFilter, setSubmissionFilter] = useState<"ALL" | "PENDING" | "GRADED">("ALL");
+
+  useEffect(() => {
+    if (isDemoUser) {
+      if (assignments.length === 0) setAssignments(INITIAL_ASSIGNMENTS);
+      if (submissionsList.length === 0) setSubmissionsList(INITIAL_SUBMISSIONS);
+    }
+  }, [isDemoUser]);
 
   const [selectedSubmissionToReview, setSelectedSubmissionToReview] = useState<StudentSubmission | null>(null);
   const [reviewScore, setReviewScore] = useState<number>(88);

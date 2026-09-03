@@ -45,6 +45,8 @@ export type TaskType =
   | "Conduct Live Session"
   | "Create Learning Material"
   | "Update Course"
+  | "Send Broadcast / Announcement"
+  | "Direct Message / Notice"
   | "Custom";
 
 export type TaskPriority = "Urgent" | "High" | "Normal" | "Low";
@@ -67,6 +69,14 @@ interface TaskItem {
   reviewNotes?: string;
   createdAt: string;
 }
+
+export const INSTRUCTORS_LIST = [
+  { name: "Dr. Sarah Chen", email: "sarah.chen@glarus.edu" },
+  { name: "Alex Chen", email: "alex.chen@glarus.edu" },
+  { name: "John Doe", email: "john.doe@glarus.edu" },
+  { name: "Jessica Lin", email: "jessica.lin@glarus.edu" },
+  { name: "Bob Smith", email: "b.smith@glarus.edu" },
+];
 
 const INITIAL_ADMIN_TASKS: TaskItem[] = [
   {
@@ -176,13 +186,14 @@ function AdminTasksContent() {
   const [searchQuery, setSearchQuery] = useState(searchParams.get("search") || "");
   const [typeFilter, setTypeFilter] = useState("ALL");
   const [priorityFilter, setPriorityFilter] = useState("ALL");
+  const [instructorFilter, setInstructorFilter] = useState("ALL");
   const [tasks, setTasks] = useState<TaskItem[]>(INITIAL_ADMIN_TASKS);
   const [selectedTask, setSelectedTask] = useState<TaskItem | null>(null);
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
 
   // New task modal state
   const [newTitle, setNewTitle] = useState("");
-  const [newType, setNewType] = useState<TaskType>("Create Learning Material");
+  const [newType, setNewType] = useState<TaskType>("Conduct Live Session");
   const [newInstructor, setNewInstructor] = useState("Alex Chen");
   const [newCourse, setNewCourse] = useState("Agentic AI & Autonomous Workflows");
   const [newDeadline, setNewDeadline] = useState("30 Aug 2026");
@@ -194,24 +205,53 @@ function AdminTasksContent() {
     e.preventDefault();
     if (!newTitle.trim()) return;
 
-    const newTask: TaskItem = {
-      id: `TSK-${Math.floor(1000 + Math.random() * 9000)}`,
-      title: newTitle,
-      type: newType,
-      instructor: newInstructor,
-      instructorEmail: `${newInstructor.toLowerCase().replace(" ", ".")}@glarus.edu`,
-      course: newCourse,
-      deadline: newDeadline,
-      compensation: parseFloat(newCompensation) || 0,
-      paymentStatus: "Pending",
-      priority: newPriority,
-      status: "ASSIGNED",
-      description: newDescription,
-      deliverables: ["Primary Deliverable File/Repo", "Documentation Summary"],
-      createdAt: "Today"
-    };
+    if (newInstructor.includes("All Instructors")) {
+      const createdTasks: TaskItem[] = INSTRUCTORS_LIST.map((inst, index) => ({
+        id: `TSK-${Math.floor(1000 + Math.random() * 9000) + index}`,
+        title: newTitle,
+        type: newType,
+        instructor: inst.name,
+        instructorEmail: inst.email,
+        course: newCourse || "All Courses / Academy Wide",
+        deadline: newDeadline || "Open",
+        compensation: parseFloat(newCompensation) || 0,
+        paymentStatus: "Pending",
+        priority: newPriority,
+        status: "ASSIGNED",
+        description: newDescription,
+        deliverables:
+          newType.includes("Broadcast") || newType.includes("Message")
+            ? ["Read & Acknowledge Message"]
+            : ["Primary Deliverable File/Repo", "Documentation Summary"],
+        createdAt: "Today"
+      }));
 
-    setTasks([newTask, ...tasks]);
+      setTasks([...createdTasks, ...tasks]);
+    } else {
+      const instructorObj = INSTRUCTORS_LIST.find((i) => i.name === newInstructor);
+      const newTask: TaskItem = {
+        id: `TSK-${Math.floor(1000 + Math.random() * 9000)}`,
+        title: newTitle,
+        type: newType,
+        instructor: newInstructor,
+        instructorEmail: instructorObj ? instructorObj.email : `${newInstructor.toLowerCase().replace(" ", ".")}@glarus.edu`,
+        course: newCourse || "General",
+        deadline: newDeadline,
+        compensation: parseFloat(newCompensation) || 0,
+        paymentStatus: "Pending",
+        priority: newPriority,
+        status: "ASSIGNED",
+        description: newDescription,
+        deliverables:
+          newType.includes("Broadcast") || newType.includes("Message")
+            ? ["Read & Acknowledge Message"]
+            : ["Primary Deliverable File/Repo", "Documentation Summary"],
+        createdAt: "Today"
+      };
+
+      setTasks([newTask, ...tasks]);
+    }
+
     setIsAssignModalOpen(false);
     setNewTitle("");
     setNewDescription("");
@@ -269,9 +309,12 @@ function AdminTasksContent() {
       // Priority filter
       if (priorityFilter !== "ALL" && t.priority !== priorityFilter) return false;
 
+      // Instructor filter
+      if (instructorFilter !== "ALL" && t.instructor !== instructorFilter) return false;
+
       return true;
     });
-  }, [tasks, activeTab, searchQuery, typeFilter, priorityFilter]);
+  }, [tasks, activeTab, searchQuery, typeFilter, priorityFilter, instructorFilter]);
 
   const underReviewCount = tasks.filter((t) => t.status === "UNDER_REVIEW").length;
   const submittedCount = tasks.filter((t) => t.status === "SUBMITTED").length;
@@ -430,14 +473,29 @@ function AdminTasksContent() {
 
         <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto justify-end">
           <select
+            value={instructorFilter}
+            onChange={(e) => setInstructorFilter(e.target.value)}
+            className="bg-background border border-white/10 text-xs font-semibold text-text px-3 py-2 rounded-xl focus:outline-none focus:border-purple-500/50"
+          >
+            <option value="ALL">All Instructors</option>
+            {INSTRUCTORS_LIST.map((inst) => (
+              <option key={inst.name} value={inst.name}>
+                {inst.name}
+              </option>
+            ))}
+          </select>
+
+          <select
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value)}
             className="bg-background border border-white/10 text-xs font-semibold text-text px-3 py-2 rounded-xl focus:outline-none focus:border-purple-500/50"
           >
             <option value="ALL">All Task Types</option>
+            <option value="Conduct Live Session">Conduct Live Session</option>
+            <option value="Send Broadcast / Announcement">Send Broadcast / Announcement</option>
+            <option value="Direct Message / Notice">Direct Message / Notice</option>
             <option value="Create Course">Create Course</option>
             <option value="Create Assignment">Create Assignment</option>
-            <option value="Conduct Live Session">Conduct Live Session</option>
             <option value="Create Learning Material">Create Learning Material</option>
             <option value="Update Course">Update Course</option>
             <option value="Custom">Custom</option>
@@ -619,16 +677,18 @@ function AdminTasksContent() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="text-[11px] font-bold text-subtext uppercase tracking-wider block mb-1">
-                    Task Type
+                    Task / Message Type
                   </label>
                   <select
                     value={newType}
                     onChange={(e) => setNewType(e.target.value as TaskType)}
                     className="w-full bg-background border border-white/10 rounded-xl px-3 py-2 text-xs font-semibold text-text focus:outline-none focus:border-purple-500/50"
                   >
+                    <option value="Conduct Live Session">Conduct Live Session</option>
+                    <option value="Send Broadcast / Announcement">📢 Send Broadcast / Announcement</option>
+                    <option value="Direct Message / Notice">💬 Direct Message / Notice</option>
                     <option value="Create Course">Create Course</option>
                     <option value="Create Assignment">Create Assignment</option>
-                    <option value="Conduct Live Session">Conduct Live Session</option>
                     <option value="Create Learning Material">Create Learning Material</option>
                     <option value="Update Course">Update Course</option>
                     <option value="Custom">Custom Task</option>
@@ -644,13 +704,26 @@ function AdminTasksContent() {
                     onChange={(e) => setNewInstructor(e.target.value)}
                     className="w-full bg-background border border-white/10 rounded-xl px-3 py-2 text-xs font-semibold text-text focus:outline-none focus:border-purple-500/50"
                   >
-                    <option value="Dr. Sarah Chen">Dr. Sarah Chen</option>
-                    <option value="Alex Chen">Alex Chen</option>
-                    <option value="John Doe">John Doe</option>
-                    <option value="Jessica Lin">Jessica Lin</option>
+                    <option value="All Instructors (Broadcast / Send to All)">
+                      📢 All Instructors (Broadcast / Send to All)
+                    </option>
+                    {INSTRUCTORS_LIST.map((inst) => (
+                      <option key={inst.name} value={inst.name}>
+                        {inst.name}
+                      </option>
+                    ))}
                   </select>
                 </div>
               </div>
+
+              {newInstructor.includes("All Instructors") && (
+                <div className="p-3 rounded-xl bg-purple-500/10 border border-purple-500/25 flex items-center gap-2.5 text-purple-300 text-xs animate-in fade-in">
+                  <Sparkles className="w-4 h-4 text-purple-400 shrink-0" />
+                  <span>
+                    <strong>Broadcast Mode:</strong> This task/message will be dispatched to <strong>all {INSTRUCTORS_LIST.length} instructors</strong> simultaneously ({INSTRUCTORS_LIST.map(i => i.name).join(", ")}).
+                  </span>
+                </div>
+              )}
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
@@ -735,7 +808,13 @@ function AdminTasksContent() {
                   className="py-2 px-4 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs transition-colors shadow-md flex items-center gap-1.5"
                 >
                   <Send className="w-3.5 h-3.5" />
-                  <span>Assign Task</span>
+                  <span>
+                    {newInstructor.includes("All Instructors")
+                      ? "Broadcast to All Instructors"
+                      : newType.includes("Message") || newType.includes("Broadcast")
+                      ? "Send Message"
+                      : "Assign Task"}
+                  </span>
                 </button>
               </div>
             </form>

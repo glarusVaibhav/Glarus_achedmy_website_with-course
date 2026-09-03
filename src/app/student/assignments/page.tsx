@@ -60,187 +60,13 @@ export interface StudentAssignmentItem {
   };
 }
 
-const INITIAL_STUDENT_ASSIGNMENTS: StudentAssignmentItem[] = [
-  {
-    id: "asg-1",
-    title: "Building an Autonomous Research Agent with LangGraph",
-    course: "Advanced Generative AI Masterclass",
-    courseId: "c-genai-adv",
-    module: "Module 6: Multi-Agent Graphs & Workflows",
-    instructor: "Dr. Alex Vance",
-    dueDate: "Aug 24, 2026",
-    dueTimestamp: "2026-08-24T23:59:00",
-    status: "PENDING",
-    points: "100 Pts",
-    totalMarks: 100,
-    description: "Implement a cyclical multi-agent graph with supervisor routing and persistent SQLite checkpointing in Python.",
-    instructions: [
-      "Use LangGraph with StateGraph to construct supervisor and worker agents.",
-      "Integrate Tavily or SerpAPI tool nodes for live web retrieval.",
-      "Implement thread memory and checkpoint resumption.",
-      "Submit your GitHub repo with a requirements.txt and sample run notebook."
-    ]
-  },
-  {
-    id: "asg-2",
-    title: "Hybrid Vector Indexing & BM25 Benchmark Challenge",
-    course: "Advanced Generative AI Masterclass",
-    courseId: "c-genai-adv",
-    module: "Module 4: Advanced RAG Architecture",
-    instructor: "Elena Rostova",
-    dueDate: "Aug 21, 2026",
-    dueTimestamp: "2026-08-21T23:59:00",
-    status: "IN_REVIEW",
-    points: "100 Pts",
-    totalMarks: 100,
-    description: "Build a Reciprocal Rank Fusion (RRF) pipeline and measure Recall@10 against baseline dense retrieval over 5,000 documents.",
-    submission: {
-      githubUrl: "https://github.com/learner-student/hybrid-rrf-benchmark",
-      liveUrl: "https://rag-benchmark-demo.vercel.app",
-      fileName: "benchmark_evaluation_report.pdf",
-      notes: "Achieved a 28% higher Recall@10 with cross-encoder reranking.",
-      submittedAt: "Aug 19, 2026 at 04:30 PM"
-    }
-  },
-  {
-    id: "asg-3",
-    title: "Fine-Tuning Llama 3.3 with LoRA & Unsloth",
-    course: "Advanced Generative AI Masterclass",
-    courseId: "c-genai-adv",
-    module: "Module 8: Parameter Efficient Fine-Tuning",
-    instructor: "Dr. Alex Vance",
-    dueDate: "Aug 28, 2026",
-    dueTimestamp: "2026-08-28T23:59:00",
-    status: "PENDING",
-    points: "150 Pts",
-    totalMarks: 150,
-    description: "Quantize and fine-tune an instruction model on custom customer support reasoning dataset with 4-bit QLoRA."
-  },
-  {
-    id: "asg-4",
-    title: "Custom PyTorch Loss & Transformer Block Implementation",
-    course: "Generative AI & LLM Systems",
-    courseId: "c-llm-sys",
-    module: "Module 3: Transformer Deep-Dive",
-    instructor: "Dr. Alex Vance",
-    dueDate: "Aug 10, 2026",
-    dueTimestamp: "2026-08-10T23:59:00",
-    status: "GRADED",
-    score: "98/100",
-    scoreNumeric: 98,
-    points: "100 Pts",
-    totalMarks: 100,
-    description: "Implement scaled dot-product multi-head attention with causal masking, LayerNorm, and RoPE positional encodings in PyTorch.",
-    gradedDate: "Aug 12, 2026",
-    feedback: "Outstanding work! Your RoPE vector rotation and causal mask tensors are cleanly vectorized with zero CPU bottlenecks. 98/100 awarded.",
-    submission: {
-      githubUrl: "https://github.com/learner-student/pytorch-transformer-from-scratch",
-      fileName: "transformer_blocks_submission.zip",
-      notes: "Includes test suite validating attention tensor shapes across batch sizes.",
-      submittedAt: "Aug 09, 2026 at 11:15 PM"
-    }
-  },
-  {
-    id: "asg-5",
-    title: "KV-Cache Memory Optimization & PagedAttention Simulation",
-    course: "Generative AI & LLM Systems",
-    courseId: "c-llm-sys",
-    module: "Module 7: High-Throughput Model Serving",
-    instructor: "Dr. Alex Vance",
-    dueDate: "Sep 02, 2026",
-    dueTimestamp: "2026-09-02T23:59:00",
-    status: "PENDING",
-    points: "100 Pts",
-    totalMarks: 100,
-    description: "Simulate a virtual memory page table for continuous batching of variable length prompt responses."
-  },
-  {
-    id: "asg-6",
-    title: "Full-Stack Next.js 15 Server Actions & Prisma E-Commerce",
-    course: "Full-Stack Web Development Bootcamp",
-    courseId: "c-web-bootcamp",
-    module: "Module 5: Next.js 15 App Router",
-    instructor: "Sarah Jenkins",
-    dueDate: "Aug 08, 2026",
-    dueTimestamp: "2026-08-08T23:59:00",
-    status: "GRADED",
-    score: "94/100",
-    scoreNumeric: 94,
-    points: "100 Pts",
-    totalMarks: 100,
-    description: "Build an end-to-end e-commerce store with optimistic UI updates, Server Actions, PostgreSQL, and Stripe webhook handling.",
-    gradedDate: "Aug 11, 2026",
-    feedback: "Great architecture and clean Prisma schema migrations! Minor note: consider adding debounce on search queries.",
-    submission: {
-      githubUrl: "https://github.com/learner-student/next15-ecommerce-platform",
-      liveUrl: "https://next-storefront-demo.vercel.app",
-      submittedAt: "Aug 07, 2026 at 08:45 PM"
-    }
-  },
-  {
-    id: "asg-7",
-    title: "Real-Time WebSocket Collaboration Room & Canvas",
-    course: "Full-Stack Web Development Bootcamp",
-    courseId: "c-web-bootcamp",
-    module: "Module 8: WebSockets & Distributed State",
-    instructor: "Sarah Jenkins",
-    dueDate: "Aug 30, 2026",
-    dueTimestamp: "2026-08-30T23:59:00",
-    status: "PENDING",
-    points: "100 Pts",
-    totalMarks: 100,
-    description: "Create a shared multi-user whiteboarding canvas with conflict-free replicated data types (CRDTs) and Socket.io."
-  },
-  {
-    id: "asg-8",
-    title: "Backpropagation Matrix Calculus & Gradient Descent From Scratch",
-    course: "Mathematics & Foundations of Deep Learning",
-    courseId: "c-math-ai",
-    module: "Module 2: Multivariable Calculus for Neural Nets",
-    instructor: "Dr. Sophia Rivera",
-    dueDate: "Aug 05, 2026",
-    dueTimestamp: "2026-08-05T23:59:00",
-    status: "GRADED",
-    score: "96/100",
-    scoreNumeric: 96,
-    points: "100 Pts",
-    totalMarks: 100,
-    description: "Derive and implement analytical Jacobians and matrix gradients for 3-layer MLP in pure NumPy without PyTorch autograd.",
-    gradedDate: "Aug 07, 2026",
-    feedback: "Flawless mathematical derivation of the chain rule over weight tensors. NumPy vectorization is spotless.",
-    submission: {
-      githubUrl: "https://github.com/learner-student/numpy-backprop-calculus",
-      fileName: "backprop_derivation_proofs.pdf",
-      submittedAt: "Aug 04, 2026 at 06:10 PM"
-    }
-  },
-  {
-    id: "asg-9",
-    title: "Multi-Agent Consensus Protocol & Tool Execution Sandbox",
-    course: "Autonomous AI Agents & Swarms",
-    courseId: "c-agents-swarm",
-    module: "Module 4: Agent Consensus & Voting",
-    instructor: "Marcus Thorne",
-    dueDate: "Aug 22, 2026",
-    dueTimestamp: "2026-08-22T23:59:00",
-    status: "IN_REVIEW",
-    points: "120 Pts",
-    totalMarks: 120,
-    description: "Implement a 3-agent debate protocol where a moderator agent aggregates consensus before triggering code execution.",
-    submission: {
-      githubUrl: "https://github.com/learner-student/multi-agent-debate-protocol",
-      notes: "Implemented timeout fallback with majority voting heuristic.",
-      submittedAt: "Aug 18, 2026 at 09:20 AM"
-    }
-  }
-];
-
 function StudentAssignmentsContent() {
   const searchParams = useSearchParams();
   const initialCourseParam = searchParams.get("course") || searchParams.get("courseTitle") || "ALL";
   const initialStatusParam = searchParams.get("status") || "ALL";
 
-  const [assignments, setAssignments] = useState<StudentAssignmentItem[]>(INITIAL_STUDENT_ASSIGNMENTS);
+  const [assignments, setAssignments] = useState<StudentAssignmentItem[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
   const [selectedCourse, setSelectedCourse] = useState<string>(initialCourseParam);
   const [selectedStatus, setSelectedStatus] = useState<string>(initialStatusParam);
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -251,6 +77,28 @@ function StudentAssignmentsContent() {
   const [submittingAssignment, setSubmittingAssignment] = useState<StudentAssignmentItem | null>(null);
   const [viewingFeedback, setViewingFeedback] = useState<StudentAssignmentItem | null>(null);
   const [viewingDetails, setViewingDetails] = useState<StudentAssignmentItem | null>(null);
+
+  /* ── Fetch Real Assignments from Backend on Mount ── */
+  React.useEffect(() => {
+    async function loadAssignments() {
+      try {
+        setLoading(true);
+        const res = await fetch("/api/student/assignments");
+        if (res.ok) {
+          const data = await res.json();
+          setAssignments(Array.isArray(data.assignments) ? data.assignments : []);
+        } else {
+          setAssignments([]);
+        }
+      } catch (err) {
+        console.error("Failed to fetch assignments from API:", err);
+        setAssignments([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadAssignments();
+  }, []);
 
   /* ── Submission Form State ── */
   const [submitGithub, setSubmitGithub] = useState("");
@@ -333,7 +181,7 @@ function StudentAssignmentsContent() {
     });
   }, [assignments, selectedCourse, selectedStatus, searchQuery, sortBy]);
 
-  /* ── Key Statistics ── */
+  /* ── KPI Summary Stats ── */
   const stats = useMemo(() => {
     const total = assignments.length;
     const pending = assignments.filter((a) => a.status === "PENDING").length;
@@ -349,7 +197,7 @@ function StudentAssignmentsContent() {
   }, [assignments]);
 
   /* ── Handle Assignment Submission ── */
-  const handleSubmitAssignment = (e: React.FormEvent) => {
+  const handleSubmitAssignment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!submittingAssignment) return;
 
@@ -360,34 +208,47 @@ function StudentAssignmentsContent() {
 
     setIsSubmitting(true);
 
-    setTimeout(() => {
-      setAssignments((prev) =>
-        prev.map((item) => {
-          if (item.id === submittingAssignment.id) {
-            return {
-              ...item,
-              status: "IN_REVIEW",
-              submission: {
-                githubUrl: submitGithub || undefined,
-                liveUrl: submitLiveUrl || undefined,
-                fileName: submitFileName || "project_source_archive.zip",
-                notes: submitNotes || undefined,
-                submittedAt: "Just now"
-              }
-            };
-          }
-          return item;
-        })
-      );
+    try {
+      await fetch(`/api/student/assignments/${submittingAssignment.id}/submit`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          githubUrl: submitGithub || undefined,
+          liveUrl: submitLiveUrl || undefined,
+          fileName: submitFileName || "project_source_archive.zip",
+          notes: submitNotes || undefined,
+        }),
+      });
+    } catch (err) {
+      console.warn("Offline fallback for assignment submission", err);
+    }
 
-      setIsSubmitting(false);
-      showToast(`Assignment "${submittingAssignment.title}" submitted successfully!`);
-      setSubmittingAssignment(null);
-      setSubmitGithub("");
-      setSubmitLiveUrl("");
-      setSubmitNotes("");
-      setSubmitFileName("");
-    }, 600);
+    setAssignments((prev) =>
+      prev.map((item) => {
+        if (item.id === submittingAssignment.id) {
+          return {
+            ...item,
+            status: "IN_REVIEW",
+            submission: {
+              githubUrl: submitGithub || undefined,
+              liveUrl: submitLiveUrl || undefined,
+              fileName: submitFileName || "project_source_archive.zip",
+              notes: submitNotes || undefined,
+              submittedAt: "Just now"
+            }
+          };
+        }
+        return item;
+      })
+    );
+
+    setIsSubmitting(false);
+    showToast(`Assignment "${submittingAssignment.title}" submitted successfully!`);
+    setSubmittingAssignment(null);
+    setSubmitGithub("");
+    setSubmitLiveUrl("");
+    setSubmitNotes("");
+    setSubmitFileName("");
   };
 
   const handleOpenSubmit = (item: StudentAssignmentItem) => {

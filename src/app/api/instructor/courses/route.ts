@@ -100,6 +100,12 @@ export async function PATCH(req: Request) {
           reviewedAt: new Date()
         }
       });
+
+      updatedCourse = await prisma.course.update({
+        where: { id: courseId },
+        data: { status: "APPROVED", isPublished: false },
+        include: { courseApproval: true }
+      });
     } else if (action === "ADMIN_REQUEST_CHANGES") {
       if (session.role !== "ADMIN") {
         return NextResponse.json({ error: "Forbidden: Only platform administrators can request changes." }, { status: 403 });
@@ -121,6 +127,12 @@ export async function PATCH(req: Request) {
           reviewedAt: new Date()
         }
       });
+
+      updatedCourse = await prisma.course.update({
+        where: { id: courseId },
+        data: { status: "PENDING", isPublished: false },
+        include: { courseApproval: true }
+      });
     } else if (action === "PUBLISH") {
       // Enforce strict restriction: Instructors CANNOT publish courses under any circumstance.
       if (session.role !== "ADMIN") {
@@ -140,7 +152,11 @@ export async function PATCH(req: Request) {
 
       updatedCourse = await prisma.course.update({
         where: { id: courseId },
-        data: { status: "APPROVED" },
+        data: {
+          status: "PUBLISHED",
+          isPublished: true,
+          publishedAt: new Date()
+        },
         include: { courseApproval: true }
       });
     } else {

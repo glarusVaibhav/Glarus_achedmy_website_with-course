@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { getSession } from "@/lib/auth";
+import { emitDomainEvent } from "@/lib/notifications/eventDispatcher";
+import { DOMAIN_EVENT_TYPES } from "@/lib/notifications/events";
 
 export async function POST(
   req: Request,
@@ -67,16 +69,28 @@ export async function POST(
       return updated;
     });
 
-    // Notify all assigned instructors
-    for (const assign of liveSession.assignments) {
-      await prisma.notification.create({
-        data: {
-          userId: assign.instructorId,
-          type: "SESSION_RESCHEDULED",
-          message: `Live Session "${liveSession.title}" (Course: ${liveSession.liveCourse.title}) was rescheduled from ${oldScheduleStr} to ${newScheduleStr}. Reason: ${reason}`
-        }
-      });
+    // Notify all assigned instructors via Domain Event
+    const instructorIds = liveSession.assignments.map((a) => a.instructorId).filter(Boolean);
+    if (liveSession.liveCourse?.leadInstructorId && !instructorIds.includes(liveSession.liveCourse.leadInstructorId)) {
+      instructorIds.push(liveSession.liveCourse.leadInstructorId);
     }
+
+    await emitDomainEvent({
+      eventType: DOMAIN_EVENT_TYPES.LIVE_SESSION_RESCHEDULED,
+      actorId: session.id,
+      payload: {
+        sessionId: liveSession.id,
+        sessionTitle: liveSession.title,
+        liveCourseId: liveSession.liveCourseId,
+        liveCourseTitle: liveSession.liveCourse.title,
+        oldDate: liveSession.date ? new Date(liveSession.date).toISOString().split('T')[0] : "",
+        newDate,
+        oldStartTime: liveSession.startTime,
+        newStartTime: newStartTime || liveSession.startTime,
+        reason,
+        instructorIds,
+      },
+    });
 
     // Record in AuditLog
     const adminUser = session.role === "ADMIN" ? session.id : liveSession.liveCourse.createdById || session.id;

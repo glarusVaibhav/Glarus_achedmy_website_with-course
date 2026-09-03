@@ -5,8 +5,18 @@ import { getSession } from "@/lib/auth";
 export async function GET() {
   try {
     const courses = await prisma.course.findMany({
-      where: { status: "APPROVED" },
-      include: { instructor: { select: { name: true } } },
+      where: {
+        OR: [
+          { status: "PUBLISHED" },
+          { isPublished: true }
+        ]
+      },
+      include: {
+        instructor: { select: { name: true } },
+        modules: {
+          include: { lectures: true }
+        }
+      },
       orderBy: { createdAt: "desc" }
     });
     return NextResponse.json({ courses });
@@ -36,10 +46,16 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { title, description, price, status, instructorId, modules } = body;
+    const { title, description, price, status, instructorId, modules, isPublished } = body;
 
-    const courseStatus = session.role === "ADMIN" && status ? status : (session.role === "ADMIN" ? "APPROVED" : "PENDING");
+    const courseStatus =
+      session.role === "ADMIN" && status
+        ? status
+        : session.role === "ADMIN"
+        ? "APPROVED"
+        : "PENDING";
     const targetInstructorId = (session.role === "ADMIN" && instructorId) ? instructorId : session.id;
+    const shouldPublish = session.role === "ADMIN" && Boolean(isPublished);
 
     const course = await prisma.course.create({
       data: {
@@ -47,7 +63,9 @@ export async function POST(req: Request) {
         description: description || "",
         price: parseFloat(price) || 0,
         instructorId: targetInstructorId,
-        status: courseStatus,
+        status: shouldPublish ? "PUBLISHED" : courseStatus,
+        isPublished: shouldPublish,
+        publishedAt: shouldPublish ? new Date() : null,
         modules: modules && Array.isArray(modules) && modules.length > 0 ? {
           create: modules.map((m: any, mIdx: number) => ({
             title: m.title || `Module ${mIdx + 1}`,
@@ -76,3 +94,4 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Failed to create course", details: err?.message }, { status: 500 });
   }
 }
+

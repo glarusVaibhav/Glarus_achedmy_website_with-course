@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import {
   Calendar,
   Clock,
@@ -44,7 +45,9 @@ import {
   ShieldAlert,
   ShieldCheck,
   KeyRound,
-  Plus
+  Plus,
+  Loader2,
+  UserCheck
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -135,6 +138,9 @@ export interface AdminAssignedSession {
   compensationAmount: number;
   paymentStatus: "Pending" | "Processing" | "Paid";
   requirements: string[];
+  instructorId?: string;
+  instructorName?: string;
+  instructorAvatar?: string;
 }
 
 export interface InstructorCourseCohort {
@@ -143,14 +149,18 @@ export interface InstructorCourseCohort {
   cohortBadge: string;
   tagline: string;
   category: string;
+  status?: "DRAFT" | "ASSIGNED" | "READY_TO_PUBLISH" | "PUBLISHED" | "ACTIVE" | "COMPLETED" | "ARCHIVED";
   totalSessions: number;
   totalStudents: number;
   averageAttendanceRate: number;
   sessions: AdminAssignedSession[];
+  instructorId?: string;
+  instructorName?: string;
+  instructorAvatar?: string;
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   SAMPLE DATA: 3 ADMIN-ASSIGNED LIVE COURSES (10 TOTAL SESSIONS)
+   SAMPLE DATA: 5 ADMIN-ASSIGNED LIVE COURSES ACROSS INSTRUCTORS
    ═══════════════════════════════════════════════════════════════ */
 
 const INITIAL_COHORTS: InstructorCourseCohort[] = [
@@ -163,6 +173,9 @@ const INITIAL_COHORTS: InstructorCourseCohort[] = [
     totalSessions: 7,
     totalStudents: 42,
     averageAttendanceRate: 88,
+    instructorId: "inst-1",
+    instructorName: "Dr. Sarah Chen",
+    instructorAvatar: "SC",
     sessions: [
       {
         id: "genai-s1",
@@ -518,6 +531,9 @@ const INITIAL_COHORTS: InstructorCourseCohort[] = [
     totalSessions: 10,
     totalStudents: 35,
     averageAttendanceRate: 94,
+    instructorId: "inst-2",
+    instructorName: "Alex Chen",
+    instructorAvatar: "AC",
     sessions: [
       {
         id: "aiauto-s1",
@@ -669,6 +685,9 @@ const INITIAL_COHORTS: InstructorCourseCohort[] = [
     totalSessions: 6,
     totalStudents: 28,
     averageAttendanceRate: 91,
+    instructorId: "inst-1",
+    instructorName: "Dr. Sarah Chen",
+    instructorAvatar: "SC",
     sessions: [
       {
         id: "mlops-s1",
@@ -773,10 +792,137 @@ const INITIAL_COHORTS: InstructorCourseCohort[] = [
         students: [{ id: "st-20", name: "Ananya Iyer", email: "ananya.i@example.com", status: "Enrolled", totalAttended: 2 }]
       }
     ]
+  },
+  {
+    id: "cohort-react",
+    courseName: "React Masterclass & TypeScript for Scale",
+    cohortBadge: "Cohort #3",
+    tagline: "Enterprise React 19, Server Components & High-Performance Web Apps",
+    category: "Full-Stack Web",
+    totalSessions: 5,
+    totalStudents: 38,
+    averageAttendanceRate: 93,
+    instructorId: "inst-3",
+    instructorName: "John Doe",
+    instructorAvatar: "JD",
+    sessions: [
+      {
+        id: "react-s1",
+        sessionCode: "Session 01",
+        sessionNumber: 1,
+        title: "React 19 Server Components & Actions Deep Dive",
+        description: "Zero-bundle-size React Server Components, Server Actions form handling, and Optimistic UI updates.",
+        courseId: "cohort-react",
+        courseName: "React Masterclass & TypeScript for Scale",
+        cohortBadge: "Cohort #3",
+        batchName: "React Pro Cohort #3",
+        date: "2026-08-17",
+        displayDate: "Today (17 Aug)",
+        isToday: true,
+        startTime: "07:00 PM",
+        endTime: "08:30 PM",
+        duration: "90 min",
+        meetingUrl: "https://zoom.us/j/react19-live-masterclass",
+        assignedBy: "Academic Operations Team",
+        assignedAt: "2026-08-05",
+        assignmentStatus: "ACCEPTED",
+        executionStatus: "UPCOMING",
+        enrolledStudentsCount: 38,
+        compensationAmount: 5000,
+        paymentStatus: "Pending",
+        topics: ["RSC", "Server Actions", "useOptimistic", "useActionState"],
+        requirements: ["Provide live Next.js 15 template"],
+        agenda: [
+          { stepNumber: "01", timeRange: "07:00 – 07:40", title: "RSC vs Client Components", description: "Component execution boundaries." },
+          { stepNumber: "02", timeRange: "07:40 – 08:30", title: "Live Actions Implementation", description: "Async mutation with zero client JS." }
+        ],
+        students: [{ id: "st-30", name: "David Miller", email: "david.m@example.com", status: "Present", totalAttended: 3 }]
+      },
+      {
+        id: "react-s2",
+        sessionCode: "Session 02",
+        sessionNumber: 2,
+        title: "Advanced State Management & Zustand Architecture",
+        description: "Comparing Zustand, Jotai, and React Context for scalable multi-module enterprise frontends.",
+        courseId: "cohort-react",
+        courseName: "React Masterclass & TypeScript for Scale",
+        cohortBadge: "Cohort #3",
+        batchName: "React Pro Cohort #3",
+        date: "2026-08-22",
+        displayDate: "22 Aug",
+        isToday: false,
+        startTime: "07:00 PM",
+        endTime: "08:30 PM",
+        duration: "90 min",
+        meetingUrl: "https://zoom.us/j/sample-react-s2",
+        assignedBy: "Academic Operations Team",
+        assignedAt: "2026-08-08",
+        assignmentStatus: "ACCEPTED",
+        executionStatus: "UPCOMING",
+        enrolledStudentsCount: 38,
+        compensationAmount: 5000,
+        paymentStatus: "Pending",
+        topics: ["Zustand", "Selectors", "Middleware", "Devtools"],
+        requirements: ["Build shopping cart state sample"],
+        agenda: [{ stepNumber: "01", timeRange: "07:00 – 08:30", title: "Zustand Slices", description: "Modular store patterns." }],
+        students: [{ id: "st-30", name: "David Miller", email: "david.m@example.com", status: "Enrolled", totalAttended: 3 }]
+      }
+    ]
+  },
+  {
+    id: "cohort-frontend",
+    courseName: "Frontend Basics & Web Fundamentals",
+    cohortBadge: "Batch #1",
+    tagline: "HTML5 Semantic Architecture, CSS Flexbox & Modern ES6 JavaScript",
+    category: "Web Fundamentals",
+    totalSessions: 3,
+    totalStudents: 23,
+    averageAttendanceRate: 86,
+    instructorId: "inst-4",
+    instructorName: "Bob Smith",
+    instructorAvatar: "BS",
+    sessions: [
+      {
+        id: "fe-s1",
+        sessionCode: "Session 01",
+        sessionNumber: 1,
+        title: "Semantic HTML5 & Responsive CSS Layouts",
+        description: "Building responsive web pages with Flexbox, CSS Grid, and mobile-first media queries.",
+        courseId: "cohort-frontend",
+        courseName: "Frontend Basics & Web Fundamentals",
+        cohortBadge: "Batch #1",
+        batchName: "Frontend Foundations #1",
+        date: "2026-08-10",
+        displayDate: "10 Aug",
+        isToday: false,
+        startTime: "04:00 PM",
+        endTime: "05:30 PM",
+        duration: "90 min",
+        meetingUrl: "https://zoom.us/j/sample-fe-s1",
+        assignedBy: "Academic Operations Team",
+        assignedAt: "2026-07-28",
+        assignmentStatus: "ACCEPTED",
+        executionStatus: "COMPLETED",
+        enrolledStudentsCount: 23,
+        compensationAmount: 1000,
+        paymentStatus: "Paid",
+        recordingUrl: "https://example.com/recordings/fe-s1",
+        recordingStatus: "available",
+        attendance: { present: 20, absent: 3, late: 0, rate: 87.0 },
+        topics: ["HTML5", "CSS Flexbox", "Responsive Units"],
+        requirements: ["Beginner friendly pace"],
+        agenda: [{ stepNumber: "01", timeRange: "04:00 – 05:30", title: "CSS Flexbox Essentials", description: "Flex containers and items." }],
+        students: [{ id: "st-40", name: "Kavita Nair", email: "kavita.n@example.com", status: "Present", totalAttended: 1 }]
+      }
+    ]
   }
 ];
 
 interface InstructorLiveSessionsViewProps {
+  selectedInstructorId?: string;
+  selectedInstructorName?: string;
+  showInstructorBadge?: boolean;
+  isDemoUser?: boolean;
   initialFilter?: {
     viewMode?: "COMMAND_CENTER" | "CALENDAR" | "RECORDINGS";
     courseFilter?: string;
@@ -788,17 +934,27 @@ interface InstructorLiveSessionsViewProps {
 }
 
 export function InstructorLiveSessionsView({
+  selectedInstructorId,
+  selectedInstructorName,
+  showInstructorBadge = true,
+  isDemoUser = false,
   initialFilter,
   onClearFilter,
   onNavigateTab
 }: InstructorLiveSessionsViewProps) {
   const router = useRouter();
 
-  const [cohorts, setCohorts] = useState<InstructorCourseCohort[]>(INITIAL_COHORTS);
+  const [cohorts, setCohorts] = useState<InstructorCourseCohort[]>(isDemoUser ? INITIAL_COHORTS : []);
   const [activeCourseId, setActiveCourseId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<"COMMAND_CENTER" | "CALENDAR" | "RECORDINGS">(
     initialFilter?.viewMode || "COMMAND_CENTER"
   );
+
+  useEffect(() => {
+    if (isDemoUser && cohorts.length === 0) {
+      setCohorts(INITIAL_COHORTS);
+    }
+  }, [isDemoUser]);
 
   // Filtering
   const [searchQuery, setSearchQuery] = useState("");
@@ -813,6 +969,34 @@ export function InstructorLiveSessionsView({
   const [videoPlaybackSpeed, setVideoPlaybackSpeed] = useState<number>(1);
   const [videoProgress, setVideoProgress] = useState<number>(35);
   const [isMuted, setIsMuted] = useState<boolean>(false);
+
+  // Marking Ready to Publish State
+  const [markingReadyId, setMarkingReadyId] = useState<string | null>(null);
+
+  const handleMarkReadyToPublish = async (courseId: string, courseTitle: string) => {
+    setMarkingReadyId(courseId);
+    try {
+      const res = await fetch(`/api/instructor/live-courses/${courseId}/ready-to-publish`, {
+        method: "POST"
+      });
+      if (res.ok) {
+        setCohorts((prev) =>
+          prev.map((c) => (c.id === courseId ? { ...c, status: "READY_TO_PUBLISH" } : c))
+        );
+        showToast(
+          `"${courseTitle}" marked as Ready to Publish! Academic Operations has been notified for public launch.`
+        );
+      } else {
+        const err = await res.json();
+        showToast(err.error || "Failed to update course status");
+      }
+    } catch (e) {
+      console.error("Error marking ready to publish", e);
+      showToast("Network error. Please try again.");
+    } finally {
+      setMarkingReadyId(null);
+    }
+  };
 
   // Synchronize initialFilter when navigated from other tabs
   React.useEffect(() => {
@@ -840,6 +1024,7 @@ export function InstructorLiveSessionsView({
               cohortBadge: c.duration || "Live Cohort",
               tagline: c.description || c.title,
               category: c.category || "Live Training",
+              status: c.status || "ASSIGNED",
               totalSessions: c.totalSessions || c.sessions?.length || 0,
               totalStudents: 42,
               averageAttendanceRate: 92,
@@ -862,7 +1047,38 @@ export function InstructorLiveSessionsView({
                 assignedBy: "Academic Operations Team",
                 assignedAt: "2026-08-01",
                 assignmentStatus: "ACCEPTED" as const,
-                executionStatus: (s.status === "COMPLETED" ? "COMPLETED" : s.status === "LIVE" ? "LIVE_NOW" : "UPCOMING") as any,
+                executionStatus: (() => {
+                  if (s.status === "COMPLETED") return "COMPLETED";
+                  if (s.status === "LIVE" || s.status === "LIVE_NOW") return "LIVE_NOW";
+                  const sDate = s.date ? new Date(s.date) : null;
+                  if (!sDate) return "UPCOMING";
+                  
+                  const now = new Date();
+                  const timeMatch = (s.startTime || "").match(/(\d+):(\d+)\s*(AM|PM)?/i);
+                  if (timeMatch) {
+                    let hours = parseInt(timeMatch[1], 10);
+                    const minutes = parseInt(timeMatch[2], 10);
+                    const modifier = timeMatch[3]?.toUpperCase();
+                    if (modifier === "PM" && hours < 12) hours += 12;
+                    if (modifier === "AM" && hours === 12) hours = 0;
+                    
+                    const sessionStart = new Date(sDate);
+                    sessionStart.setHours(hours, minutes, 0, 0);
+                    const durationMin = parseInt(s.duration) || 90;
+                    const sessionEnd = new Date(sessionStart.getTime() + durationMin * 60 * 1000);
+                    const unlockWindow = new Date(sessionStart.getTime() - 5 * 60 * 1000);
+                    
+                    if (now >= unlockWindow && now <= sessionEnd) {
+                      return "LIVE_NOW";
+                    }
+                    if (now > sessionEnd) {
+                      return "COMPLETED";
+                    }
+                  } else if (sDate.getTime() < new Date().setHours(0, 0, 0, 0)) {
+                    return "COMPLETED";
+                  }
+                  return "UPCOMING";
+                })() as any,
                 editPermissionStatus: s.permissions?.canEdit ? "UNLOCKED" : "LOCKED",
                 editPermissionGrantedBy: s.permissions?.canEdit ? "Academic Administration" : undefined,
                 enrolledStudentsCount: 42,
@@ -969,10 +1185,20 @@ export function InstructorLiveSessionsView({
     setTimeout(() => setToastMessage(null), 3500);
   };
 
-  // Flattened sessions across all cohorts
+  // Filter cohorts by selected instructor
+  const visibleCohorts = useMemo(() => {
+    if (!selectedInstructorId || selectedInstructorId === "ALL") return cohorts;
+    return cohorts.filter(
+      (c) =>
+        c.instructorId === selectedInstructorId ||
+        (selectedInstructorName && selectedInstructorName !== "All Instructors" && c.instructorName?.toLowerCase().includes(selectedInstructorName.toLowerCase()))
+    );
+  }, [cohorts, selectedInstructorId, selectedInstructorName]);
+
+  // Flattened sessions across visible cohorts
   const allSessions: AdminAssignedSession[] = useMemo(() => {
-    return cohorts.flatMap((c) => c.sessions);
-  }, [cohorts]);
+    return visibleCohorts.flatMap((c) => c.sessions);
+  }, [visibleCohorts]);
 
   // Group Sessions by Date String (YYYY-MM-DD)
   const sessionsByDate = useMemo(() => {
@@ -1101,17 +1327,17 @@ export function InstructorLiveSessionsView({
     const rates = allCompletedRecordings
       .map((s) => s.attendance?.rate)
       .filter((r): r is number => typeof r === "number");
-    if (rates.length === 0) return "93.8";
+    if (rates.length === 0) return "0.0";
     return (rates.reduce((a, b) => a + b, 0) / rates.length).toFixed(1);
   }, [allCompletedRecordings]);
 
   const totalEnrolledLearners = useMemo(() => {
-    return cohorts.reduce((acc, c) => acc + c.totalStudents, 0);
-  }, [cohorts]);
+    return visibleCohorts.reduce((acc, c) => acc + c.totalStudents, 0);
+  }, [visibleCohorts]);
 
   // Filtered Cohorts & Sessions for Recordings View
   const recordingsByCohort = useMemo(() => {
-    return cohorts
+    return visibleCohorts
       .map((cohort) => {
         let cohortRecordings = cohort.sessions.filter(
           (s) => s.executionStatus === "COMPLETED" || Boolean(s.recordingUrl)
@@ -1147,7 +1373,7 @@ export function InstructorLiveSessionsView({
         }
         return c.recordings.length > 0;
       });
-  }, [cohorts, courseFilter, searchQuery, recordingsSortBy]);
+  }, [visibleCohorts, courseFilter, searchQuery, recordingsSortBy]);
 
   // Handle Accept Assignment
   const handleAcceptAssignment = (sessionId: string) => {
@@ -1383,12 +1609,12 @@ export function InstructorLiveSessionsView({
 
   // Active Selected Course for Expanded Timeline View
   const selectedCourseCohort = useMemo(() => {
-    return cohorts.find((c) => c.id === activeCourseId) || null;
-  }, [cohorts, activeCourseId]);
+    return visibleCohorts.find((c) => c.id === activeCourseId) || null;
+  }, [visibleCohorts, activeCourseId]);
 
   // Filtered Cohorts for Main List
   const filteredCohorts = useMemo(() => {
-    return cohorts.filter((c) => {
+    return visibleCohorts.filter((c) => {
       if (courseFilter === "ACTIVE" && !c.sessions.some(s => s.executionStatus === "LIVE_NOW" || s.executionStatus === "UPCOMING")) return false;
       if (courseFilter === "COMPLETED" && !c.sessions.every(s => s.executionStatus === "COMPLETED")) return false;
 
@@ -1401,7 +1627,7 @@ export function InstructorLiveSessionsView({
       }
       return true;
     });
-  }, [cohorts, courseFilter, searchQuery]);
+  }, [visibleCohorts, courseFilter, searchQuery]);
 
   return (
     <div className="w-full max-w-[1380px] mx-auto px-4 sm:px-6 md:px-8 py-6 space-y-7 font-sans text-slate-200">
@@ -2063,14 +2289,12 @@ export function InstructorLiveSessionsView({
 
                         <div className="flex items-center gap-2 pt-2 border-t border-white/[0.06]">
                           {isLive ? (
-                            <a
-                              href={session.meetingUrl}
-                              target="_blank"
-                              rel="noreferrer"
+                            <Link
+                              href={`/live-classes/room/${session.id}`}
                               className="flex-1 py-1.5 bg-red-600 hover:bg-red-500 text-white text-xs font-bold rounded-xl text-center shadow-md shadow-red-600/30"
                             >
                               Start Session →
-                            </a>
+                            </Link>
                           ) : isActionReq ? (
                             <button
                               onClick={() => handleAcceptAssignment(session.id)}
@@ -2128,29 +2352,73 @@ export function InstructorLiveSessionsView({
           {/* Course Summary Banner */}
           <div className="p-5 rounded-2xl bg-[#121824]/90 border border-white/[0.06] flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="space-y-1">
-              <h2 className="text-xl font-bold text-white tracking-tight">
-                {selectedCourseCohort.courseName}
-              </h2>
+              <div className="flex items-center gap-2.5 flex-wrap">
+                <h2 className="text-xl font-bold text-white tracking-tight">
+                  {selectedCourseCohort.courseName}
+                </h2>
+                {selectedCourseCohort.status === "ASSIGNED" && (
+                  <span className="px-2.5 py-0.5 rounded-full bg-blue-500/15 border border-blue-500/30 text-blue-300 text-[10px] font-black uppercase">
+                    ASSIGNED (REVIEW REQUIRED)
+                  </span>
+                )}
+                {selectedCourseCohort.status === "READY_TO_PUBLISH" && (
+                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-[10px] font-black uppercase flex items-center gap-1">
+                    <CheckCircle2 className="w-3 h-3" />
+                    READY TO PUBLISH
+                  </span>
+                )}
+              </div>
               <p className="text-xs text-slate-400">
                 {selectedCourseCohort.totalSessions} Live Sessions · {selectedCourseCohort.totalStudents} Students · {selectedCourseCohort.averageAttendanceRate}% Attendance
               </p>
             </div>
 
-            <div className="min-w-[200px] space-y-1.5 text-right">
-              <span className="text-xs font-medium text-slate-300">
-                {selectedCourseCohort.sessions.filter(s => s.executionStatus === "COMPLETED").length} / {selectedCourseCohort.totalSessions} Delivered
-              </span>
-              <div className="w-full h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-purple-500 rounded-full"
-                  style={{
-                    width: `${Math.round(
-                      (selectedCourseCohort.sessions.filter(s => s.executionStatus === "COMPLETED").length /
-                        selectedCourseCohort.totalSessions) *
-                        100
-                    )}%`
-                  }}
-                />
+            <div className="flex items-center gap-4 flex-wrap sm:flex-nowrap">
+              {selectedCourseCohort.status === "ASSIGNED" && (
+                <button
+                  onClick={() =>
+                    handleMarkReadyToPublish(
+                      selectedCourseCohort.id,
+                      selectedCourseCohort.courseName
+                    )
+                  }
+                  disabled={markingReadyId === selectedCourseCohort.id}
+                  className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 transition-all shadow-md shadow-emerald-600/20 hover:scale-105 cursor-pointer disabled:opacity-50 shrink-0"
+                >
+                  {markingReadyId === selectedCourseCohort.id ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                  )}
+                  <span>Ready to Publish</span>
+                </button>
+              )}
+              {selectedCourseCohort.status === "READY_TO_PUBLISH" && (
+                <span className="px-3 py-2 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold rounded-xl flex items-center gap-1.5 shrink-0">
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>Ready for Admin Launch</span>
+                </span>
+              )}
+
+              <div className="min-w-[170px] space-y-1.5 text-right">
+                <span className="text-xs font-medium text-slate-300">
+                  {selectedCourseCohort.sessions.filter((s) => s.executionStatus === "COMPLETED").length} /{" "}
+                  {selectedCourseCohort.totalSessions} Delivered
+                </span>
+                <div className="w-full h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-purple-500 rounded-full"
+                    style={{
+                      width: `${Math.round(
+                        (selectedCourseCohort.sessions.filter(
+                          (s) => s.executionStatus === "COMPLETED"
+                        ).length /
+                          selectedCourseCohort.totalSessions) *
+                          100
+                      )}%`
+                    }}
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -2435,9 +2703,24 @@ export function InstructorLiveSessionsView({
                     className="p-5 rounded-2xl bg-[#121824]/90 border border-white/[0.06] hover:border-white/[0.15] hover:-translate-y-0.5 transition-all duration-200 flex flex-col justify-between gap-4 group"
                   >
                     <div className="space-y-3.5">
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="font-semibold text-white tracking-tight">{cohort.courseName}</span>
-                        <span className="text-[11px] text-slate-500">{cohort.cohortBadge}</span>
+                      <div className="flex items-center justify-between text-xs gap-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className="font-semibold text-white tracking-tight truncate">
+                            {cohort.courseName}
+                          </span>
+                          {cohort.status === "ASSIGNED" && (
+                            <span className="px-2 py-0.5 rounded-full bg-blue-500/15 border border-blue-500/30 text-blue-300 text-[10px] font-black uppercase shrink-0">
+                              ASSIGNED
+                            </span>
+                          )}
+                          {cohort.status === "READY_TO_PUBLISH" && (
+                            <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-[10px] font-black uppercase shrink-0 flex items-center gap-1">
+                              <Check className="w-2.5 h-2.5" />
+                              READY TO PUBLISH
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-[11px] text-slate-500 shrink-0">{cohort.cohortBadge}</span>
                       </div>
 
                       <div className="flex items-center justify-between text-[11px] text-slate-400">
@@ -2476,7 +2759,7 @@ export function InstructorLiveSessionsView({
                       )}
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 pt-1">
                       <button
                         onClick={() => setActiveCourseId(cohort.id)}
                         className="flex-1 py-2 bg-white/[0.02] hover:bg-white/[0.06] border border-white/[0.06] text-slate-300 hover:text-white text-xs font-semibold rounded-xl flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
@@ -2484,17 +2767,42 @@ export function InstructorLiveSessionsView({
                         <span>View Sessions</span>
                         <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
                       </button>
-                      <button
-                        onClick={() => {
-                          const target = cohort.sessions.find(s => s.executionStatus === "UPCOMING" || s.executionStatus === "LIVE_NOW") || cohort.sessions[0];
-                          if (target) handleInitiateEdit(target);
-                        }}
-                        className="px-3 py-2 bg-white/[0.02] hover:bg-white/[0.06] border border-white/[0.06] text-slate-400 hover:text-white text-xs font-semibold rounded-xl flex items-center gap-1.5 transition-colors cursor-pointer"
-                        title="Edit Sessions (Admin Lock Active)"
-                      >
-                        <Lock className="w-3 h-3 text-slate-400" />
-                        <span>Edit</span>
-                      </button>
+
+                      {cohort.status === "ASSIGNED" ? (
+                        <button
+                          onClick={() => handleMarkReadyToPublish(cohort.id, cohort.courseName)}
+                          disabled={markingReadyId === cohort.id}
+                          className="px-3 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 transition-all shadow-md shadow-emerald-600/20 hover:scale-105 cursor-pointer disabled:opacity-50"
+                          title="Click to verify curriculum and notify Academic Operations that this cohort is ready to be published to students"
+                        >
+                          {markingReadyId === cohort.id ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          ) : (
+                            <CheckCircle2 className="w-3.5 h-3.5" />
+                          )}
+                          <span>Ready to Publish</span>
+                        </button>
+                      ) : cohort.status === "READY_TO_PUBLISH" ? (
+                        <div
+                          className="px-2.5 py-2 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[11px] font-bold rounded-xl flex items-center gap-1"
+                          title="Ready for Admin to publish to students"
+                        >
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          <span>Ready</span>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => {
+                            const target = cohort.sessions.find(s => s.executionStatus === "UPCOMING" || s.executionStatus === "LIVE_NOW") || cohort.sessions[0];
+                            if (target) handleInitiateEdit(target);
+                          }}
+                          className="px-3 py-2 bg-white/[0.02] hover:bg-white/[0.06] border border-white/[0.06] text-slate-400 hover:text-white text-xs font-semibold rounded-xl flex items-center gap-1.5 transition-colors cursor-pointer"
+                          title="Edit Sessions (Admin Lock Active)"
+                        >
+                          <Lock className="w-3 h-3 text-slate-400" />
+                          <span>Edit</span>
+                        </button>
+                      )}
                     </div>
                   </div>
                 );

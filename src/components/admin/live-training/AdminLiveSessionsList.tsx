@@ -25,6 +25,8 @@ export default function AdminLiveSessionsList() {
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
+  const [selectedInstructor, setSelectedInstructor] = useState("ALL");
+  const [selectedPermission, setSelectedPermission] = useState("ALL");
 
   // Reschedule Modal
   const [rescheduleModalOpen, setRescheduleModalOpen] = useState(false);
@@ -57,6 +59,16 @@ export default function AdminLiveSessionsList() {
     fetchSessions();
   }, []);
 
+  const instructorsList = useMemo(() => {
+    const names = new Set<string>();
+    sessions.forEach((s) => {
+      if (s.assignedInstructor?.name) {
+        names.add(s.assignedInstructor.name);
+      }
+    });
+    return ["ALL", ...Array.from(names), "UNASSIGNED"];
+  }, [sessions]);
+
   const filteredSessions = useMemo(() => {
     return sessions.filter((sess) => {
       const q = searchTerm.toLowerCase();
@@ -68,9 +80,19 @@ export default function AdminLiveSessionsList() {
 
       const matchesStatus = statusFilter === "ALL" || sess.status === statusFilter;
 
-      return matchesSearch && matchesStatus;
+      const matchesInstructor =
+        selectedInstructor === "ALL" ||
+        (selectedInstructor === "UNASSIGNED" ? !sess.assignedInstructor?.name : sess.assignedInstructor?.name === selectedInstructor);
+
+      const matchesPermission =
+        selectedPermission === "ALL" ||
+        (selectedPermission === "CAN_EDIT" && sess.permissions?.canEdit) ||
+        (selectedPermission === "SUPER" && (sess.permissions?.canReschedule || sess.permissions?.canEditSchedule)) ||
+        (selectedPermission === "VIEW_ONLY" && !sess.permissions?.canEdit);
+
+      return matchesSearch && matchesStatus && matchesInstructor && matchesPermission;
     });
-  }, [sessions, searchTerm, statusFilter]);
+  }, [sessions, searchTerm, statusFilter, selectedInstructor, selectedPermission]);
 
   const handleRescheduleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -180,15 +202,42 @@ export default function AdminLiveSessionsList() {
             ))}
           </div>
 
-          <div className="relative flex-1 sm:max-w-xs">
-            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-subtext" />
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search session or course..."
-              className="w-full h-9 pl-9 pr-3 rounded-xl bg-background border border-white/10 text-text text-xs focus:outline-none focus:border-purple-500/50"
-            />
+          <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+            <div className="relative flex-1 sm:w-52">
+              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-subtext" />
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Search session or course..."
+                className="w-full h-9 pl-9 pr-3 rounded-xl bg-background border border-white/10 text-text text-xs focus:outline-none focus:border-purple-500/50"
+              />
+            </div>
+
+            {/* Instructor Filter */}
+            <select
+              value={selectedInstructor}
+              onChange={(e) => setSelectedInstructor(e.target.value)}
+              className="h-9 px-3 rounded-xl bg-background border border-white/10 text-subtext hover:text-text text-xs focus:outline-none focus:border-purple-500/50"
+            >
+              {instructorsList.map((inst) => (
+                <option key={inst} value={inst}>
+                  {inst === "ALL" ? "All Instructors" : inst === "UNASSIGNED" ? "Unassigned" : `Instructor: ${inst}`}
+                </option>
+              ))}
+            </select>
+
+            {/* Permission Filter */}
+            <select
+              value={selectedPermission}
+              onChange={(e) => setSelectedPermission(e.target.value)}
+              className="h-9 px-3 rounded-xl bg-background border border-white/10 text-subtext hover:text-text text-xs focus:outline-none focus:border-purple-500/50"
+            >
+              <option value="ALL">All Permissions</option>
+              <option value="CAN_EDIT">Can Edit</option>
+              <option value="SUPER">⚡ Super Instructor</option>
+              <option value="VIEW_ONLY">View Only</option>
+            </select>
           </div>
         </div>
       </div>
@@ -288,9 +337,10 @@ export default function AdminLiveSessionsList() {
                         </button>
                         <Link
                           href={`/admin/live-training/courses/${sess.courseId}/sessions/${sess.id}`}
-                          className="px-2.5 py-1.5 rounded-lg bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 border border-purple-500/30 text-xs font-bold transition-all"
+                          className="px-2.5 py-1.5 rounded-lg bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 border border-purple-500/30 text-xs font-bold transition-all flex items-center gap-1"
                         >
-                          Builder
+                          <Edit3 className="w-3.5 h-3.5" />
+                          <span>Edit</span>
                         </Link>
                         <button
                           onClick={() => handleDeleteSession(sess.id)}

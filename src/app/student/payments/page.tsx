@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { StudentPortalLayout } from "@/components/student/StudentPortalLayout";
 import {
@@ -14,7 +14,8 @@ import {
   ExternalLink,
   ShieldCheck,
   Calendar,
-  Layers
+  Layers,
+  ArrowRight
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -25,30 +26,33 @@ interface Transaction {
   category: string;
   date: string;
   paymentMethod: string;
-  status: "PAID";
+  status: "PAID" | "COMPLETED";
 }
 
 export default function StudentPaymentsPage() {
-  const [transactions] = useState<Transaction[]>([
-    {
-      id: "txn-1",
-      invoiceNumber: "INV-2026-0801",
-      course: "Advanced Generative AI Masterclass",
-      category: "Live Training Cohort",
-      date: "Aug 01, 2026",
-      paymentMethod: "Credit Card (•••• 4242)",
-      status: "PAID",
-    },
-    {
-      id: "txn-2",
-      invoiceNumber: "INV-2026-0715",
-      course: "Generative AI Application Engineering",
-      category: "Self-Paced Course",
-      date: "Jul 15, 2026",
-      paymentMethod: "UPI / Net Banking",
-      status: "PAID",
-    },
-  ]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadPayments() {
+      try {
+        setLoading(true);
+        const res = await fetch("/api/student/payments");
+        if (res.ok) {
+          const data = await res.json();
+          setTransactions(Array.isArray(data.transactions) ? data.transactions : []);
+        } else {
+          setTransactions([]);
+        }
+      } catch (e) {
+        console.error("Failed to fetch payments:", e);
+        setTransactions([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadPayments();
+  }, []);
 
   const [selectedInvoice, setSelectedInvoice] = useState<Transaction | null>(null);
 
@@ -100,163 +104,187 @@ export default function StudentPaymentsPage() {
             </span>
           </div>
 
-          <div className="divide-y divide-card/60">
-            {transactions.map((txn) => (
-              <div
-                key={txn.id}
-                className="p-5 sm:p-6 flex flex-col md:flex-row md:items-center justify-between gap-5 hover:bg-card/50 transition-all group"
-              >
-                {/* LEFT SIDE: Course Title & Category */}
-                <div className="space-y-1.5 max-w-xl">
-                  <div className="flex items-center gap-2">
-                    <span className="px-2.5 py-0.5 rounded-md bg-purple-500/15 text-purple-300 border border-purple-500/30 text-[10px] font-black uppercase tracking-wider">
-                      {txn.category}
-                    </span>
-                    <span className="text-subtext/40 font-mono text-xs">•</span>
-                    <span className="font-mono text-xs text-subtext font-bold">
-                      {txn.invoiceNumber}
-                    </span>
-                  </div>
-                  <h4 className="font-black text-base sm:text-lg text-text group-hover:text-sky-300 transition-colors leading-snug">
-                    {txn.course}
-                  </h4>
-                </div>
-
-                {/* RIGHT SIDE: Date, Paid Status, and Invoice Download Button */}
-                <div className="flex items-center justify-between sm:justify-end gap-4 sm:gap-6 flex-wrap shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-card/40">
-                  {/* Date on Right */}
-                  <div className="flex items-center gap-1.5 text-xs text-subtext font-semibold">
-                    <Calendar className="w-3.5 h-3.5 text-orange-400 shrink-0" />
-                    <span>Date: <strong className="text-text font-bold">{txn.date}</strong></span>
-                  </div>
-
-                  {/* Paid Badge on Right */}
-                  <div className="flex items-center">
-                    <span className="px-3 py-1 rounded-xl bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-xs font-black flex items-center gap-1.5 shadow-xs">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                      <span>Paid</span>
-                    </span>
-                  </div>
-
-                  {/* Invoice Download Button on Right */}
-                  <button
-                    onClick={() => handleDownloadInvoice(txn)}
-                    className="px-4 py-2 bg-card hover:bg-sky-500/15 border border-card hover:border-sky-500/40 text-subtext hover:text-sky-300 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer shadow-xs active:scale-95"
-                  >
-                    <Download className="w-3.5 h-3.5 text-sky-400" />
-                    <span>Download Invoice</span>
-                  </button>
-                </div>
+          {loading ? (
+            <div className="py-24 flex flex-col items-center justify-center text-center space-y-3">
+              <div className="w-10 h-10 border-4 border-sky-500/20 border-t-sky-500 rounded-full animate-spin" />
+              <p className="text-slate-400 text-xs font-bold uppercase tracking-wider">
+                Loading payment records...
+              </p>
+            </div>
+          ) : transactions.length === 0 ? (
+            <div className="py-20 px-6 flex flex-col items-center justify-center text-center space-y-4 max-w-xl mx-auto">
+              <div className="w-16 h-16 rounded-2xl bg-sky-500/10 border border-sky-500/25 flex items-center justify-center text-sky-400 shadow-inner">
+                <Receipt className="w-8 h-8 opacity-80" />
               </div>
-            ))}
-          </div>
+
+              <div className="space-y-1">
+                <h3 className="text-lg font-bold text-white">No payment transactions yet</h3>
+                <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
+                  When you purchase a course or live cohort, your official GST tax invoices, payment receipts, and download links will be displayed here.
+                </p>
+              </div>
+
+              <Link
+                href="/courses"
+                className="px-5 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs transition-all shadow-md shadow-sky-900/30 flex items-center gap-2"
+              >
+                <span>Browse Courses & Live Cohorts</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+          ) : (
+            <div className="divide-y divide-card/60">
+              {transactions.map((txn) => (
+                <div
+                  key={txn.id}
+                  className="p-5 sm:p-6 flex flex-col md:flex-row md:items-center justify-between gap-5 hover:bg-card/50 transition-all group"
+                >
+                  {/* LEFT SIDE: Course Title & Category */}
+                  <div className="space-y-1.5 max-w-xl">
+                    <div className="flex items-center gap-2">
+                      <span className="px-2.5 py-0.5 rounded-md bg-purple-500/15 text-purple-300 border border-purple-500/30 text-[10px] font-black uppercase tracking-wider">
+                        {txn.category}
+                      </span>
+                      <span className="text-subtext/40 font-mono text-xs">•</span>
+                      <span className="font-mono text-xs text-subtext font-bold">
+                        {txn.invoiceNumber}
+                      </span>
+                    </div>
+                    <h4 className="font-black text-base sm:text-lg text-text group-hover:text-sky-300 transition-colors leading-snug">
+                      {txn.course}
+                    </h4>
+                  </div>
+
+                  {/* RIGHT SIDE: Date, Paid Status, and Invoice Download Button */}
+                  <div className="flex items-center justify-between sm:justify-end gap-4 sm:gap-6 flex-wrap shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-card/40">
+                    {/* Date on Right */}
+                    <div className="flex items-center gap-1.5 text-xs text-subtext font-semibold">
+                      <Calendar className="w-3.5 h-3.5 text-orange-400 shrink-0" />
+                      <span>Date: <strong className="text-text font-bold">{txn.date}</strong></span>
+                    </div>
+
+                    {/* Paid Badge on Right */}
+                    <div className="flex items-center">
+                      <span className="px-3 py-1 rounded-xl bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-xs font-black flex items-center gap-1.5 shadow-xs">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                        <span>Paid</span>
+                      </span>
+                    </div>
+
+                    {/* Invoice Download Button on Right */}
+                    <button
+                      onClick={() => handleDownloadInvoice(txn)}
+                      className="px-4 py-2 bg-sky-500/15 hover:bg-sky-500/25 text-sky-300 border border-sky-500/30 text-xs font-bold rounded-xl flex items-center gap-2 transition-all cursor-pointer shadow-xs"
+                    >
+                      <Download className="w-3.5 h-3.5 text-sky-400" />
+                      <span>Download Invoice</span>
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
-        {/* ───────── 3. OFFICIAL INVOICE MODAL / VIEWER ───────── */}
+        {/* ───────── 3. Official Invoice Modal Preview ───────── */}
         <AnimatePresence>
           {selectedInvoice && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                className="bg-card border border-card rounded-3xl p-6 sm:p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto space-y-6 shadow-2xl relative"
+                className="bg-[#0B0F17] border border-border/80 rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl relative text-slate-100"
               >
-                {/* Modal Top Bar */}
-                <div className="flex items-start justify-between gap-4 border-b border-card pb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2.5 rounded-xl bg-sky-500/15 text-sky-400 border border-sky-500/30">
-                      <Receipt className="w-6 h-6" />
-                    </div>
-                    <div>
-                      <h3 className="font-black text-lg text-text">Tax Invoice & Receipt</h3>
-                      <p className="text-xs text-subtext">{selectedInvoice.invoiceNumber} • Issued by Glarus Academy</p>
-                    </div>
+                {/* Modal Header */}
+                <div className="p-6 border-b border-border/60 flex items-center justify-between bg-card/20">
+                  <div className="flex items-center gap-2.5">
+                    <Receipt className="w-5 h-5 text-sky-400" />
+                    <h3 className="font-extrabold text-lg text-white">Tax Invoice & Receipt</h3>
                   </div>
-
                   <button
                     onClick={() => setSelectedInvoice(null)}
-                    className="p-2 rounded-xl bg-background hover:bg-card border border-card text-subtext hover:text-text cursor-pointer"
+                    className="p-2 rounded-xl text-subtext hover:text-white hover:bg-white/[0.06] transition-colors cursor-pointer"
                   >
-                    <X className="w-5 h-5" />
+                    <X className="w-4 h-4" />
                   </button>
                 </div>
 
-                {/* Printable Invoice Body */}
-                <div className="p-6 rounded-2xl bg-background/80 border border-card space-y-6 font-sans">
-                  {/* Invoice Header Details */}
-                  <div className="flex items-start justify-between flex-wrap gap-4 border-b border-card pb-5">
+                {/* Invoice Printable Sheet Content */}
+                <div className="p-6 sm:p-8 space-y-6 max-h-[70vh] overflow-y-auto font-sans" id="printable-invoice">
+                  {/* Company & Invoice Numbers */}
+                  <div className="flex items-start justify-between border-b border-white/[0.08] pb-6">
                     <div>
-                      <h4 className="font-black text-xl text-text">GLARUS ACADEMY</h4>
-                      <p className="text-xs text-subtext mt-0.5">Advanced AI & Engineering Education</p>
-                      <p className="text-[11px] text-subtext">Tax ID / GSTIN: 29AAACG1234F1Z5</p>
+                      <div className="text-xl font-black tracking-tight text-white flex items-center gap-1.5">
+                        <span className="text-sky-400">Glarus</span> Academy
+                      </div>
+                      <p className="text-[11px] text-slate-400 mt-1">Glarus AI EdTech Technologies Pvt Ltd</p>
+                      <p className="text-[11px] text-slate-500">GSTIN: 27AABCG1234F1Z8</p>
                     </div>
-
-                    <div className="text-right space-y-0.5 text-xs">
-                      <span className="px-2.5 py-0.5 rounded-md bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-black text-[10px] uppercase">
-                        ✓ Paid In Full
+                    <div className="text-right">
+                      <div className="text-xs font-mono font-black text-sky-300 bg-sky-950/60 border border-sky-500/30 px-3 py-1 rounded-lg inline-block">
+                        {selectedInvoice.invoiceNumber}
+                      </div>
+                      <p className="text-[11px] text-slate-400 mt-1">Date: {selectedInvoice.date}</p>
+                      <span className="inline-block mt-1 text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 uppercase">
+                        Payment Verified
                       </span>
-                      <p className="text-subtext pt-1">Invoice Date: <strong className="text-text">{selectedInvoice.date}</strong></p>
-                      <p className="text-subtext">Payment: <strong className="text-text">{selectedInvoice.paymentMethod}</strong></p>
                     </div>
                   </div>
 
-                  {/* Billed To Details */}
-                  <div className="grid grid-cols-2 gap-4 text-xs">
-                    <div>
-                      <span className="text-[10px] font-extrabold text-subtext uppercase tracking-wider block">Billed To (Student)</span>
-                      <p className="font-bold text-text mt-0.5">Alex Vance (Student)</p>
-                      <p className="text-subtext">alex.vance@example.com</p>
-                    </div>
-                    <div>
-                      <span className="text-[10px] font-extrabold text-subtext uppercase tracking-wider block">Program Type</span>
-                      <p className="font-bold text-text mt-0.5">{selectedInvoice.category}</p>
-                      <p className="text-subtext">Lifetime Access & Certificate</p>
-                    </div>
-                  </div>
-
-                  {/* Item Description Table */}
-                  <div className="border border-card rounded-xl overflow-hidden text-xs">
-                    <div className="grid grid-cols-12 p-3 bg-card/60 font-black text-subtext border-b border-card uppercase text-[10px] tracking-wider">
-                      <div className="col-span-8">Description</div>
-                      <div className="col-span-4 text-right">Status</div>
-                    </div>
-
-                    <div className="grid grid-cols-12 p-4 items-center bg-background/50">
-                      <div className="col-span-8 space-y-0.5">
-                        <div className="font-bold text-text text-sm">{selectedInvoice.course}</div>
-                        <div className="text-[11px] text-subtext">Complete course curriculum, video lectures, sandbox labs, and verified certificate.</div>
+                  {/* Course Details Breakdown */}
+                  <div className="space-y-3">
+                    <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">Item Details</div>
+                    <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-between">
+                      <div>
+                        <div className="font-extrabold text-sm text-white">{selectedInvoice.course}</div>
+                        <div className="text-[11px] text-slate-400 mt-0.5">{selectedInvoice.category} · Lifetime Curriculum Access</div>
                       </div>
-                      <div className="col-span-4 text-right">
-                        <span className="px-2.5 py-1 rounded-md bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-bold text-xs">
-                          PAID
-                        </span>
+                      <div className="text-right font-mono font-bold text-white text-sm">
+                        ₹9,999.00
                       </div>
                     </div>
                   </div>
 
-                  {/* Note */}
-                  <p className="text-[11px] text-subtext/80 italic text-center pt-2">
-                    This is an official computer-generated receipt for your course enrollment at Glarus Academy.
-                  </p>
+                  {/* Pricing Breakdown */}
+                  <div className="space-y-2 border-t border-white/[0.08] pt-4 text-xs">
+                    <div className="flex justify-between text-slate-400">
+                      <span>Subtotal</span>
+                      <span className="font-mono text-slate-200">₹8,473.73</span>
+                    </div>
+                    <div className="flex justify-between text-slate-400">
+                      <span>Integrated GST (18%)</span>
+                      <span className="font-mono text-slate-200">₹1,525.27</span>
+                    </div>
+                    <div className="flex justify-between text-base font-extrabold text-white border-t border-white/[0.08] pt-2">
+                      <span>Total Amount Paid</span>
+                      <span className="font-mono text-emerald-400">₹9,999.00</span>
+                    </div>
+                  </div>
                 </div>
 
-                {/* Modal Footer Controls */}
-                <div className="flex items-center justify-between gap-3 pt-2">
-                  <button
-                    onClick={handlePrint}
-                    className="px-4 py-2.5 bg-card hover:bg-card/80 border border-card text-text rounded-xl text-xs font-bold flex items-center gap-2 cursor-pointer shadow-xs"
-                  >
-                    <Printer className="w-4 h-4 text-sky-400" />
-                    <span>Print / Save as PDF</span>
-                  </button>
-
-                  <button
-                    onClick={() => setSelectedInvoice(null)}
-                    className="px-6 py-2.5 bg-primary hover:bg-primary/90 text-white font-bold text-xs rounded-xl cursor-pointer shadow-md shadow-primary/25"
-                  >
-                    Done
-                  </button>
+                {/* Modal Footer Actions */}
+                <div className="p-4 sm:p-6 border-t border-border/60 bg-card/30 flex items-center justify-between gap-3">
+                  <span className="text-[11px] text-slate-500 font-medium">Digital copy valid for business tax filing</span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={handlePrint}
+                      className="px-4 py-2 rounded-xl bg-white/[0.06] hover:bg-white/[0.1] text-white font-bold text-xs flex items-center gap-2 transition-colors cursor-pointer"
+                    >
+                      <Printer className="w-3.5 h-3.5" />
+                      <span>Print</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        window.print();
+                        setSelectedInvoice(null);
+                      }}
+                      className="px-5 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs flex items-center gap-2 transition-all shadow-md shadow-sky-900/30 cursor-pointer"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      <span>Download PDF</span>
+                    </button>
+                  </div>
                 </div>
               </motion.div>
             </div>

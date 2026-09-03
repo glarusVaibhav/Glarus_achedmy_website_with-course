@@ -22,7 +22,7 @@ export async function GET() {
 
     if (!approval) {
       // Split user's name for convenience
-      const nameParts = (user?.name || "").trim().split(" ");
+      const nameParts = (user?.name || "").trim().split(/\s+/);
       const defaultFirstName = nameParts[0] || "";
       const defaultLastName = nameParts.slice(1).join(" ") || "";
 
@@ -65,7 +65,7 @@ export async function GET() {
       }
     }
 
-    const nameParts = (user?.name || "").trim().split(" ");
+    const nameParts = (user?.name || "").trim().split(/\s+/);
 
     return NextResponse.json({
       status: approval.status, // PENDING | APPROVED | REJECTED | CHANGES_REQUESTED

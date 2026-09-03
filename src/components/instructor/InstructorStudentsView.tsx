@@ -742,9 +742,11 @@ interface InstructorStudentsViewProps {
   onBack?: () => void;
   initialFilter?: InstructorStudentsFilter | null;
   onClearFilter?: () => void;
+  isDemoUser?: boolean;
 }
 
 export function InstructorStudentsView({
+  isDemoUser = false,
   onNavigateToAssignments,
   onNavigateToLiveSessions,
   onBack,
@@ -753,9 +755,16 @@ export function InstructorStudentsView({
 }: InstructorStudentsViewProps) {
   /* ── Course Scoping State ── */
   const [selectedCourseId, setSelectedCourseId] = useState<string>("ALL");
-  const [courses] = useState<CourseMetadata[]>(INITIAL_COURSES);
-  const [students, setStudents] = useState<InstructorStudentItem[]>(INITIAL_STUDENTS);
+  const [courses, setCourses] = useState<CourseMetadata[]>(isDemoUser ? INITIAL_COURSES : []);
+  const [students, setStudents] = useState<InstructorStudentItem[]>(isDemoUser ? INITIAL_STUDENTS : []);
   const [isCourseDropdownOpen, setIsCourseDropdownOpen] = useState(false);
+
+  useEffect(() => {
+    if (isDemoUser) {
+      if (courses.length === 0) setCourses(INITIAL_COURSES);
+      if (students.length === 0) setStudents(INITIAL_STUDENTS);
+    }
+  }, [isDemoUser]);
 
   /* ── Class Scoping / Deep Filtering State ── */
   const [activeClassFilter, setActiveClassFilter] = useState<{

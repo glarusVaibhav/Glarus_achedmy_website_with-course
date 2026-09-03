@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import { 
   ArrowRight, 
@@ -84,6 +84,19 @@ export interface LiveCourseDetail {
 }
 
 const SELF_PACED_COURSES: Course[] = [
+  { 
+    id: "cmtl2cz4i0001vyik7ryv5ouy", 
+    title: "Full-Stack AI & Next.js 16 Masterclass: Building Production SaaS", 
+    category: "AI Engineering", 
+    difficulty: "All Levels", 
+    duration: "30h Self-Paced", 
+    gradient: "from-purple-600/20 to-indigo-600/20", 
+    linkUrl: "/course/cmtl2cz4i0001vyik7ryv5ouy", 
+    image: "/images/courses/generative-ai.png", 
+    mode: "self-paced", 
+    price: 14999, 
+    originalPrice: 22999 
+  },
   { id: "1", title: "Advanced LLM Architecture", category: "AI Engineering", difficulty: "Advanced", duration: "18h Self-Paced", gradient: "from-purple-600/20 to-blue-600/20", linkUrl: "/course/ai-1", image: "/images/courses/llm-architecture.png", mode: "self-paced", price: 15999, originalPrice: 24999 },
   { id: "2", title: "Generative AI Application Engineering", category: "Web Development", difficulty: "Intermediate", duration: "24h Self-Paced", gradient: "from-sky-500/20 to-indigo-500/20", linkUrl: "/course/Generative_AI_Application_Engineer", image: "/images/courses/generative-ai.png", mode: "self-paced", price: 15999, originalPrice: 24999 },
   { id: "3", title: "RAG & Vector Databases", category: "Data Science", difficulty: "Advanced", duration: "12h Self-Paced", gradient: "from-emerald-500/20 to-teal-500/20", linkUrl: "/course/ai-3", image: "/images/courses/rag-vector-db.png", mode: "self-paced", price: 19999, originalPrice: 29999 },
@@ -101,7 +114,7 @@ const ENRICHED_LIVE_COURSES: LiveCourseDetail[] = [
     level: "Level: Intermediate",
     statusBadge: "UPCOMING",
     badgeType: "UPCOMING",
-    linkUrl: "/course/Generative_AI_Application_Engineer",
+    linkUrl: "/student/live-courses/live-agentic-ai",
     tags: ["Live Class", "Limited Seats", "5 Projects"],
     classType: "Live Class",
     timeframeDays: 30,
@@ -134,7 +147,7 @@ const ENRICHED_LIVE_COURSES: LiveCourseDetail[] = [
     level: "Level: Advanced",
     statusBadge: "UPCOMING",
     badgeType: "UPCOMING",
-    linkUrl: "/courses",
+    linkUrl: "/student/live-courses/live-llmops",
     tags: ["Live Class", "Includes Projects", "Live Mentorship"],
     classType: "Live Class",
     timeframeDays: 30,
@@ -167,7 +180,7 @@ const ENRICHED_LIVE_COURSES: LiveCourseDetail[] = [
     level: "Level: Intermediate",
     statusBadge: "UPCOMING",
     badgeType: "UPCOMING",
-    linkUrl: "/courses",
+    linkUrl: "/student/live-courses/live-cloud-ai",
     tags: ["Live Class", "Hands-on Labs", "Cloud Infra"],
     classType: "Workshop",
     timeframeDays: 60,
@@ -268,11 +281,146 @@ export default function InteractiveCourses() {
   const [selectedInstructor, setSelectedInstructor] = useState<string | null>(null);
   const [savedBooked, setSavedBooked] = useState<Record<string, boolean>>({});
 
+  // Dynamic self-paced courses from API / DB
+  const [selfPacedCourses, setSelfPacedCourses] = useState<Course[]>(SELF_PACED_COURSES);
+
+  useEffect(() => {
+    fetch("/api/courses")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.courses && Array.isArray(data.courses) && data.courses.length > 0) {
+          const dbCourses: Course[] = data.courses.map((c: any) => {
+            const titleLower = (c.title || "").toLowerCase();
+            let image = c.image;
+            if (!image || image === "/placeholder-course.jpg") {
+              if (titleLower.includes("full-stack") || titleLower.includes("next.js") || titleLower.includes("saas")) {
+                image = "/images/courses/generative-ai.png";
+              } else if (titleLower.includes("python fundamentals") || titleLower.includes("python")) {
+                image = "/images/courses/python-fundamentals.png";
+              } else if (titleLower.includes("machine learning") || titleLower.includes("ml")) {
+                image = "/images/courses/ml-math.png";
+              } else if (titleLower.includes("ai engineering") || titleLower.includes("advanced ai") || titleLower.includes("llm")) {
+                image = "/images/courses/llm-architecture.png";
+              } else if (titleLower.includes("rag") || titleLower.includes("vector")) {
+                image = "/images/courses/rag-vector-db.png";
+              } else {
+                image = "/images/courses/smart-contracts.png";
+              }
+            }
+            return {
+              id: c.id,
+              title: c.title,
+              category: c.category || "AI Engineering",
+              difficulty: c.level || "All Levels",
+              duration: c.duration || "30h Self-Paced",
+              gradient: "from-purple-600/20 to-indigo-600/20",
+              linkUrl: `/course/${c.id}`,
+              image,
+              mode: "self-paced",
+              price: c.price || 14999,
+              originalPrice: c.originalPrice || Math.round((c.price || 14999) * 1.5)
+            };
+          });
+
+          // Deduplicate by id and title
+          const existingIds = new Set(dbCourses.map((c) => c.id));
+          const existingTitles = new Set(dbCourses.map((c) => c.title.toLowerCase().trim()));
+          const remainingStatic = SELF_PACED_COURSES.filter(
+            (c) => !existingIds.has(c.id) && !existingTitles.has(c.title.toLowerCase().trim())
+          );
+          setSelfPacedCourses([...dbCourses, ...remainingStatic]);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to load courses for landing page:", err);
+      });
+  }, []);
+
+  // Dynamic live courses from API / DB
+  const [liveCoursesList, setLiveCoursesList] = useState<LiveCourseDetail[]>(ENRICHED_LIVE_COURSES);
+
+  useEffect(() => {
+    fetch("/api/live-courses")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.courses && Array.isArray(data.courses) && data.courses.length > 0) {
+          const dbLive: LiveCourseDetail[] = data.courses.map((c: any) => {
+            const nextSession = c.sessions?.[0];
+            const dateStr = nextSession?.date
+              ? new Date(nextSession.date).toLocaleDateString("en-US", {
+                  weekday: "short",
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric"
+                })
+              : "Upcoming Cohort";
+
+            const timeStr = nextSession?.startTime
+              ? `${nextSession.startTime} – ${nextSession.endTime || "09:00 PM"} IST`
+              : "07:00 PM – 09:00 PM IST";
+
+            return {
+              id: c.id,
+              title: c.title,
+              category: c.category || "Generative AI",
+              description:
+                c.shortDescription ||
+                c.description ||
+                "Live hands-on training with industry mentors and practical capstone projects.",
+              image: c.thumbnail || "/images/courses/generative-ai.png",
+              level: `Level: ${c.level || "Intermediate"}`,
+              statusBadge: "ENROLLING NOW",
+              badgeType: "UPCOMING" as const,
+              linkUrl: `/student/live-courses/${c.id}`,
+              tags: ["Live Cohort", `${c.totalSessions || 6} Sessions`, "Mentor-Led"],
+              classType: "Live Class" as const,
+              timeframeDays: 30,
+              instructor: {
+                name: c.leadInstructor?.name || "Lead AI Architect",
+                role: "Lead Cohort Instructor",
+                company: "Glarus Academy",
+                rating: 4.9,
+                reviews: "500+ students",
+                avatar:
+                  c.leadInstructor?.avatar ||
+                  c.leadInstructor?.image ||
+                  "/images/courses/generative-ai.png"
+              },
+              schedule: {
+                dateFormatted: dateStr,
+                timeFormatted: timeStr,
+                duration: c.duration || "2 Hours",
+                daysPattern: "Live Interactive Track"
+              },
+              seats: {
+                enrolled: c.enrolledCount || 0,
+                total: c.maxStudents || 50
+              },
+              ctaText: "Enroll in Cohort →"
+            };
+          });
+
+          // Prepend DB live courses to the static ones
+          const dbIds = new Set(dbLive.map((c) => c.id));
+          const remainingStatic = ENRICHED_LIVE_COURSES.filter((c) => !dbIds.has(c.id));
+          setLiveCoursesList([...dbLive, ...remainingStatic]);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to load live courses for landing page:", err);
+      });
+  }, []);
+
+  const dynamicLiveCategories = useMemo(() => {
+    const cats = new Set(liveCoursesList.map((c) => c.category).filter(Boolean));
+    return ["All", ...Array.from(cats)];
+  }, [liveCoursesList]);
+
   const currentCategory = activeMode === "self-paced" ? selfPacedCategory : liveCategory;
-  const currentCategoryList = activeMode === "self-paced" ? SELF_PACED_CATEGORIES : LIVE_CATEGORIES;
+  const currentCategoryList = activeMode === "self-paced" ? SELF_PACED_CATEGORIES : dynamicLiveCategories;
 
   // Filter live courses dynamically
-  const filteredLive = ENRICHED_LIVE_COURSES.filter((course) => {
+  const filteredLive = liveCoursesList.filter((course) => {
     if (liveCategory !== "All" && course.category !== liveCategory) return false;
     if (selectedTimeframe !== null && course.timeframeDays > selectedTimeframe) return false;
     if (selectedClassType !== null && course.classType !== selectedClassType) return false;
@@ -281,8 +429,8 @@ export default function InteractiveCourses() {
   });
 
   const filteredSelfPaced = selfPacedCategory === "All"
-    ? SELF_PACED_COURSES
-    : SELF_PACED_COURSES.filter(c => c.category === selfPacedCategory);
+    ? selfPacedCourses
+    : selfPacedCourses.filter(c => c.category === selfPacedCategory);
 
   const handleCategoryChange = (cat: string) => {
     if (activeMode === "self-paced") {

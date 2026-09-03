@@ -1,47 +1,54 @@
-import { NextResponse } from "next/server";
-import prisma from "@/lib/db";
-import { getSession } from "@/lib/auth";
+import { NextResponse } from 'next/server';
+import { verifyStudentSession, AuthError } from '@/lib/services/studentAuthService';
+import { PurchaseService, CheckoutItemInput } from '@/lib/services/purchaseService';
 
 export async function POST(req: Request) {
   try {
-    const session = await getSession();
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized. Please login." }, { status: 401 });
+    const user = await verifyStudentSession();
+    const body = await req.json();
+
+    let itemsToProcess: CheckoutItemInput[] = [];
+
+    if (Array.isArray(body.items) && body.items.length > 0) {
+      itemsToProcess = body.items.map((it: any) => ({
+        id: it.id,
+        type: it.type === 'LIVE_COURSE' ? 'LIVE_COURSE' : 'SELF_PACED_COURSE',
+      }));
+    } else if (body.courseId) {
+      const isLive = Boolean(body.isLive || body.itemType === 'LIVE_COURSE');
+      itemsToProcess = [
+        {
+          id: body.courseId,
+          type: isLive ? 'LIVE_COURSE' : 'SELF_PACED_COURSE',
+        },
+      ];
+    } else {
+      return NextResponse.json(
+        { success: false, error: { code: 'INVALID_PAYLOAD', message: 'Cart items or courseId is required.' } },
+        { status: 400 }
+      );
     }
 
-    const { courseId } = await req.json();
+    const result = await PurchaseService.processCheckout(
+      user.id,
+      itemsToProcess,
+      body.paymentMethod || 'CARD',
+      body.billingDetails,
+      body.transactionId
+    );
 
-    if (!courseId) {
-      return NextResponse.json({ error: "Missing courseId" }, { status: 400 });
+    return NextResponse.json(result);
+  } catch (err: any) {
+    if (err instanceof AuthError) {
+      return NextResponse.json(
+        { success: false, error: { code: err.code, message: err.message } },
+        { status: err.statusCode }
+      );
     }
-
-    // Check if course exists and is APPROVED
-    const course = await prisma.course.findUnique({ where: { id: courseId } });
-    if (!course || course.status !== "APPROVED") {
-      return NextResponse.json({ error: "Course unavailable" }, { status: 404 });
-    }
-
-    // Check if already purchased
-    const existing = await prisma.purchase.findFirst({
-      where: { userId: session.id, courseId }
-    });
-
-    if (existing) {
-      return NextResponse.json({ error: "Already purchased" }, { status: 400 });
-    }
-
-    // Perform purchase and enrollment inside a transaction
-    await prisma.$transaction([
-      prisma.purchase.create({
-        data: { userId: session.id, courseId }
-      }),
-      prisma.enrollment.create({
-        data: { userId: session.id, courseId }
-      })
-    ]);
-
-    return NextResponse.json({ success: true });
-  } catch (err) {
-    return NextResponse.json({ error: "Purchase failed" }, { status: 500 });
+    console.error('[Purchase API Error]:', err);
+    return NextResponse.json(
+      { success: false, error: { code: 'PURCHASE_FAILED', message: err.message || 'Payment processing failed.' } },
+      { status: 400 }
+    );
   }
 }

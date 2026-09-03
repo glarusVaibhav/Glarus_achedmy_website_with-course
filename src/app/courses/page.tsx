@@ -32,7 +32,7 @@ const ENRICHED_LIVE_COURSES = [
     timeframeDays: 30,
     tags: ["Live Class", "Limited Seats", "5 Projects"],
     image: "/images/courses/generative-ai.png",
-    linkUrl: "/courses/generative-ai",
+    linkUrl: "/student/live-courses/live-agentic-ai",
     statusBadge: "Next Batch Starting Soon",
     schedule: {
       dateFormatted: "Tue, 20 Aug 2026",
@@ -55,7 +55,7 @@ const ENRICHED_LIVE_COURSES = [
     timeframeDays: 60,
     tags: ["Live Class", "Includes Projects", "Live Mentorship"],
     image: "/images/courses/llm-architecture.png",
-    linkUrl: "/courses/llm-architecture",
+    linkUrl: "/student/live-courses/live-llmops",
     statusBadge: "Filling Fast",
     schedule: {
       dateFormatted: "Mon, 01 Sep 2026",
@@ -78,7 +78,7 @@ const ENRICHED_LIVE_COURSES = [
     timeframeDays: 60,
     tags: ["Live Class", "Hands-on Labs", "Cloud Infra"],
     image: "/images/courses/rag-vector-db.png",
-    linkUrl: "/courses/rag-vector-db",
+    linkUrl: "/student/live-courses/live-cloud-ai",
     statusBadge: "Seats Open",
     schedule: {
       dateFormatted: "Wed, 10 Sep 2026",
@@ -156,11 +156,71 @@ function CoursesContent() {
       .catch(() => setLoading(false));
   }, []);
 
+  const [liveCoursesList, setLiveCoursesList] = useState<any[]>(ENRICHED_LIVE_COURSES);
+
+  useEffect(() => {
+    fetch("/api/live-courses")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.courses && Array.isArray(data.courses) && data.courses.length > 0) {
+          const dbLive = data.courses.map((c: any) => {
+            const nextSession = c.sessions?.[0];
+            const dateStr = nextSession?.date
+              ? new Date(nextSession.date).toLocaleDateString("en-US", {
+                  weekday: "short",
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric"
+                })
+              : "Upcoming Cohort";
+
+            const timeStr = nextSession?.startTime
+              ? `${nextSession.startTime} – ${nextSession.endTime || "09:00 PM"} IST`
+              : "07:00 PM – 09:00 PM IST";
+
+            return {
+              id: c.id,
+              title: c.title,
+              category: c.category || "Generative AI",
+              description:
+                c.shortDescription ||
+                c.description ||
+                "Live hands-on training with industry mentors and practical capstone projects.",
+              image: c.thumbnail || "/images/courses/generative-ai.png",
+              level: c.level || "Intermediate",
+              statusBadge: "Next Batch Starting Soon",
+              linkUrl: `/student/live-courses/${c.id}`,
+              tags: ["Live Cohort", `${c.totalSessions || 6} Sessions`, "Mentor-Led"],
+              classType: "Live Class",
+              timeframeDays: 30,
+              schedule: {
+                dateFormatted: dateStr,
+                time: timeStr,
+                duration: c.duration || "2 Hours",
+                daysPattern: "Live Interactive Track"
+              },
+              seats: {
+                enrolled: c.enrolledCount || 0,
+                total: c.maxStudents || 50
+              }
+            };
+          });
+
+          const dbIds = new Set(dbLive.map((c: any) => c.id));
+          const remainingStatic = ENRICHED_LIVE_COURSES.filter((c) => !dbIds.has(c.id));
+          setLiveCoursesList([...dbLive, ...remainingStatic]);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to load live courses for /courses page:", err);
+      });
+  }, []);
+
   const filteredSelfPaced = selectedCategory === "all"
     ? courses
     : courses.filter(c => c.category?.toLowerCase() === selectedCategory.toLowerCase());
 
-  const filteredLive = ENRICHED_LIVE_COURSES.filter((course) => {
+  const filteredLive = liveCoursesList.filter((course) => {
     if (liveCategory !== "All" && course.category !== liveCategory) return false;
     if (selectedTimeframe !== null && course.timeframeDays > selectedTimeframe) return false;
     if (selectedClassType !== null && course.classType !== selectedClassType) return false;

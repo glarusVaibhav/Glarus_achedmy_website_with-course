@@ -1,11 +1,10 @@
-"use client";
-
 import { useState, useEffect, useRef } from "react";
+import { useAuth } from "@/context/AuthContext";
 import {
   ShieldCheck, Loader2, Send, Briefcase, Code2, FileText, Link2,
   AlertTriangle, Sparkles, ShieldAlert, ArrowLeft, User, Mail,
   Phone, Camera, UploadCloud, Video, Globe, Check, X,
-  Trash2, ExternalLink, HelpCircle, CheckCircle2, FileCheck, Layers
+  Trash2, ExternalLink, HelpCircle, CheckCircle2, FileCheck, Layers, Lock
 } from "lucide-react";
 
 export interface ApprovalData {
@@ -76,10 +75,30 @@ export default function InstructorVerificationForm({
   onSubmitted,
   onCancelEdit,
 }: VerificationFormProps) {
-  // ── 1. Personal Information State ──
-  const [firstName, setFirstName] = useState(approvalData?.firstName || "");
-  const [lastName, setLastName] = useState(approvalData?.lastName || "");
-  const [email, setEmail] = useState(approvalData?.email || "");
+  const { user } = useAuth();
+
+  // Helper to extract first and last name from full name
+  const parseUserName = (fullName?: string | null) => {
+    if (!fullName) return { first: "", last: "" };
+    const parts = fullName.trim().split(/\s+/);
+    return {
+      first: parts[0] || "",
+      last: parts.slice(1).join(" ") || "",
+    };
+  };
+
+  const initialParsed = parseUserName(user?.name);
+
+  // ── 1. Personal Information State (Auto-prefilled from signup / profile) ──
+  const [firstName, setFirstName] = useState(
+    approvalData?.firstName || initialParsed.first || ""
+  );
+  const [lastName, setLastName] = useState(
+    approvalData?.lastName || initialParsed.last || ""
+  );
+  const [email, setEmail] = useState(
+    approvalData?.email || user?.email || ""
+  );
   const [phone, setPhone] = useState(approvalData?.phone || "");
   const [photoUrl, setPhotoUrl] = useState(approvalData?.photoUrl || "");
   const [photoUploading, setPhotoUploading] = useState(false);
@@ -171,12 +190,29 @@ export default function InstructorVerificationForm({
   const resumeInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
 
-  // ── Sync State on approvalData changes ──
+  // ── Sync State on approvalData / user changes ──
   useEffect(() => {
     if (approvalData) {
-      if (approvalData.firstName) setFirstName(approvalData.firstName);
-      if (approvalData.lastName) setLastName(approvalData.lastName);
-      if (approvalData.email) setEmail(approvalData.email);
+      if (approvalData.firstName) {
+        setFirstName(approvalData.firstName);
+      } else if (user?.name) {
+        const parts = user.name.trim().split(/\s+/);
+        setFirstName(parts[0] || "");
+      }
+
+      if (approvalData.lastName) {
+        setLastName(approvalData.lastName);
+      } else if (user?.name) {
+        const parts = user.name.trim().split(/\s+/);
+        setLastName(parts.slice(1).join(" ") || "");
+      }
+
+      if (approvalData.email) {
+        setEmail(approvalData.email);
+      } else if (user?.email) {
+        setEmail(user.email);
+      }
+
       if (approvalData.phone) setPhone(approvalData.phone);
       if (approvalData.photoUrl) setPhotoUrl(approvalData.photoUrl);
       if (approvalData.experience) setExperience(approvalData.experience);
@@ -238,8 +274,17 @@ export default function InstructorVerificationForm({
         setTeachesOnOtherPlatforms(Boolean(approvalData.teachesOnOtherPlatforms));
       }
       if (approvalData.otherPlatformDetails) setOtherPlatformDetails(approvalData.otherPlatformDetails);
+    } else if (user) {
+      if (user.name) {
+        const parts = user.name.trim().split(/\s+/);
+        setFirstName((prev) => prev || parts[0] || "");
+        setLastName((prev) => prev || parts.slice(1).join(" ") || "");
+      }
+      if (user.email) {
+        setEmail((prev) => prev || user.email);
+      }
     }
-  }, [approvalData]);
+  }, [approvalData, user]);
 
   // ── Language Toggle Helper ──
   const toggleLanguage = (lang: string) => {
@@ -644,22 +689,30 @@ export default function InstructorVerificationForm({
           {/* Email & Phone */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <div>
-              <label className="block text-xs font-black text-subtext uppercase tracking-widest mb-2">
-                Email Address <span className="text-red-500">*</span>
-              </label>
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-xs font-black text-subtext uppercase tracking-widest">
+                  Email Address <span className="text-red-500">*</span>
+                </label>
+                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-md uppercase tracking-wider">
+                  <Lock className="w-2.5 h-2.5" /> Locked
+                </span>
+              </div>
               <div className="relative">
-                <Mail className="w-4 h-4 text-subtext absolute left-3.5 top-3.5 pointer-events-none" />
+                <Mail className="w-4 h-4 text-subtext/60 absolute left-3.5 top-3.5 pointer-events-none" />
                 <input
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="alex.morgan@example.com"
-                  className={`w-full bg-background border ${errors.email ? "border-red-500 focus:border-red-500" : "border-card/60 focus:border-primary"} rounded-xl pl-10 pr-4 py-3 text-sm font-medium text-text placeholder:text-subtext/40 focus:outline-none transition-colors`}
+                  readOnly
+                  disabled
+                  placeholder="your.email@example.com"
+                  className="w-full bg-background/50 border border-card/60 rounded-xl pl-10 pr-10 py-3 text-sm font-medium text-subtext cursor-not-allowed select-none opacity-80 focus:outline-none"
+                  title="This email is linked to your verified account and cannot be changed."
                 />
+                <Lock className="w-4 h-4 text-subtext/40 absolute right-3.5 top-3.5 pointer-events-none" />
               </div>
-              {errors.email && (
-                <p className="text-xs text-red-500 font-semibold mt-1.5">{errors.email}</p>
-              )}
+              <p className="text-[11px] text-subtext/60 mt-1.5">
+                Automatically locked to your verified account email.
+              </p>
             </div>
 
             <div>
@@ -680,95 +733,6 @@ export default function InstructorVerificationForm({
                 <p className="text-xs text-red-500 font-semibold mt-1.5">{errors.phone}</p>
               )}
             </div>
-          </div>
-
-          {/* Upload Photo */}
-          <div>
-            <label className="block text-xs font-black text-subtext uppercase tracking-widest mb-1.5">
-              Upload Photo
-            </label>
-            <p className="text-xs text-subtext mb-3">Upload a clean, professional headshot photo (JPG, PNG, WEBP, max 5MB).</p>
-
-            <input
-              type="file"
-              ref={photoInputRef}
-              onChange={handlePhotoSelect}
-              accept="image/jpeg,image/png,image/webp,image/gif"
-              className="hidden"
-            />
-
-            <div className="flex flex-col sm:flex-row items-center gap-4 p-4 bg-background border border-card/60 rounded-2xl">
-              {photoUrl ? (
-                <div className="relative group shrink-0">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={photoUrl}
-                    alt="Instructor Profile"
-                    className="w-16 h-16 rounded-2xl object-cover border-2 border-primary/40 shadow-md"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setPhotoUrl("")}
-                    className="absolute -top-1.5 -right-1.5 p-1 bg-red-500 hover:bg-red-600 text-white rounded-full shadow-md transition-colors"
-                    title="Remove Photo"
-                  >
-                    <X className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              ) : (
-                <div className="w-16 h-16 rounded-2xl bg-card border-2 border-dashed border-card/80 flex items-center justify-center text-subtext shrink-0">
-                  <Camera className="w-6 h-6" />
-                </div>
-              )}
-
-              <div className="flex-1 text-center sm:text-left">
-                {photoUrl ? (
-                  <div>
-                    <p className="text-xs font-bold text-emerald-400 flex items-center gap-1.5 justify-center sm:justify-start">
-                      <Check className="w-3.5 h-3.5" /> Photo Attached
-                    </p>
-                    <p className="text-[11px] text-subtext mt-0.5">Click replace to choose another image.</p>
-                  </div>
-                ) : (
-                  <div>
-                    <p className="text-xs font-bold text-text">No photo uploaded</p>
-                    <p className="text-[11px] text-subtext mt-0.5">Helps students recognize and trust your courses.</p>
-                  </div>
-                )}
-              </div>
-
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => photoInputRef.current?.click()}
-                  disabled={photoUploading}
-                  className="px-4 py-2.5 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/25 rounded-xl font-bold text-xs transition-all flex items-center gap-1.5 disabled:opacity-50"
-                >
-                  {photoUploading ? (
-                    <>
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" /> Uploading...
-                    </>
-                  ) : (
-                    <>
-                      <UploadCloud className="w-3.5 h-3.5" /> {photoUrl ? "Replace Photo" : "Upload Photo"}
-                    </>
-                  )}
-                </button>
-                {photoUrl && (
-                  <button
-                    type="button"
-                    onClick={() => setPhotoUrl("")}
-                    className="p-2.5 bg-background hover:bg-red-500/10 text-subtext hover:text-red-500 border border-card/60 rounded-xl transition-colors"
-                    title="Delete Photo"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                )}
-              </div>
-            </div>
-            {errors.photo && (
-              <p className="text-xs text-red-500 font-semibold mt-1.5">{errors.photo}</p>
-            )}
           </div>
         </section>
 
@@ -1205,40 +1169,57 @@ export default function InstructorVerificationForm({
                 About You
               </label>
               <span className="text-[11px] font-mono font-bold text-subtext">
-                {aboutInstructor.length}/1000
+                {aboutInstructor.length}/1,000
               </span>
             </div>
             <p className="text-xs text-subtext mb-2.5">
-              Write a short paragraph about yourself. This will be displayed under your self-study courses.
+              Write a short paragraph about yourself. This will be displayed under your courses and mentor profile.
             </p>
             <textarea
               maxLength={1000}
               value={aboutInstructor}
               onChange={(e) => setAboutInstructor(e.target.value)}
-              placeholder="Tell students about your professional background, teaching experience, and areas of expertise..."
-              className="w-full bg-background border border-card/60 rounded-xl px-4 py-3 text-sm font-medium text-text placeholder:text-subtext/40 focus:outline-none focus:border-primary transition-colors min-h-[110px] resize-none"
+              placeholder="Tell students about your professional background, industry experience, and what drives your passion for teaching..."
+              className="w-full bg-background border border-card/60 rounded-xl px-4 py-3 text-sm font-medium text-text placeholder:text-subtext/40 focus:outline-none focus:border-primary transition-all min-h-[110px] resize-y scrollbar-thin custom-scrollbar leading-relaxed"
             />
           </div>
 
           {/* Courses You'd Like to Teach (Max 2,000 characters) */}
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <label className="text-xs font-black text-subtext uppercase tracking-widest">
-                Courses You&apos;d Like to Teach <span className="text-red-500">*</span>
-              </label>
+              <div className="flex items-center gap-2">
+                <label className="text-xs font-black text-subtext uppercase tracking-widest">
+                  Courses You&apos;d Like to Teach <span className="text-red-500">*</span>
+                </label>
+                {!courseTeachingPlan && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCourseTeachingPlan(
+                        `Course Title: \n\nKey Learning Objectives:\n1. \n2. \n3. \n4. \n5. `
+                      );
+                    }}
+                    className="inline-flex items-center gap-1 text-[10px] font-bold text-primary hover:text-primary/80 bg-primary/10 hover:bg-primary/20 px-2 py-0.5 rounded-md transition-colors cursor-pointer"
+                  >
+                    <Sparkles className="w-3 h-3" /> Insert Outline Template
+                  </button>
+                )}
+              </div>
               <span className={`text-[11px] font-mono font-bold ${courseTeachingPlan.length > 2000 ? "text-red-500" : "text-subtext"}`}>
                 {courseTeachingPlan.length}/2,000
               </span>
             </div>
             <p className="text-xs text-subtext mb-2.5">
-              Describe the courses you&apos;d like to teach, including the course title and 5 key learning objectives. (2,000 character limit)
+              Describe the courses you&apos;d like to teach, including the course title and 5 key learning objectives.
             </p>
             <textarea
               maxLength={2000}
               value={courseTeachingPlan}
               onChange={(e) => setCourseTeachingPlan(e.target.value)}
-              placeholder={`Course Title:\n...\n\nKey Learning Objectives:\n1. ...\n2. ...\n3. ...\n4. ...\n5. ...`}
-              className={`w-full bg-background border ${errors.courseTeachingPlan ? "border-red-500" : "border-card/60"} rounded-xl px-4 py-3 text-sm font-medium text-text placeholder:text-subtext/40 focus:outline-none focus:border-primary transition-colors min-h-[170px] resize-none font-mono text-xs sm:text-sm leading-relaxed`}
+              placeholder={`Course Title: e.g., Production Agentic AI with Next.js & LangGraph\n\nKey Learning Objectives:\n1. Master ReAct & StateGraph architectures\n2. Implement robust tool calling with schema validation\n3. Build low-latency RAG vector retrieval pipelines\n4. Deploy production stateful streaming agents\n5. Implement human-in-the-loop safety & evals`}
+              className={`w-full bg-background border ${
+                errors.courseTeachingPlan ? "border-red-500 ring-1 ring-red-500/30" : "border-card/60"
+              } rounded-xl px-4 py-3 text-sm font-medium text-text placeholder:text-subtext/35 focus:outline-none focus:border-primary transition-all min-h-[170px] resize-y scrollbar-thin custom-scrollbar leading-relaxed`}
             />
             {errors.courseTeachingPlan && (
               <p className="text-xs text-red-500 font-semibold mt-1.5">{errors.courseTeachingPlan}</p>
@@ -1247,18 +1228,23 @@ export default function InstructorVerificationForm({
 
           {/* Why Glarus Academy? */}
           <div>
-            <label className="block text-xs font-black text-subtext uppercase tracking-widest mb-1.5">
-              Why do you want to author a course on Glarus Academy?
-            </label>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="text-xs font-black text-subtext uppercase tracking-widest">
+                Why do you want to author a course on Glarus Academy?
+              </label>
+              <span className="text-[11px] font-mono font-bold text-subtext">
+                {whyGlarusAcademy.length}/800
+              </span>
+            </div>
             <p className="text-xs text-subtext mb-2.5">
-              Tell us why you would like to teach and create courses on Glarus Academy.
+              Tell us what motivates you to share your knowledge with our global community.
             </p>
             <textarea
               maxLength={800}
               value={whyGlarusAcademy}
               onChange={(e) => setWhyGlarusAcademy(e.target.value)}
-              placeholder="Tell us why you would like to teach and create courses on Glarus Academy."
-              className="w-full bg-background border border-card/60 rounded-xl px-4 py-3 text-sm font-medium text-text placeholder:text-subtext/40 focus:outline-none focus:border-primary transition-colors min-h-[100px] resize-none"
+              placeholder="Tell us what excites you about teaching at Glarus Academy and how you want to impact students' careers..."
+              className="w-full bg-background border border-card/60 rounded-xl px-4 py-3 text-sm font-medium text-text placeholder:text-subtext/40 focus:outline-none focus:border-primary transition-all min-h-[100px] resize-y scrollbar-thin custom-scrollbar leading-relaxed"
             />
           </div>
         </section>
@@ -1325,6 +1311,109 @@ export default function InstructorVerificationForm({
               )}
             </div>
           )}
+        </section>
+
+        {/* ────────────────── SECTION 6: PROFILE PHOTO (OPTIONAL) ────────────────── */}
+        <section className="bg-card border border-card rounded-3xl p-6 sm:p-8 shadow-xl space-y-6">
+          <div className="flex items-center justify-between border-b border-card/60 pb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-pink-500/10 text-pink-400 flex items-center justify-center">
+                <Camera className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-lg font-black text-text tracking-tight">6. Profile Photo</h3>
+                <p className="text-xs text-subtext font-medium">Headshot photo displayed on your instructor profile and courses.</p>
+              </div>
+            </div>
+            <span className="text-[11px] font-bold text-subtext/70 bg-card/60 border border-card px-2.5 py-1 rounded-lg uppercase tracking-wider">
+              Optional
+            </span>
+          </div>
+
+          <div>
+            <p className="text-xs text-subtext mb-3">Upload a clean, professional headshot photo (JPG, PNG, WEBP, max 5MB). You can also add or update this later.</p>
+
+            <input
+              type="file"
+              ref={photoInputRef}
+              onChange={handlePhotoSelect}
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              className="hidden"
+            />
+
+            <div className="flex flex-col sm:flex-row items-center gap-4 p-4 bg-background border border-card/60 rounded-2xl">
+              {photoUrl ? (
+                <div className="relative group shrink-0">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={photoUrl}
+                    alt="Instructor Profile"
+                    className="w-16 h-16 rounded-2xl object-cover border-2 border-primary/40 shadow-md"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setPhotoUrl("")}
+                    className="absolute -top-1.5 -right-1.5 p-1 bg-red-500 hover:bg-red-600 text-white rounded-full shadow-md transition-colors cursor-pointer"
+                    title="Remove Photo"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ) : (
+                <div className="w-16 h-16 rounded-2xl bg-card border-2 border-dashed border-card/80 flex items-center justify-center text-subtext shrink-0">
+                  <Camera className="w-6 h-6" />
+                </div>
+              )}
+
+              <div className="flex-1 text-center sm:text-left">
+                {photoUrl ? (
+                  <div>
+                    <p className="text-xs font-bold text-emerald-400 flex items-center gap-1.5 justify-center sm:justify-start">
+                      <Check className="w-3.5 h-3.5" /> Photo Attached
+                    </p>
+                    <p className="text-[11px] text-subtext mt-0.5">Click replace to choose another image.</p>
+                  </div>
+                ) : (
+                  <div>
+                    <p className="text-xs font-bold text-text">No photo uploaded (Optional)</p>
+                    <p className="text-[11px] text-subtext mt-0.5">Helps students recognize and trust your courses.</p>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => photoInputRef.current?.click()}
+                  disabled={photoUploading}
+                  className="px-4 py-2.5 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/25 rounded-xl font-bold text-xs transition-all flex items-center gap-1.5 disabled:opacity-50 cursor-pointer"
+                >
+                  {photoUploading ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" /> Uploading...
+                    </>
+                  ) : (
+                    <>
+                      <UploadCloud className="w-3.5 h-3.5" /> {photoUrl ? "Replace Photo" : "Upload Photo"}
+                    </>
+                  )}
+                </button>
+                {photoUrl && (
+                  <button
+                    type="button"
+                    onClick={() => setPhotoUrl("")}
+                    className="p-2.5 bg-background hover:bg-red-500/10 text-subtext hover:text-red-500 border border-card/60 rounded-xl transition-colors cursor-pointer"
+                    title="Delete Photo"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+            </div>
+            {errors.photo && (
+              <p className="text-xs text-red-500 font-semibold mt-1.5">{errors.photo}</p>
+            )}
+          </div>
         </section>
 
         {/* ────────────────── SUBMIT BUTTON & FOOTER ────────────────── */}

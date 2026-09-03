@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { 
   Bell, 
@@ -14,139 +14,72 @@ import {
   Award,
   BookOpen,
   MessageSquare,
+  CheckSquare,
   Sparkles,
-  PlaySquare
+  PlaySquare,
+  Inbox
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 
 export interface HeaderNotification {
   id: string;
-  category: "LIVE" | "RECORDING" | "ASSIGNMENT" | "COURSE" | "CERTIFICATE" | "COMMUNITY" | "ADMIN" | "INSTRUCTOR" | "PAYMENT" | "SYSTEM";
+  category: string;
+  type?: string;
+  priority?: string;
   title: string;
   description: string;
   timestamp: string;
+  timeAgo?: string;
   isUnread: boolean;
   link?: string;
+  actionUrl?: string;
+  icon?: string;
 }
-
-const STUDENT_NOTIFICATIONS: HeaderNotification[] = [
-  {
-    id: "sn-1",
-    category: "LIVE",
-    title: "Live Session Starting Soon",
-    description: "Your Live Workshop 'RAG & Vector Databases' with Dr. Alex Vance starts in 20 minutes.",
-    timestamp: "20 minutes ago",
-    isUnread: true,
-    link: "/calendar",
-  },
-  {
-    id: "sn-2",
-    category: "ASSIGNMENT",
-    title: "Assignment Graded (98/100 · A+)",
-    description: "Your submission for 'PyTorch Transformer Attention' has been graded by your instructor.",
-    timestamp: "1 hour ago",
-    isUnread: true,
-    link: "/student/assignments",
-  },
-  {
-    id: "sn-3",
-    category: "COURSE",
-    title: "New Module Unlocked",
-    description: "Module 5: Fine-Tuning LoRA Models is now available in Generative AI Masterclass.",
-    timestamp: "Yesterday",
-    isUnread: true,
-    link: "/student/courses",
-  },
-  {
-    id: "sn-4",
-    category: "CERTIFICATE",
-    title: "Verified Certificate Ready",
-    description: "Congratulations! Your certificate for 'Advanced Python for AI' has been issued.",
-    timestamp: "2 days ago",
-    isUnread: true,
-    link: "/student/certificates",
-  },
-  {
-    id: "sn-5",
-    category: "COMMUNITY",
-    title: "Instructor Response",
-    description: "Dr. Alex Vance replied to your question in the Cohort discussion channel.",
-    timestamp: "3 days ago",
-    isUnread: true,
-    link: "/calendar",
-  },
-];
-
-const INSTRUCTOR_NOTIFICATIONS: HeaderNotification[] = [
-  {
-    id: "in-1",
-    category: "ADMIN",
-    title: "Python Bootcamp Approved",
-    description: "Your course has been approved by admin review and is now live.",
-    timestamp: "2 minutes ago",
-    isUnread: true,
-    link: "/instructor",
-  },
-  {
-    id: "in-2",
-    category: "INSTRUCTOR",
-    title: "Assignment Submitted",
-    description: "Rahul submitted Assignment 2: LangChain Agent Loop for review.",
-    timestamp: "12 minutes ago",
-    isUnread: true,
-    link: "/instructor",
-  },
-  {
-    id: "in-3",
-    category: "SYSTEM",
-    title: "Live Class Reminder",
-    description: "Your scheduled cohort session starts in 20 minutes.",
-    timestamp: "Today",
-    isUnread: true,
-    link: "/instructor",
-  },
-  {
-    id: "in-4",
-    category: "PAYMENT",
-    title: "Payout Completed",
-    description: "₹4,500 credited successfully to your registered account.",
-    timestamp: "Yesterday",
-    isUnread: true,
-    link: "/instructor",
-  },
-  {
-    id: "in-5",
-    category: "INSTRUCTOR",
-    title: "New Student Enrollment",
-    description: "Priya Sharma enrolled in Full-Stack Web Dev Masterclass.",
-    timestamp: "2 days ago",
-    isUnread: true,
-    link: "/instructor",
-  },
-];
 
 export function NotificationBell() {
   const { user } = useAuth();
   const isInstructor = user?.role === "INSTRUCTOR";
   const isAdmin = user?.role === "ADMIN";
 
-  const initialList = useMemo(() => {
-    if (isInstructor) return INSTRUCTOR_NOTIFICATIONS;
-    return STUDENT_NOTIFICATIONS;
-  }, [isInstructor]);
-
-  const [notifications, setNotifications] = useState<HeaderNotification[]>(initialList);
+  const [notifications, setNotifications] = useState<HeaderNotification[]>([]);
+  const [unreadCount, setUnreadCount] = useState<number>(0);
   const [isOpen, setIsOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  const allNotificationsLink = isInstructor
+    ? "/instructor/notifications"
+    : isAdmin
+    ? "/admin/notifications"
+    : "/student/notifications";
+
+  const fetchNotifications = useCallback(async () => {
+    if (!user) return;
+    try {
+      setIsLoading(true);
+      const endpoint = isInstructor || isAdmin ? "/api/instructor/notifications?limit=10" : "/api/instructor/notifications?limit=10";
+      const res = await fetch(endpoint);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && Array.isArray(data.notifications)) {
+          setNotifications(data.notifications);
+          setUnreadCount(typeof data.unreadCount === "number" ? data.unreadCount : data.notifications.filter((n: any) => n.isUnread).length);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to fetch notifications in bell:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [user, isInstructor, isAdmin]);
+
   useEffect(() => {
-    setNotifications(initialList);
-  }, [initialList]);
-
-  if (!user) return null;
-
-  const unreadCount = notifications.filter((n) => n.isUnread).length;
+    fetchNotifications();
+    // Poll unread count every 45 seconds
+    const interval = setInterval(fetchNotifications, 45000);
+    return () => clearInterval(interval);
+  }, [fetchNotifications]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -158,12 +91,33 @@ export function NotificationBell() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const markAllAsRead = () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, isUnread: false })));
+  const markAllAsRead = async () => {
+    try {
+      setNotifications((prev) => prev.map((n) => ({ ...n, isUnread: false })));
+      setUnreadCount(0);
+      await fetch("/api/instructor/notifications/read-all", { method: "PATCH" });
+    } catch (err) {
+      console.error("Failed to mark all as read:", err);
+    }
   };
 
-  const getCategoryConfig = (category: HeaderNotification["category"]) => {
+  const markSingleAsRead = async (id: string) => {
+    try {
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === id ? { ...n, isUnread: false } : n))
+      );
+      setUnreadCount((prev) => Math.max(0, prev - 1));
+      await fetch(`/api/instructor/notifications/${id}/read`, { method: "PATCH" });
+    } catch (err) {
+      console.error("Failed to mark single notification as read:", err);
+    }
+  };
+
+  if (!user) return null;
+
+  const getCategoryConfig = (category: string, iconStr?: string) => {
     switch (category) {
+      case "LIVE_SESSION":
       case "LIVE":
         return {
           label: "🔴 LIVE CLASS",
@@ -192,19 +146,19 @@ export function NotificationBell() {
           icon: BookOpen,
           iconColor: "text-blue-400",
         };
+      case "TASK":
+        return {
+          label: "📋 TASK",
+          badgeBg: "bg-indigo-500/15 text-indigo-400 border-indigo-500/30",
+          icon: CheckSquare,
+          iconColor: "text-indigo-400",
+        };
       case "CERTIFICATE":
         return {
           label: "🏆 CERTIFICATE",
           badgeBg: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
           icon: Award,
           iconColor: "text-emerald-400",
-        };
-      case "COMMUNITY":
-        return {
-          label: "💬 INSTRUCTOR",
-          badgeBg: "bg-purple-500/15 text-purple-400 border-purple-500/30",
-          icon: MessageSquare,
-          iconColor: "text-purple-400",
         };
       case "ADMIN":
         return {
@@ -213,13 +167,21 @@ export function NotificationBell() {
           icon: ShieldCheck,
           iconColor: "text-amber-400",
         };
-      case "INSTRUCTOR":
+      case "STUDENT":
         return {
           label: "👨‍🎓 STUDENT",
           badgeBg: "bg-blue-500/15 text-blue-400 border-blue-500/30",
           icon: UserCheck,
           iconColor: "text-blue-400",
         };
+      case "VERIFICATION":
+        return {
+          label: "🛡 VERIFICATION",
+          badgeBg: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
+          icon: ShieldCheck,
+          iconColor: "text-emerald-400",
+        };
+      case "REMINDER":
       case "SYSTEM":
         return {
           label: "⚙ SYSTEM",
@@ -234,20 +196,24 @@ export function NotificationBell() {
           icon: CreditCard,
           iconColor: "text-emerald-400",
         };
+      default:
+        return {
+          label: "🔔 NOTIFICATION",
+          badgeBg: "bg-primary/15 text-primary border-primary/30",
+          icon: Bell,
+          iconColor: "text-primary",
+        };
     }
   };
-
-  const allNotificationsLink = isInstructor
-    ? "/instructor/notifications"
-    : isAdmin
-    ? "/admin/notifications"
-    : "/student/notifications";
 
   return (
     <div className="relative" ref={dropdownRef}>
       {/* ── BELL TRIGGER BUTTON ── */}
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => {
+          setIsOpen(!isOpen);
+          if (!isOpen) fetchNotifications();
+        }}
         className="relative p-2 text-subtext hover:text-text transition-colors rounded-xl hover:bg-card/60 focus:outline-none cursor-pointer"
         aria-label="Notifications"
       >
@@ -256,7 +222,7 @@ export function NotificationBell() {
           <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75" />
             <span className="relative inline-flex items-center justify-center rounded-full h-4 w-4 bg-rose-500 text-[10px] font-black text-white shadow-sm">
-              {unreadCount}
+              {unreadCount > 9 ? "9+" : unreadCount}
             </span>
           </span>
         )}
@@ -306,13 +272,19 @@ export function NotificationBell() {
             {/* Notification List */}
             <div className="max-h-[360px] overflow-y-auto divide-y divide-card/60">
               {notifications.map((item) => {
-                const config = getCategoryConfig(item.category);
+                const config = getCategoryConfig(item.category, item.icon);
                 const IconComponent = config.icon;
+                const targetLink = item.actionUrl || item.link || allNotificationsLink;
+                const timeDisplay = item.timeAgo || item.timestamp;
+
                 return (
                   <Link
                     key={item.id}
-                    href={item.link || allNotificationsLink}
-                    onClick={() => setIsOpen(false)}
+                    href={targetLink}
+                    onClick={() => {
+                      markSingleAsRead(item.id);
+                      setIsOpen(false);
+                    }}
                     className={`p-3.5 transition-colors hover:bg-card/40 flex items-start gap-3 relative block ${
                       item.isUnread ? "bg-primary/5" : ""
                     }`}
@@ -334,19 +306,27 @@ export function NotificationBell() {
                           {config.label}
                         </span>
                         <span className="text-[10px] text-subtext font-medium">
-                          {item.timestamp}
+                          {timeDisplay}
                         </span>
                       </div>
                       <h4 className="text-xs font-extrabold text-text line-clamp-1">
                         {item.title}
                       </h4>
                       <p className="text-[11px] text-subtext line-clamp-2 mt-0.5">
-                        {item.description}
+                        {item.description || (item as any).message}
                       </p>
                     </div>
                   </Link>
                 );
               })}
+
+              {notifications.length === 0 && !isLoading && (
+                <div className="p-8 text-center text-subtext">
+                  <Inbox className="w-8 h-8 mx-auto mb-2 opacity-30" />
+                  <p className="text-xs font-bold">No notifications yet</p>
+                  <p className="text-[10px]">You are completely caught up!</p>
+                </div>
+              )}
             </div>
 
             {/* Footer Action */}

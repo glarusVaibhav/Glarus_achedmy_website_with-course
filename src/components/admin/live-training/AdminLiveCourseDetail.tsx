@@ -403,12 +403,16 @@ export default function AdminLiveCourseDetail() {
               </span>
               <span
                 className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md border ${
-                  isDraft
+                  course.status === "DRAFT"
                     ? "bg-amber-500/20 text-amber-300 border-amber-500/30"
+                    : course.status === "ASSIGNED"
+                    ? "bg-blue-500/20 text-blue-300 border-blue-500/30"
+                    : course.status === "READY_TO_PUBLISH"
+                    ? "bg-teal-500/20 text-teal-300 border-teal-500/30 font-bold"
                     : "bg-emerald-500/20 text-emerald-300 border-emerald-500/30"
                 }`}
               >
-                {course.status}
+                {course.status === "READY_TO_PUBLISH" ? "READY TO PUBLISH (REVIEWED)" : course.status}
               </span>
             </div>
             <h1 className="text-xl sm:text-2xl font-black text-text tracking-tight mt-1">
@@ -449,6 +453,27 @@ export default function AdminLiveCourseDetail() {
           </button>
         </div>
       </div>
+
+      {/* Ready to Publish Instructor Reviewed Banner */}
+      {course.status === "READY_TO_PUBLISH" && (
+        <div className="p-4 rounded-2xl bg-teal-500/10 border border-teal-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-teal-300 text-xs animate-in fade-in">
+          <div className="flex items-center gap-2.5">
+            <CheckCircle2 className="w-5 h-5 text-teal-400 shrink-0" />
+            <div>
+              <p className="font-bold text-white text-sm">Instructor Reviewed: Ready to Publish</p>
+              <p className="text-teal-300/80 text-[11px] mt-0.5">
+                The lead instructor has reviewed the syllabus and marked this cohort ready for public enrollment.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={handleTogglePublish}
+            className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold text-xs shadow-lg shadow-teal-600/25 hover:scale-105 transition-all shrink-0"
+          >
+            Publish to Students Now
+          </button>
+        </div>
+      )}
 
       {/* Notifications / Alerts */}
       {actionSuccessMsg && (
@@ -641,10 +666,10 @@ export default function AdminLiveCourseDetail() {
 
                     <Link
                       href={`/admin/live-training/courses/${course.id}/sessions/${sess.id}`}
-                      className="px-3.5 py-1.5 rounded-xl bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 border border-purple-500/30 text-xs font-bold transition-all"
+                      className="px-3.5 py-1.5 rounded-xl bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 border border-purple-500/30 text-xs font-bold transition-all flex items-center gap-1.5"
                     >
-                      <Edit3 className="w-3.5 h-3.5 inline mr-1" />
-                      <span>Session Builder</span>
+                      <Edit3 className="w-3.5 h-3.5" />
+                      <span>Edit</span>
                     </Link>
 
                     <button

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   ShieldAlert,
   ShieldCheck,
@@ -110,11 +110,21 @@ const INITIAL_ADMIN_MESSAGES: AdminMessage[] = [
   },
 ];
 
-export function InstructorAdminInboxView() {
-  const [messages, setMessages] = useState<AdminMessage[]>(INITIAL_ADMIN_MESSAGES);
+interface InstructorAdminInboxViewProps {
+  isDemoUser?: boolean;
+}
+
+export function InstructorAdminInboxView({ isDemoUser = false }: InstructorAdminInboxViewProps = {}) {
+  const [messages, setMessages] = useState<AdminMessage[]>(isDemoUser ? INITIAL_ADMIN_MESSAGES : []);
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedMessage, setSelectedMessage] = useState<AdminMessage | null>(null);
+
+  React.useEffect(() => {
+    if (isDemoUser && messages.length === 0) {
+      setMessages(INITIAL_ADMIN_MESSAGES);
+    }
+  }, [isDemoUser]);
 
   /* Reply composer */
   const [isReplying, setIsReplying] = useState(false);

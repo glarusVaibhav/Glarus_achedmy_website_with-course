@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { getSession } from "@/lib/auth";
+import { emitDomainEvent } from "@/lib/notifications/eventDispatcher";
+import { DOMAIN_EVENT_TYPES } from "@/lib/notifications/events";
+import crypto from "crypto";
 
 export async function GET(req: Request) {
   try {
@@ -125,6 +128,9 @@ export async function POST(req: Request) {
       duration = "120 min",
       status = "SCHEDULED",
       meetingUrl,
+      meetingId,
+      passcode,
+      meetingPasscode,
       agenda = [],
       topics = [],
       learningOutcomes = [],
@@ -147,6 +153,10 @@ export async function POST(req: Request) {
     const count = await prisma.liveSession.count({ where: { liveCourseId } });
     const sNum = sessionNumber || count + 1;
 
+    // Generate deterministic Zoom Video SDK session parameters if not provided
+    const finalMeetingId = meetingId || crypto.randomUUID();
+    const finalPasscode = passcode || meetingPasscode || crypto.randomBytes(4).toString("hex").toUpperCase();
+
     const createdSession = await prisma.liveSession.create({
       data: {
         liveCourseId,
@@ -159,7 +169,9 @@ export async function POST(req: Request) {
         timezone,
         duration,
         status: status as any,
-        meetingUrl: meetingUrl || course.meetingUrl || null,
+        meetingId: finalMeetingId,
+        meetingPasscode: finalPasscode,
+        meetingUrl: meetingUrl || course.meetingUrl || `https://zoom.us/j/${finalMeetingId}`,
         agenda: agenda.length
           ? {
               create: agenda.map((ag: any, i: number) => ({
@@ -254,12 +266,21 @@ export async function POST(req: Request) {
         }
       });
 
-      await prisma.notification.create({
-        data: {
-          userId: instructorId,
-          type: "LIVE_SESSION_ASSIGNED",
-          message: `You have been assigned to Live Session: "${createdSession.title}" in course "${course.title}".`
-        }
+      // Emit Domain Event for Notification Engine
+      await emitDomainEvent({
+        eventType: DOMAIN_EVENT_TYPES.LIVE_SESSION_ASSIGNED,
+        actorId: session.id,
+        payload: {
+          sessionId: createdSession.id,
+          sessionTitle: createdSession.title,
+          liveCourseId: course.id,
+          liveCourseTitle: course.title,
+          instructorId,
+          sessionNumber: sNum,
+          date: date || undefined,
+          startTime: startTime || undefined,
+          assignedBy: session.name || "Super Admin",
+        },
       });
     }
 

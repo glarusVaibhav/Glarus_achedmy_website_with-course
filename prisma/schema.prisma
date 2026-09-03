@@ -3,8 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 enum Role {
@@ -14,8 +14,10 @@ enum Role {
 }
 
 enum CourseStatus {
+  DRAFT
   PENDING
   APPROVED
+  PUBLISHED
   REJECTED
 }
 
@@ -36,6 +38,12 @@ enum PaymentStatus {
   REFUNDED
 }
 
+enum PurchaseItemType {
+  SELF_PACED_COURSE
+  LIVE_COURSE
+  BUNDLE
+}
+
 enum RefundStatus {
   PENDING
   APPROVED
@@ -49,75 +57,231 @@ enum ApprovalStatus {
   CHANGES_REQUESTED
 }
 
+enum AttendanceStatus {
+  PRESENT
+  LATE
+  ABSENT
+}
+
+enum WatchStatus {
+  UNWATCHED
+  IN_PROGRESS
+  WATCHED
+}
+
+enum AssignmentStatus {
+  PENDING
+  IN_REVIEW
+  GRADED
+}
+
+enum NotificationCategory {
+  ADMIN
+  STUDENT
+  COURSE
+  LIVE_SESSION
+  ASSIGNMENT
+  TASK
+  PAYMENT
+  VERIFICATION
+  MENTORSHIP
+  SYSTEM
+  ANNOUNCEMENT
+  REMINDER
+}
+
+enum NotificationPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+enum NotificationType {
+  TASK_ASSIGNED
+  TASK_UPDATED
+  TASK_DEADLINE_CHANGED
+  TASK_APPROVED
+  TASK_REJECTED
+  TASK_CANCELLED
+  ADMIN_INSTRUCTION
+  TASK_DEADLINE_APPROACHING
+  TASK_OVERDUE
+  COURSE_APPROVED
+  COURSE_REJECTED
+  COURSE_CHANGES_REQUESTED
+  COURSE_SUBMITTED_FOR_REVIEW
+  COURSE_PUBLISHED
+  COURSE_UNPUBLISHED
+  COURSE_ARCHIVED
+  COURSE_ASSIGNED
+  COURSE_UNASSIGNED
+  LIVE_COURSE_ASSIGNED
+  LIVE_SESSION_ASSIGNED
+  LIVE_SESSION_CREATED
+  LIVE_SESSION_UPDATED
+  LIVE_SESSION_RESCHEDULED
+  LIVE_SESSION_CANCELLED
+  LIVE_SESSION_REMINDER
+  PERMISSIONS_UPDATED
+  INSTRUCTOR_REASSIGNED
+  STUDENT_ENROLLED
+  ASSIGNMENT_SUBMITTED
+  ASSIGNMENT_REVIEW_REQUIRED
+  ASSIGNMENT_RESUBMITTED
+  ASSIGNMENT_UPDATED
+  STUDENT_COMPLETED_COURSE
+  STUDENT_FEEDBACK_RECEIVED
+  STUDENT_HELP_REQUESTED
+  VERIFICATION_SUBMITTED
+  VERIFICATION_APPROVED
+  VERIFICATION_REJECTED
+  VERIFICATION_CHANGES_REQUESTED
+  PAYOUT_INITIATED
+  PAYOUT_PROCESSING
+  PAYOUT_COMPLETED
+  PAYOUT_FAILED
+  REVENUE_MILESTONE
+  MENTORSHIP_REQUESTED
+  MENTORSHIP_ACCEPTED
+  MENTORSHIP_REJECTED
+  MENTORSHIP_SCHEDULED
+  MENTORSHIP_CANCELLED
+  SYSTEM_ANNOUNCEMENT
+  SYSTEM_MAINTENANCE
+  SECURITY_ALERT
+}
+
 model User {
-  id            String          @id @default(cuid())
-  name          String
-  email         String          @unique
-  password      String
-  role          Role            @default(STUDENT)
-  status        UserStatus      @default(ACTIVE)
-  courses       Course[]        @relation("InstructorCourses")
-  purchases     Purchase[]
-  enrollments   Enrollment[]
-  auditLogs     AuditLog[]      @relation("AdminAuditLogs")
-  videoProgress VideoProgress[]
-  certificates  Certificate[]
-  activities    UserActivity[]
-  achievements  Achievement[]
-  notifications Notification[]
-  createdAt          DateTime            @default(now())
-  updatedAt          DateTime            @updatedAt
-  instructorProfile  InstructorProfile?
-  managedRefunds     Refund[]            @relation("AdminRefunds")
-  instructorApproval InstructorApproval?
-  leadLiveCourses    LiveCourse[]        @relation("LeadInstructorLiveCourses")
-  createdLiveCourses LiveCourse[]        @relation("CreatorLiveCourses")
-  sessionAssignments SessionAssignment[]
+  id                    String                   @id @default(cuid())
+  name                  String
+  email                 String                   @unique
+  password              String?
+  role                  Role                     @default(STUDENT)
+  status                UserStatus               @default(ACTIVE)
+  emailVerifiedAt       DateTime?
+  authProvider          String                   @default("EMAIL")
+  googleId              String?                  @unique
+  courses               Course[]                 @relation("InstructorCourses")
+  purchases             Purchase[]               @relation("UserPurchases")
+  enrollments           Enrollment[]             @relation("UserEnrollments")
+  liveCourseEnrollments LiveCourseEnrollment[]   @relation("UserLiveEnrollments")
+  sessionAttendances    LiveSessionAttendance[]  @relation("UserSessionAttendance")
+  recordingProgress     SessionRecordingProgress[] @relation("UserRecordingProgress")
+  assignmentSubmissions AssignmentSubmission[]   @relation("UserAssignmentSubmissions")
+  studentNotes          StudentNote[]            @relation("UserStudentNotes")
+  auditLogs             AuditLog[]               @relation("AdminAuditLogs")
+  videoProgress         VideoProgress[]
+  certificates          Certificate[]
+  activities            UserActivity[]
+  achievements          Achievement[]
+  notifications         Notification[]           @relation("UserNotifications")
+  actorNotifications    Notification[]           @relation("ActorNotifications")
+  createdAt             DateTime                 @default(now())
+  updatedAt             DateTime                 @updatedAt
+  instructorProfile     InstructorProfile?
+  managedRefunds        Refund[]                 @relation("AdminRefunds")
+  instructorApproval    InstructorApproval?
+  leadLiveCourses       LiveCourse[]             @relation("LeadInstructorLiveCourses")
+  createdLiveCourses    LiveCourse[]             @relation("CreatorLiveCourses")
+  sessionAssignments    SessionAssignment[]
 }
 
 model Course {
-  id           String         @id @default(cuid())
-  title        String
-  description  String
-  price        Float
-  instructor   User           @relation("InstructorCourses", fields: [instructorId], references: [id], onDelete: Cascade)
-  instructorId String
-  status       CourseStatus   @default(PENDING)
-  purchases    Purchase[]
-  enrollments  Enrollment[]
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
-  type         CourseType     @default(SELF_PACED)
-  modules      Module[]
-  batches      Batch[]
-  certificates Certificate[]
-  activities   UserActivity[]
+  id             String          @id @default(cuid())
+  title          String
+  description    String
+  price          Float
+  instructor     User            @relation("InstructorCourses", fields: [instructorId], references: [id], onDelete: Cascade)
+  instructorId   String
+  status         CourseStatus    @default(PENDING)
+  isPublished    Boolean         @default(false)
+  publishedAt    DateTime?
+  purchases      Purchase[]      @relation("CoursePurchases")
+  enrollments    Enrollment[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  type           CourseType      @default(SELF_PACED)
+  modules        Module[]
+  batches        Batch[]
+  certificates   Certificate[]
+  activities     UserActivity[]
   refundRate     Float           @default(0.0)
   rating         Float           @default(0.0)
   reviewsCount   Int             @default(0)
   courseApproval CourseApproval?
+  assignments    Assignment[]    @relation("CourseAssignments")
 }
 
 model Purchase {
-  id        String   @id @default(cuid())
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String
-  course        Course        @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  courseId      String
-  paymentStatus PaymentStatus @default(COMPLETED)
-  createdAt     DateTime      @default(now())
-  refund        Refund?       @relation("PurchaseRefund")
+  id            String           @id @default(cuid())
+  user          User             @relation("UserPurchases", fields: [userId], references: [id], onDelete: Cascade)
+  userId        String
+  itemType      PurchaseItemType @default(SELF_PACED_COURSE)
+  course        Course?          @relation("CoursePurchases", fields: [courseId], references: [id], onDelete: Cascade)
+  courseId      String?
+  liveCourse    LiveCourse?      @relation("LiveCoursePurchases", fields: [liveCourseId], references: [id], onDelete: Cascade)
+  liveCourseId  String?
+  amount        Float            @default(0)
+  currency      String           @default("INR")
+  paymentMethod String           @default("CARD")
+  transactionId String?          @unique
+  paymentStatus PaymentStatus    @default(COMPLETED)
+  invoice       Invoice?
+  refund        Refund?          @relation("PurchaseRefund")
+  createdAt     DateTime         @default(now())
+
+  @@index([userId])
+  @@index([courseId])
+  @@index([liveCourseId])
+}
+
+model Invoice {
+  id            String   @id @default(cuid())
+  invoiceNumber String   @unique
+  purchaseId    String   @unique
+  purchase      Purchase @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
+  subtotal      Float
+  taxAmount     Float    @default(0.0)
+  totalAmount   Float
+  gstin         String?  @default("29AAACG1234F1Z5")
+  billingName   String
+  billingEmail  String
+  pdfUrl        String?
+  issuedAt      DateTime @default(now())
 }
 
 model Enrollment {
-  id        String   @id @default(cuid())
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String
-  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  courseId  String
-  progress  Int      @default(0)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String    @id @default(cuid())
+  user        User      @relation("UserEnrollments", fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+  course      Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId    String
+  progress    Int       @default(0)
+  isCompleted Boolean   @default(false)
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([userId, courseId])
+  @@index([userId])
+}
+
+model LiveCourseEnrollment {
+  id           String     @id @default(cuid())
+  userId       String
+  user         User       @relation("UserLiveEnrollments", fields: [userId], references: [id], onDelete: Cascade)
+  liveCourseId String
+  liveCourse   LiveCourse @relation(fields: [liveCourseId], references: [id], onDelete: Cascade)
+  batchName    String     @default("Main Cohort")
+  status       String     @default("ACTIVE")
+  progress     Int        @default(0)
+  enrolledAt   DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@unique([userId, liveCourseId])
+  @@index([userId])
+  @@index([liveCourseId])
 }
 
 model Settings {
@@ -153,6 +317,7 @@ model Lecture {
   module    Module          @relation(fields: [moduleId], references: [id], onDelete: Cascade)
   moduleId  String
   progress  VideoProgress[]
+  notes     StudentNote[]
   order     Int
 }
 
@@ -188,29 +353,34 @@ model LiveClass {
 }
 
 model Certificate {
-  id              String   @id @default(cuid())
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId          String
-  course          Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  courseId        String
-  issueDate       DateTime @default(now())
-  certificateUrl  String?
+  id             String      @id @default(cuid())
+  credentialId   String?     @unique
+  user           User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         String
+  course         Course?     @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId       String?
+  liveCourse     LiveCourse? @relation("LiveCourseCertificates", fields: [liveCourseId], references: [id], onDelete: Cascade)
+  liveCourseId   String?
+  issueDate      DateTime    @default(now())
+  certificateUrl String?
 
   @@unique([userId, courseId])
+  @@index([userId])
+  @@index([credentialId])
 }
 
 model UserActivity {
-  id              String   @id @default(cuid())
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId          String
-  course          Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  courseId        String
-  lastLectureId   String?
+  id               String   @id @default(cuid())
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId           String
+  course           Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId         String
+  lastLectureId    String?
   lastLectureTitle String?
-  lastTimestamp   Float    @default(0)
-  totalSeconds    Float    @default(0)
-  accessedAt      DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  lastTimestamp    Float    @default(0)
+  totalSeconds     Float    @default(0)
+  accessedAt       DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
   @@unique([userId, courseId])
 }
@@ -226,22 +396,44 @@ model Achievement {
 }
 
 model Notification {
-  id        String   @id @default(cuid())
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String
-  message   String
-  type      String   @default("INFO")
-  isRead    Boolean  @default(false)
-  createdAt DateTime @default(now())
+  id               String               @id @default(cuid())
+  recipientId      String
+  recipient        User                 @relation("UserNotifications", fields: [recipientId], references: [id], onDelete: Cascade)
+  actorId          String?
+  actor            User?                @relation("ActorNotifications", fields: [actorId], references: [id], onDelete: SetNull)
+  category         NotificationCategory @default(SYSTEM)
+  type             NotificationType     @default(SYSTEM_ANNOUNCEMENT)
+  priority         NotificationPriority @default(NORMAL)
+  title            String
+  message          String
+  details          String?
+  isRead           Boolean              @default(false)
+  readAt           DateTime?
+  isArchived       Boolean              @default(false)
+  entityType       String?
+  entityId         String?
+  actionUrl        String?
+  icon             String?
+  metadata         String?
+  deduplicationKey String?              @unique
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+
+  @@index([recipientId])
+  @@index([recipientId, isRead])
+  @@index([recipientId, isArchived])
+  @@index([recipientId, createdAt])
+  @@index([recipientId, category])
+  @@index([entityType, entityId])
 }
 
 model InstructorProfile {
-  id             String   @id @default(cuid())
-  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId         String   @unique
-  totalRevenue   Float    @default(0.0)
-  rating         Float    @default(0.0)
-  totalStudents  Int      @default(0)
+  id            String @id @default(cuid())
+  user          User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        String @unique
+  totalRevenue  Float  @default(0.0)
+  rating        Float  @default(0.0)
+  totalStudents Int    @default(0)
 }
 
 model Refund {
@@ -259,11 +451,11 @@ model Refund {
 
 model Analytics {
   id        String   @id @default(cuid())
-  event     String   // e.g., "PAGE_VIEW", "ADD_CART", "PURCHASE", "DROP_OFF"
+  event     String
   path      String?
   userId    String?
   courseId  String?
-  metadata  String?  // JSON stringified additional data
+  metadata  String?
   createdAt DateTime @default(now())
 }
 
@@ -277,12 +469,12 @@ model InstructorApproval {
   phone                   String?
   photoUrl                String?
   experience              String?
-  teachingLanguages       String?        // JSON string or comma-separated
+  teachingLanguages       String?
   skills                  String?
   opportunitySource       String?
   resumeUrl               String?
   resumeFileName          String?
-  teachingVideoType       String?        @default("LINK") // "LINK" | "UPLOAD"
+  teachingVideoType       String?        @default("LINK")
   teachingVideoUrl        String?
   teachingVideoFileName   String?
   areasOfExpertise        String?
@@ -292,7 +484,7 @@ model InstructorApproval {
   teachesOnOtherPlatforms Boolean        @default(false)
   otherPlatformDetails    String?
   status                  ApprovalStatus @default(PENDING)
-  bio                     String?        // legacy / fallback
+  bio                     String?
   version                 Int            @default(1)
   feedback                String?
   reviewedBy              String?
@@ -307,7 +499,7 @@ model CourseApproval {
   courseId       String         @unique
   status         ApprovalStatus @default(PENDING)
   feedback       String?
-  contentPreview String?        // JSON stringified curriculum preview
+  contentPreview String?
   reviewedBy     String?
   reviewedAt     DateTime?
   createdAt      DateTime       @default(now())
@@ -316,8 +508,11 @@ model CourseApproval {
 
 enum LiveCourseStatus {
   DRAFT
+  ASSIGNED
+  READY_TO_PUBLISH
   PUBLISHED
   ACTIVE
+  UNPUBLISHED
   COMPLETED
   ARCHIVED
 }
@@ -332,68 +527,81 @@ enum LiveSessionStatus {
 }
 
 model LiveCourse {
-  id                 String              @id @default(cuid())
+  id                 String                 @id @default(cuid())
   title              String
   slug               String?
   shortDescription   String?
   description        String
+  price              Float                  @default(14999)
   thumbnail          String?
-  thumbnailGradient  String?             @default("from-purple-900 via-indigo-950 to-slate-950")
-  category           String              @default("Generative AI")
-  level              String              @default("Intermediate")
-  duration           String?             @default("6 Weeks")
+  thumbnailGradient  String?                @default("from-purple-900 via-indigo-950 to-slate-950")
+  category           String                 @default("Generative AI")
+  level              String                 @default("Intermediate")
+  duration           String?                @default("6 Weeks")
   startDate          DateTime?
   endDate            DateTime?
-  timezone           String              @default("Asia/Kolkata (IST)")
-  totalSessions      Int                 @default(0)
-  maxStudents        Int                 @default(50)
-  enrolledCount      Int                 @default(0)
-  status             LiveCourseStatus    @default(DRAFT)
-  leadInstructor     User?               @relation("LeadInstructorLiveCourses", fields: [leadInstructorId], references: [id])
+  timezone           String                 @default("Asia/Kolkata (IST)")
+  totalSessions      Int                    @default(0)
+  maxStudents        Int                    @default(50)
+  enrolledCount      Int                    @default(0)
+  status             LiveCourseStatus       @default(DRAFT)
+  isPublished        Boolean                @default(false)
+  publishedAt        DateTime?
+  leadInstructor     User?                  @relation("LeadInstructorLiveCourses", fields: [leadInstructorId], references: [id])
   leadInstructorId   String?
-  creator            User?               @relation("CreatorLiveCourses", fields: [createdById], references: [id])
+  creator            User?                  @relation("CreatorLiveCourses", fields: [createdById], references: [id])
   createdById        String?
-  meetingPlatform    String              @default("Zoom")
+  meetingPlatform    String                 @default("Zoom")
   meetingUrl         String?
   prerequisites      String?
   objectives         String?
   tags               String?
   targetAudience     String?
-  recordingAvailable Boolean             @default(true)
-  attendanceTracking Boolean             @default(true)
-  visibility         String              @default("PUBLIC")
+  recordingAvailable Boolean                @default(true)
+  attendanceTracking Boolean                @default(true)
+  visibility         String                 @default("PUBLIC")
   sessions           LiveSession[]
   assignments        SessionAssignment[]
-  createdAt          DateTime            @default(now())
-  updatedAt          DateTime            @updatedAt
+  enrollments        LiveCourseEnrollment[]
+  purchases          Purchase[]             @relation("LiveCoursePurchases")
+  certificates       Certificate[]          @relation("LiveCourseCertificates")
+  assignmentsList    Assignment[]           @relation("LiveCourseAssignments")
+  createdAt          DateTime               @default(now())
+  updatedAt          DateTime               @updatedAt
 }
 
 model LiveSession {
-  id              String                  @id @default(cuid())
-  liveCourse      LiveCourse              @relation(fields: [liveCourseId], references: [id], onDelete: Cascade)
-  liveCourseId    String
-  sessionNumber   Int
-  title           String
-  description     String?
-  date            DateTime?
-  startTime       String?
-  endTime         String?
-  timezone        String                  @default("Asia/Kolkata (IST)")
-  duration        String                  @default("120 min")
-  status          LiveSessionStatus       @default(SCHEDULED)
-  meetingUrl      String?
-  recordingUrl    String?
-  recordingStatus String?                 @default("unavailable")
-  agenda          SessionAgendaItem[]
-  topics          SessionTopic[]
-  learningOutcomes SessionLearningOutcome[]
-  activities      SessionActivity[]
-  resources       SessionResource[]
-  homework        SessionHomework[]
-  assignments     SessionAssignment[]
-  changeHistory   SessionChangeHistory[]
-  createdAt       DateTime                @default(now())
-  updatedAt       DateTime                @updatedAt
+  id                       String                     @id @default(cuid())
+  liveCourse               LiveCourse                 @relation(fields: [liveCourseId], references: [id], onDelete: Cascade)
+  liveCourseId             String
+  sessionNumber            Int
+  title                    String
+  description              String?
+  date                     DateTime?
+  startTime                String?
+  endTime                  String?
+  timezone                 String                     @default("Asia/Kolkata (IST)")
+  duration                 String                     @default("120 min")
+  status                   LiveSessionStatus          @default(SCHEDULED)
+  meetingId                String?
+  meetingPasscode          String?
+  meetingUrl               String?
+  recordingUrl             String?
+  recordingStatus          String?                    @default("unavailable")
+  agenda                   SessionAgendaItem[]
+  topics                   SessionTopic[]
+  learningOutcomes         SessionLearningOutcome[]
+  activities               SessionActivity[]
+  resources                SessionResource[]
+  homework                 SessionHomework[]
+  assignments              SessionAssignment[]
+  changeHistory            SessionChangeHistory[]
+  attendances              LiveSessionAttendance[]
+  recordingProgressRecords SessionRecordingProgress[]
+  sessionAssignmentsList   Assignment[]               @relation("SessionAssignments")
+  notes                    StudentNote[]
+  createdAt                DateTime                   @default(now())
+  updatedAt                DateTime                   @updatedAt
 }
 
 model SessionAgendaItem {
@@ -487,3 +695,130 @@ model SessionChangeHistory {
   createdAt     DateTime    @default(now())
 }
 
+model LiveSessionAttendance {
+  id                String           @id @default(cuid())
+  sessionId         String
+  session           LiveSession      @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  userId            String
+  user              User             @relation("UserSessionAttendance", fields: [userId], references: [id], onDelete: Cascade)
+  status            AttendanceStatus @default(PRESENT)
+  joinedAt          DateTime?
+  leftAt            DateTime?
+  durationMinutes   Int              @default(0)
+  joinedLateMinutes Int              @default(0)
+  notes             String?
+  createdAt         DateTime         @default(now())
+
+  @@unique([sessionId, userId])
+  @@index([userId])
+  @@index([sessionId])
+}
+
+model SessionRecordingProgress {
+  id                     String      @id @default(cuid())
+  sessionId              String
+  session                LiveSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  userId                 String
+  user                   User        @relation("UserRecordingProgress", fields: [userId], references: [id], onDelete: Cascade)
+  secondsWatched         Int         @default(0)
+  totalDurationSeconds   Int         @default(0)
+  percent                Int         @default(0)
+  resumeTimestampSeconds Int         @default(0)
+  status                 WatchStatus @default(UNWATCHED)
+  updatedAt              DateTime    @updatedAt
+
+  @@unique([sessionId, userId])
+  @@index([userId])
+  @@index([sessionId])
+}
+
+model Assignment {
+  id           String                 @id @default(cuid())
+  liveCourseId String?
+  liveCourse   LiveCourse?            @relation("LiveCourseAssignments", fields: [liveCourseId], references: [id], onDelete: Cascade)
+  courseId     String?
+  course       Course?                @relation("CourseAssignments", fields: [courseId], references: [id], onDelete: Cascade)
+  sessionId    String?
+  session      LiveSession?           @relation("SessionAssignments", fields: [sessionId], references: [id], onDelete: SetNull)
+  title        String
+  description  String
+  moduleName   String?
+  instructions String[]               @default([])
+  totalMarks   Int                    @default(100)
+  pointsLabel  String                 @default("100 Pts")
+  dueDate      DateTime
+  submissions  AssignmentSubmission[]
+  createdAt    DateTime               @default(now())
+  updatedAt    DateTime               @updatedAt
+
+  @@index([courseId])
+  @@index([liveCourseId])
+  @@index([sessionId])
+}
+
+model AssignmentSubmission {
+  id           String           @id @default(cuid())
+  assignmentId String
+  assignment   Assignment       @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User             @relation("UserAssignmentSubmissions", fields: [userId], references: [id], onDelete: Cascade)
+  status       AssignmentStatus @default(IN_REVIEW)
+  githubUrl    String?
+  liveUrl      String?
+  fileUrl      String?
+  fileName     String?
+  notes        String?
+  scoreNumeric Int?
+  scoreLabel   String?
+  feedback     String?
+  gradedById   String?
+  gradedAt     DateTime?
+  submittedAt  DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  @@unique([assignmentId, userId])
+  @@index([userId])
+}
+
+model StudentNote {
+  id               String       @id @default(cuid())
+  userId           String
+  user             User         @relation("UserStudentNotes", fields: [userId], references: [id], onDelete: Cascade)
+  sessionId        String?
+  session          LiveSession? @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  lectureId        String?
+  lecture          Lecture?     @relation(fields: [lectureId], references: [id], onDelete: Cascade)
+  timestampSeconds Int          @default(0)
+  content          String
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  @@index([userId, sessionId])
+  @@index([userId, lectureId])
+}
+
+model PendingRegistration {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  name         String
+  passwordHash String
+  otpHash      String
+  otpExpiresAt DateTime
+  otpAttempts  Int       @default(0)
+  resendCount  Int       @default(0)
+  lastResendAt DateTime?
+  role         Role      @default(STUDENT)
+  createdAt    DateTime  @default(now())
+
+  @@index([otpExpiresAt])
+}
+
+model RateLimit {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  count       Int      @default(1)
+  windowStart DateTime @default(now())
+  expiresAt   DateTime
+
+  @@index([expiresAt])
+}

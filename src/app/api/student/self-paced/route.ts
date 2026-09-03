@@ -1,31 +1,29 @@
-import { NextResponse } from "next/server";
-import prisma from "@/lib/db";
-import { getSession } from "@/lib/auth";
+import { NextResponse } from 'next/server';
+import prisma from '@/lib/db';
+import { verifyStudentSession, AuthError } from '@/lib/services/studentAuthService';
 
 export async function GET() {
   try {
-    const session = await getSession();
-    if (!session || session.role !== "STUDENT")
-      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+    const user = await verifyStudentSession();
 
     const enrollments = await prisma.enrollment.findMany({
       where: {
-        userId: session.id as string,
-        course: { type: "SELF_PACED" },
+        userId: user.id,
       },
       include: {
         course: {
           include: {
             instructor: { select: { name: true } },
             modules: {
-              orderBy: { order: "asc" },
+              orderBy: { order: 'asc' },
               include: {
-                lectures: { orderBy: { order: "asc" } },
+                lectures: { orderBy: { order: 'asc' } },
               },
             },
           },
         },
       },
+      orderBy: { createdAt: 'desc' },
     });
 
     let courses = await Promise.all(
@@ -35,95 +33,58 @@ export async function GET() {
 
         const completedCount = await prisma.videoProgress.count({
           where: {
-            userId: session.id as string,
+            userId: user.id,
             isCompleted: true,
             lectureId: { in: allLectures.map((l) => l.id) },
           },
         });
 
         const progressPercent =
-          totalLectures > 0
-            ? Math.round((completedCount / totalLectures) * 100)
-            : 78;
+          totalLectures > 0 ? Math.round((completedCount / totalLectures) * 100) : en.progress || 0;
 
         // Find the last watched lecture
         const lastWatched = await prisma.videoProgress.findFirst({
           where: {
-            userId: session.id as string,
+            userId: user.id,
             lectureId: { in: allLectures.map((l) => l.id) },
           },
-          orderBy: { updatedAt: "desc" },
+          orderBy: { updatedAt: 'desc' },
           include: { lecture: true },
         });
 
-        const courseThumbnail =
-          (en.course as { thumbnail?: string }).thumbnail ||
-          (en.course.title.toLowerCase().includes("generative ai")
-            ? "/images/courses/generative-ai.png"
-            : en.course.title.toLowerCase().includes("machine learning")
-            ? "/images/courses/ml-math.png"
-            : en.course.title.toLowerCase().includes("python")
-            ? "/images/courses/python-fundamentals.png"
-            : "/images/courses/rag-vector-db.png");
+        let courseThumbnail = '/images/courses/generative-ai.png';
+        const t = en.course.title.toLowerCase();
+        if (t.includes('generative ai')) courseThumbnail = '/images/courses/generative-ai.png';
+        else if (t.includes('machine learning')) courseThumbnail = '/images/courses/ml-math.png';
+        else if (t.includes('python')) courseThumbnail = '/images/courses/python-fundamentals.png';
+        else if (t.includes('rag') || t.includes('vector')) courseThumbnail = '/images/courses/rag-vector-db.png';
 
         return {
           id: en.course.id,
           title: en.course.title,
-          instructor: en.course.instructor?.name || "Alex Chen",
+          instructor: en.course.instructor?.name || 'Alex Chen',
           thumbnail: courseThumbnail,
-          progress: progressPercent > 0 ? progressPercent : 78,
+          progress: progressPercent > 0 ? progressPercent : en.progress || 0,
           totalLectures: totalLectures || 24,
-          completedLectures: completedCount || 18,
-          lastWatchedLecture: lastWatched?.lecture?.title || "Module 4: RAG & Vector DBs",
-          status:
-            progressPercent === 100
-              ? "COMPLETED"
-              : "IN_PROGRESS",
+          completedLectures: completedCount || 0,
+          lastWatchedLecture: lastWatched?.lecture?.title || (en.course.modules[0]?.lectures[0]?.title ?? 'Module 1: Introduction'),
+          status: progressPercent >= 100 || en.isCompleted ? 'COMPLETED' : 'IN_PROGRESS',
         };
       })
     );
 
-    // Ensure purchased Generative AI Application Engineering course is present
-    const flagshipItem = {
-      id: "Generative_AI_Application_Engineer",
-      title: "Generative AI Application Engineering",
-      instructor: "Alex Chen",
-      thumbnail: "/images/courses/generative-ai.png",
-      progress: 78,
-      totalLectures: 24,
-      completedLectures: 18,
-      lastWatchedLecture: "Module 4: RAG & Vector DBs",
-      status: "IN_PROGRESS",
-    };
-
-    const hasFlagship = courses.some(
-      (c) =>
-        c.id === "Generative_AI_Application_Engineer" ||
-        c.id === "2" ||
-        c.id === "course-1" ||
-        c.title.includes("Generative AI")
-    );
-
-    if (!hasFlagship) {
-      courses.unshift(flagshipItem);
-    }
-
-    // Also attach thumbnails if missing on any course
-    courses = courses.map((c) => {
-      if (!c.thumbnail) {
-        const t = c.title.toLowerCase();
-        if (t.includes("generative ai")) c.thumbnail = "/images/courses/generative-ai.png";
-        else if (t.includes("machine learning")) c.thumbnail = "/images/courses/ml-math.png";
-        else if (t.includes("python")) c.thumbnail = "/images/courses/python-fundamentals.png";
-        else if (t.includes("rag") || t.includes("vector")) c.thumbnail = "/images/courses/rag-vector-db.png";
-        else c.thumbnail = "/images/courses/generative-ai.png";
-      }
-      return c;
-    });
-
     return NextResponse.json({ courses });
-  } catch (err) {
-    console.error(err);
-    return NextResponse.json({ error: "Internal Error" }, { status: 500 });
+  } catch (err: any) {
+    if (err instanceof AuthError) {
+      return NextResponse.json(
+        { success: false, error: { code: err.code, message: err.message } },
+        { status: err.statusCode }
+      );
+    }
+    console.error('[Student Self-Paced Error]:', err);
+    return NextResponse.json(
+      { success: false, error: { code: 'INTERNAL_ERROR', message: 'Failed to fetch self-paced courses.' } },
+      { status: 500 }
+    );
   }
 }

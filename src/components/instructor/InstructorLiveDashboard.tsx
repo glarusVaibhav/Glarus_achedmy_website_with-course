@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
+import Link from "next/link";
 import {
   Calendar,
   Clock,
@@ -81,6 +82,7 @@ export interface LiveClassStudent {
 
 export interface LiveClassItem {
   id: string;
+  rawDate?: string | Date | null;
   title: string;
   courseName: string;
   moduleName: string;
@@ -103,6 +105,12 @@ export interface LiveClassItem {
   teachingNotes: string[];
   resources: LiveClassResource[];
   students: LiveClassStudent[];
+  instructorId?: string;
+  instructorName?: string;
+  instructorAvatar?: string;
+  canStart?: boolean;
+  unlockTimeStr?: string;
+  minutesUntilStart?: number | null;
 }
 
 /* ═══════════════════════════════════════════════
@@ -248,6 +256,9 @@ const INITIAL_LIVE_CLASSES: LiveClassItem[] = [
     adminAssignedBy: "Academic Operations Team",
     meetingUrl: "https://meet.google.com/glarus-ai-masterclass",
     compensationAmount: 5000,
+    instructorId: "inst-1",
+    instructorName: "Dr. Sarah Chen",
+    instructorAvatar: "SC",
     description: "Ongoing live interactive coding session discussing multi-agent orchestration, LangGraph swarms, memory checkpointing, and tool calling patterns.",
     learningObjectives: [
       "Master multi-agent StateGraph orchestration with conditional routing",
@@ -333,7 +344,7 @@ const INITIAL_LIVE_CLASSES: LiveClassItem[] = [
   {
     id: "class-today-2",
     title: "JavaScript Advanced Concepts & Async Patterns",
-    courseName: "Full-Stack Web Development Bootcamp",
+    courseName: "React Masterclass & Web Architecture",
     moduleName: "Module 4 · Live Training",
     batch: "Batch FS-2026-02",
     status: "STARTS_SOON",
@@ -345,6 +356,9 @@ const INITIAL_LIVE_CLASSES: LiveClassItem[] = [
     adminAssignedBy: "Academic Operations Team",
     meetingUrl: "https://zoom.us/j/9948201923",
     compensationAmount: 4500,
+    instructorId: "inst-3",
+    instructorName: "John Doe",
+    instructorAvatar: "JD",
     description: "Evening deep-dive into event loop mechanics, microtasks vs macrotasks, custom Promise implementations, AbortControllers, and async iterators.",
     learningObjectives: [
       "Understand the V8 Call Stack, Libuv event loop, and queue prioritization",
@@ -386,8 +400,8 @@ const INITIAL_LIVE_CLASSES: LiveClassItem[] = [
      ───────────────────────────────────────────── */
   {
     id: "class-up-1",
-    title: "Fullstack Next.js 15 Deployment Masterclass",
-    courseName: "Full-Stack Web Development Bootcamp",
+    title: "React 19 Server Components & Actions Deep Dive",
+    courseName: "React Masterclass & TypeScript for Scale",
     moduleName: "Module 6 · Live Workshop",
     batch: "Batch FS-2026-01",
     status: "UPCOMING",
@@ -399,6 +413,9 @@ const INITIAL_LIVE_CLASSES: LiveClassItem[] = [
     adminAssignedBy: "Chief Academic Reviewer",
     meetingUrl: "https://zoom.us/j/9948201923",
     compensationAmount: 5000,
+    instructorId: "inst-3",
+    instructorName: "John Doe",
+    instructorAvatar: "JD",
     description: "Scheduled live masterclass on deploying production Next.js 15 apps with Server Actions, Prisma ORM, SQLite/Postgres connection pooling, and Vercel edge runtime.",
     learningObjectives: [
       "Execute safe Prisma database schema migrations in CI/CD pipelines",
@@ -420,10 +437,10 @@ const INITIAL_LIVE_CLASSES: LiveClassItem[] = [
   },
   {
     id: "class-up-2",
-    title: "Autonomous Agent Memory & Tool Calling",
-    courseName: "Mastering Agentic AI & Autonomous Workflows",
-    moduleName: "Module 9 · Masterclass",
-    batch: "Batch AI-2026-A",
+    title: "Advanced RAG Architecture & Vector Indexing",
+    courseName: "Advanced RAG Architecture",
+    moduleName: "Module 3 · Masterclass",
+    batch: "Batch RAG-2026-A",
     status: "UPCOMING",
     statusLabel: "UPCOMING",
     dateLabel: "18 Aug 2026",
@@ -433,6 +450,9 @@ const INITIAL_LIVE_CLASSES: LiveClassItem[] = [
     adminAssignedBy: "Academic Operations Team",
     meetingUrl: "https://meet.google.com/glarus-ai-memory",
     compensationAmount: 6000,
+    instructorId: "inst-2",
+    instructorName: "Alex Chen",
+    instructorAvatar: "AC",
     description: "Deep dive into persistent conversational memory, semantic summarization buffers, and real-time external API integrations.",
     learningObjectives: [
       "Integrate vector memory stores with short-term semantic scratchpads",
@@ -453,7 +473,7 @@ const INITIAL_LIVE_CLASSES: LiveClassItem[] = [
   {
     id: "class-up-3",
     title: "Machine Learning Workshop: Cloud Model Deployment",
-    courseName: "Applied Machine Learning & MLOps",
+    courseName: "Autonomous Workflows & ML",
     moduleName: "Module 5 · Live Workshop",
     batch: "Batch AI-2026-B",
     status: "UPCOMING",
@@ -465,6 +485,9 @@ const INITIAL_LIVE_CLASSES: LiveClassItem[] = [
     adminAssignedBy: "Chief Academic Reviewer",
     meetingUrl: "https://zoom.us/j/9948201923",
     compensationAmount: 7500,
+    instructorId: "inst-1",
+    instructorName: "Dr. Sarah Chen",
+    instructorAvatar: "SC",
     description: "Hands-on workshop covering cloud deployment pipelines, Docker containerization, and vLLM GPU inference clusters.",
     learningObjectives: [
       "Containerize open-source LLMs using Docker and CUDA runtimes",
@@ -489,9 +512,9 @@ const INITIAL_LIVE_CLASSES: LiveClassItem[] = [
   {
     id: "class-comp-1",
     title: "Introduction to Agentic ReAct Loops & Tools",
-    courseName: "Mastering Agentic AI & Autonomous Workflows",
-    moduleName: "Module 7 · Curriculum Lecture",
-    batch: "Batch AI-2026-A",
+    courseName: "Advanced RAG Architecture",
+    moduleName: "Module 1 · Curriculum Lecture",
+    batch: "Batch RAG-2026-A",
     status: "COMPLETED",
     statusLabel: "COMPLETED",
     dateLabel: "05 Aug 2026",
@@ -503,6 +526,9 @@ const INITIAL_LIVE_CLASSES: LiveClassItem[] = [
     adminAssignedBy: "Academic Operations Team",
     recordingUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
     compensationAmount: 5000,
+    instructorId: "inst-2",
+    instructorName: "Alex Chen",
+    instructorAvatar: "AC",
     description: "Completed foundation session on reasoning and acting loops, thought/action/observation cycle, and custom Python tool definitions.",
     learningObjectives: [
       "Understand the theoretical ReAct pattern and loop mechanics",
@@ -546,7 +572,7 @@ const INITIAL_LIVE_CLASSES: LiveClassItem[] = [
   {
     id: "class-comp-2",
     title: "Vector Embeddings & Semantic Search Masterclass",
-    courseName: "Mastering Agentic AI & Autonomous Workflows",
+    courseName: "Advanced AI Agents",
     moduleName: "Module 6 · Live Workshop",
     batch: "Batch AI-2026-A",
     status: "COMPLETED",
@@ -560,6 +586,9 @@ const INITIAL_LIVE_CLASSES: LiveClassItem[] = [
     adminAssignedBy: "Academic Operations Team",
     recordingUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
     compensationAmount: 6000,
+    instructorId: "inst-1",
+    instructorName: "Dr. Sarah Chen",
+    instructorAvatar: "SC",
     description: "Deep dive into dense vector embeddings, cosine distance vs dot product, HNSW index parameters, and hybrid sparse/dense retrieval.",
     learningObjectives: [
       "Generate high-dimensional embeddings using HuggingFace and OpenAI models",
@@ -576,6 +605,39 @@ const INITIAL_LIVE_CLASSES: LiveClassItem[] = [
       { label: "Vector Search Lab Notebook", url: "https://github.com/example/vector-search-lab", type: "github" }
     ],
     students: []
+  },
+  {
+    id: "class-bob-1",
+    title: "HTML5 Semantic Elements & Responsive Layouts",
+    courseName: "Frontend Basics",
+    moduleName: "Module 1 · Foundation",
+    batch: "Batch FB-2026-01",
+    status: "COMPLETED",
+    statusLabel: "COMPLETED",
+    dateLabel: "10 Aug 2026",
+    timeRange: "04:00 PM – 05:30 PM",
+    durationMinutes: 90,
+    studentCount: 23,
+    attendanceRate: 87,
+    averageRating: 4.2,
+    adminAssignedBy: "Academic Operations Team",
+    recordingUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+    compensationAmount: 1000,
+    instructorId: "inst-4",
+    instructorName: "Bob Smith",
+    instructorAvatar: "BS",
+    description: "Introductory session covering semantic tag structure, CSS Flexbox fundamentals, and media query breakpoints.",
+    learningObjectives: [
+      "Structure clean accessible HTML5 pages",
+      "Build mobile-responsive grid layouts"
+    ],
+    topics: [
+      { timeRange: "04:00 – 04:45 PM", title: "HTML5 Semantic Tags", description: "header, main, nav, section, article breakdown." },
+      { timeRange: "04:45 – 05:30 PM", title: "CSS Flexbox & Responsive Units", description: "Building responsive navbar and cards." }
+    ],
+    teachingNotes: ["Foundation class for junior cohort."],
+    resources: [{ label: "HTML5 Layouts Starter", url: "https://example.com/docs/html5-starter", type: "doc" }],
+    students: []
   }
 ];
 
@@ -584,21 +646,192 @@ const INITIAL_LIVE_CLASSES: LiveClassItem[] = [
    ═══════════════════════════════════════════════ */
 
 interface InstructorLiveDashboardProps {
+  instructorId?: string;
   instructorName?: string;
+  isDemoUser?: boolean;
   onNavigateTab?: (tabName: string, filterOptions?: any) => void;
   onOpenCalendar?: () => void;
+  showInstructorBadge?: boolean;
+}
+
+function parseTimeString(timeStr?: string | null): { hours: number; minutes: number } | null {
+  if (!timeStr) return null;
+  const match = timeStr.match(/(\d+):(\d+)\s*(AM|PM)?/i);
+  if (!match) return null;
+  let hours = parseInt(match[1], 10);
+  const minutes = parseInt(match[2], 10);
+  const modifier = match[3]?.toUpperCase();
+  if (modifier === "PM" && hours < 12) hours += 12;
+  if (modifier === "AM" && hours === 12) hours = 0;
+  return { hours, minutes };
+}
+
+function formatSessionToLiveClass(s: any, course?: any): LiveClassItem {
+  const sessionDate = s.date ? new Date(s.date) : null;
+  const now = new Date();
+  const isToday = sessionDate
+    ? sessionDate.getFullYear() === now.getFullYear() &&
+      sessionDate.getMonth() === now.getMonth() &&
+      sessionDate.getDate() === now.getDate()
+    : false;
+
+  const dateLabel = isToday
+    ? "Today"
+    : sessionDate
+    ? sessionDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+    : "TBD";
+
+  const parsedTime = parseTimeString(s.startTime);
+  const durationMinutes = parseInt(s.duration) || 90;
+  let isTimeActive = false;
+  let isPast = false;
+  let canStart = false;
+  let unlockTimeStr = "";
+  let minutesUntilStart: number | null = null;
+
+  if (sessionDate && parsedTime) {
+    const sessionStart = new Date(sessionDate);
+    sessionStart.setHours(parsedTime.hours, parsedTime.minutes, 0, 0);
+    const sessionEnd = new Date(sessionStart.getTime() + durationMinutes * 60 * 1000);
+    // Unlocks strictly 5 minutes prior to session start
+    const preJoinWindow = new Date(sessionStart.getTime() - 5 * 60 * 1000);
+    unlockTimeStr = preJoinWindow.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+
+    minutesUntilStart = Math.ceil((sessionStart.getTime() - now.getTime()) / (60 * 1000));
+
+    if (now >= preJoinWindow && now <= sessionEnd) {
+      isTimeActive = true;
+      canStart = true;
+    } else if (now > sessionEnd) {
+      isPast = true;
+      canStart = false;
+    } else {
+      canStart = false; // More than 5 minutes before start
+    }
+  } else if (sessionDate) {
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+    const sessionDay = new Date(sessionDate.getFullYear(), sessionDate.getMonth(), sessionDate.getDate()).getTime();
+    if (sessionDay < startOfToday) {
+      isPast = true;
+      canStart = false;
+    }
+  }
+
+  let status: LiveClassStatus = "UPCOMING";
+  if (s.status === "LIVE" || s.status === "LIVE_NOW" || isTimeActive) {
+    status = "LIVE_NOW";
+    canStart = true;
+  } else if (s.status === "COMPLETED" || isPast) {
+    status = "COMPLETED";
+    canStart = false;
+  } else if (isToday) {
+    status = "STARTS_SOON";
+  }
+
+  return {
+    id: s.id,
+    rawDate: s.date || null,
+    title: s.title,
+    courseName: course?.title || s.courseTitle || "Live Training Course",
+    moduleName: `Session ${s.sessionNumber || 1}`,
+    batch: course?.category || "Live Cohort",
+    status,
+    canStart,
+    unlockTimeStr,
+    minutesUntilStart,
+    statusLabel: status === "LIVE_NOW" ? "LIVE NOW" : status === "COMPLETED" ? "COMPLETED" : isToday ? "TODAY" : "UPCOMING",
+    dateLabel,
+    timeRange: s.startTime && s.endTime ? `${s.startTime} – ${s.endTime}` : s.startTime || "Scheduled Time",
+    durationMinutes: parseInt(s.duration) || 90,
+    studentCount: 0,
+    adminAssignedBy: "Academic Operations",
+    meetingUrl: s.meetingUrl || "",
+    recordingUrl: s.recordingUrl || "",
+    compensationAmount: 5000,
+    description: s.description || "",
+    learningObjectives: s.learningOutcomes?.map((o: any) => o.title || o) || [],
+    topics: s.topics?.map((t: any) => ({
+      timeRange: t.startTime || "Topic",
+      title: t.title || "",
+      description: t.description || "",
+    })) || [],
+    teachingNotes: [],
+    resources: s.resources?.map((r: any) => ({
+      label: r.title || "Resource",
+      url: r.url || "#",
+      type: "doc" as const,
+    })) || [],
+    students: [],
+  };
 }
 
 export function InstructorLiveDashboard({
-  instructorName = "abc",
+  instructorId,
+  instructorName = "Instructor",
+  isDemoUser = false,
   onNavigateTab,
   onOpenCalendar,
+  showInstructorBadge = true,
 }: InstructorLiveDashboardProps) {
   /* ── State ── */
-  const [classes, setClasses] = useState<LiveClassItem[]>(INITIAL_LIVE_CLASSES);
+  const [classes, setClasses] = useState<LiveClassItem[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
   const [selectedAgendaClass, setSelectedAgendaClass] = useState<LiveClassItem | null>(null);
   const [selectedStudentsClass, setSelectedStudentsClass] = useState<LiveClassItem | null>(null);
   const [studentSearchQuery, setStudentSearchQuery] = useState("");
+
+  /* ── Fetch Real Sessions from Backend ── */
+  useEffect(() => {
+    let isMounted = true;
+    async function loadSessions() {
+      setLoading(true);
+      try {
+        const res = await fetch("/api/instructor/live-sessions");
+        if (res.ok) {
+          const data = await res.json();
+          const list: LiveClassItem[] = [];
+          if (data.courses && Array.isArray(data.courses)) {
+            data.courses.forEach((c: any) => {
+              if (c.sessions && Array.isArray(c.sessions)) {
+                c.sessions.forEach((s: any) => {
+                  list.push(formatSessionToLiveClass(s, c));
+                });
+              }
+            });
+          }
+          if (data.individualSessions && Array.isArray(data.individualSessions)) {
+            data.individualSessions.forEach((s: any) => {
+              list.push(formatSessionToLiveClass(s));
+            });
+          }
+          if (isMounted) {
+            if (list.length > 0) {
+              setClasses(list);
+            } else if (isDemoUser) {
+              setClasses(INITIAL_LIVE_CLASSES);
+            } else {
+              setClasses([]);
+            }
+          }
+        } else {
+          if (isMounted) setClasses(isDemoUser ? INITIAL_LIVE_CLASSES : []);
+        }
+      } catch {
+        if (isMounted) setClasses(isDemoUser ? INITIAL_LIVE_CLASSES : []);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    }
+    loadSessions();
+    return () => {
+      isMounted = false;
+    };
+  }, [instructorId, isDemoUser]);
+
+  /* ── Filter Classes By Instructor ── */
+  const activeClasses = useMemo(() => {
+    return classes;
+  }, [classes]);
 
   const handleViewClassStudents = (classItem: LiveClassItem) => {
     let courseId = "c1";
@@ -639,16 +872,34 @@ export function InstructorLiveDashboard({
 
   /* ── Derived Categories ── */
   const todayClasses = useMemo(() => {
-    return classes.filter(c => c.dateLabel === "Today" || c.status === "LIVE_NOW" || c.status === "STARTS_SOON");
-  }, [classes]);
+    return activeClasses
+      .filter(c => c.status !== "COMPLETED" && (c.dateLabel === "Today" || c.status === "LIVE_NOW" || c.status === "STARTS_SOON"))
+      .sort((a, b) => {
+        const timeA = a.rawDate ? new Date(a.rawDate).getTime() : 0;
+        const timeB = b.rawDate ? new Date(b.rawDate).getTime() : 0;
+        return timeA - timeB;
+      });
+  }, [activeClasses]);
 
   const upcomingClasses = useMemo(() => {
-    return classes.filter(c => c.status === "UPCOMING" && c.dateLabel !== "Today");
-  }, [classes]);
+    return activeClasses
+      .filter(c => c.status === "UPCOMING" && c.dateLabel !== "Today")
+      .sort((a, b) => {
+        const timeA = a.rawDate ? new Date(a.rawDate).getTime() : Infinity;
+        const timeB = b.rawDate ? new Date(b.rawDate).getTime() : Infinity;
+        return timeA - timeB;
+      });
+  }, [activeClasses]);
 
   const completedClasses = useMemo(() => {
-    return classes.filter(c => c.status === "COMPLETED");
-  }, [classes]);
+    return activeClasses
+      .filter(c => c.status === "COMPLETED")
+      .sort((a, b) => {
+        const timeA = a.rawDate ? new Date(a.rawDate).getTime() : 0;
+        const timeB = b.rawDate ? new Date(b.rawDate).getTime() : 0;
+        return timeB - timeA;
+      });
+  }, [activeClasses]);
 
   /* ── Dynamic Time Greeting ── */
   const greetingText = useMemo(() => {
@@ -817,161 +1068,199 @@ export function InstructorLiveDashboard({
           </div>
         </div>
 
-        {/* Vertical Hierarchy: LIVE NOW as Distinct Active Broadcast Surface, Upcoming as Neutral Clean Surface */}
-        <div className="space-y-4">
-          {todayClasses.map((item) => {
-            const isLiveNow = item.status === "LIVE_NOW";
+        {todayClasses.length > 0 ? (
+          <div className="space-y-4">
+            {todayClasses.map((item) => {
+              const isLiveNow = item.status === "LIVE_NOW";
 
-            return isLiveNow ? (
-              /* ── 2A. LIVE NOW ACTIVE SESSION SURFACE ── */
-              <div
-                key={item.id}
-                className="p-5 sm:p-6 rounded-2xl bg-gradient-to-br from-red-950/40 via-[#131722] to-[#121622] border-2 border-red-500/50 shadow-2xl shadow-red-950/40 relative overflow-hidden flex flex-col justify-between gap-4 transition-all ring-1 ring-red-500/20"
-              >
-                {/* Active Live Top Indicator Stripe */}
-                <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-red-500 via-rose-400 to-amber-500" />
+              return isLiveNow ? (
+                /* ── 2A. LIVE NOW ACTIVE SESSION SURFACE ── */
+                <div
+                  key={item.id}
+                  className="p-5 sm:p-6 rounded-2xl bg-gradient-to-br from-red-950/40 via-[#131722] to-[#121622] border-2 border-red-500/50 shadow-2xl shadow-red-950/40 relative overflow-hidden flex flex-col justify-between gap-4 transition-all ring-1 ring-red-500/20"
+                >
+                  <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-red-500 via-rose-400 to-amber-500" />
 
-                <div className="space-y-2">
-                  {/* Top Row */}
-                  <div className="flex items-center justify-between gap-3 flex-wrap">
-                    <span className="text-[11px] font-extrabold text-red-300 bg-red-500/20 border border-red-500/40 px-3 py-1 rounded-full flex items-center gap-2 uppercase tracking-wider shadow-xs">
-                      <span className="relative flex h-2 w-2">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between gap-3 flex-wrap">
+                      <span className="text-[11px] font-extrabold text-red-300 bg-red-500/20 border border-red-500/40 px-3 py-1 rounded-full flex items-center gap-2 uppercase tracking-wider shadow-xs">
+                        <span className="relative flex h-2 w-2">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                        </span>
+                        LIVE NOW
                       </span>
-                      LIVE NOW
-                    </span>
 
-                    {/* High-Contrast Time Badge */}
-                    <div className="flex items-center gap-1.5 font-mono text-xs font-bold text-white bg-red-950/60 border border-red-500/40 px-3 py-1 rounded-xl shadow-xs">
-                      <Clock className="w-3.5 h-3.5 text-rose-400" />
-                      <span>{item.timeRange}</span>
+                      <div className="flex items-center gap-1.5 font-mono text-xs font-bold text-white bg-red-950/60 border border-red-500/40 px-3 py-1 rounded-xl shadow-xs">
+                        <Clock className="w-3.5 h-3.5 text-rose-400" />
+                        <span>{item.timeRange}</span>
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Title & Course Info (Course Name BIG, Topic/Module SMALL) */}
-                  <div className="space-y-0.5 pt-0.5">
-                    <h3 className="text-lg sm:text-xl font-black text-white tracking-tight leading-snug">
-                      {item.courseName || item.title}
-                    </h3>
-                    <p className="text-xs text-rose-200/90 font-medium">
-                      <span className="text-rose-100 font-semibold">{item.title}</span>
-                      {item.moduleName && <span className="text-rose-300/70"> · {item.moduleName}</span>}
+                    <div className="space-y-0.5 pt-0.5">
+                      <h3 className="text-lg sm:text-xl font-black text-white tracking-tight leading-snug">
+                        {item.courseName || item.title}
+                      </h3>
+                      <p className="text-xs text-rose-200/90 font-medium">
+                        <span className="text-rose-100 font-semibold">{item.title}</span>
+                        {item.moduleName && <span className="text-rose-300/70"> · {item.moduleName}</span>}
+                      </p>
+                    </div>
+
+                    <p className="text-xs text-slate-300 pt-0.5">
+                      Today · <strong className="text-white font-semibold">{item.studentCount} Students</strong> · <span className="text-slate-400">Assigned by Admin</span> · <span className="text-slate-300 font-medium">₹{item.compensationAmount.toLocaleString()} compensation</span>
                     </p>
                   </div>
 
-                  {/* Metadata Row */}
-                  <p className="text-xs text-slate-300 pt-0.5">
-                    Today · <strong className="text-white font-semibold">{item.studentCount} Students</strong> · <span className="text-slate-400">Assigned by Admin</span> · <span className="text-slate-300 font-medium">₹{item.compensationAmount.toLocaleString()} compensation</span>
-                  </p>
-                </div>
-
-                {/* Bottom Actions */}
-                <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-red-500/20">
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => setSelectedAgendaClass(item)}
-                      className="px-3 py-1.5 rounded-lg text-[11px] font-medium bg-white/[0.06] hover:bg-white/[0.1] text-slate-200 border border-white/[0.1] hover:border-white/[0.2] transition-colors cursor-pointer"
-                    >
-                      Agenda
-                    </button>
-                    <button
-                      onClick={() => handleViewClassStudents(item)}
-                      className="px-3 py-1.5 rounded-lg text-[11px] font-medium bg-white/[0.06] hover:bg-white/[0.1] text-slate-200 border border-white/[0.1] hover:border-white/[0.2] transition-colors cursor-pointer"
-                    >
-                      Students ({item.studentCount})
-                    </button>
-                    <button
-                      onClick={() => setSelectedDetailsClass(item)}
-                      className="px-2.5 py-1.5 text-[11px] font-medium text-slate-400 hover:text-white transition-colors cursor-pointer"
-                    >
-                      Details
-                    </button>
-                  </div>
-
-                  <div>
-                    {item.meetingUrl && (
-                      <a
-                        href={item.meetingUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white shadow-lg shadow-red-600/35 transition-all hover:scale-[1.02] cursor-pointer"
+                  <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-red-500/20">
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setSelectedAgendaClass(item)}
+                        className="px-3 py-1.5 rounded-lg text-[11px] font-medium bg-white/[0.06] hover:bg-white/[0.1] text-slate-200 border border-white/[0.1] hover:border-white/[0.2] transition-colors cursor-pointer"
                       >
-                        <Video className="w-4 h-4" />
-                        <span>START SESSION →</span>
-                      </a>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ) : (
-              /* ── 2B. SECOND TODAY CLASS (QUIETER NEUTRAL SURFACE) ── */
-              <div
-                key={item.id}
-                className="p-5 sm:p-6 rounded-2xl bg-[#0E131F] border border-white/[0.08] hover:border-white/[0.16] transition-all flex flex-col justify-between gap-4"
-              >
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between gap-3 flex-wrap">
-                    <span className="text-[10px] font-bold text-slate-300 flex items-center gap-1.5 uppercase tracking-wider bg-white/[0.05] border border-white/[0.08] px-2.5 py-1 rounded-full">
-                      <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-                      UPCOMING TODAY
-                    </span>
+                        Agenda
+                      </button>
+                      <button
+                        onClick={() => handleViewClassStudents(item)}
+                        className="px-3 py-1.5 rounded-lg text-[11px] font-medium bg-white/[0.06] hover:bg-white/[0.1] text-slate-200 border border-white/[0.1] hover:border-white/[0.2] transition-colors cursor-pointer"
+                      >
+                        Students ({item.studentCount})
+                      </button>
+                      <button
+                        onClick={() => setSelectedDetailsClass(item)}
+                        className="px-2.5 py-1.5 text-[11px] font-medium text-slate-400 hover:text-white transition-colors cursor-pointer"
+                      >
+                        Details
+                      </button>
+                    </div>
 
-                    {/* High-Contrast Time Badge */}
-                    <div className="flex items-center gap-1.5 font-mono text-xs font-bold text-slate-100 bg-white/[0.08] border border-white/[0.14] px-3 py-1 rounded-xl shadow-xs">
-                      <Clock className="w-3.5 h-3.5 text-slate-400" />
-                      <span>{item.timeRange}</span>
+                    <div>
+                      {item.status === "COMPLETED" ? (
+                        <div className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-white/[0.04] text-slate-400 border border-white/[0.08]">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                          <span>Completed</span>
+                        </div>
+                      ) : item.canStart || item.status === "LIVE_NOW" ? (
+                        <Link
+                          href={`/live-classes/room/${item.id}`}
+                          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white shadow-lg shadow-red-600/35 transition-all hover:scale-[1.02] cursor-pointer animate-pulse"
+                        >
+                          <Video className="w-4 h-4" />
+                          <span>START SESSION →</span>
+                        </Link>
+                      ) : (
+                        <div
+                          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-white/[0.04] text-slate-400 border border-white/[0.08] cursor-not-allowed opacity-75 select-none"
+                          title="Live session room opens strictly 5 minutes before scheduled start time"
+                        >
+                          <Lock className="w-3.5 h-3.5 text-slate-500" />
+                          <span>{item.unlockTimeStr ? `Unlocks at ${item.unlockTimeStr}` : "Available 5m before start"}</span>
+                        </div>
+                      )}
                     </div>
                   </div>
+                </div>
+              ) : (
+                /* ── 2B. SECOND TODAY CLASS (QUIETER NEUTRAL SURFACE) ── */
+                <div
+                  key={item.id}
+                  className="p-5 sm:p-6 rounded-2xl bg-[#0E131F] border border-white/[0.08] hover:border-white/[0.16] transition-all flex flex-col justify-between gap-4"
+                >
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between gap-3 flex-wrap">
+                      <span className="text-[10px] font-bold text-slate-300 flex items-center gap-1.5 uppercase tracking-wider bg-white/[0.05] border border-white/[0.08] px-2.5 py-1 rounded-full">
+                        <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                        UPCOMING TODAY
+                      </span>
 
-                  {/* Title & Course Info (Course Name BIG, Topic/Module SMALL) */}
-                  <div className="space-y-0.5 pt-0.5">
-                    <h3 className="text-base sm:text-lg font-bold text-white leading-snug">
-                      {item.courseName || item.title}
-                    </h3>
-                    <p className="text-xs text-slate-300">
-                      <span className="text-slate-200 font-medium">{item.title}</span>
-                      {item.moduleName && <span className="text-slate-400"> · {item.moduleName}</span>}
+                      <div className="flex items-center gap-1.5 font-mono text-xs font-bold text-slate-100 bg-white/[0.08] border border-white/[0.14] px-3 py-1 rounded-xl shadow-xs">
+                        <Clock className="w-3.5 h-3.5 text-slate-400" />
+                        <span>{item.timeRange}</span>
+                      </div>
+                    </div>
+
+                    <div className="space-y-0.5 pt-0.5">
+                      <h3 className="text-base sm:text-lg font-bold text-white leading-snug">
+                        {item.courseName || item.title}
+                      </h3>
+                      <p className="text-xs text-slate-300">
+                        <span className="text-slate-200 font-medium">{item.title}</span>
+                        {item.moduleName && <span className="text-slate-400"> · {item.moduleName}</span>}
+                      </p>
+                    </div>
+
+                    <p className="text-xs text-slate-400 pt-0.5">
+                      Today · <strong className="text-slate-200 font-semibold">{item.studentCount} Students</strong> · Assigned by Admin · ₹{item.compensationAmount.toLocaleString()} compensation
                     </p>
                   </div>
 
-                  <p className="text-xs text-slate-400 pt-0.5">
-                    Today · <strong className="text-slate-200 font-semibold">{item.studentCount} Students</strong> · Assigned by Admin · ₹{item.compensationAmount.toLocaleString()} compensation
-                  </p>
-                </div>
+                  <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-white/[0.05]">
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setSelectedAgendaClass(item)}
+                        className="px-3 py-1.5 rounded-lg text-[11px] font-medium bg-white/[0.04] hover:bg-white/[0.08] text-slate-300 hover:text-white border border-white/[0.08] transition-colors cursor-pointer"
+                      >
+                        Agenda
+                      </button>
+                      <button
+                        onClick={() => handleViewClassStudents(item)}
+                        className="px-3 py-1.5 rounded-lg text-[11px] font-medium bg-white/[0.04] hover:bg-white/[0.08] text-slate-300 hover:text-white border border-white/[0.08] transition-colors cursor-pointer"
+                      >
+                        Students ({item.studentCount})
+                      </button>
+                      <button
+                        onClick={() => setSelectedDetailsClass(item)}
+                        className="px-2.5 py-1.5 text-[11px] font-medium text-slate-400 hover:text-white transition-colors cursor-pointer"
+                      >
+                        Details
+                      </button>
+                    </div>
 
-                {/* Bottom Actions */}
-                <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-white/[0.05]">
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => setSelectedAgendaClass(item)}
-                      className="px-3 py-1.5 rounded-lg text-[11px] font-medium bg-white/[0.04] hover:bg-white/[0.08] text-slate-300 hover:text-white border border-white/[0.08] transition-colors cursor-pointer"
-                    >
-                      Agenda
-                    </button>
-                    <button
-                      onClick={() => handleViewClassStudents(item)}
-                      className="px-3 py-1.5 rounded-lg text-[11px] font-medium bg-white/[0.04] hover:bg-white/[0.08] text-slate-300 hover:text-white border border-white/[0.08] transition-colors cursor-pointer"
-                    >
-                      Students ({item.studentCount})
-                    </button>
-                    <button
-                      onClick={() => setSelectedDetailsClass(item)}
-                      className="px-2.5 py-1.5 text-[11px] font-medium text-slate-400 hover:text-white transition-colors cursor-pointer"
-                    >
-                      Details
-                    </button>
-                  </div>
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-1.5 font-mono text-xs font-bold text-slate-200 bg-white/[0.06] border border-white/[0.1] px-3 py-1 rounded-xl">
+                        <span>Starts at</span>
+                        <strong className="text-white">{item.timeRange.split("–")[0].trim()}</strong>
+                      </div>
 
-                  <div className="flex items-center gap-1.5 font-mono text-xs font-bold text-slate-200 bg-white/[0.06] border border-white/[0.1] px-3 py-1 rounded-xl">
-                    <span>Starts at</span>
-                    <strong className="text-white">{item.timeRange.split("–")[0].trim()}</strong>
+                      {item.status === "COMPLETED" ? (
+                        <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold bg-white/[0.04] text-slate-400 border border-white/[0.08]">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                          <span>Completed</span>
+                        </div>
+                      ) : item.canStart || item.status === "LIVE_NOW" ? (
+                        <Link
+                          href={`/live-classes/room/${item.id}`}
+                          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-purple-600 hover:bg-purple-500 text-white shadow-md shadow-purple-900/30 transition-all cursor-pointer animate-pulse"
+                        >
+                          <Video className="w-3.5 h-3.5" />
+                          <span>START SESSION →</span>
+                        </Link>
+                      ) : (
+                        <div
+                          className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold bg-white/[0.04] text-slate-400 border border-white/[0.08] cursor-not-allowed opacity-75 select-none"
+                          title="Live session room opens strictly 5 minutes before scheduled start time"
+                        >
+                          <Lock className="w-3.5 h-3.5 text-slate-500" />
+                          <span>{item.unlockTimeStr ? `Unlocks at ${item.unlockTimeStr}` : "Unlocks 5m before"}</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="p-8 sm:p-10 rounded-2xl bg-[#0E131F] border border-white/[0.08] text-center space-y-3 shadow-sm">
+            <div className="w-12 h-12 rounded-2xl bg-purple-500/10 border border-purple-500/20 text-purple-400 mx-auto flex items-center justify-center">
+              <Calendar className="w-6 h-6" />
+            </div>
+            <h3 className="text-base font-bold text-white">No Online Classes Scheduled Today</h3>
+            <p className="text-xs text-slate-400 max-w-md mx-auto leading-relaxed">
+              You do not have any live teaching sessions scheduled for today. When administrators assign live training cohorts to you, they will appear right here.
+            </p>
+          </div>
+        )}
       </section>
 
       {/* ═══════════════════════════════════════════════
@@ -990,78 +1279,89 @@ export function InstructorLiveDashboard({
             </p>
           </div>
 
-          <button
-            onClick={() => onNavigateTab?.("Live Sessions")}
-            className="text-xs font-semibold text-purple-400 hover:text-purple-300 inline-flex items-center gap-1 cursor-pointer transition-colors"
-          >
-            <span>View All Upcoming</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </button>
+          {upcomingClasses.length > 0 && (
+            <button
+              onClick={() => onNavigateTab?.("Live Sessions")}
+              className="text-xs font-semibold text-purple-400 hover:text-purple-300 inline-flex items-center gap-1 cursor-pointer transition-colors"
+            >
+              <span>View All Upcoming</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
 
-        {/* 3 Columns Grid for Upcoming */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {upcomingClasses.slice(0, 3).map((item) => (
-            <div
-              key={item.id}
-              className="bg-[#0E131F] border border-white/[0.08] hover:border-white/[0.18] rounded-2xl p-5 transition-all duration-200 hover:-translate-y-0.5 flex flex-col justify-between gap-4 group shadow-sm"
-            >
-              <div className="space-y-2.5">
-                <div className="flex items-center justify-between text-[11px]">
-                  <span className="text-slate-300 font-semibold flex items-center gap-1.5 uppercase text-[10px] tracking-wider bg-white/[0.04] px-2 py-0.5 rounded-md border border-white/[0.06]">
-                    <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
-                    UPCOMING
-                  </span>
-                  <span className="font-mono text-xs font-bold text-slate-200 bg-white/[0.06] border border-white/[0.1] px-2.5 py-0.5 rounded-lg flex items-center gap-1">
-                    <Clock className="w-3 h-3 text-slate-400" />
-                    {item.dateLabel}
-                  </span>
-                </div>
+        {upcomingClasses.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {upcomingClasses.slice(0, 6).map((item) => (
+              <div
+                key={item.id}
+                className="bg-[#0E131F] border border-white/[0.08] hover:border-white/[0.18] rounded-2xl p-5 transition-all duration-200 hover:-translate-y-0.5 flex flex-col justify-between gap-4 group shadow-sm"
+              >
+                <div className="space-y-2.5">
+                  <div className="flex items-center justify-between text-[11px]">
+                    <span className="text-slate-300 font-semibold flex items-center gap-1.5 uppercase text-[10px] tracking-wider bg-white/[0.04] px-2 py-0.5 rounded-md border border-white/[0.06]">
+                      <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+                      UPCOMING
+                    </span>
+                    <span className="font-mono text-xs font-bold text-slate-200 bg-white/[0.06] border border-white/[0.1] px-2.5 py-0.5 rounded-lg flex items-center gap-1">
+                      <Clock className="w-3 h-3 text-slate-400" />
+                      {item.dateLabel}
+                    </span>
+                  </div>
 
-                {/* Course Name BIG, Topic SMALL */}
-                <div className="space-y-0.5">
-                  <h3 className="font-bold text-white text-sm sm:text-base leading-snug group-hover:text-purple-200 transition-colors line-clamp-1">
-                    {item.courseName || item.title}
-                  </h3>
-                  <p className="text-xs text-slate-300 line-clamp-1">
-                    <span className="text-slate-200 font-medium">{item.title}</span>
-                    {item.moduleName && <span className="text-slate-400"> · {item.moduleName}</span>}
+                  <div className="space-y-0.5">
+                    <h3 className="font-bold text-white text-sm sm:text-base leading-snug group-hover:text-purple-200 transition-colors line-clamp-1">
+                      {item.courseName || item.title}
+                    </h3>
+                    <p className="text-xs text-slate-300 line-clamp-1">
+                      <span className="text-slate-200 font-medium">{item.title}</span>
+                      {item.moduleName && <span className="text-slate-400"> · {item.moduleName}</span>}
+                    </p>
+                  </div>
+
+                  <p className="text-xs text-slate-300">
+                    <span className="font-semibold text-white font-mono">{item.timeRange.split("–")[0].trim()}</span> · <span className="text-slate-400">{item.dateLabel}</span> · <strong className="text-slate-200 font-medium">{item.studentCount} Students</strong>
                   </p>
                 </div>
 
-                <p className="text-xs text-slate-300">
-                  <span className="font-semibold text-white font-mono">{item.timeRange.split("–")[0].trim()}</span> · <span className="text-slate-400">{item.dateLabel}</span> · <strong className="text-slate-200 font-medium">{item.studentCount} Students</strong>
-                </p>
-              </div>
+                <div className="pt-3 border-t border-white/[0.04] flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={() => setSelectedAgendaClass(item)}
+                      className="px-2.5 py-1 text-slate-400 hover:text-white text-[11px] font-medium rounded-md hover:bg-white/[0.04] transition-colors cursor-pointer"
+                    >
+                      Agenda
+                    </button>
+                    <button
+                      onClick={() => handleViewClassStudents(item)}
+                      className="px-2.5 py-1 text-slate-400 hover:text-white text-[11px] font-medium rounded-md hover:bg-white/[0.04] transition-colors cursor-pointer"
+                    >
+                      Students
+                    </button>
+                  </div>
 
-              {/* Actions */}
-              <div className="pt-3 border-t border-white/[0.04] flex items-center justify-between text-xs">
-                <div className="flex items-center gap-1.5">
                   <button
-                    onClick={() => setSelectedAgendaClass(item)}
-                    className="px-2.5 py-1 text-slate-400 hover:text-white text-[11px] font-medium rounded-md hover:bg-white/[0.04] transition-colors cursor-pointer"
+                    onClick={() => setSelectedDetailsClass(item)}
+                    className="font-bold text-purple-300 hover:text-purple-200 text-xs inline-flex items-center gap-1 cursor-pointer transition-colors"
                   >
-                    Agenda
-                  </button>
-                  <button
-                    onClick={() => handleViewClassStudents(item)}
-                    className="px-2.5 py-1 text-slate-400 hover:text-white text-[11px] font-medium rounded-md hover:bg-white/[0.04] transition-colors cursor-pointer"
-                  >
-                    Students
+                    <span>View Details</span>
+                    <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                   </button>
                 </div>
-
-                <button
-                  onClick={() => setSelectedDetailsClass(item)}
-                  className="font-bold text-purple-300 hover:text-purple-200 text-xs inline-flex items-center gap-1 cursor-pointer transition-colors"
-                >
-                  <span>View Details</span>
-                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
-                </button>
               </div>
+            ))}
+          </div>
+        ) : (
+          <div className="p-8 sm:p-10 rounded-2xl bg-[#0E131F] border border-white/[0.08] text-center space-y-3 shadow-sm">
+            <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 mx-auto flex items-center justify-center">
+              <Clock className="w-6 h-6" />
             </div>
-          ))}
-        </div>
+            <h3 className="text-base font-bold text-white">No Upcoming Classes Assigned</h3>
+            <p className="text-xs text-slate-400 max-w-md mx-auto leading-relaxed">
+              Your live teaching queue is currently empty. New batch assignments and workshop schedules will show up here.
+            </p>
+          </div>
+        )}
       </section>
 
       {/* ═══════════════════════════════════════════════
@@ -1080,88 +1380,100 @@ export function InstructorLiveDashboard({
             </p>
           </div>
 
-          <button
-            onClick={() => onNavigateTab?.("Live Sessions", { viewMode: "RECORDINGS" })}
-            className="text-xs font-semibold text-purple-400 hover:text-purple-300 inline-flex items-center gap-1 cursor-pointer transition-colors"
-          >
-            <span>View All Completed</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </button>
+          {completedClasses.length > 0 && (
+            <button
+              onClick={() => onNavigateTab?.("Live Sessions", { viewMode: "RECORDINGS" })}
+              className="text-xs font-semibold text-purple-400 hover:text-purple-300 inline-flex items-center gap-1 cursor-pointer transition-colors"
+            >
+              <span>View All Completed</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
 
-        {/* Clean Horizontal Rows */}
-        <div className="bg-[#0E131F] border border-white/[0.07] rounded-2xl divide-y divide-white/[0.04] overflow-hidden">
-          {completedClasses.slice(0, 2).map((item) => (
-            <div
-              key={item.id}
-              className="p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-white/[0.01] transition-colors"
-            >
-              <div className="space-y-1">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-emerald-400 text-[10px] font-semibold flex items-center gap-1 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md uppercase tracking-wider">
-                    <Check className="w-3 h-3" />
-                    COMPLETED
-                  </span>
-                  <span className="text-slate-600">·</span>
-                  <h3 className="font-bold text-sm sm:text-base text-white">{item.courseName || item.title}</h3>
+        {completedClasses.length > 0 ? (
+          <div className="bg-[#0E131F] border border-white/[0.07] rounded-2xl divide-y divide-white/[0.04] overflow-hidden">
+            {completedClasses.slice(0, 2).map((item) => (
+              <div
+                key={item.id}
+                className="p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-white/[0.01] transition-colors"
+              >
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-emerald-400 text-[10px] font-semibold flex items-center gap-1 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md uppercase tracking-wider">
+                      <Check className="w-3 h-3" />
+                      COMPLETED
+                    </span>
+                    <span className="text-slate-600">·</span>
+                    <h3 className="font-bold text-sm sm:text-base text-white">{item.courseName || item.title}</h3>
+                  </div>
+
+                  <p className="text-xs text-slate-300">
+                    <span className="text-slate-200 font-medium">{item.title}</span>
+                    {item.moduleName && <span className="text-slate-400"> · {item.moduleName}</span>}
+                  </p>
+
+                  <div className="flex items-center gap-3 text-[11px] text-slate-400 flex-wrap">
+                    <span>{item.dateLabel} · {item.durationMinutes} min</span>
+                    <span className="text-slate-600">•</span>
+                    <span className="text-emerald-400 font-medium">{item.attendanceRate}% Attendance</span>
+                    <span className="text-slate-600">•</span>
+                    <span>{item.studentCount} Students</span>
+                    {item.recordingUrl && (
+                      <>
+                        <span className="text-slate-600">•</span>
+                        <span className="text-slate-300 font-medium">● Recording Ready</span>
+                      </>
+                    )}
+                  </div>
                 </div>
 
-                <p className="text-xs text-slate-300">
-                  <span className="text-slate-200 font-medium">{item.title}</span>
-                  {item.moduleName && <span className="text-slate-400"> · {item.moduleName}</span>}
-                </p>
+                <div className="flex items-center gap-2 shrink-0 self-end md:self-center">
+                  <button
+                    onClick={() => handleViewClassStudents(item)}
+                    className="px-2.5 py-1 text-[11px] text-slate-400 hover:text-white font-medium rounded-lg hover:bg-white/[0.04] transition-colors cursor-pointer"
+                  >
+                    Students
+                  </button>
 
-                <div className="flex items-center gap-3 text-[11px] text-slate-400 flex-wrap">
-                  <span>{item.dateLabel} · {item.durationMinutes} min</span>
-                  <span className="text-slate-600">•</span>
-                  <span className="text-emerald-400 font-medium">{item.attendanceRate}% Attendance</span>
-                  <span className="text-slate-600">•</span>
-                  <span>{item.studentCount} Students</span>
-                  {item.recordingUrl && (
-                    <>
-                      <span className="text-slate-600">•</span>
-                      <span className="text-slate-300 font-medium">● Recording Ready</span>
-                    </>
+                  <button
+                    onClick={() => setSelectedAgendaClass(item)}
+                    className="px-2.5 py-1 text-[11px] text-slate-400 hover:text-white font-medium rounded-lg hover:bg-white/[0.04] transition-colors cursor-pointer"
+                  >
+                    Agenda
+                  </button>
+
+                  {item.recordingUrl ? (
+                    <button
+                      onClick={() => setRecordingModalUrl({ title: item.title, url: item.recordingUrl! })}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/[0.05] hover:bg-white/[0.1] text-slate-200 border border-white/[0.08] hover:border-white/[0.16] transition-colors cursor-pointer"
+                    >
+                      <PlayCircle className="w-3.5 h-3.5 text-slate-300" />
+                      <span>View Recording</span>
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => setSelectedDetailsClass(item)}
+                      className="px-2.5 py-1 text-[11px] text-slate-400 hover:text-white font-medium cursor-pointer"
+                    >
+                      View Details →
+                    </button>
                   )}
                 </div>
               </div>
-
-              {/* Row Actions */}
-              <div className="flex items-center gap-2 shrink-0 self-end md:self-center">
-                <button
-                  onClick={() => handleViewClassStudents(item)}
-                  className="px-2.5 py-1 text-[11px] text-slate-400 hover:text-white font-medium rounded-lg hover:bg-white/[0.04] transition-colors cursor-pointer"
-                >
-                  Students
-                </button>
-
-                <button
-                  onClick={() => setSelectedAgendaClass(item)}
-                  className="px-2.5 py-1 text-[11px] text-slate-400 hover:text-white font-medium rounded-lg hover:bg-white/[0.04] transition-colors cursor-pointer"
-                >
-                  Agenda
-                </button>
-
-                {item.recordingUrl ? (
-                  <button
-                    onClick={() => setRecordingModalUrl({ title: item.title, url: item.recordingUrl! })}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/[0.05] hover:bg-white/[0.1] text-slate-200 border border-white/[0.08] hover:border-white/[0.16] transition-colors cursor-pointer"
-                  >
-                    <PlayCircle className="w-3.5 h-3.5 text-slate-300" />
-                    <span>View Recording</span>
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => setSelectedDetailsClass(item)}
-                    className="px-2.5 py-1 text-[11px] text-slate-400 hover:text-white font-medium cursor-pointer"
-                  >
-                    View Details →
-                  </button>
-                )}
-              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="p-8 sm:p-10 rounded-2xl bg-[#0E131F] border border-white/[0.08] text-center space-y-3 shadow-sm">
+            <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 mx-auto flex items-center justify-center">
+              <CheckCircle2 className="w-6 h-6" />
             </div>
-          ))}
-        </div>
+            <h3 className="text-base font-bold text-white">No Completed Classes Yet</h3>
+            <p className="text-xs text-slate-400 max-w-md mx-auto leading-relaxed">
+              Past session archives, recordings, and student attendance metrics will be listed here after you conduct your live classes.
+            </p>
+          </div>
+        )}
       </section>
 
       {/* ═══════════════════════════════════════════════
@@ -1318,23 +1630,27 @@ export function InstructorLiveDashboard({
                   View Enrolled Students ({selectedAgendaClass.studentCount}) →
                 </button>
 
-                {selectedAgendaClass.status === "LIVE_NOW" && selectedAgendaClass.meetingUrl ? (
-                  <a
-                    href={selectedAgendaClass.meetingUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-5 py-2 bg-red-600 hover:bg-red-500 text-white rounded-xl text-xs font-bold shadow-xs transition-colors cursor-pointer"
+                {selectedAgendaClass.canStart || selectedAgendaClass.status === "LIVE_NOW" ? (
+                  <Link
+                    href={`/live-classes/room/${selectedAgendaClass.id}`}
+                    className="inline-flex items-center gap-2 px-5 py-2 bg-red-600 hover:bg-red-500 text-white rounded-xl text-xs font-bold shadow-xs transition-colors cursor-pointer animate-pulse"
                   >
                     <Video className="w-3.5 h-3.5" />
                     <span>Start Session</span>
-                  </a>
+                  </Link>
                 ) : (
-                  <button
-                    onClick={() => setSelectedAgendaClass(null)}
-                    className="px-4 py-2 bg-white/[0.06] text-white rounded-xl text-xs font-semibold"
-                  >
-                    Close
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/[0.04] text-slate-400 border border-white/[0.08] rounded-xl text-xs font-semibold select-none">
+                      <Lock className="w-3.5 h-3.5 text-slate-500" />
+                      <span>{selectedAgendaClass.unlockTimeStr ? `Unlocks at ${selectedAgendaClass.unlockTimeStr}` : "Available 5m before start"}</span>
+                    </div>
+                    <button
+                      onClick={() => setSelectedAgendaClass(null)}
+                      className="px-4 py-2 bg-white/[0.06] text-white rounded-xl text-xs font-semibold cursor-pointer"
+                    >
+                      Close
+                    </button>
+                  </div>
                 )}
               </div>
             </motion.div>

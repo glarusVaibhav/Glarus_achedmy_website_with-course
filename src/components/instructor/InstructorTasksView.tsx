@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   CheckSquare,
   Clock,
@@ -341,14 +341,21 @@ export const INITIAL_TASKS: InstructorTaskItem[] = [
 ];
 
 interface InstructorTasksViewProps {
+  isDemoUser?: boolean;
   onNavigateTab?: (tabName: string) => void;
 }
 
-export function InstructorTasksView({ onNavigateTab }: InstructorTasksViewProps) {
-  const [tasks, setTasks] = useState<InstructorTaskItem[]>(INITIAL_TASKS);
+export function InstructorTasksView({ isDemoUser = false, onNavigateTab }: InstructorTasksViewProps) {
+  const [tasks, setTasks] = useState<InstructorTaskItem[]>(isDemoUser ? INITIAL_TASKS : []);
   const [statusFilter, setStatusFilter] = useState<string>("All");
   const [typeFilter, setTypeFilter] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState("");
+
+  React.useEffect(() => {
+    if (isDemoUser && tasks.length === 0) {
+      setTasks(INITIAL_TASKS);
+    }
+  }, [isDemoUser]);
 
   /* Modals & Drawer State */
   const [selectedTaskForDetails, setSelectedTaskForDetails] = useState<InstructorTaskItem | null>(null);

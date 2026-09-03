@@ -21,6 +21,7 @@ import { InstructorNotificationsView } from "@/components/instructor/InstructorN
 import { InstructorAdminInboxView } from "@/components/instructor/InstructorAdminInboxView";
 import { InstructorLiveSessionsView } from "@/components/instructor/InstructorLiveSessionsView";
 import { InstructorStudentsView } from "@/components/instructor/InstructorStudentsView";
+import { useAuth } from "@/context/AuthContext";
 import { InstructorLiveDashboard } from "@/components/instructor/InstructorLiveDashboard";
 import { InstructorSelfPacedCoursesView } from "@/components/instructor/InstructorSelfPacedCoursesView";
 
@@ -92,6 +93,8 @@ function Toast({ message, type, onClose }: { message: string; type: "success" | 
 
 export default function InstructorDashboard() {
   const router = useRouter();
+  const { user } = useAuth();
+  const isDemoUser = user?.email === "abc@gmail.com";
   const [activeTab, setActiveTab] = useState("Dashboard");
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
@@ -1051,7 +1054,7 @@ export default function InstructorDashboard() {
     {
       id: "Live Sessions",
       icon: Tv,
-      badge: 2,
+      badge: isDemoUser ? 2 : null,
       iconColor: "text-rose-400",
       iconBox: "bg-rose-500/10 border-rose-500/20 group-hover:border-rose-500/40 group-hover:bg-rose-500/15",
       activeBg: "bg-gradient-to-r from-rose-600/20 via-rose-500/15 to-pink-600/10 border-rose-500/40 text-white shadow-lg shadow-rose-600/15",
@@ -1060,7 +1063,7 @@ export default function InstructorDashboard() {
     {
       id: "Class Recordings",
       icon: PlayCircle,
-      badge: 9,
+      badge: isDemoUser ? 9 : null,
       iconColor: "text-emerald-400",
       iconBox: "bg-emerald-500/10 border-emerald-500/20 group-hover:border-emerald-500/40 group-hover:bg-emerald-500/15",
       activeBg: "bg-gradient-to-r from-emerald-600/20 via-emerald-500/15 to-teal-600/10 border-emerald-500/40 text-white shadow-lg shadow-emerald-600/15",
@@ -1069,7 +1072,7 @@ export default function InstructorDashboard() {
     {
       id: "Admin Inbox",
       icon: HelpCircle,
-      badge: 2,
+      badge: isDemoUser ? 2 : null,
       iconColor: "text-amber-400",
       iconBox: "bg-amber-500/10 border-amber-500/20 group-hover:border-amber-500/40 group-hover:bg-amber-500/15",
       activeBg: "bg-gradient-to-r from-amber-600/20 via-amber-500/15 to-orange-600/10 border-amber-500/40 text-white shadow-lg shadow-amber-600/15",
@@ -1220,7 +1223,9 @@ export default function InstructorDashboard() {
              ══════════════════════════════════════ */}
           {activeTab === "Dashboard" && (
             <InstructorLiveDashboard
-              instructorName={approvalData?.firstName || "Piyush"}
+              instructorId={user?.id}
+              instructorName={user?.name || approvalData?.firstName || "Instructor"}
+              isDemoUser={isDemoUser}
               onNavigateTab={handleNavigateTab}
               onOpenCalendar={() => setActiveTab("Live Sessions")}
             />
@@ -1230,7 +1235,10 @@ export default function InstructorDashboard() {
              TAB: TASKS (Admin Workflow Hub)
              ══════════════════════════════════════ */}
           {activeTab === "Tasks" && (
-            <InstructorTasksView onNavigateTab={handleNavigateTab} />
+            <InstructorTasksView
+              isDemoUser={isDemoUser}
+              onNavigateTab={handleNavigateTab}
+            />
           )}
 
           {/* ══════════════════════════════════════
@@ -1238,6 +1246,7 @@ export default function InstructorDashboard() {
              ══════════════════════════════════════ */}
           {activeTab === "Assignments" && (
             <InstructorAssignmentsView
+              isDemoUser={isDemoUser}
               initialFilter={assignmentsFilter}
               onClearFilter={() => setAssignmentsFilter(null)}
               onBack={() => {
@@ -1254,6 +1263,7 @@ export default function InstructorDashboard() {
           {activeTab === "Live Sessions" && (
             <InstructorLiveSessionsView
               key="live-sessions-tab-view"
+              isDemoUser={isDemoUser}
               initialFilter={
                 liveSessionsFilter?.viewMode === "RECORDINGS"
                   ? { viewMode: "COMMAND_CENTER" }
@@ -1270,6 +1280,7 @@ export default function InstructorDashboard() {
           {activeTab === "Class Recordings" && (
             <InstructorLiveSessionsView
               key="class-recordings-tab-view"
+              isDemoUser={isDemoUser}
               initialFilter={{ viewMode: "RECORDINGS" }}
               onClearFilter={() => setLiveSessionsFilter(null)}
               onNavigateTab={handleNavigateTab}
@@ -1287,7 +1298,7 @@ export default function InstructorDashboard() {
              TAB: ADMIN INBOX
              ══════════════════════════════════════ */}
           {activeTab === "Admin Inbox" && (
-            <InstructorAdminInboxView />
+            <InstructorAdminInboxView isDemoUser={isDemoUser} />
           )}
 
           {/* ══════════════════════════════════════
@@ -1296,6 +1307,7 @@ export default function InstructorDashboard() {
           {activeTab === "Self-Paced Courses" && (
             <InstructorSelfPacedCoursesView
               dbCourses={courses}
+              isDemoUser={isDemoUser}
               onCreateCourse={() => {
                 setWizardStep(1);
                 setActiveTab("Create Course");
@@ -2108,6 +2120,7 @@ export default function InstructorDashboard() {
              ══════════════════════════════════════ */}
           {activeTab === "Students" && (
             <InstructorStudentsView
+              isDemoUser={isDemoUser}
               onNavigateToAssignments={(params) => {
                 setAssignmentsFilter({
                   ...params,

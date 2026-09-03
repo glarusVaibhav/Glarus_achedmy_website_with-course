@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { getSession } from "@/lib/auth";
+import { LiveSessionService } from "@/lib/services/liveSessionService";
 
 export async function GET() {
   try {
@@ -60,9 +61,103 @@ export async function GET() {
       }
     });
 
+    // Get all lead courses for this instructor
+    const leadCourses = await prisma.liveCourse.findMany({
+      where: { leadInstructorId: instructorId },
+      include: {
+        leadInstructor: {
+          select: { id: true, name: true, email: true }
+        },
+        sessions: {
+          orderBy: { sessionNumber: "asc" },
+          include: {
+            agenda: { orderBy: { order: "asc" } },
+            topics: { orderBy: { order: "asc" } },
+            learningOutcomes: { orderBy: { order: "asc" } },
+            activities: { orderBy: { order: "asc" } },
+            resources: true,
+            homework: true,
+            assignments: {
+              where: { instructorId }
+            }
+          }
+        }
+      }
+    });
+
     // Group into courses and sessions
     const coursesMap = new Map<string, any>();
     const individualSessions: any[] = [];
+
+    leadCourses.forEach((lc) => {
+      if (!coursesMap.has(lc.id)) {
+        coursesMap.set(lc.id, {
+          id: lc.id,
+          title: lc.title,
+          slug: lc.slug,
+          description: lc.description,
+          category: lc.category,
+          level: lc.level,
+          thumbnailGradient: lc.thumbnailGradient,
+          duration: lc.duration,
+          status: lc.status,
+          totalSessions: lc.sessions.length,
+          coursePermissions: {
+            canView: true,
+            canEdit: true,
+            canEditAgenda: true,
+            canEditSchedule: true,
+            canEditResources: true,
+            canAddHomework: true,
+            canReschedule: true,
+            canCancel: true,
+            canManageAttendance: true,
+            canManageRecording: true
+          },
+          sessions: lc.sessions.map((s) => {
+            const computed = LiveSessionService.computeSessionStatus(s.date ? new Date(s.date) : null, s.startTime, s.duration);
+            const resolvedStatus = (s.status === "COMPLETED" || computed.status === "COMPLETED")
+              ? "COMPLETED"
+              : (s.status === "LIVE" || s.status === "LIVE_NOW" || computed.status === "ONGOING")
+              ? "LIVE_NOW"
+              : "SCHEDULED";
+
+            return {
+              id: s.id,
+              sessionNumber: s.sessionNumber,
+              title: s.title,
+              description: s.description,
+              date: s.date,
+              startTime: s.startTime,
+              endTime: s.endTime,
+              duration: s.duration,
+              status: resolvedStatus,
+              meetingUrl: s.meetingUrl,
+              recordingUrl: s.recordingUrl,
+              recordingStatus: s.recordingStatus,
+              agenda: s.agenda,
+              topics: s.topics,
+              learningOutcomes: s.learningOutcomes,
+              activities: s.activities,
+              resources: s.resources,
+              homework: s.homework,
+              permissions: {
+                canView: true,
+                canEdit: true,
+                canEditAgenda: true,
+                canEditSchedule: true,
+                canEditResources: true,
+                canAddHomework: true,
+                canReschedule: true,
+                canCancel: true,
+                canManageAttendance: true,
+                canManageRecording: true
+              }
+            };
+          })
+        });
+      }
+    });
 
     assignments.forEach((a) => {
       if (a.liveCourse && !coursesMap.has(a.liveCourse.id)) {
@@ -91,6 +186,13 @@ export async function GET() {
           },
           sessions: a.liveCourse.sessions.map((s) => {
             const sessAssign = s.assignments[0] || a;
+            const computed = LiveSessionService.computeSessionStatus(s.date ? new Date(s.date) : null, s.startTime, s.duration);
+            const resolvedStatus = (s.status === "COMPLETED" || computed.status === "COMPLETED")
+              ? "COMPLETED"
+              : (s.status === "LIVE" || s.status === "LIVE_NOW" || computed.status === "ONGOING")
+              ? "LIVE_NOW"
+              : "SCHEDULED";
+
             return {
               id: s.id,
               sessionNumber: s.sessionNumber,
@@ -100,7 +202,7 @@ export async function GET() {
               startTime: s.startTime,
               endTime: s.endTime,
               duration: s.duration,
-              status: s.status,
+              status: resolvedStatus,
               meetingUrl: s.meetingUrl,
               recordingUrl: s.recordingUrl,
               recordingStatus: s.recordingStatus,

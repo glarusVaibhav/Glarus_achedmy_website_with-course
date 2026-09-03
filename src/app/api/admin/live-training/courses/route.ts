@@ -1,6 +1,18 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { getSession } from "@/lib/auth";
+import { emitDomainEvent } from "@/lib/notifications/eventDispatcher";
+import { DOMAIN_EVENT_TYPES } from "@/lib/notifications/events";
+
+function safeJsonParse(val: string | null | undefined, fallback: any = []) {
+  if (!val) return fallback;
+  try {
+    const parsed = JSON.parse(val);
+    return Array.isArray(parsed) ? parsed : [parsed];
+  } catch {
+    return typeof val === "string" ? [val] : fallback;
+  }
+}
 
 export async function GET(req: Request) {
   try {
@@ -87,9 +99,9 @@ export async function GET(req: Request) {
         leadInstructor: course.leadInstructor,
         meetingPlatform: course.meetingPlatform,
         meetingUrl: course.meetingUrl,
-        prerequisites: course.prerequisites ? JSON.parse(course.prerequisites) : [],
-        objectives: course.objectives ? JSON.parse(course.objectives) : [],
-        tags: course.tags ? JSON.parse(course.tags) : [],
+        prerequisites: safeJsonParse(course.prerequisites),
+        objectives: safeJsonParse(course.objectives),
+        tags: safeJsonParse(course.tags),
         targetAudience: course.targetAudience,
         recordingAvailable: course.recordingAvailable,
         attendanceTracking: course.attendanceTracking,
@@ -106,6 +118,18 @@ export async function GET(req: Request) {
               status: nextSession.status
             }
           : null,
+        sessions: course.sessions.map((s) => ({
+          id: s.id,
+          sessionNumber: s.sessionNumber,
+          title: s.title,
+          description: s.description,
+          date: s.date,
+          startTime: s.startTime,
+          endTime: s.endTime,
+          status: s.status,
+          duration: s.duration,
+          assignments: s.assignments
+        })),
         isLiveNow: !!liveNowSession,
         createdAt: course.createdAt,
         updatedAt: course.updatedAt
@@ -320,13 +344,17 @@ export async function POST(req: Request) {
         });
       }
 
-      // Create notification for instructor
-      await prisma.notification.create({
-        data: {
-          userId: leadInstructorId,
-          type: "LIVE_COURSE_ASSIGNED",
-          message: `You have been assigned as lead instructor for live course: "${createdCourse.title}". (${createdCourse.sessions.length} live sessions scheduled)`
-        }
+      // Emit Domain Event for Notification Engine
+      await emitDomainEvent({
+        eventType: DOMAIN_EVENT_TYPES.LIVE_COURSE_ASSIGNED,
+        actorId: session.id,
+        payload: {
+          liveCourseId: createdCourse.id,
+          liveCourseTitle: createdCourse.title,
+          instructorId: leadInstructorId,
+          assignedBy: session.name || "Super Admin",
+          totalSessions: createdCourse.sessions.length,
+        },
       });
     }
 

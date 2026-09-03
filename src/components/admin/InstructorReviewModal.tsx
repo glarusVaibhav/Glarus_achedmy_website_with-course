@@ -4,7 +4,7 @@ import { useState } from "react";
 import {
   X, Check, FileText, History, Mail, Loader2, ExternalLink, AlertCircle,
   MessageSquare, User, Phone, Video, Globe, BookOpen, Sparkles, Award,
-  CheckCircle2, Compass, Layers
+  CheckCircle2, Compass, Layers, Eye, Play, Download
 } from "lucide-react";
 
 interface InstructorApprovalData {
@@ -54,6 +54,8 @@ export default function InstructorReviewModal({ approval, onClose, onDecision }:
   const [processing, setProcessing] = useState(false);
   const [action, setAction] = useState<"APPROVED" | "REJECTED" | "CHANGES_REQUESTED" | null>(null);
   const [feedbackInput, setFeedbackInput] = useState(approval.feedback || "");
+  const [previewResume, setPreviewResume] = useState(false);
+  const [previewVideo, setPreviewVideo] = useState(false);
 
   const handleDecision = async (decision: "APPROVED" | "REJECTED" | "CHANGES_REQUESTED") => {
     setProcessing(true);
@@ -241,14 +243,24 @@ export default function InstructorReviewModal({ approval, onClose, onDecision }:
               </div>
 
               {approval.resumeUrl && (
-                <a
-                  href={approval.resumeUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-3.5 py-2 bg-primary hover:bg-primary/90 text-white text-xs font-bold rounded-xl transition-all shadow-md shadow-primary/20 flex items-center gap-1.5 shrink-0"
-                >
-                  View / Download <ExternalLink className="w-3 h-3" />
-                </a>
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setPreviewResume(true)}
+                    className="px-3.5 py-2 bg-primary hover:bg-primary/90 text-white text-xs font-bold rounded-xl transition-all shadow-md shadow-primary/20 flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <Eye className="w-3.5 h-3.5" />
+                    <span>View in Platform</span>
+                  </button>
+                  <a
+                    href={approval.resumeUrl}
+                    download={approval.resumeFileName || "Candidate_Resume.pdf"}
+                    className="p-2 bg-card hover:bg-card/80 text-subtext hover:text-text border border-card/60 rounded-xl transition-colors"
+                    title="Download"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                  </a>
+                </div>
               )}
             </div>
           </section>
@@ -264,22 +276,23 @@ export default function InstructorReviewModal({ approval, onClose, onDecision }:
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-sky-400 flex items-center gap-1.5">
                     <CheckCircle2 className="w-4 h-4" />
-                    {approval.teachingVideoType === "UPLOAD" ? "Uploaded Video File" : "External Video URL Link"}
+                    {approval.teachingVideoType === "UPLOAD" ? "Uploaded Video File" : "Submitted Video Demo"}
                   </span>
-                  <a
-                    href={approval.teachingVideoUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="px-3 py-1.5 bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 border border-sky-500/25 rounded-lg text-xs font-bold transition-colors inline-flex items-center gap-1"
+                  <button
+                    type="button"
+                    onClick={() => setPreviewVideo(true)}
+                    className="px-3.5 py-1.5 bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 border border-sky-500/25 rounded-lg text-xs font-bold transition-colors inline-flex items-center gap-1.5 cursor-pointer"
                   >
-                    Open Video Sample <ExternalLink className="w-3 h-3" />
-                  </a>
+                    <Play className="w-3.5 h-3.5 fill-sky-400" />
+                    <span>Watch in Platform</span>
+                  </button>
                 </div>
 
                 <p className="text-xs font-mono text-text break-all bg-background p-2.5 rounded-lg border border-card/40">
                   {approval.teachingVideoUrl}
                 </p>
 
+                {/* Inline preview for direct uploads */}
                 {approval.teachingVideoUrl.startsWith("/uploads/") && (
                   <div className="mt-3 rounded-xl overflow-hidden border border-card/60 bg-black">
                     <video
@@ -422,6 +435,79 @@ export default function InstructorReviewModal({ approval, onClose, onDecision }:
           </button>
         </div>
       </div>
+
+      {/* In-Platform Resume Modal */}
+      {previewResume && (
+        <div className="fixed inset-0 z-[60] bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-card border border-white/15 rounded-3xl max-w-4xl w-full h-[85vh] shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95">
+            <div className="p-4 bg-background border-b border-card/60 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <FileText className="w-5 h-5 text-primary" />
+                <span className="text-sm font-black text-text">{approval.resumeFileName || "Resume Document"}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setPreviewResume(false)}
+                className="p-1.5 rounded-lg bg-card text-subtext hover:text-text cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="flex-1 bg-black/50 p-2">
+              <iframe
+                src={approval.resumeUrl || ""}
+                className="w-full h-full rounded-2xl bg-zinc-950"
+                title="Resume Preview"
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* In-Platform Video Modal */}
+      {previewVideo && (
+        <div className="fixed inset-0 z-[60] bg-black/90 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-card border border-white/15 rounded-3xl max-w-3xl w-full shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95">
+            <div className="p-4 bg-background border-b border-card/60 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Video className="w-5 h-5 text-sky-400" />
+                <span className="text-sm font-black text-text">Teaching Video Demonstration</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setPreviewVideo(false)}
+                className="p-1.5 rounded-lg bg-card text-subtext hover:text-text cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-4 bg-black flex items-center justify-center">
+              {approval.teachingVideoUrl?.startsWith("/uploads/") || approval.teachingVideoUrl?.endsWith(".mp4") ? (
+                <video
+                  src={approval.teachingVideoUrl}
+                  controls
+                  autoPlay
+                  className="w-full max-h-[60vh] rounded-xl object-contain bg-black"
+                />
+              ) : approval.teachingVideoUrl?.includes("youtube") || approval.teachingVideoUrl?.includes("youtu.be") ? (
+                <iframe
+                  src={approval.teachingVideoUrl.replace("watch?v=", "embed/")}
+                  className="w-full aspect-video rounded-xl"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  title="Teaching Video"
+                />
+              ) : (
+                <iframe
+                  src={approval.teachingVideoUrl || ""}
+                  className="w-full aspect-video rounded-xl bg-zinc-950"
+                  title="Teaching Video"
+                />
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

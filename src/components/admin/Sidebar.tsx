@@ -91,7 +91,7 @@ const SIDEBAR_NAVIGATION: NavGroup[] = [
     groupTitle: "LIVE TRAINING",
     items: [
       {
-        name: "Live Courses",
+        name: "Live Training",
         href: "/admin/live-training",
         icon: Radio,
         badge: "LIVE",

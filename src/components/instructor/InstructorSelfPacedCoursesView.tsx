@@ -242,6 +242,7 @@ const INITIAL_DEMO_COURSES: SelfPacedCourseItem[] = [
 
 interface InstructorSelfPacedCoursesViewProps {
   dbCourses?: any[];
+  isDemoUser?: boolean;
   onCreateCourse: () => void;
   onOpenCourseBuilder?: (courseId: string) => void;
   onNavigateTab?: (tabName: string, filterOptions?: any) => void;
@@ -249,6 +250,7 @@ interface InstructorSelfPacedCoursesViewProps {
 
 export function InstructorSelfPacedCoursesView({
   dbCourses = [],
+  isDemoUser = false,
   onCreateCourse,
   onOpenCourseBuilder,
   onNavigateTab,
@@ -268,23 +270,23 @@ export function InstructorSelfPacedCoursesView({
           status = "UNDER_REVIEW";
         }
 
-        const totalMods = c.modules?.length || 8;
-        const totalLes = c.modules?.reduce((acc: number, m: any) => acc + (m.lectures?.length || 0), 0) || 32;
+        const totalMods = c.modules?.length || 0;
+        const totalLes = c.modules?.reduce((acc: number, m: any) => acc + (m.lectures?.length || 0), 0) || 0;
 
         return {
           id: c.id || `db-course-${i}`,
           title: c.title || "Untitled Course",
-          subtitle: c.description || "Self-paced learning curriculum with video lectures and coding playgrounds.",
+          subtitle: c.description || "Self-paced learning curriculum.",
           category: "Artificial Intelligence",
           trackBadge: `Track #${i + 1} · Self-Paced`,
           level: "All Levels",
           status,
           totalModules: totalMods,
           totalLessons: totalLes,
-          totalStudents: c.enrollments?.length || 180 + i * 50,
+          totalStudents: c.enrollments?.length || 0,
           submissionDate: c.courseApproval?.createdAt
             ? new Date(c.courseApproval.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
-            : "Aug 18, 2026",
+            : "",
           adminFeedback: c.courseApproval?.feedback || (status === "CHANGES_REQUESTED" ? "Please update module objectives and add hands-on projects." : undefined),
           lastActivityText:
             status === "PUBLISHED"
@@ -298,26 +300,26 @@ export function InstructorSelfPacedCoursesView({
               : "Draft saved",
           iconType: (i % 2 === 0 ? "brain" : "cpu") as any,
           description: c.description || "",
-          createdAt: c.createdAt ? new Date(c.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "2026-08-01",
-          updatedAt: c.updatedAt ? new Date(c.updatedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "2026-08-18",
+          createdAt: c.createdAt ? new Date(c.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "",
+          updatedAt: c.updatedAt ? new Date(c.updatedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "",
           modules: []
         };
       });
-
-      const existingIds = new Set(mappedDbCourses.map(c => c.id));
-      const existingTitles = new Set(mappedDbCourses.map(c => c.title.trim().toLowerCase()));
-      const filteredDefaults = INITIAL_DEMO_COURSES.filter(d => 
-        !existingIds.has(d.id) && !existingTitles.has(d.title.trim().toLowerCase())
-      );
-      return [...mappedDbCourses, ...filteredDefaults];
+      return mappedDbCourses;
     }
-    return INITIAL_DEMO_COURSES;
+    return isDemoUser ? INITIAL_DEMO_COURSES : [];
   });
+
+  useEffect(() => {
+    if (isDemoUser && courses.length === 0 && (!dbCourses || dbCourses.length === 0)) {
+      setCourses(INITIAL_DEMO_COURSES);
+    }
+  }, [isDemoUser, dbCourses]);
 
   // Sync state if dbCourses updates from API
   useEffect(() => {
     if (dbCourses && dbCourses.length > 0) {
-      setCourses(prev => {
+      setCourses(() => {
         const mappedDbCourses: SelfPacedCourseItem[] = dbCourses.map((c, i) => {
           let status: CourseLifecycleStatus = "DRAFT";
           if (c.status === "APPROVED") {
@@ -330,23 +332,23 @@ export function InstructorSelfPacedCoursesView({
             status = "UNDER_REVIEW";
           }
 
-          const totalMods = c.modules?.length || 8;
-          const totalLes = c.modules?.reduce((acc: number, m: any) => acc + (m.lectures?.length || 0), 0) || 32;
+          const totalMods = c.modules?.length || 0;
+          const totalLes = c.modules?.reduce((acc: number, m: any) => acc + (m.lectures?.length || 0), 0) || 0;
 
           return {
             id: c.id || `db-course-${i}`,
             title: c.title || "Untitled Course",
-            subtitle: c.description || "Self-paced learning curriculum with video lectures and coding playgrounds.",
+            subtitle: c.description || "Self-paced learning curriculum.",
             category: "Artificial Intelligence",
             trackBadge: `Track #${i + 1} · Self-Paced`,
             level: "All Levels",
             status,
             totalModules: totalMods,
             totalLessons: totalLes,
-            totalStudents: c.enrollments?.length || 180 + i * 50,
+            totalStudents: c.enrollments?.length || 0,
             submissionDate: c.courseApproval?.createdAt
               ? new Date(c.courseApproval.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
-              : "Aug 18, 2026",
+              : "",
             adminFeedback: c.courseApproval?.feedback || (status === "CHANGES_REQUESTED" ? "Please update module objectives and add hands-on projects." : undefined),
             lastActivityText:
               status === "PUBLISHED"
@@ -360,18 +362,12 @@ export function InstructorSelfPacedCoursesView({
                 : "Draft saved",
             iconType: (i % 2 === 0 ? "brain" : "cpu") as any,
             description: c.description || "",
-            createdAt: c.createdAt ? new Date(c.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "2026-08-01",
-            updatedAt: c.updatedAt ? new Date(c.updatedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "2026-08-18",
+            createdAt: c.createdAt ? new Date(c.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "",
+            updatedAt: c.updatedAt ? new Date(c.updatedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "",
             modules: []
           };
         });
-
-        const existingIds = new Set(mappedDbCourses.map(c => c.id));
-        const existingTitles = new Set(mappedDbCourses.map(c => c.title.trim().toLowerCase()));
-        const filteredDefaults = INITIAL_DEMO_COURSES.filter(d => 
-          !existingIds.has(d.id) && !existingTitles.has(d.title.trim().toLowerCase())
-        );
-        return [...mappedDbCourses, ...filteredDefaults];
+        return mappedDbCourses;
       });
     }
   }, [dbCourses]);
