@@ -1031,10 +1031,11 @@ export function InstructorLiveSessionsView({
               sessions: (c.sessions || []).map((s: any) => {
                 const sDateObj = s.date ? new Date(s.date) : null;
                 const todayObj = new Date();
+                const todayIsoStr = todayObj.toISOString().split("T")[0];
+                const sIsoStr = sDateObj ? sDateObj.toISOString().split("T")[0] : "";
+
                 const isSameCalendarDay = sDateObj
-                  ? (sDateObj.getUTCFullYear() === todayObj.getFullYear() &&
-                     sDateObj.getUTCMonth() === todayObj.getMonth() &&
-                     sDateObj.getUTCDate() === todayObj.getDate()) ||
+                  ? sIsoStr === todayIsoStr ||
                     (sDateObj.getFullYear() === todayObj.getFullYear() &&
                      sDateObj.getMonth() === todayObj.getMonth() &&
                      sDateObj.getDate() === todayObj.getDate())
@@ -1056,8 +1057,7 @@ export function InstructorLiveSessionsView({
                     if (modifier === "PM" && hours < 12) hours += 12;
                     if (modifier === "AM" && hours === 12) hours = 0;
 
-                    const sessionStart = new Date(sDateObj);
-                    sessionStart.setHours(hours, minutes, 0, 0);
+                    const sessionStart = new Date(todayObj.getFullYear(), todayObj.getMonth(), todayObj.getDate(), hours, minutes, 0, 0);
                     const durationMin = parseInt(s.duration) || 90;
                     const sessionEnd = new Date(sessionStart.getTime() + durationMin * 60 * 1000);
                     const unlockWindow = new Date(sessionStart.getTime() - 15 * 60 * 1000);
@@ -2623,13 +2623,21 @@ export function InstructorLiveSessionsView({
               <div className="divide-y divide-white/[0.04]">
                 {todaySessions.map((ts) => {
                   const isLive = ts.executionStatus === "LIVE_NOW";
+                  const isCompleted = ts.executionStatus === "COMPLETED";
+
                   return (
                     <div key={ts.id} className="py-3 flex items-center justify-between gap-4">
                       <div className="flex items-center gap-4 min-w-0">
                         <span className="font-mono text-xs text-slate-400 font-semibold w-16 shrink-0">
                           {ts.startTime}
                         </span>
-                        <span className={`w-2 h-2 rounded-full shrink-0 ${isLive ? "bg-red-500 animate-pulse shadow-md shadow-red-500/40" : "bg-slate-600"}`} />
+                        <span className={`w-2 h-2 rounded-full shrink-0 ${
+                          isLive
+                            ? "bg-red-500 animate-pulse shadow-md shadow-red-500/40"
+                            : isCompleted
+                            ? "bg-emerald-500/80"
+                            : "bg-slate-600"
+                        }`} />
                         <div className="min-w-0">
                           <p className="text-xs font-semibold text-white truncate flex items-center gap-2">
                             <span>{ts.courseName}</span>
@@ -2637,6 +2645,11 @@ export function InstructorLiveSessionsView({
                             {isLive && (
                               <span className="text-[9px] font-bold text-red-400 bg-red-500/20 px-1.5 py-0.5 rounded border border-red-500/30 uppercase tracking-wider animate-pulse">
                                 LIVE NOW
+                              </span>
+                            )}
+                            {isCompleted && (
+                              <span className="text-[9px] font-bold text-emerald-400 bg-emerald-500/15 px-1.5 py-0.5 rounded border border-emerald-500/25 uppercase tracking-wider">
+                                COMPLETED
                               </span>
                             )}
                           </p>
@@ -2653,6 +2666,11 @@ export function InstructorLiveSessionsView({
                             <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
                             <span>Join Live Room →</span>
                           </Link>
+                        ) : isCompleted ? (
+                          <span className="px-3 py-1 bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 text-xs font-semibold rounded-lg flex items-center gap-1.5">
+                            <CheckCircle2 className="w-3.5 h-3.5" />
+                            <span>Completed</span>
+                          </span>
                         ) : (
                           <Link
                             href={`/live-classes/room/${ts.id}`}
