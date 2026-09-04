@@ -32,6 +32,29 @@ export const fetchZoomSignature = async (
   userId: string,
   role: string = 'INSTRUCTOR'
 ): Promise<ZoomSignatureResponse> => {
+  try {
+    const response = await fetch(`${API_BASE}/signature`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        sessionId,
+        role: role === 'INSTRUCTOR' || role === 'ADMIN' ? 1 : 0,
+      }),
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      if (data.signature) {
+        return data;
+      }
+    }
+  } catch (e) {
+    console.warn('[ZoomService] Next.js signature route failed, attempting fallback to external API:', e);
+  }
+
+  // Fallback to external microservice if configured
   const response = await fetch(`${API_BASE}/signature`, {
     method: 'POST',
     headers: {

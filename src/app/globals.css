@@ -351,4 +351,134 @@ html:not(.dark) .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   box-shadow: 0 0 10px rgba(168, 85, 247, 0.5);
 }
 
+/* ==========================================================================
+   ZOOM VIDEO SDK MODAL POSITIONING (CHAT, PARTICIPANTS, SETTINGS & THREE-DOT)
+   ========================================================================== */
+
+/* 1. Disable window dragging on all Zoom modal headers/handles */
+.zoom-ui-toolkit-root .uikit-common-popper-header,
+.zoom-ui-toolkit-root .uikit-common-popper-header.handle,
+.zoom-ui-toolkit-root .handle,
+.zoom-ui-toolkit-root [class*="cursor-move"],
+.zoom-ui-toolkit-root .cursor-move {
+  cursor: default !important;
+  user-select: none !important;
+  pointer-events: none !important;
+}
+
+/* 2. Re-enable pointer events for controls, buttons, inputs, tabs, and close 'X' */
+.zoom-ui-toolkit-root .uikit-common-popper-header button,
+.zoom-ui-toolkit-root .uikit-common-popper-header [id$="-close-button"],
+.zoom-ui-toolkit-root button,
+.zoom-ui-toolkit-root [role="button"],
+.zoom-ui-toolkit-root [class*="close"],
+.zoom-ui-toolkit-root svg,
+.zoom-ui-toolkit-root input,
+.zoom-ui-toolkit-root textarea,
+.zoom-ui-toolkit-root select,
+.zoom-ui-toolkit-root [role="tab"],
+.zoom-ui-toolkit-root a {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
+
+/* 3. Ensure the popper body contents are fully interactive and scrollable */
+.zoom-ui-toolkit-root .uikit-common-popper-header + div,
+.zoom-ui-toolkit-root .uikit-common-popper-header + div * {
+  pointer-events: auto !important;
+}
+
+/* 4. CHAT & PARTICIPANTS PANELS: Docked statically on the RIGHT SIDE */
+.zoom-ui-toolkit-root .react-draggable:not([id*="emoji"]):not(#uikit-chat-emoji-picker-content),
+.zoom-ui-toolkit-root [class*="uikit-common-popper-wrapper"]:not([id*="emoji"]):not(#uikit-chat-emoji-picker-content),
+.zoom-ui-toolkit-root [class*="chat-container"],
+.zoom-ui-toolkit-root [class*="participant-container"] {
+  position: absolute !important;
+  top: 16px !important;
+  right: 16px !important;
+  left: auto !important;
+  bottom: auto !important;
+  transform: none !important;
+  width: 380px !important;
+  max-width: calc(100vw - 32px) !important;
+  height: calc(100% - 96px) !important;
+  max-height: calc(100% - 96px) !important;
+  z-index: 50 !important;
+  border-radius: 16px !important;
+  overflow: visible !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6) !important;
+}
+
+/* 5. SETTINGS MODAL: Centered on screen, no crop, not movable */
+.zoom-ui-toolkit-root [class*="setting-container"],
+.zoom-ui-toolkit-root [class*="settings-container"],
+.zoom-ui-toolkit-root [role="dialog"][class*="setting"],
+.zoom-ui-toolkit-root [role="dialog"][class*="settings"],
+.zoom-ui-toolkit-root .uikit-common-modal,
+.zoom-ui-toolkit-root [class*="setting-dialog"] {
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+  right: auto !important;
+  bottom: auto !important;
+  transform: translate(-50%, -50%) !important;
+  width: 620px !important;
+  max-width: calc(100vw - 32px) !important;
+  height: auto !important;
+  max-height: min(650px, calc(100% - 60px)) !important;
+  z-index: 60 !important;
+  border-radius: 20px !important;
+  overflow: hidden !important;
+  box-shadow: 0 25px 75px rgba(0, 0, 0, 0.8) !important;
+}
+
+/* 6. THREE-DOT MORE OPTIONS MENU: Centered above controls without any crop */
+.zoom-ui-toolkit-root #footer-more-button + div,
+.zoom-ui-toolkit-root #uikit-footer-more-button + div,
+.zoom-ui-toolkit-root [id*="more-menu"],
+.zoom-ui-toolkit-root [class*="more-menu"],
+.zoom-ui-toolkit-root [class*="more-options-container"] {
+  position: absolute !important;
+  bottom: 76px !important;
+  left: 50% !important;
+  right: auto !important;
+  top: auto !important;
+  transform: translateX(-50%) !important;
+  width: 240px !important;
+  max-height: 400px !important;
+  overflow-y: auto !important;
+  z-index: 60 !important;
+  border-radius: 14px !important;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.75) !important;
+}
+
+/* 7. EMOJI PICKER POPUP: Retain original layout, size, and structure */
+#uikit-chat-emoji-picker-content,
+.zoom-ui-toolkit-root #uikit-chat-emoji-picker-content,
+[id*="emoji-picker-content"] {
+  position: absolute !important;
+  bottom: 100% !important;
+  left: 0 !important;
+  right: auto !important;
+  top: auto !important;
+  margin-bottom: 8px !important;
+  width: 300px !important;
+  height: 400px !important;
+  max-width: 320px !important;
+  max-height: 420px !important;
+  transform: none !important;
+  z-index: 100 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6) !important;
+  overflow: hidden !important;
+  display: block !important;
+}
+
+.zoom-ui-toolkit-root #uikit-chat-emoji-picker-content * {
+  pointer-events: auto !important;
+}
+
+
+
+
 

@@ -6,7 +6,7 @@ import { Logo } from "./Logo";
 
 export function Footer() {
   const pathname = usePathname();
-  if (pathname?.startsWith("/admin") || pathname?.startsWith("/learn")) return null;
+  if (pathname?.startsWith("/admin") || pathname?.startsWith("/learn") || pathname?.startsWith("/live-classes")) return null;
 
   return (
     <footer className="w-full bg-background border-t border-border/30 py-10 mt-0">

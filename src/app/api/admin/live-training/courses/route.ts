@@ -3,6 +3,7 @@ import prisma from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { emitDomainEvent } from "@/lib/notifications/eventDispatcher";
 import { DOMAIN_EVENT_TYPES } from "@/lib/notifications/events";
+import crypto from "crypto";
 
 function safeJsonParse(val: string | null | undefined, fallback: any = []) {
   if (!val) return fallback;
@@ -128,6 +129,9 @@ export async function GET(req: Request) {
           endTime: s.endTime,
           status: s.status,
           duration: s.duration,
+          meetingId: s.meetingId,
+          meetingPasscode: s.meetingPasscode,
+          meetingUrl: s.meetingUrl,
           assignments: s.assignments
         })),
         isLiveNow: !!liveNowSession,
@@ -224,77 +228,85 @@ export async function POST(req: Request) {
         attendanceTracking,
         visibility,
         sessions: {
-          create: sessions.map((s: any, idx: number) => ({
-            sessionNumber: s.sessionNumber || idx + 1,
-            title: s.title || `Session ${idx + 1}`,
-            description: s.description || "",
-            date: s.date ? new Date(s.date) : null,
-            startTime: s.startTime || "07:00 PM",
-            endTime: s.endTime || "09:00 PM",
-            timezone: s.timezone || timezone,
-            duration: s.duration || "120 min",
-            status: (s.status || "SCHEDULED") as any,
-            meetingUrl: s.meetingUrl || meetingUrl || null,
-            agenda: s.agenda?.length
-              ? {
-                  create: s.agenda.map((ag: any, agIdx: number) => ({
-                    title: ag.title,
-                    description: ag.description || "",
-                    startTime: ag.startTime || null,
-                    endTime: ag.endTime || null,
-                    duration: ag.duration || "15 min",
-                    order: agIdx + 1
-                  }))
-                }
-              : undefined,
-            topics: s.topics?.length
-              ? {
-                  create: s.topics.map((tp: any, tpIdx: number) => ({
-                    title: typeof tp === "string" ? tp : tp.title,
-                    description: tp.description || "",
-                    order: tpIdx + 1
-                  }))
-                }
-              : undefined,
-            learningOutcomes: s.learningOutcomes?.length
-              ? {
-                  create: s.learningOutcomes.map((lo: any, loIdx: number) => ({
-                    title: typeof lo === "string" ? lo : lo.title,
-                    order: loIdx + 1
-                  }))
-                }
-              : undefined,
-            activities: s.activities?.length
-              ? {
-                  create: s.activities.map((ac: any, acIdx: number) => ({
-                    title: ac.title,
-                    instructions: ac.instructions || "",
-                    duration: ac.duration || "25 min",
-                    order: acIdx + 1
-                  }))
-                }
-              : undefined,
-            resources: s.resources?.length
-              ? {
-                  create: s.resources.map((res: any) => ({
-                    title: res.title,
-                    type: res.type || "URL",
-                    url: res.url
-                  }))
-                }
-              : undefined,
-            homework: s.homework?.title
-              ? {
-                  create: [
-                    {
-                      title: s.homework.title,
-                      description: s.homework.description || "",
-                      dueDate: s.homework.dueDate || null
-                    }
-                  ]
-                }
-              : undefined
-          }))
+          create: sessions.map((s: any, idx: number) => {
+            const finalMeetingId = s.meetingId || s.zoomMeetingId || crypto.randomUUID();
+            const finalPasscode = s.meetingPasscode || s.passcode || s.zoomPasscode || crypto.randomBytes(4).toString("hex").toUpperCase();
+            const finalMeetingUrl = s.meetingUrl || meetingUrl || `https://zoom.us/j/${finalMeetingId}`;
+
+            return {
+              sessionNumber: s.sessionNumber || idx + 1,
+              title: s.title || `Session ${idx + 1}`,
+              description: s.description || "",
+              date: s.date ? new Date(s.date) : null,
+              startTime: s.startTime || "07:00 PM",
+              endTime: s.endTime || "09:00 PM",
+              timezone: s.timezone || timezone,
+              duration: s.duration || "120 min",
+              status: (s.status || "SCHEDULED") as any,
+              meetingId: finalMeetingId,
+              meetingPasscode: finalPasscode,
+              meetingUrl: finalMeetingUrl,
+              agenda: s.agenda?.length
+                ? {
+                    create: s.agenda.map((ag: any, agIdx: number) => ({
+                      title: ag.title,
+                      description: ag.description || "",
+                      startTime: ag.startTime || null,
+                      endTime: ag.endTime || null,
+                      duration: ag.duration || "15 min",
+                      order: agIdx + 1
+                    }))
+                  }
+                : undefined,
+              topics: s.topics?.length
+                ? {
+                    create: s.topics.map((tp: any, tpIdx: number) => ({
+                      title: typeof tp === "string" ? tp : tp.title,
+                      description: tp.description || "",
+                      order: tpIdx + 1
+                    }))
+                  }
+                : undefined,
+              learningOutcomes: s.learningOutcomes?.length
+                ? {
+                    create: s.learningOutcomes.map((lo: any, loIdx: number) => ({
+                      title: typeof lo === "string" ? lo : lo.title,
+                      order: loIdx + 1
+                    }))
+                  }
+                : undefined,
+              activities: s.activities?.length
+                ? {
+                    create: s.activities.map((ac: any, acIdx: number) => ({
+                      title: ac.title,
+                      instructions: ac.instructions || "",
+                      duration: ac.duration || "25 min",
+                      order: acIdx + 1
+                    }))
+                  }
+                : undefined,
+              resources: s.resources?.length
+                ? {
+                    create: s.resources.map((res: any) => ({
+                      title: res.title,
+                      type: res.type || "URL",
+                      url: res.url
+                    }))
+                  }
+                : undefined,
+              homework: s.homework?.title
+                ? {
+                    create: [
+                      {
+                        title: s.homework.title,
+                        description: s.homework.description || "",
+                        dueDate: s.homework.dueDate || null
+                      }
+                    ]
+                  }
+                : undefined
+            };
+          })
         }
       },
       include: {

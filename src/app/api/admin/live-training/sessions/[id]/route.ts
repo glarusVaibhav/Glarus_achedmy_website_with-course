@@ -93,6 +93,9 @@ export async function PUT(
       timezone,
       duration,
       status,
+      meetingId,
+      passcode,
+      meetingPasscode,
       meetingUrl,
       recordingUrl,
       recordingStatus,
@@ -113,6 +116,9 @@ export async function PUT(
     if (timezone !== undefined) updateData.timezone = timezone;
     if (duration !== undefined) updateData.duration = duration;
     if (status !== undefined) updateData.status = status;
+    if (meetingId !== undefined) updateData.meetingId = meetingId;
+    if (meetingPasscode !== undefined) updateData.meetingPasscode = meetingPasscode;
+    else if (passcode !== undefined) updateData.meetingPasscode = passcode;
     if (meetingUrl !== undefined) updateData.meetingUrl = meetingUrl;
     if (recordingUrl !== undefined) updateData.recordingUrl = recordingUrl;
     if (recordingStatus !== undefined) updateData.recordingStatus = recordingStatus;

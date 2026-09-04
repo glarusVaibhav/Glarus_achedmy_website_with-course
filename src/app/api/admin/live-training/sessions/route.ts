@@ -82,6 +82,8 @@ export async function GET(req: Request) {
         timezone: sess.timezone,
         duration: sess.duration,
         status: sess.status,
+        meetingId: sess.meetingId,
+        meetingPasscode: sess.meetingPasscode,
         meetingUrl: sess.meetingUrl,
         recordingUrl: sess.recordingUrl,
         recordingStatus: sess.recordingStatus,
