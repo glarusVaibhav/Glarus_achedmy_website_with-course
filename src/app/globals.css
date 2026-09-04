@@ -354,7 +354,6 @@ html:not(.dark) .custom-scrollbar::-webkit-scrollbar-thumb:hover {
 /* ==========================================================================
    ZOOM VIDEO SDK MODAL POSITIONING (CHAT, PARTICIPANTS, SETTINGS & THREE-DOT)
    ========================================================================== */
-
 /* 1. Disable window dragging on all Zoom modal headers/handles */
 .zoom-ui-toolkit-root .uikit-common-popper-header,
 .zoom-ui-toolkit-root .uikit-common-popper-header.handle,
@@ -477,8 +476,4 @@ html:not(.dark) .custom-scrollbar::-webkit-scrollbar-thumb:hover {
 .zoom-ui-toolkit-root #uikit-chat-emoji-picker-content * {
   pointer-events: auto !important;
 }
-
-
-
-
 
