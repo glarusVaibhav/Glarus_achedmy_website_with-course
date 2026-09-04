@@ -137,7 +137,7 @@ export async function POST(req: Request) {
 
     // 4. Request Zoom Video SDK Signature from Python backend
     const zoomServiceUrl =
-      process.env.ZOOM_SIGNATURE_SERVICE_URL || 'http://192.168.1.16:8000/meetings/signature';
+      process.env.ZOOM_SIGNATURE_SERVICE_URL || 'http://192.168.1.14:8000/meetings/signature';
     const fallbackSdkKey = process.env.ZOOM_SDK_KEY || '1YeeUCULQD7tJesoWxT8h7dTVf3umwu29RBA';
     const fallbackSdkSecret = process.env.ZOOM_SDK_SECRET || 'ZOOM_DEV_FALLBACK_SECRET_KEY_12345';
 

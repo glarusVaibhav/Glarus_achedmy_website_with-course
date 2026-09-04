@@ -17,6 +17,7 @@
     "@types/nodemailer": "^8.0.1",
     "@types/pdf-parse": "^1.1.5",
     "@types/react-syntax-highlighter": "^15.5.13",
+    "@zoom/videosdk-ui-toolkit": "^2.5.0-1",
     "bcryptjs": "^3.0.3",
     "canvas-confetti": "^1.9.4",
     "clsx": "^2.1.1",
