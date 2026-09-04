@@ -1028,72 +1028,89 @@ export function InstructorLiveSessionsView({
               totalSessions: c.totalSessions || c.sessions?.length || 0,
               totalStudents: 42,
               averageAttendanceRate: 92,
-              sessions: (c.sessions || []).map((s: any) => ({
-                id: s.id,
-                sessionCode: `Session ${s.sessionNumber < 10 ? `0${s.sessionNumber}` : s.sessionNumber}`,
-                sessionNumber: s.sessionNumber,
-                title: s.title,
-                description: s.description || "",
-                courseId: c.id,
-                courseName: c.title,
-                cohortBadge: c.duration || "Live Cohort",
-                batchName: "Live Fast-Track Cohort",
-                date: s.date ? new Date(s.date).toISOString().split("T")[0] : "2026-09-01",
-                displayDate: s.date ? new Date(s.date).toLocaleDateString([], { month: "short", day: "numeric" }) : "TBA",
-                startTime: s.startTime || "07:00 PM",
-                endTime: s.endTime || "09:00 PM",
-                duration: s.duration || "120 min",
-                meetingUrl: s.meetingUrl || "https://zoom.us",
-                assignedBy: "Academic Operations Team",
-                assignedAt: "2026-08-01",
-                assignmentStatus: "ACCEPTED" as const,
-                executionStatus: (() => {
+              sessions: (c.sessions || []).map((s: any) => {
+                const sDateObj = s.date ? new Date(s.date) : null;
+                const todayObj = new Date();
+                const isSameCalendarDay = sDateObj
+                  ? (sDateObj.getUTCFullYear() === todayObj.getFullYear() &&
+                     sDateObj.getUTCMonth() === todayObj.getMonth() &&
+                     sDateObj.getUTCDate() === todayObj.getDate()) ||
+                    (sDateObj.getFullYear() === todayObj.getFullYear() &&
+                     sDateObj.getMonth() === todayObj.getMonth() &&
+                     sDateObj.getDate() === todayObj.getDate())
+                  : false;
+
+                const isLiveNow = s.status === "LIVE" || (s.status as any) === "LIVE_NOW";
+                const isToday = isSameCalendarDay || isLiveNow;
+
+                const computedExecutionStatus = (() => {
+                  if (isLiveNow) return "LIVE_NOW";
                   if (s.status === "COMPLETED") return "COMPLETED";
-                  if (s.status === "LIVE" || s.status === "LIVE_NOW") return "LIVE_NOW";
-                  const sDate = s.date ? new Date(s.date) : null;
-                  if (!sDate) return "UPCOMING";
-                  
-                  const now = new Date();
+                  if (!sDateObj) return "UPCOMING";
+
                   const timeMatch = (s.startTime || "").match(/(\d+):(\d+)\s*(AM|PM)?/i);
-                  if (timeMatch) {
+                  if (timeMatch && isSameCalendarDay) {
                     let hours = parseInt(timeMatch[1], 10);
                     const minutes = parseInt(timeMatch[2], 10);
                     const modifier = timeMatch[3]?.toUpperCase();
                     if (modifier === "PM" && hours < 12) hours += 12;
                     if (modifier === "AM" && hours === 12) hours = 0;
-                    
-                    const sessionStart = new Date(sDate);
+
+                    const sessionStart = new Date(sDateObj);
                     sessionStart.setHours(hours, minutes, 0, 0);
                     const durationMin = parseInt(s.duration) || 90;
                     const sessionEnd = new Date(sessionStart.getTime() + durationMin * 60 * 1000);
-                    const unlockWindow = new Date(sessionStart.getTime() - 5 * 60 * 1000);
-                    
-                    if (now >= unlockWindow && now <= sessionEnd) {
+                    const unlockWindow = new Date(sessionStart.getTime() - 15 * 60 * 1000);
+
+                    if (todayObj >= unlockWindow && todayObj <= sessionEnd) {
                       return "LIVE_NOW";
                     }
-                    if (now > sessionEnd) {
+                    if (todayObj > sessionEnd) {
                       return "COMPLETED";
                     }
-                  } else if (sDate.getTime() < new Date().setHours(0, 0, 0, 0)) {
+                  } else if (sDateObj.getTime() < new Date().setHours(0, 0, 0, 0)) {
                     return "COMPLETED";
                   }
                   return "UPCOMING";
-                })() as any,
-                editPermissionStatus: s.permissions?.canEdit ? "UNLOCKED" : "LOCKED",
-                editPermissionGrantedBy: s.permissions?.canEdit ? "Academic Administration" : undefined,
-                enrolledStudentsCount: 42,
-                compensationAmount: 6500,
-                paymentStatus: "Paid" as const,
-                agenda: (s.agenda || []).map((ag: any, i: number) => ({
-                  stepNumber: String(i + 1).padStart(2, "0"),
-                  timeRange: `${ag.startTime || "07:00 PM"} – ${ag.endTime || "07:30 PM"}`,
-                  title: ag.title,
-                  description: ag.description || ""
-                })),
-                topics: (s.topics || []).map((tp: any) => typeof tp === "string" ? tp : tp.title),
-                requirements: ["Prepare environment for live pair-programming", "Record session in 1080p"],
-                students: []
-              }))
+                })();
+
+                return {
+                  id: s.id,
+                  sessionCode: `Session ${s.sessionNumber < 10 ? `0${s.sessionNumber}` : s.sessionNumber}`,
+                  sessionNumber: s.sessionNumber,
+                  title: s.title,
+                  description: s.description || "",
+                  courseId: c.id,
+                  courseName: c.title,
+                  cohortBadge: c.duration || "Live Cohort",
+                  batchName: "Live Fast-Track Cohort",
+                  date: s.date ? new Date(s.date).toISOString().split("T")[0] : new Date().toISOString().split("T")[0],
+                  displayDate: s.date ? new Date(s.date).toLocaleDateString([], { month: "short", day: "numeric" }) : "Today",
+                  startTime: s.startTime || "07:00 PM",
+                  endTime: s.endTime || "09:00 PM",
+                  duration: s.duration || "120 min",
+                  meetingUrl: s.meetingUrl || "https://zoom.us",
+                  assignedBy: "Academic Operations Team",
+                  assignedAt: "2026-08-01",
+                  assignmentStatus: "ACCEPTED" as const,
+                  isToday,
+                  executionStatus: computedExecutionStatus as any,
+                  editPermissionStatus: s.permissions?.canEdit ? "UNLOCKED" : "LOCKED",
+                  editPermissionGrantedBy: s.permissions?.canEdit ? "Academic Administration" : undefined,
+                  enrolledStudentsCount: 42,
+                  compensationAmount: 6500,
+                  paymentStatus: "Paid" as const,
+                  agenda: (s.agenda || []).map((ag: any, i: number) => ({
+                    stepNumber: String(i + 1).padStart(2, "0"),
+                    timeRange: `${ag.startTime || "07:00 PM"} – ${ag.endTime || "07:30 PM"}`,
+                    title: ag.title,
+                    description: ag.description || ""
+                  })),
+                  topics: (s.topics || []).map((tp: any) => typeof tp === "string" ? tp : tp.title),
+                  requirements: ["Prepare environment for live pair-programming", "Record session in 1080p"],
+                  students: []
+                };
+              })
             }));
             setCohorts(mappedCohorts);
           }
@@ -1301,7 +1318,8 @@ export function InstructorLiveSessionsView({
 
   // Today's Scheduled Sessions (Timeline)
   const todaySessions = useMemo(() => {
-    return allSessions.filter((s) => s.isToday || s.date === "2026-08-17");
+    const todayStr = new Date().toISOString().split("T")[0];
+    return allSessions.filter((s) => s.isToday || s.executionStatus === "LIVE_NOW" || s.date === todayStr);
   }, [allSessions]);
 
   // Pending Actions Session
@@ -2485,6 +2503,25 @@ export function InstructorLiveSessionsView({
 
                     {/* Equal, Harmonious Compact Actions */}
                     <div className="flex items-center gap-2 shrink-0 self-end md:self-center flex-wrap">
+                      {isLive ? (
+                        <Link
+                          href={`/live-classes/room/${session.id}`}
+                          className="px-3.5 py-1.5 text-white bg-red-600 hover:bg-red-500 text-xs font-bold rounded-xl flex items-center gap-1.5 shadow-md shadow-red-600/30 transition-all cursor-pointer animate-pulse"
+                        >
+                          <span className="w-1.5 h-1.5 rounded-full bg-white" />
+                          <span>Enter Live Room →</span>
+                        </Link>
+                      ) : (
+                        <Link
+                          href={`/live-classes/room/${session.id}`}
+                          className="px-3 py-1.5 text-blue-400 hover:text-blue-300 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/25 text-xs font-semibold rounded-xl flex items-center gap-1.5 transition-all cursor-pointer shadow-xs"
+                          title="Open Zoom Video SDK live room"
+                        >
+                          <Video className="w-3.5 h-3.5" />
+                          <span>Start Room</span>
+                        </Link>
+                      )}
+
                       <button
                         onClick={() => setSelectedSessionForAgenda(session)}
                         className="px-3 py-1.5 text-slate-300 hover:text-white text-xs font-semibold rounded-xl bg-white/[0.03] hover:bg-white/[0.08] border border-white/[0.08] transition-all cursor-pointer shadow-xs"
@@ -2573,51 +2610,73 @@ export function InstructorLiveSessionsView({
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-sm font-bold text-white">Today's Schedule</h3>
-                <p className="text-xs text-slate-500">17 August 2026</p>
+                <p className="text-xs text-slate-500">
+                  {new Date().toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" })}
+                </p>
               </div>
+              <span className="text-[11px] font-semibold text-slate-400 bg-white/[0.04] px-2.5 py-1 rounded-lg border border-white/[0.06]">
+                {todaySessions.length} {todaySessions.length === 1 ? "Session Scheduled" : "Sessions Scheduled"}
+              </span>
             </div>
 
-            <div className="divide-y divide-white/[0.04]">
-              {todaySessions.map((ts) => {
-                const isLive = ts.executionStatus === "LIVE_NOW";
-                return (
-                  <div key={ts.id} className="py-3 flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-4 min-w-0">
-                      <span className="font-mono text-xs text-slate-400 font-semibold w-16 shrink-0">
-                        {ts.startTime}
-                      </span>
-                      <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${isLive ? "bg-red-500 animate-pulse" : "bg-slate-600"}`} />
-                      <div className="min-w-0">
-                        <p className="text-xs font-semibold text-white truncate">
-                          {ts.courseName} <span className="font-normal text-slate-400">· {ts.sessionCode} — {ts.title}</span>
-                        </p>
-                        <p className="text-[11px] text-slate-500">{ts.enrolledStudentsCount} students</p>
+            {todaySessions.length > 0 ? (
+              <div className="divide-y divide-white/[0.04]">
+                {todaySessions.map((ts) => {
+                  const isLive = ts.executionStatus === "LIVE_NOW";
+                  return (
+                    <div key={ts.id} className="py-3 flex items-center justify-between gap-4">
+                      <div className="flex items-center gap-4 min-w-0">
+                        <span className="font-mono text-xs text-slate-400 font-semibold w-16 shrink-0">
+                          {ts.startTime}
+                        </span>
+                        <span className={`w-2 h-2 rounded-full shrink-0 ${isLive ? "bg-red-500 animate-pulse shadow-md shadow-red-500/40" : "bg-slate-600"}`} />
+                        <div className="min-w-0">
+                          <p className="text-xs font-semibold text-white truncate flex items-center gap-2">
+                            <span>{ts.courseName}</span>
+                            <span className="font-normal text-slate-400">· {ts.sessionCode} — {ts.title}</span>
+                            {isLive && (
+                              <span className="text-[9px] font-bold text-red-400 bg-red-500/20 px-1.5 py-0.5 rounded border border-red-500/30 uppercase tracking-wider animate-pulse">
+                                LIVE NOW
+                              </span>
+                            )}
+                          </p>
+                          <p className="text-[11px] text-slate-500">{ts.enrolledStudentsCount} students enrolled</p>
+                        </div>
                       </div>
-                    </div>
 
-                    <div className="flex items-center gap-3 shrink-0">
-                      {isLive ? (
-                        <a
-                          href={ts.meetingUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="px-3 py-1 bg-red-600 hover:bg-red-500 text-white text-xs font-semibold rounded-lg"
-                        >
-                          Start
-                        </a>
-                      ) : (
+                      <div className="flex items-center gap-2 shrink-0">
+                        {isLive ? (
+                          <Link
+                            href={`/live-classes/room/${ts.id}`}
+                            className="px-3.5 py-1.5 bg-red-600 hover:bg-red-500 text-white text-xs font-bold rounded-lg shadow-md shadow-red-600/30 transition-all flex items-center gap-1.5"
+                          >
+                            <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                            <span>Join Live Room →</span>
+                          </Link>
+                        ) : (
+                          <Link
+                            href={`/live-classes/room/${ts.id}`}
+                            className="px-3 py-1 bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 hover:text-white border border-blue-500/30 text-xs font-semibold rounded-lg transition-all"
+                          >
+                            Start Session
+                          </Link>
+                        )}
                         <button
                           onClick={() => setSelectedSessionForAgenda(ts)}
                           className="px-3 py-1 text-slate-400 hover:text-white text-xs font-medium rounded-lg hover:bg-white/[0.04]"
                         >
-                          View
+                          Agenda
                         </button>
-                      )}
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="py-6 text-center text-slate-500 text-xs font-medium">
+                No live sessions scheduled for today. Check upcoming sessions below.
+              </div>
+            )}
           </div>
 
           {/* ── 5. ACTION REQUIRED STRIP (COMPACT NOTIFICATION) ── */}

@@ -116,10 +116,12 @@ export async function GET() {
           },
           sessions: lc.sessions.map((s) => {
             const computed = LiveSessionService.computeSessionStatus(s.date ? new Date(s.date) : null, s.startTime, s.duration);
-            const resolvedStatus = (s.status === "COMPLETED" || computed.status === "COMPLETED")
-              ? "COMPLETED"
-              : (s.status === "LIVE" || (s.status as any) === "LIVE_NOW" || computed.status === "ONGOING")
+            const resolvedStatus = (s.status === "LIVE" || (s.status as any) === "LIVE_NOW" || computed.status === "ONGOING")
               ? "LIVE_NOW"
+              : s.status === "COMPLETED"
+              ? "COMPLETED"
+              : computed.status === "COMPLETED"
+              ? "COMPLETED"
               : "SCHEDULED";
 
             return {
@@ -187,10 +189,12 @@ export async function GET() {
           sessions: a.liveCourse.sessions.map((s) => {
             const sessAssign = s.assignments[0] || a;
             const computed = LiveSessionService.computeSessionStatus(s.date ? new Date(s.date) : null, s.startTime, s.duration);
-            const resolvedStatus = (s.status === "COMPLETED" || computed.status === "COMPLETED")
-              ? "COMPLETED"
-              : (s.status === "LIVE" || (s.status as any) === "LIVE_NOW" || computed.status === "ONGOING")
+            const resolvedStatus = (s.status === "LIVE" || (s.status as any) === "LIVE_NOW" || computed.status === "ONGOING")
               ? "LIVE_NOW"
+              : s.status === "COMPLETED"
+              ? "COMPLETED"
+              : computed.status === "COMPLETED"
+              ? "COMPLETED"
               : "SCHEDULED";
 
             return {
@@ -276,3 +280,35 @@ export async function GET() {
     return NextResponse.json({ error: "Failed to fetch instructor live sessions" }, { status: 500 });
   }
 }
+
+export async function PATCH(req: Request) {
+  try {
+    const session = await getSession();
+    if (!session || (session.role !== "INSTRUCTOR" && session.role !== "ADMIN")) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+    }
+
+    const body = await req.json();
+    const { sessionId, status, meetingUrl, recordingUrl } = body;
+
+    if (!sessionId) {
+      return NextResponse.json({ error: "sessionId is required" }, { status: 400 });
+    }
+
+    const updateData: any = {};
+    if (status) updateData.status = status;
+    if (meetingUrl !== undefined) updateData.meetingUrl = meetingUrl;
+    if (recordingUrl !== undefined) updateData.recordingUrl = recordingUrl;
+
+    const updatedSession = await prisma.liveSession.update({
+      where: { id: sessionId },
+      data: updateData
+    });
+
+    return NextResponse.json({ session: updatedSession });
+  } catch (error: any) {
+    console.error("Instructor Live Session PATCH Error:", error);
+    return NextResponse.json({ error: "Failed to update session" }, { status: 500 });
+  }
+}
+
