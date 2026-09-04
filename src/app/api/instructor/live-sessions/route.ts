@@ -118,7 +118,7 @@ export async function GET() {
             const computed = LiveSessionService.computeSessionStatus(s.date ? new Date(s.date) : null, s.startTime, s.duration);
             const resolvedStatus = (s.status === "COMPLETED" || computed.status === "COMPLETED")
               ? "COMPLETED"
-              : (s.status === "LIVE" || s.status === "LIVE_NOW" || computed.status === "ONGOING")
+              : (s.status === "LIVE" || (s.status as any) === "LIVE_NOW" || computed.status === "ONGOING")
               ? "LIVE_NOW"
               : "SCHEDULED";
 
@@ -189,7 +189,7 @@ export async function GET() {
             const computed = LiveSessionService.computeSessionStatus(s.date ? new Date(s.date) : null, s.startTime, s.duration);
             const resolvedStatus = (s.status === "COMPLETED" || computed.status === "COMPLETED")
               ? "COMPLETED"
-              : (s.status === "LIVE" || s.status === "LIVE_NOW" || computed.status === "ONGOING")
+              : (s.status === "LIVE" || (s.status as any) === "LIVE_NOW" || computed.status === "ONGOING")
               ? "LIVE_NOW"
               : "SCHEDULED";
 

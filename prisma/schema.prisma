@@ -188,29 +188,40 @@ model User {
 }
 
 model Course {
-  id             String          @id @default(cuid())
-  title          String
-  description    String
-  price          Float
-  instructor     User            @relation("InstructorCourses", fields: [instructorId], references: [id], onDelete: Cascade)
-  instructorId   String
-  status         CourseStatus    @default(PENDING)
-  isPublished    Boolean         @default(false)
-  publishedAt    DateTime?
-  purchases      Purchase[]      @relation("CoursePurchases")
-  enrollments    Enrollment[]
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
-  type           CourseType      @default(SELF_PACED)
-  modules        Module[]
-  batches        Batch[]
-  certificates   Certificate[]
-  activities     UserActivity[]
-  refundRate     Float           @default(0.0)
-  rating         Float           @default(0.0)
-  reviewsCount   Int             @default(0)
-  courseApproval CourseApproval?
-  assignments    Assignment[]    @relation("CourseAssignments")
+  id               String          @id @default(cuid())
+  title            String
+  subtitle         String?
+  description      String
+  category         String?         @default("AI Engineering")
+  level            String?         @default("All Levels")
+  duration         String?         @default("30 Hours VOD")
+  price            Float
+  originalPrice    Float?          @default(0.0)
+  previewVideoUrl  String?
+  learningOutcomes String?
+  projects         String?
+  faqs             String?
+  features         String?
+  learningJourney  String?
+  instructor       User            @relation("InstructorCourses", fields: [instructorId], references: [id], onDelete: Cascade)
+  instructorId     String
+  status           CourseStatus    @default(PENDING)
+  isPublished      Boolean         @default(false)
+  publishedAt      DateTime?
+  purchases        Purchase[]      @relation("CoursePurchases")
+  enrollments      Enrollment[]
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  type             CourseType      @default(SELF_PACED)
+  modules          Module[]
+  batches          Batch[]
+  certificates     Certificate[]
+  activities       UserActivity[]
+  refundRate       Float           @default(0.0)
+  rating           Float           @default(4.9)
+  reviewsCount     Int             @default(0)
+  courseApproval   CourseApproval?
+  assignments      Assignment[]    @relation("CourseAssignments")
 }
 
 model Purchase {
@@ -531,8 +542,19 @@ model LiveCourse {
   title              String
   slug               String?
   shortDescription   String?
+  subtitle           String?
   description        String
   price              Float                  @default(14999)
+  originalPrice      Float?                 @default(24999)
+  previewVideoUrl    String?
+  learningOutcomes   String?
+  projects           String?
+  faqs               String?
+  features           String?
+  learningJourney    String?
+  batches            String?
+  cohortLeadBio      String?
+  heroBadges         String?
   thumbnail          String?
   thumbnailGradient  String?                @default("from-purple-900 via-indigo-950 to-slate-950")
   category           String                 @default("Generative AI")
@@ -588,6 +610,7 @@ model LiveSession {
   meetingUrl               String?
   recordingUrl             String?
   recordingStatus          String?                    @default("unavailable")
+  actualEnd_at             DateTime?
   agenda                   SessionAgendaItem[]
   topics                   SessionTopic[]
   learningOutcomes         SessionLearningOutcome[]
@@ -702,6 +725,7 @@ model LiveSessionAttendance {
   userId            String
   user              User             @relation("UserSessionAttendance", fields: [userId], references: [id], onDelete: Cascade)
   status            AttendanceStatus @default(PRESENT)
+  role              String?
   joinedAt          DateTime?
   leftAt            DateTime?
   durationMinutes   Int              @default(0)

@@ -22,7 +22,8 @@ import {
   Layers,
   HelpCircle,
   Radio,
-  Laptop
+  Laptop,
+  Check
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -56,14 +57,28 @@ interface BatchItem {
   total: number;
 }
 
+interface ProjectItem {
+  number?: string;
+  title: string;
+  desc: string;
+  tech?: string[];
+}
+
+interface LearningOutcomeItem {
+  title?: string;
+  description?: string;
+}
+
 interface PublicCourseData {
   id: string;
   title: string;
+  subtitle?: string;
   category: string;
   level: string;
   duration: string;
   price: number;
   originalPrice: number;
+  previewVideoUrl?: string | null;
   description: string;
   shortDescription?: string;
   prerequisites?: string;
@@ -78,10 +93,14 @@ interface PublicCourseData {
     avatar: string;
     bio: string;
   };
-  learningOutcomes: string[];
+  learningOutcomes: (string | LearningOutcomeItem)[];
+  projects?: ProjectItem[];
   batches: BatchItem[];
   sessions: SessionItem[];
   includes: string[];
+  features?: string[];
+  learningJourney?: { step?: string; num?: string; title?: string; stepName?: string; desc?: string }[];
+  heroBadges?: string[];
   faqs: { q: string; a: string }[];
 }
 
@@ -146,11 +165,62 @@ export default function LiveCoursePublicView({ course }: LiveCoursePublicViewPro
 
   const discountPercent = course.originalPrice > course.price
     ? Math.round(((course.originalPrice - course.price) / course.originalPrice) * 100)
-    : 25;
+    : 30;
 
   const seatsPercent = selectedBatch
     ? Math.min(100, Math.round((selectedBatch.enrolled / selectedBatch.total) * 100))
     : 65;
+
+  const projectsList = course.projects && course.projects.length > 0 ? course.projects : [
+    {
+      number: "01",
+      title: "Autonomous Multi-Agent Research Swarm",
+      desc: "Construct an end-to-end swarm that ingests real-time web articles, validates claims, and synthesizes structured reports.",
+      tech: ["Python", "LangGraph", "FastAPI", "Docker"]
+    },
+    {
+      number: "02",
+      title: "Production Hybrid RAG Document Engine",
+      desc: "Construct an enterprise search system indexing 100K+ technical documents with hybrid vector retrieval.",
+      tech: ["Qdrant", "PostgreSQL", "Cohere", "Next.js"]
+    },
+    {
+      number: "03",
+      title: "Real-Time AI Code Reviewer & PR Bot",
+      desc: "Deploy a webhook-triggered AI assistant that analyzes pull requests, enforces conventions, and runs unit tests.",
+      tech: ["TypeScript", "GitHub API", "OpenAI", "Redis"]
+    },
+    {
+      number: "04",
+      title: "Enterprise Multi-Tenant SaaS Platform",
+      desc: "Architect a scalable SaaS with team workspaces, usage metering, stripe billing, and automated CI/CD.",
+      tech: ["Next.js 15", "Prisma", "PostgreSQL", "Tailwind CSS"]
+    }
+  ];
+
+  const heroBadges = course.heroBadges && course.heroBadges.length > 0
+    ? course.heroBadges
+    : [course.category.toUpperCase(), "LIVE COHORT", "CERTIFICATION INCLUDED"];
+
+  const learningJourney = course.learningJourney && course.learningJourney.length > 0
+    ? course.learningJourney
+    : [
+        { step: "01", title: "Learn", desc: "Live instructor-led concept masterclasses" },
+        { step: "02", title: "Practice", desc: "Hands-on coding labs & notebook exercises" },
+        { step: "03", title: "Build", desc: "Production-grade capstone AI applications" },
+        { step: "04", title: "Defend", desc: "Automated test suites & mentor code review" },
+        { step: "05", title: "Get Certified", desc: "Cryptographically verifiable credential" },
+      ];
+
+  const includesList = course.includes?.length > 0 ? course.includes : (course.features || [
+    "12 Interactive Live Masterclasses (24 Hours Total)",
+    "1-on-1 Code Defenses & Mentor Code Reviews",
+    "Full GitHub Code Repositories & Jupyter Notebooks",
+    "4 Production-Grade Capstone Projects",
+    "Dedicated Private Discord Cohort Channel",
+    "Cryptographically Verified Certificate of Completion",
+    "Lifetime Access to HD Session Recordings"
+  ]);
 
   return (
     <div className="min-h-screen bg-background text-foreground transition-colors duration-200">
@@ -172,14 +242,22 @@ export default function LiveCoursePublicView({ course }: LiveCoursePublicViewPro
           
           {/* Left Hero Content */}
           <div className="lg:col-span-7 space-y-6">
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="px-3 py-1 rounded-md bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 text-xs font-bold uppercase tracking-wider">
-                {course.category}
-              </span>
-              <span className="px-3 py-1 rounded-md bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20 text-xs font-black flex items-center gap-1.5 uppercase tracking-wider">
-                <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                LIVE COHORT
-              </span>
+            <div className="flex flex-wrap items-center gap-2.5">
+              {heroBadges.map((badge, bIdx) => (
+                <span
+                  key={bIdx}
+                  className={`px-3 py-1 rounded-md text-xs font-black uppercase tracking-wider border ${
+                    bIdx === 0
+                      ? "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20"
+                      : bIdx === 1
+                      ? "bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20 flex items-center gap-1.5"
+                      : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
+                  }`}
+                >
+                  {bIdx === 1 && <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />}
+                  {badge}
+                </span>
+              ))}
               <span className="px-3 py-1 rounded-md bg-slate-500/10 text-slate-700 dark:text-slate-300 border border-slate-500/20 text-xs font-bold">
                 {course.level}
               </span>
@@ -190,7 +268,7 @@ export default function LiveCoursePublicView({ course }: LiveCoursePublicViewPro
             </h1>
 
             <p className="text-sm sm:text-base text-muted-foreground font-normal leading-relaxed max-w-2xl">
-              {course.description}
+              {course.subtitle || course.shortDescription || course.description}
             </p>
 
             {/* Metadata Pills */}
@@ -207,7 +285,7 @@ export default function LiveCoursePublicView({ course }: LiveCoursePublicViewPro
               <span className="text-slate-400 dark:text-slate-600">•</span>
               <div className="flex items-center gap-2 font-medium">
                 <Code2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                <span><strong className="text-foreground">{course.projectsCount}</strong> Capstone Projects</span>
+                <span><strong className="text-foreground">{projectsList.length}</strong> Capstone Projects</span>
               </div>
               <span className="text-slate-400 dark:text-slate-600">•</span>
               <div className="flex items-center gap-2 font-medium">
@@ -311,7 +389,7 @@ export default function LiveCoursePublicView({ course }: LiveCoursePublicViewPro
             <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Instructor-Led</div>
           </div>
           <div className="p-5 rounded-2xl bg-card border border-border/70 text-center space-y-1">
-            <div className="text-2xl sm:text-3xl font-black text-foreground">{course.projectsCount}</div>
+            <div className="text-2xl sm:text-3xl font-black text-foreground">{projectsList.length}</div>
             <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Capstone Projects</div>
           </div>
           <div className="p-5 rounded-2xl bg-card border border-border/70 text-center space-y-1">
@@ -320,7 +398,7 @@ export default function LiveCoursePublicView({ course }: LiveCoursePublicViewPro
           </div>
         </div>
 
-        {/* ───────── 4. What You'll Learn ───────── */}
+        {/* ───────── 4. What You'll Learn & Build (6 Competency Cards) ───────── */}
         <div className="space-y-6 pt-4">
           <div className="space-y-1">
             <h2 className="text-xs font-black text-purple-600 dark:text-purple-400 uppercase tracking-widest">
@@ -332,21 +410,85 @@ export default function LiveCoursePublicView({ course }: LiveCoursePublicViewPro
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {course.learningOutcomes.map((outcome, idx) => (
-              <div
-                key={idx}
-                className="p-5 rounded-2xl bg-card border border-border/70 hover:border-purple-500/40 transition-all flex items-start gap-3.5"
-              >
-                <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
-                <p className="text-xs sm:text-sm font-medium text-foreground leading-relaxed">
-                  {outcome}
-                </p>
-              </div>
-            ))}
+            {course.learningOutcomes.map((outcome, idx) => {
+              const title = typeof outcome === "string" ? outcome : outcome.title || "Core Technical Competency";
+              const desc = typeof outcome === "string" ? null : outcome.description;
+
+              return (
+                <div
+                  key={idx}
+                  className="p-5 rounded-2xl bg-card border border-border/70 hover:border-purple-500/40 transition-all flex flex-col justify-between gap-2.5 shadow-xs"
+                >
+                  <div className="flex items-start gap-3">
+                    <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
+                    <div className="space-y-1">
+                      <h4 className="text-sm font-bold text-foreground leading-snug">
+                        {title}
+                      </h4>
+                      {desc && (
+                        <p className="text-xs text-muted-foreground leading-relaxed">
+                          {desc}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
 
-        {/* ───────── 5. Complete Live Session Curriculum (The Flagship Section) ───────── */}
+        {/* ───────── 5. Real-World Capstone Projects ───────── */}
+        {projectsList && projectsList.length > 0 && (
+          <div className="space-y-6 pt-6">
+            <div className="space-y-1">
+              <h2 className="text-xs font-black text-purple-600 dark:text-purple-400 uppercase tracking-widest">
+                Hands-On Deliverables
+              </h2>
+              <h3 className="text-2xl sm:text-3xl font-black text-foreground">
+                Real-World Capstone Projects Included
+              </h3>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {projectsList.map((proj, pIdx) => (
+                <div
+                  key={pIdx}
+                  className="p-6 rounded-3xl bg-card border border-border/80 hover:border-purple-500/40 transition-all space-y-4 shadow-sm"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-2xl font-black font-mono text-purple-600 dark:text-purple-400">
+                      {proj.number || String(pIdx + 1).padStart(2, "0")}
+                    </span>
+                    <span className="px-2.5 py-0.5 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 text-[11px] font-bold border border-purple-500/20">
+                      Capstone Deliverable
+                    </span>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <h4 className="text-base sm:text-lg font-black text-foreground">{proj.title}</h4>
+                    <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">{proj.desc}</p>
+                  </div>
+
+                  {proj.tech && proj.tech.length > 0 && (
+                    <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-border/50">
+                      {proj.tech.map((t, tIdx) => (
+                        <span
+                          key={tIdx}
+                          className="px-2.5 py-0.5 rounded-lg bg-muted text-foreground text-[10px] font-bold border border-border/60"
+                        >
+                          {t}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ───────── 6. Complete Live Session Curriculum (The Flagship Section) ───────── */}
         <div className="space-y-6 pt-6">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-border/80 pb-4">
             <div className="space-y-1">
@@ -517,7 +659,7 @@ export default function LiveCoursePublicView({ course }: LiveCoursePublicViewPro
           </div>
         </div>
 
-        {/* ───────── 6. Upcoming Batches Selection ───────── */}
+        {/* ───────── 7. Upcoming Batches Selection ───────── */}
         <div className="space-y-6 pt-6">
           <div className="space-y-1">
             <h2 className="text-xs font-black text-purple-600 dark:text-purple-400 uppercase tracking-widest">
@@ -591,7 +733,7 @@ export default function LiveCoursePublicView({ course }: LiveCoursePublicViewPro
           </div>
         </div>
 
-        {/* ───────── 7. Live Learning Journey (Marketing Roadmap) ───────── */}
+        {/* ───────── 8. Live Learning Journey (Marketing Roadmap) ───────── */}
         <div className="p-8 rounded-3xl bg-card border border-border/80 space-y-6">
           <div className="text-center max-w-2xl mx-auto space-y-1">
             <h2 className="text-xs font-black text-purple-600 dark:text-purple-400 uppercase tracking-widest">
@@ -603,26 +745,24 @@ export default function LiveCoursePublicView({ course }: LiveCoursePublicViewPro
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-5 gap-4 pt-4">
-            {[
-              { num: "01", step: "Learn", desc: "Live instructor-led concept masterclasses" },
-              { num: "02", step: "Practice", desc: "Hands-on coding labs & notebook exercises" },
-              { num: "03", step: "Build", desc: "Production-grade capstone AI applications" },
-              { num: "04", step: "Submit", desc: "Automated test suites & mentor code review" },
-              { num: "05", step: "Get Certified", desc: "Cryptographically verifiable credential" },
-            ].map((st, sIdx) => (
-              <div
-                key={sIdx}
-                className="p-4 rounded-2xl bg-muted/40 border border-border/60 text-center space-y-2 relative"
-              >
-                <span className="text-lg font-black text-purple-600 dark:text-purple-400 font-mono">{st.num}</span>
-                <h4 className="text-sm font-black text-foreground">{st.step}</h4>
-                <p className="text-[11px] text-muted-foreground leading-snug font-medium">{st.desc}</p>
-              </div>
-            ))}
+            {learningJourney.map((st, sIdx) => {
+              const stepNum = st.step || st.num || `0${sIdx + 1}`;
+              const stepTitle = st.title || st.stepName || "Step";
+              return (
+                <div
+                  key={sIdx}
+                  className="p-4 rounded-2xl bg-muted/40 border border-border/60 text-center space-y-2 relative"
+                >
+                  <span className="text-lg font-black text-purple-600 dark:text-purple-400 font-mono">{stepNum}</span>
+                  <h4 className="text-sm font-black text-foreground">{stepTitle}</h4>
+                  <p className="text-[11px] text-muted-foreground leading-snug font-medium">{st.desc}</p>
+                </div>
+              );
+            })}
           </div>
         </div>
 
-        {/* ───────── 8. Instructor Card ───────── */}
+        {/* ───────── 9. Instructor Card ───────── */}
         {course.instructor && (
           <div className="space-y-4 pt-4">
             <h3 className="text-2xl font-black text-foreground">Meet Your Cohort Lead</h3>
@@ -646,11 +786,11 @@ export default function LiveCoursePublicView({ course }: LiveCoursePublicViewPro
           </div>
         )}
 
-        {/* ───────── 9. What's Included ───────── */}
+        {/* ───────── 10. What's Included ───────── */}
         <div className="space-y-6 pt-4">
           <h3 className="text-2xl font-black text-foreground">What&apos;s Included in Your Enrollment</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {course.includes.map((inc, iIdx) => (
+            {includesList.map((inc, iIdx) => (
               <div
                 key={iIdx}
                 className="p-4 rounded-2xl bg-card border border-border/70 flex items-center gap-3"
@@ -662,7 +802,7 @@ export default function LiveCoursePublicView({ course }: LiveCoursePublicViewPro
           </div>
         </div>
 
-        {/* ───────── 10. FAQ Accordion ───────── */}
+        {/* ───────── 11. FAQ Accordion ───────── */}
         {course.faqs && course.faqs.length > 0 && (
           <div className="space-y-6 pt-6">
             <div className="space-y-1">
@@ -704,7 +844,7 @@ export default function LiveCoursePublicView({ course }: LiveCoursePublicViewPro
           </div>
         )}
 
-        {/* ───────── 11. Final Enrollment CTA Banner ───────── */}
+        {/* ───────── 12. Final Enrollment CTA Banner ───────── */}
         <div className="p-8 sm:p-12 rounded-3xl bg-gradient-to-br from-purple-900/30 via-indigo-950/20 to-card border border-purple-500/30 text-center space-y-6">
           <div className="max-w-2xl mx-auto space-y-2">
             <span className="px-3 py-1 rounded-full bg-purple-500/20 text-purple-600 dark:text-purple-300 text-xs font-black uppercase tracking-wider">
@@ -731,3 +871,4 @@ export default function LiveCoursePublicView({ course }: LiveCoursePublicViewPro
     </div>
   );
 }
+

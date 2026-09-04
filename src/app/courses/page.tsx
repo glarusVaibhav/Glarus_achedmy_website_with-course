@@ -514,7 +514,7 @@ function CoursesContent() {
                             <span className="px-3 py-1 rounded-md bg-purple-500/10 text-purple-300 border border-purple-500/20 text-xs font-bold">
                               Level: {item.level}
                             </span>
-                            {item.tags.map((tag, tIdx) => (
+                            {(item.tags || []).map((tag: string, tIdx: number) => (
                               <span
                                 key={tIdx}
                                 className={`px-3 py-1 rounded-md text-xs font-bold border ${

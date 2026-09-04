@@ -9,7 +9,7 @@ import {
   Activity, Bell, Edit3, RefreshCw, Check, Save, PlayCircle, Layout,
   CheckCircle2, IndianRupee, TrendingUp, Eye, Trash2, Clock, Calendar,
   Image as ImageIcon, UploadCloud, Paperclip, ShieldCheck, CheckSquare,
-  ArrowUpRight, PlusCircle
+  ArrowUpRight, PlusCircle, Award
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -148,17 +148,148 @@ export default function InstructorDashboard() {
     setActiveTab(tabName);
   };
 
-  /* ── Create Course Modal ── */
+  /* ── Create Course Modal & Wizard State ── */
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [createLoading, setCreateLoading] = useState(false);
+  const [landingTab, setLandingTab] = useState<"outcomes" | "projects" | "faqs" | "features">("outcomes");
+  const [isGeneratingLanding, setIsGeneratingLanding] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
     subtitle: "",
     description: "",
-    price: "",
+    price: "2499",
+    originalPrice: "4999",
+    duration: "36 Hours VOD",
+    previewVideoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
     category: "Artificial Intelligence",
-    level: "All Levels"
+    level: "All Levels",
+    learningOutcomes: [
+      {
+        title: "Autonomous Agentic AI & Orchestration",
+        description: "Architect multi-agent systems with LangGraph, deterministic guardrails, and persistent vector memory."
+      },
+      {
+        title: "Production RAG & Hybrid Vector Search",
+        description: "Implement semantic chunking, reciprocal rank fusion, and cross-encoder re-ranking pipelines."
+      },
+      {
+        title: "Full-Stack Web App Deployment",
+        description: "Deploy Next.js 15 server action applications with Prisma ORM, PostgreSQL, and cloud CI/CD."
+      },
+      {
+        title: "Low-Latency Streaming AI Endpoints",
+        description: "Build reactive user experiences with token counting, tool calling validation, and edge streaming."
+      },
+      {
+        title: "Observability, Telemetry & Cost Control",
+        description: "Set up distributed OpenTelemetry tracing, latency profiling, and automated cost optimization monitors."
+      },
+      {
+        title: "Enterprise Security & RBAC Governance",
+        description: "Implement role-based permissions, rate limiting, and encrypted token storage for production SaaS."
+      }
+    ],
+    projects: [
+      {
+        number: "01",
+        title: "Autonomous Multi-Agent Financial Analyst",
+        desc: "Build an end-to-end swarm that ingests financial filings, runs quantitative metrics, and drafts investment memos.",
+        tech: ["Python", "LangGraph", "FastAPI", "Docker"]
+      },
+      {
+        number: "02",
+        title: "Production Hybrid RAG Document Engine",
+        desc: "Construct an enterprise search system indexing 100K+ technical documents with hybrid vector retrieval.",
+        tech: ["Qdrant", "PostgreSQL", "Cohere", "Next.js"]
+      },
+      {
+        number: "03",
+        title: "Real-Time AI Code Reviewer & PR Bot",
+        desc: "Deploy a webhook-triggered AI assistant that analyzes pull requests, enforces conventions, and runs unit tests.",
+        tech: ["TypeScript", "GitHub API", "OpenAI", "Redis"]
+      },
+      {
+        number: "04",
+        title: "Enterprise Multi-Tenant SaaS Platform",
+        desc: "Architect a scalable SaaS with team workspaces, usage metering, stripe billing, and automated CI/CD.",
+        tech: ["Next.js 15", "Prisma", "PostgreSQL", "Tailwind CSS"]
+      }
+    ],
+    faqs: [
+      {
+        q: "What prerequisites are required for this course?",
+        a: "Basic familiarity with modern JavaScript/TypeScript or Python is recommended. We start with foundational principles and progressively build to enterprise architecture."
+      },
+      {
+        q: "Are all projects and code repositories included?",
+        a: "Yes! You receive full access to production-ready GitHub repositories, starter code, solution branches, and Docker configurations."
+      },
+      {
+        q: "Will I receive a verified certificate upon completion?",
+        a: "Yes, learners who complete all curriculum milestones and pass the capstone evaluation receive an official Glarus Academy smart certificate with a verifiable public link."
+      },
+      {
+        q: "How long do I retain access to course materials?",
+        a: "Enrollment provides lifetime access, including all future module updates, supplementary resources, and developer community forums."
+      }
+    ],
+    features: [
+      "36 Hours of on-demand HD video lectures",
+      "4 Production-grade real-world capstone projects",
+      "Interactive code sandboxes & modular quizzes",
+      "Verified Certificate of Completion",
+      "Full lifetime access with continuous updates",
+      "24/7 AI Tutor support & Discord developer network"
+    ],
+    learningJourney: [
+      "Core Foundations & Architecture",
+      "State Management & Graphs",
+      "Tool Calling & Reasoning Loops",
+      "Production CI/CD & Deploy",
+      "Capstone Evaluation"
+    ]
   });
+
+  const handleAutoGenerateLanding = async () => {
+    const topicToUse = formData.title || aiTopic;
+    if (!topicToUse.trim()) {
+      setToast({ message: "Please enter a course title first.", type: "error" });
+      return;
+    }
+    setIsGeneratingLanding(true);
+    try {
+      const res = await fetch("/api/ai/course-landing", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: topicToUse,
+          category: formData.category,
+          level: formData.level
+        })
+      });
+      const resData = await res.json();
+      if (resData.success && resData.data) {
+        const d = resData.data;
+        setFormData(prev => ({
+          ...prev,
+          subtitle: d.subtitle || prev.subtitle,
+          duration: d.duration || prev.duration,
+          originalPrice: d.originalPrice ? String(d.originalPrice) : prev.originalPrice,
+          learningOutcomes: Array.isArray(d.learningOutcomes) && d.learningOutcomes.length > 0 ? d.learningOutcomes : prev.learningOutcomes,
+          projects: Array.isArray(d.projects) && d.projects.length > 0 ? d.projects : prev.projects,
+          faqs: Array.isArray(d.faqs) && d.faqs.length > 0 ? d.faqs : prev.faqs,
+          features: Array.isArray(d.features) && d.features.length > 0 ? d.features : prev.features
+        }));
+        setToast({ message: "✨ AI generated landing page showcase content!", type: "success" });
+      } else {
+        setToast({ message: "Could not generate landing page data", type: "error" });
+      }
+    } catch {
+      setToast({ message: "Error connecting to AI service", type: "error" });
+    } finally {
+      setIsGeneratingLanding(false);
+    }
+  };
 
   /* ── AI Wizard State ── */
   const [wizardStep, setWizardStep] = useState(1);
@@ -768,12 +899,41 @@ export default function InstructorDashboard() {
     if (builderModules.length === 0) { setToast({ message: "Add at least one module before submitting.", type: "error" }); return; }
     setSubmitLoading(true);
     try {
-      const desc = builderModules.map(m => `${m.title}: ${m.lessons.map(l => l.title).join(", ")}`).join(" | ");
-      const res = await fetch("/api/courses", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title: aiTopic || `Course - ${new Date().toLocaleDateString()}`, description: desc, price: "4999" }) });
-      if (res.ok) { setToast({ message: "Course submitted for admin review! It will appear on the landing page once approved.", type: "success" }); fetchAll(); setActiveTab("Self-Paced Courses"); }
-      else { setToast({ message: "Failed to submit course", type: "error" }); }
-    } catch { setToast({ message: "Network error", type: "error" }); }
-    finally { setSubmitLoading(false); }
+      const payload = {
+        ...formData,
+        price: parseFloat(formData.price) || 0,
+        originalPrice: parseFloat(formData.originalPrice) || 0,
+        title: formData.title || aiTopic || `Course - ${new Date().toLocaleDateString()}`,
+        modules: builderModules.map((m, idx) => ({
+          title: m.title,
+          order: idx + 1,
+          lessons: m.lessons.map((l, lIdx) => ({
+            title: l.title,
+            type: l.type === "empty" ? "video" : l.type,
+            videoUrl: l.videoUrl || null,
+            duration: l.videoDuration || "15m",
+            order: lIdx + 1
+          }))
+        }))
+      };
+      const res = await fetch("/api/courses", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) {
+        setToast({ message: "Course submitted for admin review! It will appear on the landing page once approved.", type: "success" });
+        fetchAll();
+        setActiveTab("Self-Paced Courses");
+      } else {
+        const err = await res.json();
+        setToast({ message: err.error || "Failed to submit course", type: "error" });
+      }
+    } catch {
+      setToast({ message: "Network error", type: "error" });
+    } finally {
+      setSubmitLoading(false);
+    }
   };
 
   /* ═══════════════════════════════════════════════
@@ -846,20 +1006,43 @@ export default function InstructorDashboard() {
     e.preventDefault();
     setCreateLoading(true);
     try {
+      const payload = {
+        ...formData,
+        price: parseFloat(formData.price) || 0,
+        originalPrice: parseFloat(formData.originalPrice) || 0,
+        modules: builderModules.length > 0 ? builderModules.map((m, idx) => ({
+          title: m.title,
+          order: idx + 1,
+          lessons: m.lessons.map((l, lIdx) => ({
+            title: l.title,
+            type: l.type === "empty" ? "video" : l.type,
+            videoUrl: l.videoUrl || null,
+            duration: l.videoDuration || "15m",
+            order: lIdx + 1
+          }))
+        })) : aiModules.map((m, idx) => ({
+          title: m.title,
+          order: idx + 1,
+          lessons: m.lessons.map((lt, lIdx) => ({
+            title: lt,
+            order: lIdx + 1
+          }))
+        }))
+      };
       const res = await fetch("/api/courses", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
       const data = await res.json();
       if (res.ok && data.course) {
         setCourses([data.course, ...courses]);
         setIsModalOpen(false);
-        setFormData({ title: "", subtitle: "", description: "", price: "", category: "Artificial Intelligence", level: "All Levels" });
         setToast({ message: "Course created & submitted for approval!", type: "success" });
         fetchAll();
+        setActiveTab("Self-Paced Courses");
       } else {
-        setToast({ message: "Failed to create course", type: "error" });
+        setToast({ message: data.error || "Failed to create course", type: "error" });
       }
     } catch {
       setToast({ message: "Network error", type: "error" });
@@ -1413,15 +1596,384 @@ export default function InstructorDashboard() {
                         </select>
                       </div>
 
+                      <div className="space-y-1.5">
+                        <label className="block text-xs font-bold text-text">Price (₹ INR) <span className="text-rose-400">*</span></label>
+                        <div className="relative">
+                          <IndianRupee className="w-4 h-4 text-subtext absolute left-3.5 top-1/2 -translate-y-1/2" />
+                          <input
+                            type="number"
+                            value={formData.price}
+                            onChange={e => setFormData({ ...formData, price: e.target.value })}
+                            placeholder="2499"
+                            className="w-full bg-background border border-card rounded-2xl pl-10 pr-4 py-2.5 text-xs text-text font-bold focus:outline-none focus:border-primary"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <label className="block text-xs font-bold text-text">Original Price (₹ INR)</label>
+                          {formData.originalPrice && formData.price && (
+                            <span className="text-[10px] font-black uppercase text-emerald-400 px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/20">
+                              {Math.max(0, Math.round((1 - (parseFloat(formData.price) || 0) / (parseFloat(formData.originalPrice) || 1)) * 100))}% OFF
+                            </span>
+                          )}
+                        </div>
+                        <div className="relative">
+                          <IndianRupee className="w-4 h-4 text-subtext absolute left-3.5 top-1/2 -translate-y-1/2" />
+                          <input
+                            type="number"
+                            value={formData.originalPrice}
+                            onChange={e => setFormData({ ...formData, originalPrice: e.target.value })}
+                            placeholder="4999"
+                            className="w-full bg-background border border-card rounded-2xl pl-10 pr-4 py-2.5 text-xs text-text font-bold focus:outline-none focus:border-primary"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label className="block text-xs font-bold text-text">Duration Badge</label>
+                        <input
+                          type="text"
+                          value={formData.duration}
+                          onChange={e => setFormData({ ...formData, duration: e.target.value })}
+                          placeholder="e.g. 36 Hours VOD or 6 Weeks"
+                          className="w-full bg-background border border-card rounded-2xl px-4 py-2.5 text-xs text-text font-bold focus:outline-none focus:border-primary"
+                        />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label className="block text-xs font-bold text-text">16:9 Preview Video URL</label>
+                        <input
+                          type="text"
+                          value={formData.previewVideoUrl}
+                          onChange={e => setFormData({ ...formData, previewVideoUrl: e.target.value })}
+                          placeholder="https://...mp4 or embed video URL"
+                          className="w-full bg-background border border-card rounded-2xl px-4 py-2.5 text-xs text-text font-mono focus:outline-none focus:border-primary"
+                        />
+                      </div>
+
                       <div className="md:col-span-2 space-y-1.5">
                         <label className="block text-xs font-bold text-text">Course Description</label>
                         <textarea
-                          rows={4}
+                          rows={3}
                           value={formData.description}
                           onChange={e => setFormData({ ...formData, description: e.target.value })}
                           placeholder="Explain what students will learn, prerequisites, and key takeaways..."
                           className="w-full bg-background border border-card rounded-2xl p-4 text-xs text-text font-medium focus:outline-none focus:border-primary leading-relaxed"
                         />
+                      </div>
+
+                      {/* ═══════ LANDING PAGE SHOWCASE STUDIO ═══════ */}
+                      <div className="md:col-span-2 p-6 rounded-3xl bg-card/60 border border-purple-500/30 space-y-5 shadow-lg">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-card pb-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-2xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-purple-300">
+                              <Sparkles className="w-5 h-5 text-purple-400" />
+                            </div>
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <h3 className="text-sm font-black text-text">Landing Page Showcase Studio</h3>
+                                <span className="px-2 py-0.5 rounded-md bg-purple-500/20 text-purple-300 border border-purple-500/30 text-[9px] font-black uppercase tracking-wider">
+                                  Public Course Detail Page
+                                </span>
+                              </div>
+                              <p className="text-[11px] text-subtext mt-0.5">
+                                Add rich competency cards, real-world capstone projects, FAQs, and feature checklist for your course landing page.
+                              </p>
+                            </div>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={handleAutoGenerateLanding}
+                            disabled={isGeneratingLanding || (!formData.title && !aiTopic)}
+                            className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 disabled:opacity-50 text-white text-xs font-black flex items-center justify-center gap-2 shadow-lg shadow-purple-600/25 transition-all shrink-0"
+                          >
+                            {isGeneratingLanding ? (
+                              <>
+                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                <span>Drafting Showcase...</span>
+                              </>
+                            ) : (
+                              <>
+                                <Sparkles className="w-3.5 h-3.5" />
+                                <span>✨ AI Auto-Draft Showcase</span>
+                              </>
+                            )}
+                          </button>
+                        </div>
+
+                        {/* Showcase Sub-Tabs */}
+                        <div className="flex items-center gap-2 border-b border-card pb-2 overflow-x-auto no-scrollbar">
+                          {[
+                            { id: "outcomes", label: `What You'll Learn (${formData.learningOutcomes.length})`, icon: Award },
+                            { id: "projects", label: `Real-World Projects (${formData.projects.length})`, icon: Code },
+                            { id: "faqs", label: `FAQs (${formData.faqs.length})`, icon: HelpCircle },
+                            { id: "features", label: `Course Features (${formData.features.length})`, icon: CheckCircle2 }
+                          ].map(tab => (
+                            <button
+                              key={tab.id}
+                              type="button"
+                              onClick={() => setLandingTab(tab.id as any)}
+                              className={`px-3.5 py-2 rounded-xl text-xs font-extrabold flex items-center gap-2 transition-all whitespace-nowrap ${
+                                landingTab === tab.id
+                                  ? "bg-purple-500/20 text-purple-300 border border-purple-500/40 shadow-sm"
+                                  : "text-subtext hover:text-text hover:bg-card border border-transparent"
+                              }`}
+                            >
+                              <tab.icon className="w-3.5 h-3.5" />
+                              <span>{tab.label}</span>
+                            </button>
+                          ))}
+                        </div>
+
+                        {/* TAB 1: WHAT YOU'LL LEARN */}
+                        {landingTab === "outcomes" && (
+                          <div className="space-y-4 animate-in fade-in duration-200">
+                            <div className="flex items-center justify-between">
+                              <p className="text-xs text-subtext">6 Competency Cards displayed under <strong>&quot;What You&apos;ll Learn&quot;</strong></p>
+                              <button
+                                type="button"
+                                onClick={() => setFormData(prev => ({
+                                  ...prev,
+                                  learningOutcomes: [...prev.learningOutcomes, { title: "Core Competency", description: "Technical explanation of student skills." }]
+                                }))}
+                                className="text-xs font-bold text-purple-400 hover:text-purple-300 flex items-center gap-1"
+                              >
+                                <Plus className="w-3.5 h-3.5" /> Add Competency Card
+                              </button>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                              {formData.learningOutcomes.map((item, idx) => (
+                                <div key={idx} className="p-4 rounded-2xl bg-background/80 border border-card space-y-2 relative group">
+                                  <div className="flex items-center justify-between gap-2">
+                                    <span className="text-[10px] font-black uppercase text-purple-400 tracking-wider">Card #{idx + 1}</span>
+                                    <button
+                                      type="button"
+                                      onClick={() => setFormData(prev => ({
+                                        ...prev,
+                                        learningOutcomes: prev.learningOutcomes.filter((_, i) => i !== idx)
+                                      }))}
+                                      className="text-subtext hover:text-rose-400 p-1"
+                                      title="Delete Card"
+                                    >
+                                      <Trash2 className="w-3.5 h-3.5" />
+                                    </button>
+                                  </div>
+                                  <input
+                                    type="text"
+                                    value={item.title}
+                                    onChange={e => {
+                                      const updated = [...formData.learningOutcomes];
+                                      updated[idx].title = e.target.value;
+                                      setFormData({ ...formData, learningOutcomes: updated });
+                                    }}
+                                    placeholder="Competency Title..."
+                                    className="w-full bg-card border border-card rounded-xl px-3 py-1.5 text-xs font-bold text-text outline-none focus:border-primary"
+                                  />
+                                  <textarea
+                                    rows={2}
+                                    value={item.description}
+                                    onChange={e => {
+                                      const updated = [...formData.learningOutcomes];
+                                      updated[idx].description = e.target.value;
+                                      setFormData({ ...formData, learningOutcomes: updated });
+                                    }}
+                                    placeholder="Competency description..."
+                                    className="w-full bg-card border border-card rounded-xl px-3 py-1.5 text-xs text-subtext outline-none focus:border-primary leading-relaxed"
+                                  />
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* TAB 2: REAL-WORLD PROJECTS */}
+                        {landingTab === "projects" && (
+                          <div className="space-y-4 animate-in fade-in duration-200">
+                            <div className="flex items-center justify-between">
+                              <p className="text-xs text-subtext">Portfolio deliverables under <strong>&quot;Real-World Projects Included&quot;</strong></p>
+                              <button
+                                type="button"
+                                onClick={() => setFormData(prev => ({
+                                  ...prev,
+                                  projects: [...prev.projects, {
+                                    number: String(prev.projects.length + 1).padStart(2, "0"),
+                                    title: "New Capstone Project",
+                                    desc: "End-to-end full-stack project description.",
+                                    tech: ["Python", "FastAPI", "Docker"]
+                                  }]
+                                }))}
+                                className="text-xs font-bold text-purple-400 hover:text-purple-300 flex items-center gap-1"
+                              >
+                                <Plus className="w-3.5 h-3.5" /> Add Project Card
+                              </button>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                              {formData.projects.map((proj, idx) => (
+                                <div key={idx} className="p-4 rounded-2xl bg-background/80 border border-card space-y-2.5">
+                                  <div className="flex items-center justify-between gap-2">
+                                    <span className="text-xs font-mono font-black text-purple-400">Project {proj.number || String(idx + 1).padStart(2, "0")}</span>
+                                    <button
+                                      type="button"
+                                      onClick={() => setFormData(prev => ({
+                                        ...prev,
+                                        projects: prev.projects.filter((_, i) => i !== idx)
+                                      }))}
+                                      className="text-subtext hover:text-rose-400 p-1"
+                                    >
+                                      <Trash2 className="w-3.5 h-3.5" />
+                                    </button>
+                                  </div>
+                                  <input
+                                    type="text"
+                                    value={proj.title}
+                                    onChange={e => {
+                                      const updated = [...formData.projects];
+                                      updated[idx].title = e.target.value;
+                                      setFormData({ ...formData, projects: updated });
+                                    }}
+                                    placeholder="Project Title..."
+                                    className="w-full bg-card border border-card rounded-xl px-3 py-1.5 text-xs font-bold text-text outline-none focus:border-primary"
+                                  />
+                                  <textarea
+                                    rows={2}
+                                    value={proj.desc}
+                                    onChange={e => {
+                                      const updated = [...formData.projects];
+                                      updated[idx].desc = e.target.value;
+                                      setFormData({ ...formData, projects: updated });
+                                    }}
+                                    placeholder="Project description and deliverables..."
+                                    className="w-full bg-card border border-card rounded-xl px-3 py-1.5 text-xs text-subtext outline-none focus:border-primary leading-relaxed"
+                                  />
+                                  <div>
+                                    <label className="block text-[10px] font-bold text-subtext uppercase mb-1">Tech Stack (comma separated)</label>
+                                    <input
+                                      type="text"
+                                      value={Array.isArray(proj.tech) ? proj.tech.join(", ") : ""}
+                                      onChange={e => {
+                                        const updated = [...formData.projects];
+                                        updated[idx].tech = e.target.value.split(",").map(t => t.trim()).filter(Boolean);
+                                        setFormData({ ...formData, projects: updated });
+                                      }}
+                                      placeholder="e.g. Python, LangGraph, FastAPI, Docker"
+                                      className="w-full bg-card border border-card rounded-xl px-3 py-1.5 text-xs font-mono text-text outline-none focus:border-primary"
+                                    />
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* TAB 3: FAQS */}
+                        {landingTab === "faqs" && (
+                          <div className="space-y-4 animate-in fade-in duration-200">
+                            <div className="flex items-center justify-between">
+                              <p className="text-xs text-subtext">Q&A items under <strong>&quot;Frequently Asked Questions&quot;</strong></p>
+                              <button
+                                type="button"
+                                onClick={() => setFormData(prev => ({
+                                  ...prev,
+                                  faqs: [...prev.faqs, { q: "New Question?", a: "Detailed answer explaining course information." }]
+                                }))}
+                                className="text-xs font-bold text-purple-400 hover:text-purple-300 flex items-center gap-1"
+                              >
+                                <Plus className="w-3.5 h-3.5" /> Add FAQ Item
+                              </button>
+                            </div>
+
+                            <div className="space-y-3">
+                              {formData.faqs.map((faq, idx) => (
+                                <div key={idx} className="p-4 rounded-2xl bg-background/80 border border-card space-y-2">
+                                  <div className="flex items-center justify-between gap-2">
+                                    <span className="text-[10px] font-black uppercase text-purple-400">FAQ #{idx + 1}</span>
+                                    <button
+                                      type="button"
+                                      onClick={() => setFormData(prev => ({
+                                        ...prev,
+                                        faqs: prev.faqs.filter((_, i) => i !== idx)
+                                      }))}
+                                      className="text-subtext hover:text-rose-400 p-1"
+                                    >
+                                      <Trash2 className="w-3.5 h-3.5" />
+                                    </button>
+                                  </div>
+                                  <input
+                                    type="text"
+                                    value={faq.q}
+                                    onChange={e => {
+                                      const updated = [...formData.faqs];
+                                      updated[idx].q = e.target.value;
+                                      setFormData({ ...formData, faqs: updated });
+                                    }}
+                                    placeholder="Question..."
+                                    className="w-full bg-card border border-card rounded-xl px-3 py-1.5 text-xs font-bold text-text outline-none focus:border-primary"
+                                  />
+                                  <textarea
+                                    rows={2}
+                                    value={faq.a}
+                                    onChange={e => {
+                                      const updated = [...formData.faqs];
+                                      updated[idx].a = e.target.value;
+                                      setFormData({ ...formData, faqs: updated });
+                                    }}
+                                    placeholder="Answer..."
+                                    className="w-full bg-card border border-card rounded-xl px-3 py-1.5 text-xs text-subtext outline-none focus:border-primary leading-relaxed"
+                                  />
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* TAB 4: COURSE FEATURES */}
+                        {landingTab === "features" && (
+                          <div className="space-y-4 animate-in fade-in duration-200">
+                            <p className="text-xs text-subtext">Checklist items under <strong>&quot;This Course Includes&quot;</strong></p>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                              {formData.features.map((feat, idx) => (
+                                <div key={idx} className="flex items-center gap-2 p-2.5 bg-background/80 border border-card rounded-xl">
+                                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                                  <input
+                                    type="text"
+                                    value={feat}
+                                    onChange={e => {
+                                      const updated = [...formData.features];
+                                      updated[idx] = e.target.value;
+                                      setFormData({ ...formData, features: updated });
+                                    }}
+                                    className="flex-1 bg-transparent text-xs text-text font-medium outline-none"
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => setFormData(prev => ({
+                                      ...prev,
+                                      features: prev.features.filter((_, i) => i !== idx)
+                                    }))}
+                                    className="text-subtext hover:text-rose-400 p-1"
+                                  >
+                                    <X className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => setFormData(prev => ({
+                                ...prev,
+                                features: [...prev.features, "Lifetime access to course materials"]
+                              }))}
+                              className="text-xs font-bold text-purple-400 hover:text-purple-300 flex items-center gap-1"
+                            >
+                              <Plus className="w-3.5 h-3.5" /> Add Feature Checklist Item
+                            </button>
+                          </div>
+                        )}
                       </div>
                     </div>
 
@@ -1765,9 +2317,18 @@ export default function InstructorDashboard() {
                           <h3 className="text-xl font-extrabold text-text mt-0.5">{formData.title || aiTopic || "Untitled Course"}</h3>
                           {formData.subtitle && <p className="text-xs text-subtext mt-0.5">{formData.subtitle}</p>}
                         </div>
+
+                        <div className="text-right">
+                          <span className="text-xl font-black text-emerald-400">
+                            ₹{formData.price || "0"}
+                          </span>
+                          {formData.originalPrice && (
+                            <span className="text-xs text-subtext line-through block">₹{formData.originalPrice}</span>
+                          )}
+                        </div>
                       </div>
 
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-xs">
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
                         <div className="p-3 bg-background/50 rounded-xl border border-card">
                           <span className="text-[10px] font-bold text-subtext uppercase block">Modules</span>
                           <span className="text-lg font-black text-text">{builderModules.length || aiModules.length}</span>
@@ -1779,10 +2340,78 @@ export default function InstructorDashboard() {
                           </span>
                         </div>
                         <div className="p-3 bg-background/50 rounded-xl border border-card">
+                          <span className="text-[10px] font-bold text-subtext uppercase block">Duration</span>
+                          <span className="text-sm font-black text-text">{formData.duration || "36 Hours VOD"}</span>
+                        </div>
+                        <div className="p-3 bg-background/50 rounded-xl border border-card">
                           <span className="text-[10px] font-bold text-subtext uppercase block">Status</span>
-                          <span className="text-lg font-black text-amber-400">Pending Review</span>
+                          <span className="text-sm font-black text-amber-400">Pending Review</span>
                         </div>
                       </div>
+
+                      {/* 🌟 What You'll Learn Preview */}
+                      {formData.learningOutcomes.length > 0 && (
+                        <div className="space-y-3 pt-3 border-t border-card">
+                          <div className="flex items-center gap-2">
+                            <Award className="w-4 h-4 text-purple-400" />
+                            <span className="text-xs font-black text-text uppercase tracking-wider">What Learners Will Master ({formData.learningOutcomes.length} Cards)</span>
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                            {formData.learningOutcomes.map((item, idx) => (
+                              <div key={idx} className="p-3.5 rounded-2xl bg-background/60 border border-card space-y-1">
+                                <span className="text-[10px] font-black uppercase text-purple-400">0{idx + 1}</span>
+                                <h4 className="font-bold text-xs text-text line-clamp-1">{item.title}</h4>
+                                <p className="text-[11px] text-subtext line-clamp-2">{item.description}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* 🚀 Real-World Projects Preview */}
+                      {formData.projects.length > 0 && (
+                        <div className="space-y-3 pt-3 border-t border-card">
+                          <div className="flex items-center gap-2">
+                            <Code className="w-4 h-4 text-emerald-400" />
+                            <span className="text-xs font-black text-text uppercase tracking-wider">Real-World Projects ({formData.projects.length} Included)</span>
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            {formData.projects.map((proj, idx) => (
+                              <div key={idx} className="p-3.5 rounded-2xl bg-background/60 border border-card space-y-1.5">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-xs font-mono font-black text-emerald-400">{proj.number || `0${idx + 1}`}</span>
+                                  <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-300 border border-emerald-500/25">Capstone</span>
+                                </div>
+                                <h4 className="font-bold text-xs text-text">{proj.title}</h4>
+                                <p className="text-[11px] text-subtext line-clamp-2">{proj.desc}</p>
+                                <div className="flex flex-wrap gap-1 pt-1">
+                                  {proj.tech.map((t, tIdx) => (
+                                    <span key={tIdx} className="text-[9px] px-2 py-0.5 rounded bg-card border border-card text-subtext">{t}</span>
+                                  ))}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* ❓ FAQs Preview */}
+                      {formData.faqs.length > 0 && (
+                        <div className="space-y-3 pt-3 border-t border-card">
+                          <div className="flex items-center gap-2">
+                            <HelpCircle className="w-4 h-4 text-purple-400" />
+                            <span className="text-xs font-black text-text uppercase tracking-wider">FAQs ({formData.faqs.length} Questions)</span>
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                            {formData.faqs.map((faq, idx) => (
+                              <div key={idx} className="p-3 rounded-2xl bg-background/60 border border-card space-y-1">
+                                <p className="font-bold text-text text-xs">{faq.q}</p>
+                                <p className="text-[11px] text-subtext line-clamp-2">{faq.a}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
 
                       {formData.description && (
                         <div>

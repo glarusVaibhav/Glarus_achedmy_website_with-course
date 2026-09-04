@@ -73,14 +73,14 @@ export async function POST(
 
       await prisma.notification.createMany({
         data: admins.map((admin) => ({
-          userId: admin.id,
+          recipientId: admin.id,
           actorId: session.id,
           type: "COURSE_SUBMITTED_FOR_REVIEW",
           category: "COURSE",
           priority: "HIGH",
           title: `Cohort Ready to Publish: ${course.title}`,
           message: `${instructorName} has reviewed the curriculum & sessions and marked "${course.title}" as Ready to Publish!`,
-          linkUrl: `/admin/live-training/courses/${course.id}`,
+          actionUrl: `/admin/live-training/courses/${course.id}`,
           metadata: JSON.stringify({
             liveCourseId: course.id,
             courseTitle: course.title,

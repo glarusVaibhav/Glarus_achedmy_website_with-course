@@ -268,6 +268,18 @@ export async function GET(
       }
     });
 
+    // Helper to safely parse JSON strings or return fallback
+    const safeParse = (val: any, fallback: any) => {
+      if (!val) return fallback;
+      if (typeof val === 'object') return val;
+      try {
+        const parsed = JSON.parse(val);
+        return Array.isArray(parsed) && parsed.length > 0 ? parsed : fallback;
+      } catch {
+        return fallback;
+      }
+    };
+
     // 3. Fallback / Augment with rich catalog details if DB course is sparse or matches catalog ID
     const catalogItem = CATALOG_LIVE_COURSES[courseId] || CATALOG_LIVE_COURSES['live-agentic-ai'];
 
@@ -276,9 +288,10 @@ export async function GET(
     const courseLevel = dbCourse?.level || catalogItem.level;
     const courseDuration = dbCourse?.duration || catalogItem.duration;
     const coursePrice = dbCourse?.price || catalogItem.price;
-    const courseOriginalPrice = catalogItem.originalPrice || Math.round(coursePrice * 1.35);
+    const courseOriginalPrice = dbCourse?.originalPrice || catalogItem.originalPrice || Math.round(coursePrice * 1.35);
     const courseDesc = dbCourse?.description || catalogItem.description;
     const courseShortDesc = dbCourse?.shortDescription || catalogItem.description;
+    const courseSubtitle = dbCourse?.subtitle || dbCourse?.shortDescription || catalogItem.description;
     const coursePrereqs = dbCourse?.prerequisites || catalogItem.prerequisites;
     const courseObjectives = dbCourse?.objectives || catalogItem.objectives;
 
@@ -288,7 +301,7 @@ export async function GET(
           role: 'Lead Cohort Instructor',
           expertise: 'Agentic AI & Distributed Systems',
           avatar: '/images/avatars/instructor.png',
-          bio: 'Senior AI Researcher & Architect with deep expertise in neural systems and production ML.'
+          bio: dbCourse.cohortLeadBio || 'Senior AI Researcher & Architect with deep expertise in neural systems and production ML.'
         }
       : catalogItem.instructor;
 
@@ -329,13 +342,76 @@ export async function GET(
       };
     });
 
-    const batchesList = catalogItem.batches || [
+    const batchesList = safeParse(dbCourse?.batches, catalogItem.batches || [
       { id: 'batch-01', name: 'Main Live Cohort', startDate: '24 Aug 2026', schedule: 'Mon · Wed · Fri', time: '08:00 PM – 10:30 PM IST', duration: '4 Weeks', enrolled: dbCourse?.enrolledCount || 32, total: dbCourse?.maxStudents || 50 }
-    ];
+    ]);
 
-    const learningOutcomes = catalogItem.learningOutcomes;
-    const includedFeatures = catalogItem.includes;
-    const faqs = catalogItem.faqs;
+    const learningOutcomes = safeParse(dbCourse?.learningOutcomes, catalogItem.learningOutcomes || [
+      'Build production-ready stateful agent graphs with LangGraph and checkpointing',
+      'Implement supervisor agent routing patterns for complex multi-step tasks',
+      'Integrate Model Context Protocol (MCP) servers and custom tool APIs',
+      'Design human-in-the-loop interrupt mechanisms for safe transaction verification',
+      'Deploy low-latency agent microservices with streaming token outputs',
+      'Benchmark agent task accuracy and cost optimization with LangSmith'
+    ]);
+
+    const projectsList = safeParse(dbCourse?.projects, [
+      {
+        number: '01',
+        title: 'Autonomous Multi-Agent Research Swarm',
+        desc: 'Construct an end-to-end swarm that ingests real-time web articles, validates claims, and synthesizes structured reports.',
+        tech: ['Python', 'LangGraph', 'FastAPI', 'Docker']
+      },
+      {
+        number: '02',
+        title: 'Production Hybrid RAG Document Engine',
+        desc: 'Construct an enterprise search system indexing 100K+ technical documents with hybrid vector retrieval.',
+        tech: ['Qdrant', 'PostgreSQL', 'Cohere', 'Next.js']
+      },
+      {
+        number: '03',
+        title: 'Real-Time AI Code Reviewer & PR Bot',
+        desc: 'Deploy a webhook-triggered AI assistant that analyzes pull requests, enforces conventions, and runs unit tests.',
+        tech: ['TypeScript', 'GitHub API', 'OpenAI', 'Redis']
+      },
+      {
+        number: '04',
+        title: 'Enterprise Multi-Tenant SaaS Platform',
+        desc: 'Architect a scalable SaaS with team workspaces, usage metering, stripe billing, and automated CI/CD.',
+        tech: ['Next.js 15', 'Prisma', 'PostgreSQL', 'Tailwind CSS']
+      }
+    ]);
+
+    const includedFeatures = safeParse(dbCourse?.features, catalogItem.includes || [
+      '12 Interactive Live Masterclasses (24 Hours Total)',
+      '1-on-1 Code Defenses & Mentor Code Reviews',
+      'Full GitHub Code Repositories & Jupyter Notebooks',
+      '4 Production-Grade Capstone Projects',
+      'Dedicated Private Discord Cohort Channel',
+      'Cryptographically Verified Certificate of Completion',
+      'Lifetime Access to HD Session Recordings'
+    ]);
+
+    const learningJourney = safeParse(dbCourse?.learningJourney, [
+      { step: '01', title: 'Learn', desc: 'Attend interactive live masterclasses with lead AI scientists.' },
+      { step: '02', title: 'Practice', desc: 'Implement attention math & custom kernels in Google Colab.' },
+      { step: '03', title: 'Build', desc: 'Engineer 4 production systems with LangGraph & vector databases.' },
+      { step: '04', title: 'Defend', desc: 'Present deliverables and receive 1-on-1 mentor code reviews.' },
+      { step: '05', title: 'Get Certified', desc: 'Earn your cryptographically verified Glarus Academy certificate.' }
+    ]);
+
+    const heroBadges = safeParse(dbCourse?.heroBadges, [
+      courseCategory.toUpperCase(),
+      'LIVE COHORT',
+      'CERTIFICATION INCLUDED'
+    ]);
+
+    const faqs = safeParse(dbCourse?.faqs, catalogItem.faqs || [
+      { q: 'How long is the live cohort program?', a: 'The cohort spans 4 to 6 weeks with interactive live sessions weekly.' },
+      { q: 'What happens if I miss a live masterclass?', a: 'Every session is recorded in 1080p Full HD and published within 2 hours with timestamped agendas, transcripts, and slides.' },
+      { q: 'Are hands-on capstone projects included?', a: 'Yes! You will build real-world projects and defend them in code reviews.' },
+      { q: 'Will I receive a verified certificate upon completion?', a: 'Yes. Students who complete the requirements earn a verifiable Glarus Academy Live Cohort Certificate.' }
+    ]);
 
     // 4. Check Enrollment if User is Authenticated
     let isEnrolled = false;
@@ -363,23 +439,29 @@ export async function GET(
         course: {
           id: dbCourse?.id || catalogItem.id,
           title: courseTitle,
+          subtitle: courseSubtitle,
           category: courseCategory,
           level: courseLevel,
           duration: courseDuration,
           price: coursePrice,
           originalPrice: courseOriginalPrice,
+          previewVideoUrl: dbCourse?.previewVideoUrl || null,
           description: courseDesc,
           shortDescription: courseShortDesc,
           prerequisites: coursePrereqs,
           objectives: courseObjectives,
           totalSessions: formattedSessions.length,
-          projectsCount: 4,
+          projectsCount: projectsList.length || 4,
           certificateIncluded: true,
           instructor: instructorInfo,
           learningOutcomes,
+          projects: projectsList,
           batches: batchesList,
           sessions: formattedSessions, // Complete session curriculum
           includes: includedFeatures,
+          features: includedFeatures,
+          learningJourney,
+          heroBadges,
           faqs
         }
       });

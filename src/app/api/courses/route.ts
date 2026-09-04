@@ -12,9 +12,10 @@ export async function GET() {
         ]
       },
       include: {
-        instructor: { select: { name: true } },
+        instructor: { select: { name: true, email: true } },
         modules: {
-          include: { lectures: true }
+          include: { lectures: true },
+          orderBy: { order: "asc" }
         }
       },
       orderBy: { createdAt: "desc" }
@@ -46,7 +47,26 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { title, description, price, status, instructorId, modules, isPublished } = body;
+    const {
+      title,
+      subtitle,
+      description,
+      price,
+      originalPrice,
+      category,
+      level,
+      duration,
+      previewVideoUrl,
+      learningOutcomes,
+      projects,
+      faqs,
+      features,
+      learningJourney,
+      status,
+      instructorId,
+      modules,
+      isPublished
+    } = body;
 
     const courseStatus =
       session.role === "ADMIN" && status
@@ -57,11 +77,29 @@ export async function POST(req: Request) {
     const targetInstructorId = (session.role === "ADMIN" && instructorId) ? instructorId : session.id;
     const shouldPublish = session.role === "ADMIN" && Boolean(isPublished);
 
+    // Helper to stringify JSON fields if passed as objects/arrays
+    const serializeJson = (val: any) => {
+      if (!val) return null;
+      if (typeof val === "string") return val;
+      return JSON.stringify(val);
+    };
+
     const course = await prisma.course.create({
       data: {
         title,
+        subtitle: subtitle || null,
         description: description || "",
         price: parseFloat(price) || 0,
+        originalPrice: originalPrice ? parseFloat(originalPrice) : 0,
+        category: category || "AI Engineering",
+        level: level || "All Levels",
+        duration: duration || "30 Hours VOD",
+        previewVideoUrl: previewVideoUrl || null,
+        learningOutcomes: serializeJson(learningOutcomes),
+        projects: serializeJson(projects),
+        faqs: serializeJson(faqs),
+        features: serializeJson(features),
+        learningJourney: serializeJson(learningJourney),
         instructorId: targetInstructorId,
         status: shouldPublish ? "PUBLISHED" : courseStatus,
         isPublished: shouldPublish,
@@ -94,4 +132,3 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Failed to create course", details: err?.message }, { status: 500 });
   }
 }
-

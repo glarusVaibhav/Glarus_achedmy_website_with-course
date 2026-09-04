@@ -22,7 +22,13 @@ import {
   ArrowRight, 
   Check, 
   X, 
-  HelpCircle
+  HelpCircle,
+  Layers,
+  Database,
+  Bot,
+  ShieldCheck,
+  Brain,
+  Award
 } from "lucide-react";
 import { useCartStore } from "@/store/cartStore";
 import { useEnrollmentStore } from "@/store/useEnrollmentStore";
@@ -30,12 +36,24 @@ import { useAuth } from "@/context/AuthContext";
 import { CourseOverview } from "@/components/course/CourseOverview";
 import { getCourseDetails, CourseDetailItem } from "@/lib/courseCatalogDetails";
 
+const OUTCOME_ICONS = [Cpu, Layers, Database, Bot, ShieldCheck, Sparkles, Code2, Brain, Award];
+
+function safeJsonParse(val: any, fallback: any) {
+  if (!val) return fallback;
+  if (typeof val === "object") return val;
+  try {
+    return JSON.parse(val);
+  } catch {
+    return fallback;
+  }
+}
+
 /**
  * Renders the large editorial headline with the signature gradient highlight
  * on the primary subject keyword.
  */
 function renderEditorialTitle(title: string) {
-  const words = title.split(" ");
+  const words = (title || "").split(" ");
   if (words.length <= 1) {
     return <span className="text-slate-900 dark:text-white">{title}</span>;
   }
@@ -70,8 +88,12 @@ export default function CourseDetailPage({ params }: { params: Promise<{ id: str
   const { id } = use(params);
   const router = useRouter();
   
-  // Dynamically resolve course metadata, curriculum, projects, and FAQs
-  const course: CourseDetailItem = getCourseDetails(id);
+  // Fallback catalog item
+  const catalogFallback: CourseDetailItem = getCourseDetails(id);
+
+  // Dynamic Course State
+  const [course, setCourse] = useState<CourseDetailItem & { features?: string[]; previewVideoUrl?: string; subtitle?: string }>(catalogFallback);
+  const [loadingDb, setLoadingDb] = useState(true);
 
   const { isEnrolled, enrollCourse } = useEnrollmentStore();
   const { addItem, items } = useCartStore();
@@ -96,6 +118,114 @@ export default function CourseDetailPage({ params }: { params: Promise<{ id: str
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // Fetch from database API
+  useEffect(() => {
+    let isMounted = true;
+    async function fetchCourseFromDb() {
+      try {
+        const res = await fetch(`/api/courses/${id}`);
+        if (res.ok) {
+          const json = await res.json();
+          if (json.success && json.data && isMounted) {
+            const dbData = json.data;
+            const parsedOutcomes = safeJsonParse(dbData.learningOutcomes, null);
+            const parsedProjects = safeJsonParse(dbData.projects, null);
+            const parsedFaqs = safeJsonParse(dbData.faqs, null);
+            const parsedFeatures = safeJsonParse(dbData.features, null);
+
+            const mappedOutcomes = Array.isArray(parsedOutcomes) && parsedOutcomes.length > 0
+              ? parsedOutcomes.map((item: any, idx: number) => ({
+                  icon: OUTCOME_ICONS[idx % OUTCOME_ICONS.length],
+                  title: item.title || `Core Competency ${idx + 1}`,
+                  desc: item.description || item.desc || "Master architectural and technical principles."
+                }))
+              : catalogFallback.learningOutcomes;
+
+            const mappedProjects = Array.isArray(parsedProjects) && parsedProjects.length > 0
+              ? parsedProjects.map((proj: any, idx: number) => ({
+                  number: proj.number || String(idx + 1).padStart(2, "0"),
+                  title: proj.title || `Capstone Project ${idx + 1}`,
+                  desc: proj.desc || "Build and deploy production-ready systems.",
+                  tech: Array.isArray(proj.tech) ? proj.tech : (typeof proj.tech === "string" ? proj.tech.split(",").map((t: string) => t.trim()) : ["Next.js", "Python"])
+                }))
+              : catalogFallback.projects;
+
+            const mappedFaqs = Array.isArray(parsedFaqs) && parsedFaqs.length > 0
+              ? parsedFaqs.map((faq: any) => ({
+                  q: faq.q || "Frequently Asked Question",
+                  a: faq.a || "Course details and curriculum answers."
+                }))
+              : catalogFallback.faqs;
+
+            const mappedModules = Array.isArray(dbData.modules) && dbData.modules.length > 0
+              ? dbData.modules.map((mod: any, idx: number) => ({
+                  number: String(idx + 1).padStart(2, "0"),
+                  title: mod.title || `Module ${idx + 1}`,
+                  lessonsCount: mod.lessons?.length || 3,
+                  duration: mod.duration || "2h 15m",
+                  preview: idx === 0,
+                  lessons: (mod.lessons && mod.lessons.length > 0)
+                    ? mod.lessons.map((l: any, lIdx: number) => ({
+                        title: l.title || `Lesson ${lIdx + 1}`,
+                        duration: l.duration || "15m 00s",
+                        preview: l.isPreview || (idx === 0 && lIdx === 0)
+                      }))
+                    : [
+                        { title: "Introduction & Architecture", duration: "12m 00s", preview: true },
+                        { title: "Deep Dive Implementation", duration: "25m 00s" },
+                        { title: "Hands-on Practical Lab", duration: "30m 00s" }
+                      ]
+                }))
+              : catalogFallback.modules;
+
+            const defaultFeatures = [
+              "Lifetime Unlimited Access",
+              `${mappedProjects.length} Real-World Capstone Projects`,
+              "24/7 AI Tutor Support",
+              "Verified Certificate of Completion",
+              "Source Code & Solution Repositories",
+              "Discord Developer Community"
+            ];
+
+            const mappedFeatures = Array.isArray(parsedFeatures) && parsedFeatures.length > 0
+              ? parsedFeatures
+              : defaultFeatures;
+
+            setCourse({
+              id: dbData.id,
+              slugs: [dbData.id],
+              title: dbData.title || catalogFallback.title,
+              subtitle: dbData.subtitle || "",
+              category: dbData.category || catalogFallback.category,
+              level: dbData.level || catalogFallback.level,
+              duration: dbData.duration || catalogFallback.duration,
+              lastUpdated: new Date(dbData.updatedAt || Date.now()).toLocaleDateString("en-US", { month: "long", year: "numeric" }),
+              price: dbData.price !== undefined ? Number(dbData.price) : catalogFallback.price,
+              originalPrice: dbData.originalPrice ? Number(dbData.originalPrice) : (dbData.price ? Math.round(Number(dbData.price) * 1.5) : catalogFallback.originalPrice),
+              rating: catalogFallback.rating || 5.0,
+              reviewsCount: catalogFallback.reviewsCount || "850+",
+              enrolledCount: catalogFallback.enrolledCount || "3,200+",
+              description: dbData.description || catalogFallback.description,
+              previewVideoUrl: dbData.previewVideoUrl || "",
+              learningOutcomes: mappedOutcomes,
+              modules: mappedModules,
+              projects: mappedProjects,
+              faqs: mappedFaqs,
+              features: mappedFeatures
+            });
+          }
+        }
+      } catch (err) {
+        console.warn("Could not fetch DB course, using catalog fallback", err);
+      } finally {
+        if (isMounted) setLoadingDb(false);
+      }
+    }
+
+    fetchCourseFromDb();
+    return () => { isMounted = false; };
+  }, [id, catalogFallback]);
 
   // Enrolled ONLY if client hydrated AND a user is signed in
   const enrolled = (hasHydrated && user) ? isEnrolled(course.id) : false;
@@ -135,7 +265,22 @@ export default function CourseDetailPage({ params }: { params: Promise<{ id: str
     });
   };
 
-  const totalLessons = course.modules.reduce((acc, m) => acc + m.lessonsCount, 0);
+  const totalLessons = course.modules.reduce((acc, m) => acc + (m.lessonsCount || (m.lessons ? m.lessons.length : 0)), 0);
+
+  const discountPercent = course.originalPrice && course.price < course.originalPrice
+    ? Math.max(0, Math.round((1 - course.price / course.originalPrice) * 100))
+    : 35;
+
+  const defaultBenefits = [
+    "Lifetime Unlimited Access",
+    `${course.projects.length} Real-World Capstone Projects`,
+    "24/7 AI Tutor Support",
+    "Verified Certificate of Completion",
+    "Source Code & Solution Repositories",
+    "Discord Developer Community"
+  ];
+
+  const displayFeatures = (course.features && course.features.length > 0) ? course.features : defaultBenefits;
 
   return (
     <div className="w-full min-h-screen bg-background text-text selection:bg-purple-500/30 selection:text-white pb-32 font-sans transition-colors duration-200">
@@ -186,7 +331,13 @@ export default function CourseDetailPage({ params }: { params: Promise<{ id: str
                 {renderEditorialTitle(course.title)}
               </h1>
 
-              {/* Course Description */}
+              {/* Course Subtitle & Description */}
+              {course.subtitle && (
+                <p className="text-lg sm:text-xl text-purple-700 dark:text-purple-300 font-semibold leading-relaxed">
+                  {course.subtitle}
+                </p>
+              )}
+
               <p className="text-base sm:text-lg lg:text-[1.12rem] text-slate-600 dark:text-slate-300/90 font-normal leading-relaxed max-w-[640px]">
                 {course.description}
               </p>
@@ -265,13 +416,13 @@ export default function CourseDetailPage({ params }: { params: Promise<{ id: str
                     <span className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white font-mono tracking-tight">
                       ₹{course.price.toLocaleString()}
                     </span>
-                    {course.originalPrice && (
+                    {course.originalPrice && course.originalPrice > course.price && (
                       <span className="text-sm sm:text-base font-semibold text-slate-400 line-through opacity-70">
                         ₹{course.originalPrice.toLocaleString()}
                       </span>
                     )}
                     <span className="px-2.5 py-0.5 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-[11px] font-bold rounded-md border border-emerald-500/20">
-                      35% OFF
+                      {discountPercent}% OFF
                     </span>
                   </div>
                   <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Inclusive of all taxes and continuous curriculum updates</p>
@@ -333,14 +484,7 @@ export default function CourseDetailPage({ params }: { params: Promise<{ id: str
                     This Course Includes:
                   </p>
                   
-                  {[
-                    "Lifetime Unlimited Access",
-                    `${course.projects.length} Real-World Capstone Projects`,
-                    "24/7 AI Tutor Support",
-                    "Verified Certificate of Completion",
-                    "Source Code & Jupyter Notebooks",
-                    "Discord Developer Community"
-                  ].map((benefit, idx) => (
+                  {displayFeatures.map((benefit: string, idx: number) => (
                     <div key={idx} className="flex items-center gap-2.5 text-xs text-slate-600 dark:text-slate-300 font-medium">
                       <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
                       <span>{benefit}</span>
@@ -378,7 +522,7 @@ export default function CourseDetailPage({ params }: { params: Promise<{ id: str
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
             {course.learningOutcomes.map((item, idx) => {
-              const IconComp = item.icon;
+              const IconComp = item.icon || OUTCOME_ICONS[idx % OUTCOME_ICONS.length];
               return (
                 <div 
                   key={idx} 
@@ -449,12 +593,12 @@ export default function CourseDetailPage({ params }: { params: Promise<{ id: str
                   >
                     <div className="flex items-center gap-3.5">
                       <div className="w-9 h-9 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center font-mono font-black text-xs sm:text-sm text-purple-700 dark:text-purple-300 shrink-0">
-                        {mod.number}
+                        {mod.number || String(i + 1).padStart(2, "0")}
                       </div>
                       <div>
                         <h3 className="font-bold text-slate-900 dark:text-white text-sm sm:text-base">{mod.title}</h3>
                         <p className="text-[11px] sm:text-xs font-medium text-slate-500 dark:text-slate-400 mt-0.5">
-                          {mod.lessonsCount} Lessons • {mod.duration}
+                          {mod.lessonsCount || (mod.lessons ? mod.lessons.length : 0)} Lessons • {mod.duration}
                         </p>
                       </div>
                     </div>
@@ -483,7 +627,7 @@ export default function CourseDetailPage({ params }: { params: Promise<{ id: str
                         transition={{ duration: 0.2 }}
                         className="px-4 sm:px-5 pb-4 pt-1 border-t border-slate-100 dark:border-white/[0.04] space-y-1.5 bg-slate-50/80 dark:bg-black/25"
                       >
-                        {mod.lessons.map((lesson, lIdx) => (
+                        {(mod.lessons || []).map((lesson, lIdx) => (
                           <div 
                             key={lIdx} 
                             className="flex items-center justify-between text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 py-2.5 px-3 rounded-xl hover:bg-slate-100/80 dark:hover:bg-white/[0.03] transition-colors"
@@ -647,7 +791,7 @@ export default function CourseDetailPage({ params }: { params: Promise<{ id: str
             <div className="max-w-[1360px] mx-auto flex items-center justify-between gap-4">
               <div className="hidden sm:block">
                 <h4 className="text-sm font-bold text-slate-900 dark:text-white">{course.title}</h4>
-                <p className="text-xs text-slate-500 dark:text-slate-400">{course.description}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 truncate max-w-md">{course.description}</p>
               </div>
 
               <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
@@ -655,7 +799,7 @@ export default function CourseDetailPage({ params }: { params: Promise<{ id: str
                   <div className="text-lg sm:text-xl font-black text-slate-900 dark:text-white font-mono">
                     ₹{course.price.toLocaleString()}
                   </div>
-                  <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">35% OFF · LIFETIME ACCESS</div>
+                  <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">{discountPercent}% OFF · LIFETIME ACCESS</div>
                 </div>
 
                 {enrolled ? (
@@ -706,22 +850,33 @@ export default function CourseDetailPage({ params }: { params: Promise<{ id: str
               </div>
 
               {/* Video Player Area */}
-              <div className="relative aspect-video bg-black flex items-center justify-center">
-                <div className="absolute inset-0 bg-gradient-to-tr from-purple-900/30 to-sky-900/20" />
-                <div className="text-center space-y-3 z-10 px-6">
-                  <div className="w-16 h-16 rounded-full bg-purple-600/30 border border-purple-500/50 flex items-center justify-center mx-auto shadow-lg">
-                    <Play className="w-7 h-7 text-purple-300 fill-purple-300 ml-1" />
-                  </div>
-                  <h4 className="text-base font-bold text-white">Lesson 1.1: {course.modules[0]?.lessons[0]?.title || "Introduction"}</h4>
-                  <p className="text-xs text-slate-400 max-w-md mx-auto">
-                    Full sample lesson unlocked. Enroll to access all {totalLessons} HD video lessons, downloadable code, and capstone labs.
-                  </p>
-                </div>
+              <div className="relative aspect-video bg-black flex items-center justify-center overflow-hidden">
+                {course.previewVideoUrl && (course.previewVideoUrl.endsWith(".mp4") || course.previewVideoUrl.includes("commondatastorage") || course.previewVideoUrl.startsWith("http")) ? (
+                  <video
+                    src={course.previewVideoUrl}
+                    controls
+                    autoPlay
+                    className="w-full h-full object-contain"
+                  />
+                ) : (
+                  <>
+                    <div className="absolute inset-0 bg-gradient-to-tr from-purple-900/30 to-sky-900/20" />
+                    <div className="text-center space-y-3 z-10 px-6">
+                      <div className="w-16 h-16 rounded-full bg-purple-600/30 border border-purple-500/50 flex items-center justify-center mx-auto shadow-lg">
+                        <Play className="w-7 h-7 text-purple-300 fill-purple-300 ml-1" />
+                      </div>
+                      <h4 className="text-base font-bold text-white">Lesson 1.1: {course.modules[0]?.lessons?.[0]?.title || "Introduction & Architecture"}</h4>
+                      <p className="text-xs text-slate-400 max-w-md mx-auto">
+                        Full sample lesson unlocked. Enroll to access all {totalLessons} HD video lessons, downloadable code, and capstone labs.
+                      </p>
+                    </div>
+                  </>
+                )}
               </div>
 
               {/* Modal Footer */}
               <div className="p-4 border-t border-slate-200/80 dark:border-white/[0.08] bg-slate-50 dark:bg-white/[0.02] flex items-center justify-between">
-                <span className="text-xs text-slate-500 dark:text-slate-400">Duration: 14m 20s · 1080p Full HD</span>
+                <span className="text-xs text-slate-500 dark:text-slate-400">Duration: {course.duration} · 1080p Full HD</span>
                 <button
                   onClick={() => {
                     setIsPreviewOpen(false);

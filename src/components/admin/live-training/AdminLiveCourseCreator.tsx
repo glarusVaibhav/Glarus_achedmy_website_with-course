@@ -69,10 +69,42 @@ export interface AISessionItem {
   homework?: { title: string; description: string; dueDate?: string };
 }
 
+export interface LearningOutcomeItem {
+  title: string;
+  description: string;
+}
+
+export interface ProjectShowcaseItem {
+  number?: string;
+  title: string;
+  desc: string;
+  tech: string[];
+}
+
+export interface BatchItem {
+  id: string;
+  name: string;
+  startDate: string;
+  schedule: string;
+  time: string;
+  duration: string;
+  enrolled: number;
+  total: number;
+}
+
+export interface FaqItem {
+  q: string;
+  a: string;
+}
+
 export interface LiveCourseFormData {
   title: string;
+  subtitle: string;
   shortDescription: string;
   description: string;
+  price: string;
+  originalPrice: string;
+  previewVideoUrl: string;
   category: string;
   level: string;
   duration: string;
@@ -95,6 +127,14 @@ export interface LiveCourseFormData {
   attendanceTracking?: boolean;
   visibility: string;
   leadInstructorId: string;
+  learningOutcomes: LearningOutcomeItem[];
+  projects: ProjectShowcaseItem[];
+  batches: BatchItem[];
+  features: string[];
+  faqs: FaqItem[];
+  learningJourney: { step: string; title: string; desc: string }[];
+  cohortLeadBio: string;
+  heroBadges: string[];
   hasInternship: boolean;
   internshipType: string;
   internshipDuration: string;
@@ -134,14 +174,22 @@ export default function AdminLiveCourseCreator() {
   // Wizard Step: 1 = Basic Info, 2 = Schedule & Frequency, 3 = AI Copilot / Session Builder, 4 = Review Sessions Timeline, 5 = Assignment & Publish
   const [currentStep, setCurrentStep] = useState(1);
 
+  // Showcase Studio Sub-Tab in Step 1
+  const [landingTab, setLandingTab] = useState<"outcomes" | "projects" | "batches" | "features" | "faqs">("outcomes");
+  const [isGeneratingLanding, setIsGeneratingLanding] = useState(false);
+
   // Form Metadata
   const [formData, setFormData] = useState<LiveCourseFormData>({
     title: "",
+    subtitle: "",
     shortDescription: "",
     description: "",
+    price: "18999",
+    originalPrice: "24999",
+    previewVideoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
     category: "Generative AI",
     level: "Intermediate",
-    duration: "6 Weeks",
+    duration: "6 Weeks · 12 Live Sessions",
     startDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
     endDate: new Date(Date.now() + 49 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
     sessionFrequency: "2 sessions per week",
@@ -165,6 +213,116 @@ export default function AdminLiveCourseCreator() {
     attendanceTracking: true,
     visibility: "PUBLIC",
     leadInstructorId: "",
+    learningOutcomes: [
+      {
+        title: "Build Stateful Agent Graphs with LangGraph",
+        description: "Construct cyclical state machine graphs with checkpointing, interrupt hooks, and persistent memory."
+      },
+      {
+        title: "Supervisor Routing & Swarm Architectures",
+        description: "Implement multi-agent team hierarchies with specialist workers, critique reviewers, and routing controllers."
+      },
+      {
+        title: "Model Context Protocol (MCP) Integration",
+        description: "Expose databases, developer tools, and live APIs to agents safely using the open MCP standard."
+      },
+      {
+        title: "Production RAG & Hybrid Vector Search",
+        description: "Implement semantic chunking, reciprocal rank fusion, and cross-encoder re-ranking pipelines."
+      },
+      {
+        title: "Streaming Low-Latency Microservices",
+        description: "Deploy token-streaming FastAPI endpoints on Ray Serve and Kubernetes with real-time SSE outputs."
+      },
+      {
+        title: "LangSmith Telemetry & Cost Governance",
+        description: "Set up distributed tracing, latency profiling, and automated cost optimization monitors."
+      }
+    ],
+    projects: [
+      {
+        number: "01",
+        title: "Autonomous Multi-Agent Research Swarm",
+        desc: "Construct an end-to-end swarm that ingests real-time web articles, validates claims, and synthesizes structured reports.",
+        tech: ["Python", "LangGraph", "FastAPI", "Docker"]
+      },
+      {
+        number: "02",
+        title: "Production Hybrid RAG Document Engine",
+        desc: "Construct an enterprise search system indexing 100K+ technical documents with hybrid vector retrieval.",
+        tech: ["Qdrant", "PostgreSQL", "Cohere", "Next.js"]
+      },
+      {
+        number: "03",
+        title: "Real-Time AI Code Reviewer & PR Bot",
+        desc: "Deploy a webhook-triggered AI assistant that analyzes pull requests, enforces conventions, and runs unit tests.",
+        tech: ["TypeScript", "GitHub API", "OpenAI", "Redis"]
+      },
+      {
+        number: "04",
+        title: "Enterprise Multi-Tenant SaaS Platform",
+        desc: "Architect a scalable SaaS with team workspaces, usage metering, stripe billing, and automated CI/CD.",
+        tech: ["Next.js 15", "Prisma", "PostgreSQL", "Tailwind CSS"]
+      }
+    ],
+    batches: [
+      {
+        id: "batch-01",
+        name: "Batch #01 (Weekend Cohort)",
+        startDate: "24 Aug 2026",
+        schedule: "Mon · Wed · Fri",
+        time: "08:00 PM – 10:30 PM IST",
+        duration: "6 Weeks",
+        enrolled: 32,
+        total: 50
+      },
+      {
+        id: "batch-02",
+        name: "Batch #02 (Weekday Evening)",
+        startDate: "15 Sep 2026",
+        schedule: "Tue · Thu",
+        time: "08:00 PM – 10:30 PM IST",
+        duration: "6 Weeks",
+        enrolled: 18,
+        total: 50
+      }
+    ],
+    features: [
+      "12 Interactive Live Masterclasses (24 Hours Total)",
+      "1-on-1 Code Defenses & Mentor Code Reviews",
+      "Full GitHub Code Repositories & Jupyter Notebooks",
+      "4 Production-Grade Capstone Projects",
+      "Dedicated Private Discord Cohort Channel",
+      "Cryptographically Verified Certificate of Completion",
+      "Lifetime Access to HD Session Recordings"
+    ],
+    faqs: [
+      {
+        q: "How long is this live cohort program?",
+        a: "The cohort spans 6 weeks with 2 live masterclasses per week (total 12 sessions of 2 hours each)."
+      },
+      {
+        q: "What happens if I miss a live masterclass?",
+        a: "Every session is recorded in 1080p Full HD and published to your student dashboard within 2 hours with timestamped agendas, transcripts, and slides."
+      },
+      {
+        q: "Are hands-on capstone projects and mentor defenses included?",
+        a: "Yes! You will build 4 production projects and defend them in live 1-on-1 code reviews with senior instructors."
+      },
+      {
+        q: "Will I receive a verified certificate upon completion?",
+        a: "Yes. Learners who complete the curriculum milestones and capstone defenses receive an official Glarus Academy Smart Credential."
+      }
+    ],
+    learningJourney: [
+      { step: "01", title: "Learn", desc: "Attend interactive live masterclasses with lead AI scientists." },
+      { step: "02", title: "Practice", desc: "Hands-on coding labs & notebook exercises in Colab." },
+      { step: "03", title: "Build", desc: "Engineer 4 production systems with LangGraph & vector databases." },
+      { step: "04", title: "Defend", desc: "Present deliverables and receive 1-on-1 mentor code reviews." },
+      { step: "05", title: "Get Certified", desc: "Earn your cryptographically verified Glarus Academy certificate." }
+    ],
+    cohortLeadBio: "Senior AI Researcher & Architect with deep expertise in neural systems and production ML.",
+    heroBadges: ["GENERATIVE AI", "LIVE COHORT", "CERTIFICATION INCLUDED"],
     hasInternship: false,
     internshipType: "Guaranteed Live Project Internship (Upon Completion)",
     internshipDuration: "2 Months",
@@ -234,6 +392,54 @@ export default function AdminLiveCourseCreator() {
     tags?: string[];
   } | null>(null);
   const [pendingAiSessionsCount, setPendingAiSessionsCount] = useState(0);
+
+  // Auto-Generate Landing Page Showcase Assets with AI
+  const handleAutoGenerateLanding = async () => {
+    const topicToUse = formData.title || aiPrompt;
+    if (!topicToUse.trim()) {
+      setErrorMessage("Please enter a Course Title in Step 1 first.");
+      return;
+    }
+    setIsGeneratingLanding(true);
+    setErrorMessage("");
+    try {
+      const res = await fetch("/api/ai/live-course-landing", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: topicToUse,
+          category: formData.category,
+          level: formData.level
+        })
+      });
+      const resData = await res.json();
+      if (resData.success && resData.data) {
+        const d = resData.data;
+        setFormData((prev) => ({
+          ...prev,
+          subtitle: d.subtitle || prev.subtitle,
+          duration: d.duration || prev.duration,
+          price: d.price ? String(d.price) : prev.price,
+          originalPrice: d.originalPrice ? String(d.originalPrice) : prev.originalPrice,
+          learningOutcomes: Array.isArray(d.learningOutcomes) && d.learningOutcomes.length > 0 ? d.learningOutcomes : prev.learningOutcomes,
+          projects: Array.isArray(d.projects) && d.projects.length > 0 ? d.projects : prev.projects,
+          batches: Array.isArray(d.batches) && d.batches.length > 0 ? d.batches : prev.batches,
+          features: Array.isArray(d.features) && d.features.length > 0 ? d.features : prev.features,
+          faqs: Array.isArray(d.faqs) && d.faqs.length > 0 ? d.faqs : prev.faqs,
+          learningJourney: Array.isArray(d.learningJourney) && d.learningJourney.length > 0 ? d.learningJourney : prev.learningJourney
+        }));
+        setSaveSuccessMsg("✨ AI generated rich live cohort landing page showcase assets!");
+        setTimeout(() => setSaveSuccessMsg(""), 4500);
+      } else {
+        setErrorMessage("Could not generate live course showcase data.");
+      }
+    } catch (err: any) {
+      console.error(err);
+      setErrorMessage("Error connecting to AI service.");
+    } finally {
+      setIsGeneratingLanding(false);
+    }
+  };
 
   const handleGenerateOverviewAI = async () => {
     if (!formData.title.trim()) {
@@ -944,6 +1150,593 @@ export default function AdminLiveCourseCreator() {
                   placeholder="e.g. Senior Software Engineers, Data Scientists, and Solutions Architects."
                   className="w-full h-10 px-3.5 rounded-xl bg-background border border-white/10 text-text text-xs focus:outline-none focus:border-purple-500/50"
                 />
+              </div>
+
+              {/* ── Pricing, Duration & Video Preview Logistics ── */}
+              <div className="md:col-span-2 pt-4 border-t border-white/10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* Live Cohort Price */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-text flex items-center justify-between">
+                    <span>Live Cohort Price (₹) *</span>
+                    <span className="text-[10px] text-purple-400 font-bold">Enrollment Fee</span>
+                  </label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-2.5 text-xs text-subtext font-bold">₹</span>
+                    <input
+                      type="number"
+                      value={formData.price}
+                      onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                      placeholder="18999"
+                      className="w-full h-10 pl-7 pr-3 rounded-xl bg-background border border-white/10 text-text text-xs font-bold focus:outline-none focus:border-purple-500/50"
+                    />
+                  </div>
+                </div>
+
+                {/* Original Price & Discount Badge */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-text flex items-center justify-between">
+                    <span>Original Price (₹)</span>
+                    {Number(formData.originalPrice) > Number(formData.price) && (
+                      <span className="text-[10px] text-emerald-400 font-black bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
+                        {Math.round(((Number(formData.originalPrice) - Number(formData.price)) / Number(formData.originalPrice)) * 100)}% OFF
+                      </span>
+                    )}
+                  </label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-2.5 text-xs text-subtext font-bold">₹</span>
+                    <input
+                      type="number"
+                      value={formData.originalPrice}
+                      onChange={(e) => setFormData({ ...formData, originalPrice: e.target.value })}
+                      placeholder="24999"
+                      className="w-full h-10 pl-7 pr-3 rounded-xl bg-background border border-white/10 text-text text-xs focus:outline-none focus:border-purple-500/50"
+                    />
+                  </div>
+                </div>
+
+                {/* Program Duration Badge */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-text">Live Program Duration</label>
+                  <input
+                    type="text"
+                    value={formData.duration}
+                    onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
+                    placeholder="e.g. 6 Weeks · 12 Live Sessions"
+                    className="w-full h-10 px-3 rounded-xl bg-background border border-white/10 text-text text-xs focus:outline-none focus:border-purple-500/50"
+                  />
+                </div>
+
+                {/* Preview Video URL */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-text">16:9 Preview Video URL</label>
+                  <input
+                    type="text"
+                    value={formData.previewVideoUrl}
+                    onChange={(e) => setFormData({ ...formData, previewVideoUrl: e.target.value })}
+                    placeholder="https://...mp4 or embed URL"
+                    className="w-full h-10 px-3 rounded-xl bg-background border border-white/10 text-text text-xs font-mono focus:outline-none focus:border-purple-500/50"
+                  />
+                </div>
+              </div>
+
+              {/* ══════════════════════════════════════════════════════════════
+                  🌟 LANDING PAGE SHOWCASE STUDIO (WHAT YOU'LL LEARN, PROJECTS, BATCHES, FAQS)
+                  ══════════════════════════════════════════════════════════════ */}
+              <div className="md:col-span-2 p-6 rounded-3xl bg-gradient-to-br from-card via-card/90 to-purple-950/20 border border-purple-500/30 space-y-5 shadow-xl">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-purple-500/20 to-indigo-500/20 border border-purple-500/30 flex items-center justify-center text-purple-300 shadow-inner">
+                      <Sparkles className="w-5 h-5 text-purple-400 animate-pulse" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-sm font-black text-text">Live Cohort Showcase Studio</h3>
+                        <span className="px-2 py-0.5 rounded-md bg-purple-500/20 text-purple-300 border border-purple-500/30 text-[9px] font-black uppercase tracking-wider">
+                          Public /student/live-courses/[id]
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-subtext mt-0.5">
+                        Manage rich 6 competency cards, real-world capstone projects, cohort batches, FAQs, and enrollment benefits shown on the live landing page.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* ✨ Auto-Generate All Landing Content with AI */}
+                  <button
+                    type="button"
+                    onClick={handleAutoGenerateLanding}
+                    disabled={isGeneratingLanding || !formData.title.trim()}
+                    className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 disabled:opacity-50 text-white text-xs font-black flex items-center justify-center gap-2 shadow-lg shadow-purple-600/25 transition-all hover:scale-105 active:scale-95 shrink-0"
+                  >
+                    {isGeneratingLanding ? (
+                      <>
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        <span>Generating Showcase...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-3.5 h-3.5" />
+                        <span>✨ AI Auto-Generate Showcase</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                {/* Showcase Sub-Tabs */}
+                <div className="flex items-center gap-2 border-b border-white/10 pb-2 overflow-x-auto custom-scrollbar">
+                  {[
+                    { id: "outcomes", label: `What You'll Learn (${formData.learningOutcomes.length})`, icon: Award },
+                    { id: "projects", label: `Real-World Projects (${formData.projects.length})`, icon: Code },
+                    { id: "batches", label: `Cohort Batches (${formData.batches.length})`, icon: Calendar },
+                    { id: "features", label: `What's Included (${formData.features.length})`, icon: CheckCircle2 },
+                    { id: "faqs", label: `FAQs (${formData.faqs.length})`, icon: HelpCircle }
+                  ].map((tab) => (
+                    <button
+                      key={tab.id}
+                      type="button"
+                      onClick={() => setLandingTab(tab.id as any)}
+                      className={`px-3.5 py-2 rounded-xl text-xs font-extrabold flex items-center gap-2 transition-all whitespace-nowrap ${
+                        landingTab === tab.id
+                          ? "bg-purple-500/20 text-purple-300 border border-purple-500/40 shadow-sm"
+                          : "text-subtext hover:text-text hover:bg-white/5 border border-transparent"
+                      }`}
+                    >
+                      <tab.icon className="w-3.5 h-3.5" />
+                      <span>{tab.label}</span>
+                    </button>
+                  ))}
+                </div>
+
+                {/* TAB 1: WHAT YOU'LL LEARN (6 Competency Cards) */}
+                {landingTab === "outcomes" && (
+                  <div className="space-y-4 animate-in fade-in duration-200">
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs text-subtext">
+                        These 6 competency cards render on the public landing page under <strong>&quot;What You&apos;ll Learn & Build&quot;</strong>.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            learningOutcomes: [
+                              ...prev.learningOutcomes,
+                              { title: "New Core Competency", description: "Detailed description of technical mastery." }
+                            ]
+                          }))
+                        }
+                        className="text-xs font-bold text-purple-400 hover:text-purple-300 flex items-center gap-1"
+                      >
+                        <Plus className="w-3.5 h-3.5" /> Add Competency Card
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                      {formData.learningOutcomes.map((item, idx) => (
+                        <div
+                          key={idx}
+                          className="p-4 rounded-2xl bg-background/80 border border-white/10 hover:border-purple-500/30 transition-all space-y-2 relative group"
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-[10px] font-black uppercase text-purple-400 tracking-wider">
+                              Card #{idx + 1}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  learningOutcomes: prev.learningOutcomes.filter((_, i) => i !== idx)
+                                }))
+                              }
+                              className="text-subtext hover:text-rose-400 transition-colors p-1"
+                              title="Delete Card"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                          <input
+                            type="text"
+                            value={item.title}
+                            onChange={(e) => {
+                              const updated = [...formData.learningOutcomes];
+                              updated[idx].title = e.target.value;
+                              setFormData({ ...formData, learningOutcomes: updated });
+                            }}
+                            placeholder="Competency Title..."
+                            className="w-full bg-card border border-white/10 rounded-xl px-3 py-1.5 text-xs font-bold text-text outline-none focus:border-purple-500"
+                          />
+                          <textarea
+                            rows={2}
+                            value={item.description}
+                            onChange={(e) => {
+                              const updated = [...formData.learningOutcomes];
+                              updated[idx].description = e.target.value;
+                              setFormData({ ...formData, learningOutcomes: updated });
+                            }}
+                            placeholder="Competency technical depth & takeaways..."
+                            className="w-full bg-card border border-white/10 rounded-xl px-3 py-1.5 text-xs text-subtext outline-none focus:border-purple-500 leading-relaxed"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* TAB 2: REAL-WORLD PROJECTS (4 Portfolio Deliverables) */}
+                {landingTab === "projects" && (
+                  <div className="space-y-4 animate-in fade-in duration-200">
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs text-subtext">
+                        These project cards render under <strong>&quot;Real-World Capstone Projects Included&quot;</strong>.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            projects: [
+                              ...prev.projects,
+                              {
+                                number: String(prev.projects.length + 1).padStart(2, "0"),
+                                title: "New Capstone Project",
+                                desc: "Production-grade multi-agent architecture project.",
+                                tech: ["Python", "FastAPI", "Docker"]
+                              }
+                            ]
+                          }))
+                        }
+                        className="text-xs font-bold text-purple-400 hover:text-purple-300 flex items-center gap-1"
+                      >
+                        <Plus className="w-3.5 h-3.5" /> Add Project Card
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                      {formData.projects.map((proj, idx) => (
+                        <div
+                          key={idx}
+                          className="p-4 rounded-2xl bg-background/80 border border-white/10 hover:border-purple-500/30 transition-all space-y-2.5"
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-xs font-mono font-black text-purple-400">
+                              Project {proj.number || String(idx + 1).padStart(2, "0")}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  projects: prev.projects.filter((_, i) => i !== idx)
+                                }))
+                              }
+                              className="text-subtext hover:text-rose-400 transition-colors p-1"
+                              title="Delete Project"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                          <input
+                            type="text"
+                            value={proj.title}
+                            onChange={(e) => {
+                              const updated = [...formData.projects];
+                              updated[idx].title = e.target.value;
+                              setFormData({ ...formData, projects: updated });
+                            }}
+                            placeholder="Project Title..."
+                            className="w-full bg-card border border-white/10 rounded-xl px-3 py-1.5 text-xs font-bold text-text outline-none focus:border-purple-500"
+                          />
+                          <textarea
+                            rows={2}
+                            value={proj.desc}
+                            onChange={(e) => {
+                              const updated = [...formData.projects];
+                              updated[idx].desc = e.target.value;
+                              setFormData({ ...formData, projects: updated });
+                            }}
+                            placeholder="Project architecture and deliverable..."
+                            className="w-full bg-card border border-white/10 rounded-xl px-3 py-1.5 text-xs text-subtext outline-none focus:border-purple-500 leading-relaxed"
+                          />
+                          <div>
+                            <label className="block text-[10px] font-bold text-subtext uppercase mb-1">
+                              Tech Stack (comma separated)
+                            </label>
+                            <input
+                              type="text"
+                              value={Array.isArray(proj.tech) ? proj.tech.join(", ") : ""}
+                              onChange={(e) => {
+                                const updated = [...formData.projects];
+                                updated[idx].tech = e.target.value
+                                  .split(",")
+                                  .map((t) => t.trim())
+                                  .filter(Boolean);
+                                setFormData({ ...formData, projects: updated });
+                              }}
+                              placeholder="e.g. Python, LangGraph, FastAPI, Docker"
+                              className="w-full bg-card border border-white/10 rounded-xl px-3 py-1.5 text-xs font-mono text-text outline-none focus:border-purple-500"
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* TAB 3: COHORT BATCHES */}
+                {landingTab === "batches" && (
+                  <div className="space-y-4 animate-in fade-in duration-200">
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs text-subtext">
+                        These batch options render under <strong>&quot;Select Your Preferred Batch&quot;</strong> and allow students to pick dates & schedules.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            batches: [
+                              ...prev.batches,
+                              {
+                                id: `batch-0${prev.batches.length + 1}`,
+                                name: `Batch #0${prev.batches.length + 1} (Upcoming)`,
+                                startDate: "01 Oct 2026",
+                                schedule: "Mon · Wed · Fri",
+                                time: "08:00 PM – 10:00 PM IST",
+                                duration: "6 Weeks",
+                                enrolled: 5,
+                                total: 50
+                              }
+                            ]
+                          }))
+                        }
+                        className="text-xs font-bold text-purple-400 hover:text-purple-300 flex items-center gap-1"
+                      >
+                        <Plus className="w-3.5 h-3.5" /> Add Cohort Batch
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                      {formData.batches.map((batch, idx) => (
+                        <div
+                          key={batch.id || idx}
+                          className="p-4 rounded-2xl bg-background/80 border border-white/10 hover:border-purple-500/30 transition-all space-y-3"
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-xs font-bold text-purple-400">Batch #{idx + 1}</span>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  batches: prev.batches.filter((_, i) => i !== idx)
+                                }))
+                              }
+                              className="text-subtext hover:text-rose-400 transition-colors p-1"
+                              title="Delete Batch"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-2">
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-bold text-subtext uppercase">Batch Name</label>
+                              <input
+                                type="text"
+                                value={batch.name}
+                                onChange={(e) => {
+                                  const updated = [...formData.batches];
+                                  updated[idx].name = e.target.value;
+                                  setFormData({ ...formData, batches: updated });
+                                }}
+                                placeholder="e.g. Batch #01 (Weekend)"
+                                className="w-full bg-card border border-white/10 rounded-xl px-3 py-1.5 text-xs font-bold text-text outline-none focus:border-purple-500"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-bold text-subtext uppercase">Start Date</label>
+                              <input
+                                type="text"
+                                value={batch.startDate}
+                                onChange={(e) => {
+                                  const updated = [...formData.batches];
+                                  updated[idx].startDate = e.target.value;
+                                  setFormData({ ...formData, batches: updated });
+                                }}
+                                placeholder="e.g. 24 Aug 2026"
+                                className="w-full bg-card border border-white/10 rounded-xl px-3 py-1.5 text-xs font-medium text-text outline-none focus:border-purple-500"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-2">
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-bold text-subtext uppercase">Weekly Days</label>
+                              <input
+                                type="text"
+                                value={batch.schedule}
+                                onChange={(e) => {
+                                  const updated = [...formData.batches];
+                                  updated[idx].schedule = e.target.value;
+                                  setFormData({ ...formData, batches: updated });
+                                }}
+                                placeholder="e.g. Mon · Wed · Fri"
+                                className="w-full bg-card border border-white/10 rounded-xl px-3 py-1.5 text-xs font-medium text-text outline-none focus:border-purple-500"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-bold text-subtext uppercase">Class Timing</label>
+                              <input
+                                type="text"
+                                value={batch.time}
+                                onChange={(e) => {
+                                  const updated = [...formData.batches];
+                                  updated[idx].time = e.target.value;
+                                  setFormData({ ...formData, batches: updated });
+                                }}
+                                placeholder="e.g. 08:00 PM – 10:30 PM IST"
+                                className="w-full bg-card border border-white/10 rounded-xl px-3 py-1.5 text-xs font-medium text-text outline-none focus:border-purple-500"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-2 pt-1">
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-bold text-subtext uppercase">Enrolled Seats</label>
+                              <input
+                                type="number"
+                                value={batch.enrolled}
+                                onChange={(e) => {
+                                  const updated = [...formData.batches];
+                                  updated[idx].enrolled = Number(e.target.value);
+                                  setFormData({ ...formData, batches: updated });
+                                }}
+                                className="w-full bg-card border border-white/10 rounded-xl px-3 py-1.5 text-xs font-bold text-text outline-none focus:border-purple-500"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-bold text-subtext uppercase">Total Capacity</label>
+                              <input
+                                type="number"
+                                value={batch.total}
+                                onChange={(e) => {
+                                  const updated = [...formData.batches];
+                                  updated[idx].total = Number(e.target.value);
+                                  setFormData({ ...formData, batches: updated });
+                                }}
+                                className="w-full bg-card border border-white/10 rounded-xl px-3 py-1.5 text-xs font-bold text-text outline-none focus:border-purple-500"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* TAB 4: THIS COURSE INCLUDES CHECKLIST */}
+                {landingTab === "features" && (
+                  <div className="space-y-4 animate-in fade-in duration-200">
+                    <p className="text-xs text-subtext">
+                      These feature checklist items render under <strong>&quot;What&apos;s Included in Your Enrollment&quot;</strong>.
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                      {formData.features.map((feat, idx) => (
+                        <div key={idx} className="flex items-center gap-2 p-2.5 bg-background/80 border border-white/10 rounded-xl">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                          <input
+                            type="text"
+                            value={feat}
+                            onChange={(e) => {
+                              const updated = [...formData.features];
+                              updated[idx] = e.target.value;
+                              setFormData({ ...formData, features: updated });
+                            }}
+                            className="flex-1 bg-transparent text-xs text-text font-medium outline-none"
+                          />
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setFormData((prev) => ({
+                                ...prev,
+                                features: prev.features.filter((_, i) => i !== idx)
+                              }))
+                            }
+                            className="text-subtext hover:text-rose-400 p-1"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          features: [...prev.features, "Lifetime access to HD masterclass recordings"]
+                        }))
+                      }
+                      className="text-xs font-bold text-purple-400 hover:text-purple-300 flex items-center gap-1"
+                    >
+                      <Plus className="w-3.5 h-3.5" /> Add Benefit Item
+                    </button>
+                  </div>
+                )}
+
+                {/* TAB 5: FREQUENTLY ASKED QUESTIONS */}
+                {landingTab === "faqs" && (
+                  <div className="space-y-4 animate-in fade-in duration-200">
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs text-subtext">
+                        These Q&A accordions render under <strong>&quot;Frequently Asked Questions&quot;</strong>.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            faqs: [
+                              ...prev.faqs,
+                              { q: "New Question?", a: "Detailed answer explaining cohort policies, prerequisites, or recordings." }
+                            ]
+                          }))
+                        }
+                        className="text-xs font-bold text-purple-400 hover:text-purple-300 flex items-center gap-1"
+                      >
+                        <Plus className="w-3.5 h-3.5" /> Add FAQ Item
+                      </button>
+                    </div>
+
+                    <div className="space-y-3">
+                      {formData.faqs.map((faq, idx) => (
+                        <div
+                          key={idx}
+                          className="p-4 rounded-2xl bg-background/80 border border-white/10 hover:border-purple-500/30 transition-all space-y-2"
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-[10px] font-black uppercase text-purple-400">FAQ #{idx + 1}</span>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  faqs: prev.faqs.filter((_, i) => i !== idx)
+                                }))
+                              }
+                              className="text-subtext hover:text-rose-400 transition-colors p-1"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                          <input
+                            type="text"
+                            value={faq.q}
+                            onChange={(e) => {
+                              const updated = [...formData.faqs];
+                              updated[idx].q = e.target.value;
+                              setFormData({ ...formData, faqs: updated });
+                            }}
+                            placeholder="Question..."
+                            className="w-full bg-card border border-white/10 rounded-xl px-3 py-1.5 text-xs font-bold text-text outline-none focus:border-purple-500"
+                          />
+                          <textarea
+                            rows={2}
+                            value={faq.a}
+                            onChange={(e) => {
+                              const updated = [...formData.faqs];
+                              updated[idx].a = e.target.value;
+                              setFormData({ ...formData, faqs: updated });
+                            }}
+                            placeholder="Answer..."
+                            className="w-full bg-card border border-white/10 rounded-xl px-3 py-1.5 text-xs text-subtext outline-none focus:border-purple-500 leading-relaxed"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -1894,24 +2687,31 @@ export default function AdminLiveCourseCreator() {
             </div>
 
             {/* Quick Metric Chips */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-3 border-t border-white/10">
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 pt-3 border-t border-white/10">
               <div className="p-3 rounded-xl bg-background/50 border border-white/5">
-                <p className="text-[10px] text-subtext font-semibold uppercase">Total Sessions</p>
-                <p className="text-base font-black text-text">{aiGeneratedSessions.length || sessionCount}</p>
+                <p className="text-[10px] text-subtext font-semibold uppercase">Enrollment Price</p>
+                <div className="flex items-baseline gap-1.5 mt-0.5">
+                  <span className="text-base font-black text-emerald-400">₹{Number(formData.price).toLocaleString("en-IN")}</span>
+                  {Number(formData.originalPrice) > Number(formData.price) && (
+                    <span className="text-[10px] text-subtext line-through">₹{Number(formData.originalPrice).toLocaleString("en-IN")}</span>
+                  )}
+                </div>
               </div>
               <div className="p-3 rounded-xl bg-background/50 border border-white/5">
-                <p className="text-[10px] text-subtext font-semibold uppercase">Est. Total Duration</p>
-                <p className="text-base font-black text-text">
-                  {(aiGeneratedSessions.length || sessionCount) * 2} Hours
-                </p>
+                <p className="text-[10px] text-subtext font-semibold uppercase">Live Sessions</p>
+                <p className="text-base font-black text-text">{aiGeneratedSessions.length || sessionCount} Classes</p>
               </div>
               <div className="p-3 rounded-xl bg-background/50 border border-white/5">
-                <p className="text-[10px] text-subtext font-semibold uppercase">Start Date</p>
-                <p className="text-base font-black text-text">{formData.startDate || "TBA"}</p>
+                <p className="text-[10px] text-subtext font-semibold uppercase">Capstone Projects</p>
+                <p className="text-base font-black text-purple-400">{formData.projects.length} Portfolio Projects</p>
+              </div>
+              <div className="p-3 rounded-xl bg-background/50 border border-white/5">
+                <p className="text-[10px] text-subtext font-semibold uppercase">Cohort Batches</p>
+                <p className="text-base font-black text-indigo-400">{formData.batches.length} Batches</p>
               </div>
               <div className="p-3 rounded-xl bg-background/50 border border-white/5">
                 <p className="text-[10px] text-subtext font-semibold uppercase">Max Capacity</p>
-                <p className="text-base font-black text-text">{formData.maxStudents} Students</p>
+                <p className="text-base font-black text-text">{formData.maxStudents} Students / Batch</p>
               </div>
             </div>
           </div>

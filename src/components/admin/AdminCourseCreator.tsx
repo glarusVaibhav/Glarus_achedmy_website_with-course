@@ -72,6 +72,23 @@ export interface BuilderModule {
   lessons: LessonContent[];
 }
 
+export interface LearningOutcomeItem {
+  title: string;
+  description: string;
+}
+
+export interface ProjectShowcaseItem {
+  number?: string;
+  title: string;
+  desc: string;
+  tech: string[];
+}
+
+export interface FaqItem {
+  q: string;
+  a: string;
+}
+
 export interface CourseFormData {
   title: string;
   subtitle: string;
@@ -79,12 +96,19 @@ export interface CourseFormData {
   level: string;
   price: string;
   originalPrice: string;
+  duration: string;
+  previewVideoUrl: string;
   isFree: boolean;
   courseType: "SELF_PACED" | "INSTRUCTOR_LED" | "LIVE_BOOTCAMP";
   instructorId: string;
   instructorName: string;
   description: string;
   outcomes: string[];
+  learningOutcomes: LearningOutcomeItem[];
+  projects: ProjectShowcaseItem[];
+  faqs: FaqItem[];
+  features: string[];
+  learningJourney: string[];
   prerequisites: string;
   thumbnailGradient: string;
   featureOnHomepage: boolean;
@@ -127,6 +151,10 @@ export default function AdminCourseCreator() {
   // Active Wizard Step (1: Basic Info, 2: AI Syllabus, 3: Content Builder, 4: Final Review & Publish)
   const [currentStep, setCurrentStep] = useState(1);
 
+  // Landing Page Showcase Tab in Step 1
+  const [landingTab, setLandingTab] = useState<"outcomes" | "projects" | "faqs" | "features">("outcomes");
+  const [isGeneratingLanding, setIsGeneratingLanding] = useState(false);
+
   // Course Form Metadata
   const [formData, setFormData] = useState<CourseFormData>({
     title: "",
@@ -135,12 +163,99 @@ export default function AdminCourseCreator() {
     level: "All Levels",
     price: "2499",
     originalPrice: "4999",
+    duration: "36 Hours VOD",
+    previewVideoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
     isFree: false,
     courseType: "SELF_PACED",
     instructorId: "admin-official",
     instructorName: "Glarus Academy (Admin Official)",
     description: "",
     outcomes: ["Architect autonomous agentic AI workflows", "Deploy full-stack web applications with cloud CI/CD", "Optimize performance with production caching & streaming"],
+    learningOutcomes: [
+      {
+        title: "Autonomous Agentic AI & Orchestration",
+        description: "Architect multi-agent systems with LangGraph, deterministic guardrails, and persistent vector memory."
+      },
+      {
+        title: "Production RAG & Hybrid Vector Search",
+        description: "Implement semantic chunking, reciprocal rank fusion, and cross-encoder re-ranking pipelines."
+      },
+      {
+        title: "Full-Stack Web App Deployment",
+        description: "Deploy Next.js 15 server action applications with Prisma ORM, PostgreSQL, and cloud CI/CD."
+      },
+      {
+        title: "Low-Latency Streaming AI Endpoints",
+        description: "Build reactive user experiences with token counting, tool calling validation, and edge streaming."
+      },
+      {
+        title: "Observability, Telemetry & Cost Control",
+        description: "Set up distributed OpenTelemetry tracing, latency profiling, and automated cost optimization monitors."
+      },
+      {
+        title: "Enterprise Security & RBAC Governance",
+        description: "Implement role-based permissions, rate limiting, and encrypted token storage for production SaaS."
+      }
+    ],
+    projects: [
+      {
+        number: "01",
+        title: "Autonomous Multi-Agent Financial Analyst",
+        desc: "Build an end-to-end swarm that ingests financial filings, runs quantitative metrics, and drafts investment memos.",
+        tech: ["Python", "LangGraph", "FastAPI", "Docker"]
+      },
+      {
+        number: "02",
+        title: "Production Hybrid RAG Document Engine",
+        desc: "Construct an enterprise search system indexing 100K+ technical documents with hybrid vector retrieval.",
+        tech: ["Qdrant", "PostgreSQL", "Cohere", "Next.js"]
+      },
+      {
+        number: "03",
+        title: "Real-Time AI Code Reviewer & PR Bot",
+        desc: "Deploy a webhook-triggered AI assistant that analyzes pull requests, enforces conventions, and runs unit tests.",
+        tech: ["TypeScript", "GitHub API", "OpenAI", "Redis"]
+      },
+      {
+        number: "04",
+        title: "Enterprise Multi-Tenant SaaS Platform",
+        desc: "Architect a scalable SaaS with team workspaces, usage metering, stripe billing, and automated CI/CD.",
+        tech: ["Next.js 15", "Prisma", "PostgreSQL", "Tailwind CSS"]
+      }
+    ],
+    faqs: [
+      {
+        q: "What prerequisites are required for this course?",
+        a: "Basic familiarity with modern JavaScript/TypeScript or Python is recommended. We start with foundational principles and progressively build to enterprise architecture."
+      },
+      {
+        q: "Are all projects and code repositories included?",
+        a: "Yes! You receive full access to production-ready GitHub repositories, starter code, solution branches, and Docker configurations."
+      },
+      {
+        q: "Will I receive a verified certificate upon completion?",
+        a: "Yes, learners who complete all curriculum milestones and pass the capstone evaluation receive an official Glarus Academy smart certificate with a verifiable public link."
+      },
+      {
+        q: "How long do I retain access to course materials?",
+        a: "Enrollment provides lifetime access, including all future module updates, supplementary resources, and developer community forums."
+      }
+    ],
+    features: [
+      "36 Hours of on-demand HD video lectures",
+      "4 Production-grade real-world capstone projects",
+      "Interactive code sandboxes & modular quizzes",
+      "Verified Certificate of Completion",
+      "Full lifetime access with continuous updates",
+      "24/7 AI Tutor support & Discord developer network"
+    ],
+    learningJourney: [
+      "Core Foundations & Architecture",
+      "State Management & Graphs",
+      "Tool Calling & Reasoning Loops",
+      "Production CI/CD & Deploy",
+      "Capstone Evaluation"
+    ],
     prerequisites: "Basic proficiency in modern JavaScript or Python.",
     thumbnailGradient: GRADIENT_OPTIONS[0].value,
     featureOnHomepage: true,
@@ -153,6 +268,49 @@ export default function AdminCourseCreator() {
     internshipCompanyPartner: "Partner AI Startups & Tech Incubators",
     internshipDescription: "Learners who complete all course milestones and achieve >= 75% on the capstone project receive direct onboarding into a 2-month mentored industry internship."
   });
+
+  // AI Auto-Generate Landing Page Assets Handler
+  const handleAutoGenerateLanding = async () => {
+    const topicToUse = formData.title || aiTopic;
+    if (!topicToUse.trim()) {
+      showToast("Please enter a course title first.", "info");
+      return;
+    }
+    setIsGeneratingLanding(true);
+    try {
+      const res = await fetch("/api/ai/course-landing", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: topicToUse,
+          category: formData.category,
+          level: formData.level
+        })
+      });
+      const resData = await res.json();
+      if (resData.success && resData.data) {
+        const d = resData.data;
+        setFormData(prev => ({
+          ...prev,
+          subtitle: d.subtitle || prev.subtitle,
+          duration: d.duration || prev.duration,
+          originalPrice: d.originalPrice ? String(d.originalPrice) : prev.originalPrice,
+          learningOutcomes: Array.isArray(d.learningOutcomes) && d.learningOutcomes.length > 0 ? d.learningOutcomes : prev.learningOutcomes,
+          projects: Array.isArray(d.projects) && d.projects.length > 0 ? d.projects : prev.projects,
+          faqs: Array.isArray(d.faqs) && d.faqs.length > 0 ? d.faqs : prev.faqs,
+          features: Array.isArray(d.features) && d.features.length > 0 ? d.features : prev.features
+        }));
+        showToast("✨ AI generated rich landing page showcase assets!", "success");
+      } else {
+        showToast("Could not generate landing page data", "error");
+      }
+    } catch (err) {
+      console.error(err);
+      showToast("Error connecting to AI service", "error");
+    } finally {
+      setIsGeneratingLanding(false);
+    }
+  };
 
   // New Outcome input
   const [newOutcome, setNewOutcome] = useState("");
@@ -549,10 +707,19 @@ export default function AdminCourseCreator() {
         subtitle: formData.subtitle,
         description: formData.description || "Comprehensive curriculum crafted with Glarus Academy AI Architect.",
         price: formData.isFree ? 0 : parseFloat(formData.price) || 0,
-        status: statusDecision === "PUBLISHED" ? "APPROVED" : statusDecision === "DRAFT" ? "PENDING" : "PENDING",
-        instructorId: formData.instructorId,
+        originalPrice: formData.originalPrice ? parseFloat(formData.originalPrice) : 0,
+        duration: formData.duration || "36 Hours VOD",
+        previewVideoUrl: formData.previewVideoUrl || null,
         category: formData.category,
         level: formData.level,
+        learningOutcomes: formData.learningOutcomes,
+        projects: formData.projects,
+        faqs: formData.faqs,
+        features: formData.features,
+        learningJourney: formData.learningJourney,
+        status: statusDecision === "PUBLISHED" ? "PUBLISHED" : statusDecision === "DRAFT" ? "PENDING" : "PENDING",
+        isPublished: statusDecision === "PUBLISHED",
+        instructorId: formData.instructorId,
         modules: builderModules.length > 0 ? builderModules.map((bm, idx) => ({
           title: bm.title,
           order: idx + 1,
@@ -835,7 +1002,7 @@ export default function AdminCourseCreator() {
 
                   {/* Pricing (INR ₹) */}
                   <div className="space-y-2">
-                    <label className="block text-xs font-bold text-text">Price (₹ INR)</label>
+                    <label className="block text-xs font-bold text-text">Price (₹ INR) <span className="text-rose-400">*</span></label>
                     <div className="relative">
                       <IndianRupee className="w-4 h-4 text-subtext absolute left-3.5 top-1/2 -translate-y-1/2" />
                       <input
@@ -847,6 +1014,52 @@ export default function AdminCourseCreator() {
                         className="w-full bg-background border border-white/10 focus:border-purple-500 rounded-2xl pl-10 pr-4 py-3 text-xs font-bold text-text outline-none disabled:opacity-40"
                       />
                     </div>
+                  </div>
+
+                  {/* Original / Strikethrough Price */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <label className="block text-xs font-bold text-text">Original Price (₹ INR)</label>
+                      {formData.originalPrice && formData.price && !formData.isFree && (
+                        <span className="text-[10px] font-black uppercase text-emerald-400 px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/20">
+                          {Math.max(0, Math.round((1 - (parseFloat(formData.price) || 0) / (parseFloat(formData.originalPrice) || 1)) * 100))}% OFF
+                        </span>
+                      )}
+                    </div>
+                    <div className="relative">
+                      <IndianRupee className="w-4 h-4 text-subtext absolute left-3.5 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="number"
+                        value={formData.originalPrice}
+                        onChange={e => setFormData({ ...formData, originalPrice: e.target.value })}
+                        placeholder="4999"
+                        className="w-full bg-background border border-white/10 focus:border-purple-500 rounded-2xl pl-10 pr-4 py-3 text-xs font-bold text-text outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Duration & VOD Hours */}
+                  <div className="space-y-2">
+                    <label className="block text-xs font-bold text-text">Course Duration Badge</label>
+                    <input
+                      type="text"
+                      value={formData.duration}
+                      onChange={e => setFormData({ ...formData, duration: e.target.value })}
+                      placeholder="e.g. 36 Hours VOD or 6 Weeks"
+                      className="w-full bg-background border border-white/10 focus:border-purple-500 rounded-2xl px-4 py-3 text-xs font-bold text-text outline-none"
+                    />
+                  </div>
+
+                  {/* Preview Video URL */}
+                  <div className="space-y-2">
+                    <label className="block text-xs font-bold text-text">16:9 Preview Video URL</label>
+                    <input
+                      type="text"
+                      value={formData.previewVideoUrl}
+                      onChange={e => setFormData({ ...formData, previewVideoUrl: e.target.value })}
+                      placeholder="https://...mp4 or embed video URL"
+                      className="w-full bg-background border border-white/10 focus:border-purple-500 rounded-2xl px-4 py-3 text-xs font-mono text-text outline-none"
+                    />
                   </div>
 
                   {/* Instructor Assignment (Admin Feature) */}
@@ -871,58 +1084,35 @@ export default function AdminCourseCreator() {
                   </div>
 
                   {/* Delivery Format */}
-                  <div className="md:col-span-2 space-y-2">
+                  <div className="space-y-2">
                     <label className="block text-xs font-bold text-text">Delivery Format</label>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                      {/* Option 1: Self-Paced Course */}
+                    <div className="grid grid-cols-2 gap-2">
                       <button
                         type="button"
                         onClick={() => setFormData({ ...formData, courseType: "SELF_PACED" })}
-                        className={`p-4 rounded-2xl border text-left transition-all relative overflow-hidden group ${
+                        className={`p-3 rounded-2xl border text-left transition-all ${
                           formData.courseType === "SELF_PACED"
-                            ? "bg-purple-500/15 border-purple-500 text-purple-300 ring-2 ring-purple-500/20 shadow-lg shadow-purple-500/10"
-                            : "bg-background/50 border-white/10 text-subtext hover:border-white/20"
+                            ? "bg-purple-500/15 border-purple-500 text-purple-300 ring-2 ring-purple-500/20"
+                            : "bg-background/50 border-white/10 text-subtext"
                         }`}
                       >
-                        <div className="flex items-center justify-between gap-2 mb-1">
-                          <div className="flex items-center gap-2">
-                            <div className="w-7 h-7 rounded-xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-purple-400">
-                              <BookOpen className="w-3.5 h-3.5" />
-                            </div>
-                            <span className="text-xs font-bold text-text">Self-Paced Course</span>
-                          </div>
-                          <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md bg-purple-500/20 text-purple-300 border border-purple-500/30">
-                            Active
-                          </span>
+                        <div className="flex items-center gap-1.5 font-bold text-xs">
+                          <BookOpen className="w-3.5 h-3.5 text-purple-400" />
+                          <span>Self-Paced</span>
                         </div>
-                        <span className="text-[11px] text-subtext block mt-1 leading-relaxed">
-                          On-demand recorded video lessons, assignments, modular quizzes & sandbox coding.
-                        </span>
+                        <span className="text-[10px] text-subtext block mt-0.5">On-demand video & labs</span>
                       </button>
 
-                      {/* Option 2: Live Classes */}
                       <button
                         type="button"
                         onClick={() => router.push("/admin/live-training/create")}
-                        className="p-4 rounded-2xl border border-white/10 bg-background/50 hover:bg-card hover:border-emerald-500/50 text-left transition-all group relative overflow-hidden shadow-sm hover:shadow-emerald-500/10 hover:scale-[1.01]"
+                        className="p-3 rounded-2xl border border-white/10 bg-background/50 hover:bg-card hover:border-emerald-500/40 text-left transition-all group"
                       >
-                        <div className="flex items-center justify-between gap-2 mb-1">
-                          <div className="flex items-center gap-2">
-                            <div className="w-7 h-7 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
-                              <Radio className="w-3.5 h-3.5" />
-                            </div>
-                            <span className="text-xs font-bold text-text group-hover:text-emerald-300 transition-colors">
-                              Live Classes
-                            </span>
-                          </div>
-                          <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                            Live Creator ↗
-                          </span>
+                        <div className="flex items-center gap-1.5 font-bold text-xs text-text group-hover:text-emerald-300">
+                          <Radio className="w-3.5 h-3.5 text-emerald-400" />
+                          <span>Live Bootcamp ↗</span>
                         </div>
-                        <span className="text-[11px] text-subtext block mt-1 leading-relaxed group-hover:text-subtext/90">
-                          Synchronous live cohort batches, scheduled live workshops, meeting rooms & AI agenda architect.
-                        </span>
+                        <span className="text-[10px] text-subtext block mt-0.5">Cohort live classes</span>
                       </button>
                     </div>
                   </div>
@@ -931,7 +1121,7 @@ export default function AdminCourseCreator() {
                   <div className="md:col-span-2 space-y-2">
                     <label className="block text-xs font-bold text-text">Course Description & Curriculum Vision</label>
                     <textarea
-                      rows={4}
+                      rows={3}
                       value={formData.description}
                       onChange={e => setFormData({ ...formData, description: e.target.value })}
                       placeholder="Detail what students will achieve, key takeaways, and project deliverables..."
@@ -939,39 +1129,332 @@ export default function AdminCourseCreator() {
                     />
                   </div>
 
-                  {/* Learning Outcomes Manager */}
-                  <div className="md:col-span-2 space-y-2.5">
-                    <label className="block text-xs font-bold text-text">What Learners Will Build & Master</label>
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        value={newOutcome}
-                        onChange={e => setNewOutcome(e.target.value)}
-                        onKeyDown={e => e.key === "Enter" && addOutcome()}
-                        placeholder="e.g. Build end-to-end self-correcting RAG pipelines..."
-                        className="flex-1 bg-background border border-white/10 focus:border-purple-500 rounded-2xl px-4 py-2.5 text-xs text-text outline-none"
-                      />
+                  {/* ══════════════════════════════════════════════════════════════
+                      🌟 LANDING PAGE SHOWCASE STUDIO (WHAT YOU'LL LEARN, PROJECTS, FAQS)
+                      ══════════════════════════════════════════════════════════════ */}
+                  <div className="md:col-span-2 p-6 rounded-3xl bg-gradient-to-br from-card via-card/90 to-purple-950/20 border border-purple-500/30 space-y-5 shadow-xl">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-purple-500/20 to-indigo-500/20 border border-purple-500/30 flex items-center justify-center text-purple-300 shadow-inner">
+                          <Sparkles className="w-5 h-5 text-purple-400 animate-pulse" />
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h3 className="text-sm font-black text-text">Landing Page Showcase Studio</h3>
+                            <span className="px-2 py-0.5 rounded-md bg-purple-500/20 text-purple-300 border border-purple-500/30 text-[9px] font-black uppercase tracking-wider">
+                              Public /course/[id]
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-subtext mt-0.5">
+                            Manage rich competency cards, real-world projects, FAQs, and feature bullets shown on the course landing page.
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* ✨ Auto-Generate All Landing Content with AI */}
                       <button
                         type="button"
-                        onClick={addOutcome}
-                        className="px-4 py-2.5 bg-purple-600 hover:bg-purple-500 text-white rounded-2xl text-xs font-bold transition-colors flex items-center gap-1"
+                        onClick={handleAutoGenerateLanding}
+                        disabled={isGeneratingLanding || (!formData.title && !aiTopic)}
+                        className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 disabled:opacity-50 text-white text-xs font-black flex items-center justify-center gap-2 shadow-lg shadow-purple-600/25 transition-all hover:scale-105 active:scale-95 shrink-0"
                       >
-                        <Plus className="w-3.5 h-3.5" />
-                        <span>Add</span>
+                        {isGeneratingLanding ? (
+                          <>
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            <span>Generating Showcase...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles className="w-3.5 h-3.5" />
+                            <span>✨ AI Auto-Generate Showcase</span>
+                          </>
+                        )}
                       </button>
                     </div>
 
-                    <div className="flex flex-wrap gap-2 pt-1">
-                      {formData.outcomes.map((out, idx) => (
-                        <span key={idx} className="px-3 py-1.5 rounded-xl bg-background/80 border border-white/10 text-xs text-text/90 flex items-center gap-2">
-                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                          <span>{out}</span>
-                          <button onClick={() => removeOutcome(idx)} className="text-subtext hover:text-rose-400">
-                            <X className="w-3 h-3" />
-                          </button>
-                        </span>
+                    {/* Showcase Sub-Tabs */}
+                    <div className="flex items-center gap-2 border-b border-white/10 pb-2 overflow-x-auto custom-scrollbar">
+                      {[
+                        { id: "outcomes", label: `What You'll Learn (${formData.learningOutcomes.length})`, icon: Award },
+                        { id: "projects", label: `Real-World Projects (${formData.projects.length})`, icon: Code },
+                        { id: "faqs", label: `FAQs (${formData.faqs.length})`, icon: HelpCircle },
+                        { id: "features", label: `Course Features (${formData.features.length})`, icon: CheckCircle2 }
+                      ].map(tab => (
+                        <button
+                          key={tab.id}
+                          type="button"
+                          onClick={() => setLandingTab(tab.id as any)}
+                          className={`px-3.5 py-2 rounded-xl text-xs font-extrabold flex items-center gap-2 transition-all whitespace-nowrap ${
+                            landingTab === tab.id
+                              ? "bg-purple-500/20 text-purple-300 border border-purple-500/40 shadow-sm"
+                              : "text-subtext hover:text-text hover:bg-white/5 border border-transparent"
+                          }`}
+                        >
+                          <tab.icon className="w-3.5 h-3.5" />
+                          <span>{tab.label}</span>
+                        </button>
                       ))}
                     </div>
+
+                    {/* TAB 1: WHAT YOU'LL LEARN (6 Competency Cards) */}
+                    {landingTab === "outcomes" && (
+                      <div className="space-y-4 animate-in fade-in duration-200">
+                        <div className="flex items-center justify-between">
+                          <p className="text-xs text-subtext">
+                            These 6 cards render on the public landing page under <strong>&quot;What You&apos;ll Learn&quot;</strong>.
+                          </p>
+                          <button
+                            type="button"
+                            onClick={() => setFormData(prev => ({
+                              ...prev,
+                              learningOutcomes: [...prev.learningOutcomes, { title: "New Core Competency", description: "Detailed description of technical mastery." }]
+                            }))}
+                            className="text-xs font-bold text-purple-400 hover:text-purple-300 flex items-center gap-1"
+                          >
+                            <Plus className="w-3.5 h-3.5" /> Add Competency Card
+                          </button>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                          {formData.learningOutcomes.map((item, idx) => (
+                            <div key={idx} className="p-4 rounded-2xl bg-background/80 border border-white/10 hover:border-purple-500/30 transition-all space-y-2 relative group">
+                              <div className="flex items-center justify-between gap-2">
+                                <span className="text-[10px] font-black uppercase text-purple-400 tracking-wider">
+                                  Card #{idx + 1}
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() => setFormData(prev => ({
+                                    ...prev,
+                                    learningOutcomes: prev.learningOutcomes.filter((_, i) => i !== idx)
+                                  }))}
+                                  className="text-subtext hover:text-rose-400 transition-colors p-1"
+                                  title="Delete Card"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                              <input
+                                type="text"
+                                value={item.title}
+                                onChange={e => {
+                                  const updated = [...formData.learningOutcomes];
+                                  updated[idx].title = e.target.value;
+                                  setFormData({ ...formData, learningOutcomes: updated });
+                                }}
+                                placeholder="Competency Title..."
+                                className="w-full bg-card border border-white/10 rounded-xl px-3 py-1.5 text-xs font-bold text-text outline-none focus:border-purple-500"
+                              />
+                              <textarea
+                                rows={2}
+                                value={item.description}
+                                onChange={e => {
+                                  const updated = [...formData.learningOutcomes];
+                                  updated[idx].description = e.target.value;
+                                  setFormData({ ...formData, learningOutcomes: updated });
+                                }}
+                                placeholder="Competency description..."
+                                className="w-full bg-card border border-white/10 rounded-xl px-3 py-1.5 text-xs text-subtext outline-none focus:border-purple-500 leading-relaxed"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* TAB 2: REAL-WORLD PROJECTS (4 Portfolio Deliverables) */}
+                    {landingTab === "projects" && (
+                      <div className="space-y-4 animate-in fade-in duration-200">
+                        <div className="flex items-center justify-between">
+                          <p className="text-xs text-subtext">
+                            These project cards render under <strong>&quot;Real-World Projects Included&quot;</strong>.
+                          </p>
+                          <button
+                            type="button"
+                            onClick={() => setFormData(prev => ({
+                              ...prev,
+                              projects: [...prev.projects, {
+                                number: String(prev.projects.length + 1).padStart(2, "0"),
+                                title: "New Capstone Project",
+                                desc: "Comprehensive full-stack architecture project.",
+                                tech: ["Python", "FastAPI", "Docker"]
+                              }]
+                            }))}
+                            className="text-xs font-bold text-purple-400 hover:text-purple-300 flex items-center gap-1"
+                          >
+                            <Plus className="w-3.5 h-3.5" /> Add Project Card
+                          </button>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                          {formData.projects.map((proj, idx) => (
+                            <div key={idx} className="p-4 rounded-2xl bg-background/80 border border-white/10 hover:border-purple-500/30 transition-all space-y-2.5">
+                              <div className="flex items-center justify-between gap-2">
+                                <span className="text-xs font-mono font-black text-purple-400">
+                                  Project {proj.number || String(idx + 1).padStart(2, "0")}
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() => setFormData(prev => ({
+                                    ...prev,
+                                    projects: prev.projects.filter((_, i) => i !== idx)
+                                  }))}
+                                  className="text-subtext hover:text-rose-400 transition-colors p-1"
+                                  title="Delete Project"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                              <input
+                                type="text"
+                                value={proj.title}
+                                onChange={e => {
+                                  const updated = [...formData.projects];
+                                  updated[idx].title = e.target.value;
+                                  setFormData({ ...formData, projects: updated });
+                                }}
+                                placeholder="Project Title..."
+                                className="w-full bg-card border border-white/10 rounded-xl px-3 py-1.5 text-xs font-bold text-text outline-none focus:border-purple-500"
+                              />
+                              <textarea
+                                rows={2}
+                                value={proj.desc}
+                                onChange={e => {
+                                  const updated = [...formData.projects];
+                                  updated[idx].desc = e.target.value;
+                                  setFormData({ ...formData, projects: updated });
+                                }}
+                                placeholder="Project description and deliverables..."
+                                className="w-full bg-card border border-white/10 rounded-xl px-3 py-1.5 text-xs text-subtext outline-none focus:border-purple-500 leading-relaxed"
+                              />
+                              <div>
+                                <label className="block text-[10px] font-bold text-subtext uppercase mb-1">Tech Stack (comma separated)</label>
+                                <input
+                                  type="text"
+                                  value={Array.isArray(proj.tech) ? proj.tech.join(", ") : ""}
+                                  onChange={e => {
+                                    const updated = [...formData.projects];
+                                    updated[idx].tech = e.target.value.split(",").map(t => t.trim()).filter(Boolean);
+                                    setFormData({ ...formData, projects: updated });
+                                  }}
+                                  placeholder="e.g. Python, LangGraph, FastAPI, Docker"
+                                  className="w-full bg-card border border-white/10 rounded-xl px-3 py-1.5 text-xs font-mono text-text outline-none focus:border-purple-500"
+                                />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* TAB 3: FREQUENTLY ASKED QUESTIONS */}
+                    {landingTab === "faqs" && (
+                      <div className="space-y-4 animate-in fade-in duration-200">
+                        <div className="flex items-center justify-between">
+                          <p className="text-xs text-subtext">
+                            These Q&A accordions render under <strong>&quot;Frequently Asked Questions&quot;</strong>.
+                          </p>
+                          <button
+                            type="button"
+                            onClick={() => setFormData(prev => ({
+                              ...prev,
+                              faqs: [...prev.faqs, { q: "New Question?", a: "Detailed answer explaining policies or prerequisites." }]
+                            }))}
+                            className="text-xs font-bold text-purple-400 hover:text-purple-300 flex items-center gap-1"
+                          >
+                            <Plus className="w-3.5 h-3.5" /> Add FAQ Item
+                          </button>
+                        </div>
+
+                        <div className="space-y-3">
+                          {formData.faqs.map((faq, idx) => (
+                            <div key={idx} className="p-4 rounded-2xl bg-background/80 border border-white/10 hover:border-purple-500/30 transition-all space-y-2">
+                              <div className="flex items-center justify-between gap-2">
+                                <span className="text-[10px] font-black uppercase text-purple-400">FAQ #{idx + 1}</span>
+                                <button
+                                  type="button"
+                                  onClick={() => setFormData(prev => ({
+                                    ...prev,
+                                    faqs: prev.faqs.filter((_, i) => i !== idx)
+                                  }))}
+                                  className="text-subtext hover:text-rose-400 transition-colors p-1"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                              <input
+                                type="text"
+                                value={faq.q}
+                                onChange={e => {
+                                  const updated = [...formData.faqs];
+                                  updated[idx].q = e.target.value;
+                                  setFormData({ ...formData, faqs: updated });
+                                }}
+                                placeholder="Question..."
+                                className="w-full bg-card border border-white/10 rounded-xl px-3 py-1.5 text-xs font-bold text-text outline-none focus:border-purple-500"
+                              />
+                              <textarea
+                                rows={2}
+                                value={faq.a}
+                                onChange={e => {
+                                  const updated = [...formData.faqs];
+                                  updated[idx].a = e.target.value;
+                                  setFormData({ ...formData, faqs: updated });
+                                }}
+                                placeholder="Answer..."
+                                className="w-full bg-card border border-white/10 rounded-xl px-3 py-1.5 text-xs text-subtext outline-none focus:border-purple-500 leading-relaxed"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* TAB 4: THIS COURSE INCLUDES CHECKLIST */}
+                    {landingTab === "features" && (
+                      <div className="space-y-4 animate-in fade-in duration-200">
+                        <p className="text-xs text-subtext">
+                          These features render in the sticky purchase box under <strong>&quot;This Course Includes&quot;</strong>.
+                        </p>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                          {formData.features.map((feat, idx) => (
+                            <div key={idx} className="flex items-center gap-2 p-2.5 bg-background/80 border border-white/10 rounded-xl">
+                              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                              <input
+                                type="text"
+                                value={feat}
+                                onChange={e => {
+                                  const updated = [...formData.features];
+                                  updated[idx] = e.target.value;
+                                  setFormData({ ...formData, features: updated });
+                                }}
+                                className="flex-1 bg-transparent text-xs text-text font-medium outline-none"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => setFormData(prev => ({
+                                  ...prev,
+                                  features: prev.features.filter((_, i) => i !== idx)
+                                }))}
+                                className="text-subtext hover:text-rose-400 p-1"
+                              >
+                                <X className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setFormData(prev => ({
+                            ...prev,
+                            features: [...prev.features, "Lifetime access to course materials"]
+                          }))}
+                          className="text-xs font-bold text-purple-400 hover:text-purple-300 flex items-center gap-1 pt-1"
+                        >
+                          <Plus className="w-3.5 h-3.5" /> Add Feature Bullet
+                        </button>
+                      </div>
+                    )}
                   </div>
 
                   {/* 💼 Internship Availability & Career Placement Section */}
@@ -1590,7 +2073,71 @@ export default function AdminCourseCreator() {
                     </div>
                   </div>
 
-                  {/* Internship Highlight Card in Review */}
+                  {/* 🌟 What You'll Learn Preview (6 Cards) */}
+                  {formData.learningOutcomes.length > 0 && (
+                    <div className="space-y-3 pt-3 border-t border-white/10">
+                      <div className="flex items-center gap-2">
+                        <Award className="w-4 h-4 text-purple-400" />
+                        <span className="text-xs font-black text-white uppercase tracking-wider">What Learners Will Master ({formData.learningOutcomes.length} Cards)</span>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                        {formData.learningOutcomes.map((item, idx) => (
+                          <div key={idx} className="p-3.5 rounded-2xl bg-background/50 border border-white/10 space-y-1">
+                            <span className="text-[10px] font-black uppercase text-purple-400">0{idx + 1}</span>
+                            <h4 className="font-bold text-xs text-white line-clamp-1">{item.title}</h4>
+                            <p className="text-[11px] text-slate-300 line-clamp-2">{item.description}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 🚀 Real-World Projects Preview */}
+                  {formData.projects.length > 0 && (
+                    <div className="space-y-3 pt-3 border-t border-white/10">
+                      <div className="flex items-center gap-2">
+                        <Code className="w-4 h-4 text-emerald-400" />
+                        <span className="text-xs font-black text-white uppercase tracking-wider">Real-World Projects ({formData.projects.length} Included)</span>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {formData.projects.map((proj, idx) => (
+                          <div key={idx} className="p-3.5 rounded-2xl bg-background/50 border border-white/10 space-y-1.5">
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs font-mono font-black text-emerald-400">{proj.number || `0${idx + 1}`}</span>
+                              <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-300 border border-emerald-500/25">Capstone</span>
+                            </div>
+                            <h4 className="font-bold text-xs text-white">{proj.title}</h4>
+                            <p className="text-[11px] text-slate-300 line-clamp-2">{proj.desc}</p>
+                            <div className="flex flex-wrap gap-1 pt-1">
+                              {proj.tech.map((t, tIdx) => (
+                                <span key={tIdx} className="text-[9px] px-2 py-0.5 rounded bg-white/5 border border-white/10 text-slate-300">{t}</span>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ❓ FAQs Preview */}
+                  {formData.faqs.length > 0 && (
+                    <div className="space-y-3 pt-3 border-t border-white/10">
+                      <div className="flex items-center gap-2">
+                        <HelpCircle className="w-4 h-4 text-purple-400" />
+                        <span className="text-xs font-black text-white uppercase tracking-wider">FAQs ({formData.faqs.length} Questions)</span>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                        {formData.faqs.map((faq, idx) => (
+                          <div key={idx} className="p-3 rounded-2xl bg-background/50 border border-white/10 space-y-1">
+                            <p className="font-bold text-white text-xs">{faq.q}</p>
+                            <p className="text-[11px] text-slate-300 line-clamp-2">{faq.a}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 💼 Internship Highlight Card in Review */}
                   {formData.hasInternship && (
                     <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between gap-3 text-xs">
                       <div className="flex items-center gap-2.5">
