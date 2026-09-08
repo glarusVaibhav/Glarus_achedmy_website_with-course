@@ -491,11 +491,15 @@ export default function AdminLiveCourseCreator() {
 
   const handleApplyAllOverviewFields = () => {
     if (!aiOverviewPreview) return;
+    const targetAudienceStr = Array.isArray(aiOverviewPreview.targetAudience)
+      ? (aiOverviewPreview.targetAudience as any[]).join(", ")
+      : (aiOverviewPreview.targetAudience || prevTargetAudience(formData.targetAudience));
+
     setFormData((prev) => ({
       ...prev,
       description: aiOverviewPreview.description,
       shortDescription: aiOverviewPreview.shortDescription || prev.shortDescription,
-      targetAudience: aiOverviewPreview.targetAudience || prev.targetAudience,
+      targetAudience: targetAudienceStr,
       prerequisites: aiOverviewPreview.prerequisites?.length ? aiOverviewPreview.prerequisites : prev.prerequisites,
       objectives: aiOverviewPreview.objectives?.length ? aiOverviewPreview.objectives : prev.objectives,
       tags: aiOverviewPreview.tags?.length ? aiOverviewPreview.tags : prev.tags
@@ -503,6 +507,11 @@ export default function AdminLiveCourseCreator() {
     setAiOverviewModalOpen(false);
     setAiOverviewPreview(null);
   };
+
+  function prevTargetAudience(val: any): string {
+    if (Array.isArray(val)) return val.join(", ");
+    return val || "";
+  }
 
   // Post AI Generation Decision Handlers
   const handleKeepBasicInfoSessionsOnly = () => {
@@ -513,12 +522,16 @@ export default function AdminLiveCourseCreator() {
 
   const handleApplyAllAiCourseInfo = () => {
     if (pendingAiCourseInfo) {
+      const targetAudienceStr = Array.isArray(pendingAiCourseInfo.targetAudience)
+        ? (pendingAiCourseInfo.targetAudience as any[]).join(", ")
+        : (pendingAiCourseInfo.targetAudience || formData.targetAudience || "");
+
       setFormData((prev) => ({
         ...prev,
         title: pendingAiCourseInfo.title || prev.title,
         shortDescription: pendingAiCourseInfo.shortDescription || prev.shortDescription,
         description: pendingAiCourseInfo.description || prev.description,
-        targetAudience: pendingAiCourseInfo.targetAudience || prev.targetAudience,
+        targetAudience: targetAudienceStr,
         prerequisites: pendingAiCourseInfo.prerequisites?.length ? pendingAiCourseInfo.prerequisites : prev.prerequisites,
         objectives: pendingAiCourseInfo.objectives?.length ? pendingAiCourseInfo.objectives : prev.objectives,
         tags: pendingAiCourseInfo.tags?.length ? pendingAiCourseInfo.tags : prev.tags
@@ -916,6 +929,9 @@ export default function AdminLiveCourseCreator() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...formData,
+          targetAudience: Array.isArray(formData.targetAudience)
+            ? (formData.targetAudience as any[]).join(", ")
+            : (formData.targetAudience || ""),
           status: publishStatus,
           sessions: sessionsToSave,
           leadInstructorPermissions

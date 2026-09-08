@@ -151,6 +151,12 @@ Generate all ${sessionCount} comprehensive sessions with rich agendas, real tech
       }
     }
 
+    if (parsed && parsed.course) {
+      if (Array.isArray(parsed.course.targetAudience)) {
+        parsed.course.targetAudience = parsed.course.targetAudience.join(", ");
+      }
+    }
+
     return NextResponse.json(parsed);
 
   } catch (error: any) {

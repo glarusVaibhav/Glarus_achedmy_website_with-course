@@ -212,12 +212,18 @@ export async function POST(req: Request) {
 
     const courseSlug = slug || title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
+    const normalizedTargetAudience = Array.isArray(targetAudience)
+      ? targetAudience.join(", ")
+      : typeof targetAudience === "object" && targetAudience !== null
+      ? JSON.stringify(targetAudience)
+      : targetAudience || null;
+
     const createdCourse = await prisma.liveCourse.create({
       data: {
         title,
         slug: courseSlug,
-        shortDescription,
-        subtitle,
+        shortDescription: typeof shortDescription === "object" ? JSON.stringify(shortDescription) : (shortDescription || null),
+        subtitle: typeof subtitle === "object" ? JSON.stringify(subtitle) : (subtitle || null),
         description,
         price: Number(price) || 14999,
         originalPrice: originalPrice ? Number(originalPrice) : 24999,
@@ -228,29 +234,29 @@ export async function POST(req: Request) {
         features: typeof features === "object" ? JSON.stringify(features) : (features || null),
         learningJourney: typeof learningJourney === "object" ? JSON.stringify(learningJourney) : (learningJourney || null),
         batches: typeof batches === "object" ? JSON.stringify(batches) : (batches || null),
-        cohortLeadBio,
+        cohortLeadBio: typeof cohortLeadBio === "object" ? JSON.stringify(cohortLeadBio) : (cohortLeadBio || null),
         heroBadges: typeof heroBadges === "object" ? JSON.stringify(heroBadges) : (heroBadges || null),
-        category,
-        level,
-        duration: duration || `${sessions.length} Live Sessions`,
+        category: category || "Generative AI",
+        level: level || "Intermediate",
+        duration: duration || `${sessions.length || 0} Live Sessions`,
         startDate: startDate ? new Date(startDate) : null,
         endDate: endDate ? new Date(endDate) : null,
-        timezone,
+        timezone: timezone || "Asia/Kolkata (IST)",
         totalSessions: sessions.length,
-        maxStudents: Number(maxStudents),
+        maxStudents: Number(maxStudents) || 50,
         status: status as any,
         leadInstructorId: leadInstructorId || null,
         createdById: session.id,
-        meetingPlatform,
-        meetingUrl,
-        prerequisites: JSON.stringify(prerequisites),
-        objectives: JSON.stringify(objectives),
-        tags: JSON.stringify(tags),
-        targetAudience,
-        thumbnailGradient,
-        recordingAvailable,
-        attendanceTracking,
-        visibility,
+        meetingPlatform: meetingPlatform || "Zoom",
+        meetingUrl: meetingUrl || null,
+        prerequisites: typeof prerequisites === "object" ? JSON.stringify(prerequisites) : (prerequisites || "[]"),
+        objectives: typeof objectives === "object" ? JSON.stringify(objectives) : (objectives || "[]"),
+        tags: typeof tags === "object" ? JSON.stringify(tags) : (tags || "[]"),
+        targetAudience: normalizedTargetAudience,
+        thumbnailGradient: typeof thumbnailGradient === "string" ? thumbnailGradient : "from-purple-900 via-indigo-950 to-slate-950",
+        recordingAvailable: recordingAvailable !== false,
+        attendanceTracking: attendanceTracking !== false,
+        visibility: visibility || "PUBLIC",
         sessions: {
           create: sessions.map((s: any, idx: number) => {
             const finalMeetingId = s.meetingId || s.zoomMeetingId || crypto.randomUUID();

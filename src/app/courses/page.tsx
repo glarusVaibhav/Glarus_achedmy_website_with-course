@@ -691,7 +691,7 @@ function CoursesContent() {
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                router.push("/signup");
+                                router.push(item.linkUrl);
                               }}
                               className="flex-1 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-xl font-bold text-xs shadow-lg shadow-purple-600/20 transition-all flex items-center justify-center gap-1.5"
                             >

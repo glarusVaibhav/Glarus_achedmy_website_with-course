@@ -259,16 +259,22 @@ export async function PUT(
       updateData.status = body.isPublished ? "PUBLISHED" : "DRAFT";
     }
     if (leadInstructorId !== undefined) updateData.leadInstructorId = leadInstructorId || null;
-    if (meetingPlatform !== undefined) updateData.meetingPlatform = meetingPlatform;
-    if (meetingUrl !== undefined) updateData.meetingUrl = meetingUrl;
-    if (prerequisites !== undefined) updateData.prerequisites = JSON.stringify(prerequisites);
-    if (objectives !== undefined) updateData.objectives = JSON.stringify(objectives);
-    if (tags !== undefined) updateData.tags = JSON.stringify(tags);
-    if (targetAudience !== undefined) updateData.targetAudience = targetAudience;
-    if (thumbnailGradient !== undefined) updateData.thumbnailGradient = thumbnailGradient;
-    if (recordingAvailable !== undefined) updateData.recordingAvailable = recordingAvailable;
-    if (attendanceTracking !== undefined) updateData.attendanceTracking = attendanceTracking;
-    if (visibility !== undefined) updateData.visibility = visibility;
+    if (meetingPlatform !== undefined) updateData.meetingPlatform = meetingPlatform || "Zoom";
+    if (meetingUrl !== undefined) updateData.meetingUrl = meetingUrl || null;
+    if (prerequisites !== undefined) updateData.prerequisites = typeof prerequisites === "object" ? JSON.stringify(prerequisites) : (prerequisites || "[]");
+    if (objectives !== undefined) updateData.objectives = typeof objectives === "object" ? JSON.stringify(objectives) : (objectives || "[]");
+    if (tags !== undefined) updateData.tags = typeof tags === "object" ? JSON.stringify(tags) : (tags || "[]");
+    if (targetAudience !== undefined) {
+      updateData.targetAudience = Array.isArray(targetAudience)
+        ? targetAudience.join(", ")
+        : typeof targetAudience === "object" && targetAudience !== null
+        ? JSON.stringify(targetAudience)
+        : targetAudience || null;
+    }
+    if (thumbnailGradient !== undefined) updateData.thumbnailGradient = typeof thumbnailGradient === "string" ? thumbnailGradient : "from-purple-900 via-indigo-950 to-slate-950";
+    if (recordingAvailable !== undefined) updateData.recordingAvailable = recordingAvailable !== false;
+    if (attendanceTracking !== undefined) updateData.attendanceTracking = attendanceTracking !== false;
+    if (visibility !== undefined) updateData.visibility = visibility || "PUBLIC";
 
     const updated = await prisma.liveCourse.update({
       where: { id },
