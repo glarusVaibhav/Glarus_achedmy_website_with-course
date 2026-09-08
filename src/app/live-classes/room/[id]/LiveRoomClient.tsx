@@ -3,7 +3,15 @@
 import React, { useEffect, useState } from 'react';
 import ZoomSession from '@/components/zoom/ZoomSession';
 
-export default function LiveRoomClient({ sessionId }: { sessionId: string }) {
+export default function LiveRoomClient({
+  sessionId,
+  sessionTitle,
+  courseTitle,
+}: {
+  sessionId: string;
+  sessionTitle?: string;
+  courseTitle?: string;
+}) {
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
@@ -19,5 +27,11 @@ export default function LiveRoomClient({ sessionId }: { sessionId: string }) {
     );
   }
 
-  return <ZoomSession sessionId={sessionId} />;
+  return (
+    <ZoomSession
+      sessionId={sessionId}
+      sessionTitle={sessionTitle}
+      courseTitle={courseTitle}
+    />
+  );
 }

@@ -1,6 +1,7 @@
 import React from "react";
 import { Metadata } from "next";
 import LiveRoomClient from "./LiveRoomClient";
+import prisma from "@/lib/db";
 
 export const metadata: Metadata = {
   title: "Live Classroom | Zoom Video SDK | Glarus Academy",
@@ -13,5 +14,19 @@ export default async function LiveClassroomPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  return <LiveRoomClient sessionId={id} />;
+  const liveSession = await prisma.liveSession.findUnique({
+    where: { id },
+    select: {
+      title: true,
+      liveCourse: { select: { title: true } },
+    },
+  });
+
+  return (
+    <LiveRoomClient
+      sessionId={id}
+      sessionTitle={liveSession?.title}
+      courseTitle={liveSession?.liveCourse.title}
+    />
+  );
 }
