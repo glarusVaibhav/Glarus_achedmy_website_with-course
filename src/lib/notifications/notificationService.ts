@@ -37,12 +37,24 @@ export class NotificationService {
         return null;
       }
 
+      // Verify actor exists if actorId is provided
+      let validActorId: string | null = null;
+      if (data.actorId) {
+        const actor = await prisma.user.findUnique({
+          where: { id: data.actorId },
+          select: { id: true },
+        });
+        if (actor) {
+          validActorId = actor.id;
+        }
+      }
+
       const metadataString = data.metadata ? JSON.stringify(data.metadata) : null;
 
       const created = await prisma.notification.create({
         data: {
           recipientId: data.recipientId,
-          actorId: data.actorId || null,
+          actorId: validActorId,
           category: data.category,
           type: data.type,
           priority: data.priority || "NORMAL",
@@ -216,6 +228,21 @@ export class NotificationService {
     const res = await prisma.notification.updateMany({
       where: { id: notificationId, recipientId },
       data: { isRead: true, readAt: new Date() },
+    });
+    return res.count > 0;
+  }
+
+  /**
+   * Explicitly set read status (true/false) for a single notification.
+   */
+  public async setReadStatus(
+    recipientId: string,
+    notificationId: string,
+    isRead: boolean
+  ): Promise<boolean> {
+    const res = await prisma.notification.updateMany({
+      where: { id: notificationId, recipientId },
+      data: { isRead, readAt: isRead ? new Date() : null },
     });
     return res.count > 0;
   }

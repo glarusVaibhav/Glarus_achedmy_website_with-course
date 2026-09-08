@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, Suspense } from "react";
+import React, { useState, useEffect, useMemo, Suspense } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -48,6 +48,40 @@ function StudentsContent() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [students, setStudents] = useState<StudentItem[]>(MOCK_STUDENTS);
+  const [loading, setLoading] = useState(true);
+  const [metrics, setMetrics] = useState({
+    totalStudents: MOCK_STUDENTS.length,
+    activeStudents: MOCK_STUDENTS.filter((s) => s.status === "Active").length,
+    atRiskLearners: MOCK_STUDENTS.filter((s) => s.status === "At Risk").length,
+    blockedAccounts: MOCK_STUDENTS.filter((s) => s.status === "Blocked").length,
+    monthlyGrowthPercent: 8.4
+  });
+
+  // Fetch real students from backend API
+  useEffect(() => {
+    let isMounted = true;
+    async function loadStudents() {
+      try {
+        const res = await fetch("/api/admin/students");
+        if (!res.ok) throw new Error("Failed to load students");
+        const data = await res.json();
+        if (isMounted && data.students) {
+          setStudents(data.students);
+          if (data.metrics) {
+            setMetrics(data.metrics);
+          }
+        }
+      } catch (err) {
+        console.warn("Using fallback students data:", err);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    }
+    loadStudents();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // Filtered Students list
   const filteredStudents = useMemo(() => {
@@ -60,9 +94,9 @@ function StudentsContent() {
       // Search Query
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
-        const matchName = stu.name.toLowerCase().includes(q);
-        const matchEmail = stu.email.toLowerCase().includes(q);
-        const matchCourse = stu.enrolledCourses.some((c) => c.title.toLowerCase().includes(q));
+        const matchName = (stu.name || "").toLowerCase().includes(q);
+        const matchEmail = (stu.email || "").toLowerCase().includes(q);
+        const matchCourse = (stu.enrolledCourses || []).some((c) => (c.title || "").toLowerCase().includes(q));
         if (!matchName && !matchEmail && !matchCourse) return false;
       }
 
@@ -75,18 +109,44 @@ function StudentsContent() {
     });
   }, [students, activeTab, searchQuery, statusFilter]);
 
-  const totalStudentsCount = students.length;
-  const activeStudentsCount = students.filter((s) => s.status === "Active").length;
-  const atRiskCount = students.filter((s) => s.status === "At Risk").length;
-  const blockedCount = students.filter((s) => s.status === "Blocked").length;
+  const totalStudentsCount = metrics.totalStudents || students.length;
+  const activeStudentsCount = metrics.activeStudents || students.filter((s) => s.status === "Active").length;
+  const atRiskCount = metrics.atRiskLearners || students.filter((s) => s.status === "At Risk").length;
+  const blockedCount = metrics.blockedAccounts || students.filter((s) => s.status === "Blocked").length;
 
-  const handleToggleBlock = (id: string, e: React.MouseEvent) => {
+  const handleToggleBlock = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
+    const currentStudent = students.find((s) => s.id === id);
+    if (!currentStudent) return;
+
+    const newStatus = currentStudent.status === "Blocked" ? "Active" : "Blocked";
+
+    // Optimistic UI update
     setStudents((prev) =>
-      prev.map((s) =>
-        s.id === id ? { ...s, status: s.status === "Blocked" ? "Active" : "Blocked" } : s
-      )
+      prev.map((s) => (s.id === id ? { ...s, status: newStatus } : s))
     );
+    setMetrics((prev) => ({
+      ...prev,
+      activeStudents: newStatus === "Active" ? prev.activeStudents + 1 : Math.max(0, prev.activeStudents - 1),
+      blockedAccounts: newStatus === "Blocked" ? prev.blockedAccounts + 1 : Math.max(0, prev.blockedAccounts - 1)
+    }));
+
+    try {
+      const res = await fetch(`/api/admin/students/${id}/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus })
+      });
+      if (!res.ok) {
+        throw new Error("Failed to update status on server");
+      }
+    } catch (err) {
+      console.error("Failed to toggle block status:", err);
+      // Revert on error
+      setStudents((prev) =>
+        prev.map((s) => (s.id === id ? { ...s, status: currentStudent.status } : s))
+      );
+    }
   };
 
   const handleRowClick = (studentId: string) => {
@@ -259,11 +319,11 @@ function StudentsContent() {
                         <div className="flex items-center gap-1.5">
                           <BookOpen className="w-3.5 h-3.5 text-purple-400 shrink-0" />
                           <span className="font-bold text-text text-xs">
-                            {stu.enrolledCourses.length} Courses Enrolled
+                            {(stu.enrolledCourses || []).length} Courses Enrolled
                           </span>
                         </div>
                         <div className="flex flex-wrap gap-1">
-                          {stu.enrolledCourses.slice(0, 2).map((c) => (
+                          {(stu.enrolledCourses || []).slice(0, 2).map((c) => (
                             <span
                               key={c.id}
                               className={`px-2 py-0.5 rounded text-[10px] font-bold border truncate max-w-[130px] ${
@@ -275,9 +335,9 @@ function StudentsContent() {
                               {c.title}
                             </span>
                           ))}
-                          {stu.enrolledCourses.length > 2 && (
+                          {(stu.enrolledCourses || []).length > 2 && (
                             <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-white/5 text-subtext border border-white/10">
-                              +{stu.enrolledCourses.length - 2} more
+                              +{(stu.enrolledCourses || []).length - 2} more
                             </span>
                           )}
                         </div>

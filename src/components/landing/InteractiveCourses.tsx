@@ -117,7 +117,7 @@ const ENRICHED_LIVE_COURSES: LiveCourseDetail[] = [
     linkUrl: "/student/live-courses/live-agentic-ai",
     tags: ["Live Class", "Limited Seats", "5 Projects"],
     classType: "Live Class",
-    timeframeDays: 30,
+    timeframeDays: 5,
     instructor: {
       name: "Alex Chen",
       role: "FAANG Staff Engineer",
@@ -127,7 +127,7 @@ const ENRICHED_LIVE_COURSES: LiveCourseDetail[] = [
       avatar: "/images/courses/generative-ai.png"
     },
     schedule: {
-      dateFormatted: "Tue, 20 Aug 2026",
+      dateFormatted: "Tomorrow, 08:00 PM IST",
       timeFormatted: "08:00 PM – 10:30 PM IST",
       duration: "2.5 Hours",
       daysPattern: "Mon • Wed • Fri"
@@ -150,7 +150,7 @@ const ENRICHED_LIVE_COURSES: LiveCourseDetail[] = [
     linkUrl: "/student/live-courses/live-llmops",
     tags: ["Live Class", "Includes Projects", "Live Mentorship"],
     classType: "Live Class",
-    timeframeDays: 30,
+    timeframeDays: 14,
     instructor: {
       name: "Elena Rostova",
       role: "ML Engineer at Meta",
@@ -160,7 +160,7 @@ const ENRICHED_LIVE_COURSES: LiveCourseDetail[] = [
       avatar: "/images/courses/llm-architecture.png"
     },
     schedule: {
-      dateFormatted: "Mon, 01 Sep 2026",
+      dateFormatted: "In 2 Weeks • Mon, 01 Sep",
       timeFormatted: "07:30 PM – 09:30 PM IST",
       duration: "2 Hours",
       daysPattern: "Mon • Wed • Fri"
@@ -173,34 +173,34 @@ const ENRICHED_LIVE_COURSES: LiveCourseDetail[] = [
   },
   {
     id: "live-3",
-    title: "Scalable Cloud Architecture for AI Applications",
-    category: "Cloud",
-    description: "Design and deploy scalable, secure and cost-optimized AI applications on AWS & Kubernetes.",
-    image: "/images/courses/rag-vector-db.png",
+    title: "Hands-On LLM Fine-Tuning & Quantization Workshop",
+    category: "AI Engineering",
+    description: "Deep dive into LoRA, QLoRA, and vLLM inference optimization in a live hands-on masterclass lab.",
+    image: "/images/courses/python-fundamentals.png",
     level: "Level: Intermediate",
     statusBadge: "UPCOMING",
     badgeType: "UPCOMING",
-    linkUrl: "/student/live-courses/live-cloud-ai",
-    tags: ["Live Class", "Hands-on Labs", "Cloud Infra"],
+    linkUrl: "/student/live-courses/live-finetune",
+    tags: ["Workshop", "Live Lab", "Hands-On"],
     classType: "Workshop",
-    timeframeDays: 60,
+    timeframeDays: 6,
     instructor: {
-      name: "Arjun Mehta",
-      role: "Ex-AWS Principal Architect",
-      company: "Ex-AWS Principal",
-      rating: 4.9,
-      reviews: "1.5k+ reviews",
-      avatar: "/images/courses/rag-vector-db.png"
+      name: "David Kumar",
+      role: "AI Research Lead",
+      company: "Glarus AI",
+      rating: 4.95,
+      reviews: "880 reviews",
+      avatar: "/images/courses/python-fundamentals.png"
     },
     schedule: {
-      dateFormatted: "Wed, 10 Sep 2026",
-      timeFormatted: "08:00 PM – 10:00 PM IST",
-      duration: "2 Hours",
-      daysPattern: "Tue-Thu Evenings"
+      dateFormatted: "This Weekend • Sat, 06:00 PM",
+      timeFormatted: "06:00 PM – 10:00 PM IST",
+      duration: "4 Hours",
+      daysPattern: "1-Day Weekend Intensive"
     },
     seats: {
-      enrolled: 45,
-      total: 60
+      enrolled: 38,
+      total: 40
     },
     ctaText: "Reserve Seat →"
   },
@@ -216,7 +216,7 @@ const ENRICHED_LIVE_COURSES: LiveCourseDetail[] = [
     linkUrl: "/courses",
     tags: ["Full Bootcamp", "Career Support", "Mock Interviews"],
     classType: "Full Bootcamp",
-    timeframeDays: 60,
+    timeframeDays: 25,
     instructor: {
       name: "Priya Sharma",
       role: "Senior ML Engineer",
@@ -226,7 +226,7 @@ const ENRICHED_LIVE_COURSES: LiveCourseDetail[] = [
       avatar: "/images/courses/ml-math.png"
     },
     schedule: {
-      dateFormatted: "Sat, 28 Sep 2026",
+      dateFormatted: "Starts in 3 Weeks • Sat, 28 Sep",
       timeFormatted: "11:00 AM – 01:00 PM IST",
       duration: "2 Hours",
       daysPattern: "Full-Time Intensive"
@@ -236,6 +236,72 @@ const ENRICHED_LIVE_COURSES: LiveCourseDetail[] = [
       total: 30
     },
     ctaText: "View Details →"
+  },
+  {
+    id: "live-5",
+    title: "Scalable Cloud Architecture & Vector DB Workshop",
+    category: "Cloud",
+    description: "Design and deploy scalable, secure and cost-optimized AI applications on AWS & Kubernetes.",
+    image: "/images/courses/rag-vector-db.png",
+    level: "Level: Intermediate",
+    statusBadge: "UPCOMING",
+    badgeType: "UPCOMING",
+    linkUrl: "/student/live-courses/live-cloud-ai",
+    tags: ["Workshop", "Hands-on Labs", "Cloud Infra"],
+    classType: "Workshop",
+    timeframeDays: 18,
+    instructor: {
+      name: "Arjun Mehta",
+      role: "Ex-AWS Principal Architect",
+      company: "Ex-AWS Principal",
+      rating: 4.9,
+      reviews: "1.5k+ reviews",
+      avatar: "/images/courses/rag-vector-db.png"
+    },
+    schedule: {
+      dateFormatted: "Sat, 22 Aug • Live Lab",
+      timeFormatted: "08:00 PM – 10:00 PM IST",
+      duration: "2 Hours",
+      daysPattern: "Weekend Masterclass"
+    },
+    seats: {
+      enrolled: 45,
+      total: 60
+    },
+    ctaText: "Reserve Seat →"
+  },
+  {
+    id: "live-6",
+    title: "Full-Stack Generative AI & Multi-Modal Systems",
+    category: "AI Engineering",
+    description: "Master multimodal LLMs, audio/vision embeddings, and streaming full-stack AI user experiences.",
+    image: "/images/courses/smart-contracts.png",
+    level: "Level: Advanced",
+    statusBadge: "UPCOMING",
+    badgeType: "UPCOMING",
+    linkUrl: "/student/live-courses/live-multimodal",
+    tags: ["Live Class", "Full-Stack", "Cohort 3"],
+    classType: "Live Class",
+    timeframeDays: 45,
+    instructor: {
+      name: "Sophia Zhang",
+      role: "Staff AI Engineer",
+      company: "OpenAI",
+      rating: 4.9,
+      reviews: "1.1k+ reviews",
+      avatar: "/images/courses/smart-contracts.png"
+    },
+    schedule: {
+      dateFormatted: "Starts Next Month • Cohort 3",
+      timeFormatted: "07:00 PM – 09:00 PM IST",
+      duration: "2 Hours",
+      daysPattern: "Tue & Thu Evenings"
+    },
+    seats: {
+      enrolled: 22,
+      total: 45
+    },
+    ctaText: "Reserve Seat →"
   }
 ];
 
@@ -277,9 +343,15 @@ export default function InteractiveCourses() {
 
   // Live sidebar filters
   const [selectedTimeframe, setSelectedTimeframe] = useState<number | null>(null); // null = all, 7, 30, 60
-  const [selectedClassType, setSelectedClassType] = useState<string | null>(null);
+  const [selectedClassTypes, setSelectedClassTypes] = useState<string[]>([]);
   const [selectedInstructor, setSelectedInstructor] = useState<string | null>(null);
   const [savedBooked, setSavedBooked] = useState<Record<string, boolean>>({});
+
+  const toggleClassType = (type: string) => {
+    setSelectedClassTypes((prev) =>
+      prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]
+    );
+  };
 
   // Dynamic self-paced courses from API / DB
   const [selfPacedCourses, setSelfPacedCourses] = useState<Course[]>(SELF_PACED_COURSES);
@@ -288,7 +360,11 @@ export default function InteractiveCourses() {
     fetch("/api/courses")
       .then((res) => res.json())
       .then((data) => {
-        if (data?.courses && Array.isArray(data.courses) && data.courses.length > 0) {
+        if (data?.courses && Array.isArray(data.courses)) {
+          if (data.courses.length === 0) {
+            setSelfPacedCourses([]);
+            return;
+          }
           const dbCourses: Course[] = data.courses.map((c: any) => {
             const titleLower = (c.title || "").toLowerCase();
             let image = c.image;
@@ -322,13 +398,7 @@ export default function InteractiveCourses() {
             };
           });
 
-          // Deduplicate by id and title
-          const existingIds = new Set(dbCourses.map((c) => c.id));
-          const existingTitles = new Set(dbCourses.map((c) => c.title.toLowerCase().trim()));
-          const remainingStatic = SELF_PACED_COURSES.filter(
-            (c) => !existingIds.has(c.id) && !existingTitles.has(c.title.toLowerCase().trim())
-          );
-          setSelfPacedCourses([...dbCourses, ...remainingStatic]);
+          setSelfPacedCourses(dbCourses);
         }
       })
       .catch((err) => {
@@ -359,10 +429,24 @@ export default function InteractiveCourses() {
               ? `${nextSession.startTime} – ${nextSession.endTime || "09:00 PM"} IST`
               : "07:00 PM – 09:00 PM IST";
 
+            let calculatedDays = 30;
+            if (nextSession?.date) {
+              const diffMs = new Date(nextSession.date).getTime() - Date.now();
+              calculatedDays = Math.max(1, Math.ceil(diffMs / (1000 * 60 * 60 * 24)));
+            }
+
+            const titleLower = (c.title || "").toLowerCase();
+            let inferredClassType: "Live Class" | "Full Bootcamp" | "Workshop" = "Live Class";
+            if (titleLower.includes("bootcamp") || (c.totalSessions && c.totalSessions >= 10)) {
+              inferredClassType = "Full Bootcamp";
+            } else if (titleLower.includes("workshop") || (c.totalSessions && c.totalSessions <= 3)) {
+              inferredClassType = "Workshop";
+            }
+
             return {
               id: c.id,
               title: c.title,
-              category: c.category || "Generative AI",
+              category: c.category || "AI Engineering",
               description:
                 c.shortDescription ||
                 c.description ||
@@ -373,8 +457,8 @@ export default function InteractiveCourses() {
               badgeType: "UPCOMING" as const,
               linkUrl: `/student/live-courses/${c.id}`,
               tags: ["Live Cohort", `${c.totalSessions || 6} Sessions`, "Mentor-Led"],
-              classType: "Live Class" as const,
-              timeframeDays: 30,
+              classType: inferredClassType,
+              timeframeDays: calculatedDays,
               instructor: {
                 name: c.leadInstructor?.name || "Lead AI Architect",
                 role: "Lead Cohort Instructor",
@@ -419,14 +503,32 @@ export default function InteractiveCourses() {
   const currentCategory = activeMode === "self-paced" ? selfPacedCategory : liveCategory;
   const currentCategoryList = activeMode === "self-paced" ? SELF_PACED_CATEGORIES : dynamicLiveCategories;
 
+  // Real-time filter counts computed from inventory
+  const filterCounts = useMemo(() => {
+    const baseList = liveCategory === "All"
+      ? liveCoursesList
+      : liveCoursesList.filter((c) => c.category === liveCategory);
+
+    return {
+      next7: baseList.filter((c) => (c.timeframeDays ?? 30) <= 7).length,
+      next30: baseList.filter((c) => (c.timeframeDays ?? 30) <= 30).length,
+      next60: baseList.filter((c) => (c.timeframeDays ?? 30) <= 60).length,
+      liveClass: baseList.filter((c) => c.classType === "Live Class").length,
+      bootcamp: baseList.filter((c) => c.classType === "Full Bootcamp").length,
+      workshop: baseList.filter((c) => c.classType === "Workshop").length,
+    };
+  }, [liveCoursesList, liveCategory]);
+
   // Filter live courses dynamically
-  const filteredLive = liveCoursesList.filter((course) => {
-    if (liveCategory !== "All" && course.category !== liveCategory) return false;
-    if (selectedTimeframe !== null && course.timeframeDays > selectedTimeframe) return false;
-    if (selectedClassType !== null && course.classType !== selectedClassType) return false;
-    if (selectedInstructor !== null && course.instructor.name !== selectedInstructor) return false;
-    return true;
-  });
+  const filteredLive = useMemo(() => {
+    return liveCoursesList.filter((course) => {
+      if (liveCategory !== "All" && course.category !== liveCategory) return false;
+      if (selectedTimeframe !== null && (course.timeframeDays ?? 30) > selectedTimeframe) return false;
+      if (selectedClassTypes.length > 0 && !selectedClassTypes.includes(course.classType)) return false;
+      if (selectedInstructor !== null && course.instructor?.name !== selectedInstructor) return false;
+      return true;
+    });
+  }, [liveCoursesList, liveCategory, selectedTimeframe, selectedClassTypes, selectedInstructor]);
 
   const filteredSelfPaced = selfPacedCategory === "All"
     ? selfPacedCourses
@@ -857,14 +959,15 @@ export default function InteractiveCourses() {
                 <span className="text-xs font-black text-text uppercase tracking-wider flex items-center gap-1.5">
                   <Filter className="w-3.5 h-3.5 text-purple-400" /> Filters
                 </span>
-                {(selectedTimeframe !== null || selectedClassType !== null || selectedInstructor !== null) && (
+                {(selectedTimeframe !== null || selectedClassTypes.length > 0 || selectedInstructor !== null || liveCategory !== "All") && (
                   <button
                     onClick={() => {
                       setSelectedTimeframe(null);
-                      setSelectedClassType(null);
+                      setSelectedClassTypes([]);
                       setSelectedInstructor(null);
+                      setLiveCategory("All");
                     }}
-                    className="text-[11px] font-bold text-purple-400 hover:underline"
+                    className="text-[11px] font-bold text-purple-400 hover:underline cursor-pointer"
                   >
                     Clear All
                   </button>
@@ -876,9 +979,9 @@ export default function InteractiveCourses() {
                 <h4 className="text-xs font-bold text-subtext uppercase tracking-wider mb-2.5">Timeframe</h4>
                 <div className="space-y-2">
                   {[
-                    { label: "Next 7 Days", days: 7, count: 2 },
-                    { label: "Next 30 Days", days: 30, count: 4 },
-                    { label: "Next 60 Days", days: 60, count: 6 }
+                    { label: "Next 7 Days", days: 7, count: filterCounts.next7 },
+                    { label: "Next 30 Days", days: 30, count: filterCounts.next30 },
+                    { label: "Next 60 Days", days: 60, count: filterCounts.next60 }
                   ].map((tf) => (
                     <label
                       key={tf.days}
@@ -889,7 +992,7 @@ export default function InteractiveCourses() {
                           type="checkbox"
                           checked={selectedTimeframe === tf.days}
                           onChange={() => setSelectedTimeframe(selectedTimeframe === tf.days ? null : tf.days)}
-                          className="w-4 h-4 rounded border-card bg-background text-purple-600 focus:ring-purple-500 accent-purple-600"
+                          className="w-4 h-4 rounded border-card bg-background text-purple-600 focus:ring-purple-500 accent-purple-600 cursor-pointer"
                         />
                         <span>{tf.label}</span>
                       </div>
@@ -906,28 +1009,31 @@ export default function InteractiveCourses() {
                 <h4 className="text-xs font-bold text-subtext uppercase tracking-wider mb-2.5">Class Type</h4>
                 <div className="space-y-2">
                   {[
-                    { label: "Live Class", type: "Live Class", count: 3 },
-                    { label: "Full Bootcamp", type: "Full Bootcamp", count: 1 },
-                    { label: "Workshop", type: "Workshop", count: 2 }
-                  ].map((ct) => (
-                    <label
-                      key={ct.type}
-                      className="flex items-center justify-between text-xs font-semibold text-text cursor-pointer hover:text-purple-400 transition-colors"
-                    >
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          checked={selectedClassType === ct.type}
-                          onChange={() => setSelectedClassType(selectedClassType === ct.type ? null : ct.type)}
-                          className="w-4 h-4 rounded border-card bg-background text-purple-600 focus:ring-purple-500 accent-purple-600"
-                        />
-                        <span>{ct.label}</span>
-                      </div>
-                      <span className="text-[10px] font-bold text-subtext bg-background px-2 py-0.5 rounded-full border border-card">
-                        {ct.count}
-                      </span>
-                    </label>
-                  ))}
+                    { label: "Live Class", type: "Live Class", count: filterCounts.liveClass },
+                    { label: "Full Bootcamp", type: "Full Bootcamp", count: filterCounts.bootcamp },
+                    { label: "Workshop", type: "Workshop", count: filterCounts.workshop }
+                  ].map((ct) => {
+                    const isChecked = selectedClassTypes.includes(ct.type);
+                    return (
+                      <label
+                        key={ct.type}
+                        className="flex items-center justify-between text-xs font-semibold text-text cursor-pointer hover:text-purple-400 transition-colors"
+                      >
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            onChange={() => toggleClassType(ct.type)}
+                            className="w-4 h-4 rounded border-card bg-background text-purple-600 focus:ring-purple-500 accent-purple-600 cursor-pointer"
+                          />
+                          <span>{ct.label}</span>
+                        </div>
+                        <span className="text-[10px] font-bold text-subtext bg-background px-2 py-0.5 rounded-full border border-card">
+                          {ct.count}
+                        </span>
+                      </label>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -937,7 +1043,7 @@ export default function InteractiveCourses() {
                 <p className="text-[11px] text-subtext mb-3">Request a batch for your preferred timezone or schedule.</p>
                 <button
                   onClick={() => router.push("/signup")}
-                  className="w-full py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold text-xs shadow-md shadow-purple-600/20 transition-all"
+                  className="w-full py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold text-xs shadow-md shadow-purple-600/20 transition-all cursor-pointer"
                 >
                   Request Batch
                 </button>
@@ -950,7 +1056,18 @@ export default function InteractiveCourses() {
                 <div className="w-full py-16 px-8 rounded-3xl border border-card/60 bg-card/40 backdrop-blur-md flex flex-col items-center justify-center text-center">
                   <Calendar className="w-10 h-10 text-purple-400 mb-3" />
                   <h4 className="text-xl font-black text-text mb-1">No matching live batches</h4>
-                  <p className="text-xs text-subtext">Try clearing your active filters to see all available classes.</p>
+                  <p className="text-xs text-subtext mb-4">Try clearing your active filters to see all available classes.</p>
+                  <button
+                    onClick={() => {
+                      setSelectedTimeframe(null);
+                      setSelectedClassTypes([]);
+                      setSelectedInstructor(null);
+                      setLiveCategory("All");
+                    }}
+                    className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-purple-600/20 cursor-pointer"
+                  >
+                    Reset All Filters
+                  </button>
                 </div>
               ) : (
                 filteredLive.map((item) => {

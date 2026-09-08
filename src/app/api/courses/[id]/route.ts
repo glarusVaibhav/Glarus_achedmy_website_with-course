@@ -61,7 +61,11 @@ export async function GET(
       learningJourney: safeJsonParse(course.learningJourney, [])
     };
 
-    return NextResponse.json({ course: formattedCourse });
+    return NextResponse.json({
+      success: true,
+      data: formattedCourse,
+      course: formattedCourse
+    });
   } catch (err: any) {
     console.error("Fetch course detail error:", err);
     return NextResponse.json({ error: "Failed to fetch course details", details: err?.message }, { status: 500 });

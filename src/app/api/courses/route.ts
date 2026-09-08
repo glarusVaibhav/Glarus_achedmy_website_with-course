@@ -6,10 +6,8 @@ export async function GET() {
   try {
     const courses = await prisma.course.findMany({
       where: {
-        OR: [
-          { status: "PUBLISHED" },
-          { isPublished: true }
-        ]
+        isPublished: true,
+        status: "PUBLISHED"
       },
       include: {
         instructor: { select: { name: true, email: true } },
@@ -74,7 +72,33 @@ export async function POST(req: Request) {
         : session.role === "ADMIN"
         ? "APPROVED"
         : "PENDING";
-    const targetInstructorId = (session.role === "ADMIN" && instructorId) ? instructorId : session.id;
+
+    let targetInstructorId = session.id;
+    if (session.role === "ADMIN" && instructorId && instructorId !== "admin-official") {
+      const instructorUser = await prisma.user.findUnique({
+        where: { id: instructorId }
+      });
+      if (instructorUser) {
+        targetInstructorId = instructorUser.id;
+      }
+    }
+
+    // Verify targetInstructorId exists in DB to prevent foreign key errors
+    const verifiedInstructor = await prisma.user.findUnique({
+      where: { id: targetInstructorId }
+    });
+
+    if (!verifiedInstructor) {
+      const fallbackUser = await prisma.user.findFirst({
+        where: { role: { in: ["ADMIN", "INSTRUCTOR"] } }
+      }) || await prisma.user.findFirst();
+
+      if (!fallbackUser) {
+        return NextResponse.json({ error: "No valid instructor or administrator account found in database." }, { status: 400 });
+      }
+      targetInstructorId = fallbackUser.id;
+    }
+
     const shouldPublish = session.role === "ADMIN" && Boolean(isPublished);
 
     // Helper to stringify JSON fields if passed as objects/arrays

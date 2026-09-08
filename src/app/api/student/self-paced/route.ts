@@ -52,12 +52,15 @@ export async function GET() {
           include: { lecture: true },
         });
 
-        let courseThumbnail = '/images/courses/generative-ai.png';
-        const t = en.course.title.toLowerCase();
-        if (t.includes('generative ai')) courseThumbnail = '/images/courses/generative-ai.png';
-        else if (t.includes('machine learning')) courseThumbnail = '/images/courses/ml-math.png';
-        else if (t.includes('python')) courseThumbnail = '/images/courses/python-fundamentals.png';
-        else if (t.includes('rag') || t.includes('vector')) courseThumbnail = '/images/courses/rag-vector-db.png';
+        let courseThumbnail = (en.course as any).image;
+        if (!courseThumbnail || courseThumbnail === '/placeholder-course.jpg') {
+          const t = en.course.title.toLowerCase();
+          if (t.includes('generative ai')) courseThumbnail = '/images/courses/generative-ai.png';
+          else if (t.includes('machine learning') || t.includes('ml')) courseThumbnail = '/images/courses/ml-math.png';
+          else if (t.includes('python')) courseThumbnail = '/images/courses/python-fundamentals.png';
+          else if (t.includes('rag') || t.includes('vector')) courseThumbnail = '/images/courses/rag-vector-db.png';
+          else courseThumbnail = '/images/courses/generative-ai.png';
+        }
 
         return {
           id: en.course.id,

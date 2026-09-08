@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useState, useMemo, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { CourseCard } from "@/components/CourseCard";
 import { CATEGORIES } from "@/lib/data";
@@ -23,19 +23,19 @@ const LIVE_CATEGORIES = ["All", "AI Engineering", "LLMOps", "Agentic AI", "Cloud
 
 const ENRICHED_LIVE_COURSES = [
   {
-    id: "live-agentic-ai",
+    id: "live-1",
     title: "Building Autonomous Agents with LangGraph",
     description: "Build production-ready AI agents using LangGraph, memory, tools, and multi-agent workflows.",
     category: "Agentic AI",
     classType: "Live Class",
     level: "Intermediate",
-    timeframeDays: 30,
+    timeframeDays: 5,
     tags: ["Live Class", "Limited Seats", "5 Projects"],
     image: "/images/courses/generative-ai.png",
     linkUrl: "/student/live-courses/live-agentic-ai",
     statusBadge: "Next Batch Starting Soon",
     schedule: {
-      dateFormatted: "Tue, 20 Aug 2026",
+      dateFormatted: "Tomorrow, 08:00 PM IST",
       daysPattern: "Mon • Wed • Fri",
       time: "08:00 PM – 10:30 PM IST",
       duration: "2.5 Hours"
@@ -46,19 +46,19 @@ const ENRICHED_LIVE_COURSES = [
     }
   },
   {
-    id: "live-llmops",
+    id: "live-2",
     title: "LLMOps Pipeline: From Training to Production",
     description: "Master MLOps for LLMs: data pipelines, evaluation, deployment, monitoring and scaling.",
     category: "LLMOps",
     classType: "Live Class",
     level: "Advanced",
-    timeframeDays: 60,
+    timeframeDays: 14,
     tags: ["Live Class", "Includes Projects", "Live Mentorship"],
     image: "/images/courses/llm-architecture.png",
     linkUrl: "/student/live-courses/live-llmops",
     statusBadge: "Filling Fast",
     schedule: {
-      dateFormatted: "Mon, 01 Sep 2026",
+      dateFormatted: "In 2 Weeks • Mon, 01 Sep",
       daysPattern: "Mon • Wed • Fri",
       time: "07:30 PM – 09:30 PM IST",
       duration: "2 Hours"
@@ -69,26 +69,95 @@ const ENRICHED_LIVE_COURSES = [
     }
   },
   {
-    id: "live-cloud-ai",
-    title: "Scalable Cloud Architecture for AI Applications",
+    id: "live-3",
+    title: "Hands-On LLM Fine-Tuning & Quantization Workshop",
+    description: "Deep dive into LoRA, QLoRA, and vLLM inference optimization in a live hands-on masterclass lab.",
+    category: "AI Engineering",
+    classType: "Workshop",
+    level: "Intermediate",
+    timeframeDays: 6,
+    tags: ["Workshop", "Live Lab", "Hands-On"],
+    image: "/images/courses/python-fundamentals.png",
+    linkUrl: "/student/live-courses/live-finetune",
+    statusBadge: "Seats Open",
+    schedule: {
+      dateFormatted: "This Weekend • Sat, 06:00 PM",
+      daysPattern: "1-Day Weekend Intensive",
+      time: "06:00 PM – 10:00 PM IST",
+      duration: "4 Hours"
+    },
+    seats: {
+      enrolled: 38,
+      total: 40
+    }
+  },
+  {
+    id: "live-4",
+    title: "AI Engineering Master Career Bootcamp - Q4 2026",
+    description: "16-week intensive program with live classes, projects, mock interviews and career mentorship.",
+    category: "Career Bootcamp",
+    classType: "Full Bootcamp",
+    level: "All Levels",
+    timeframeDays: 25,
+    tags: ["Full Bootcamp", "Career Support", "Mock Interviews"],
+    image: "/images/courses/ml-math.png",
+    linkUrl: "/courses",
+    statusBadge: "Early Bird",
+    schedule: {
+      dateFormatted: "Starts in 3 Weeks • Sat, 28 Sep",
+      daysPattern: "Full-Time Intensive",
+      time: "11:00 AM – 01:00 PM IST",
+      duration: "2 Hours"
+    },
+    seats: {
+      enrolled: 18,
+      total: 30
+    }
+  },
+  {
+    id: "live-5",
+    title: "Scalable Cloud Architecture & Vector DB Workshop",
     description: "Design and deploy scalable, secure and cost-optimized AI applications on AWS & Kubernetes.",
     category: "Cloud",
     classType: "Workshop",
     level: "Intermediate",
-    timeframeDays: 60,
-    tags: ["Live Class", "Hands-on Labs", "Cloud Infra"],
+    timeframeDays: 18,
+    tags: ["Workshop", "Hands-on Labs", "Cloud Infra"],
     image: "/images/courses/rag-vector-db.png",
     linkUrl: "/student/live-courses/live-cloud-ai",
     statusBadge: "Seats Open",
     schedule: {
-      dateFormatted: "Wed, 10 Sep 2026",
-      daysPattern: "Tue-Thu Evenings",
+      dateFormatted: "Sat, 22 Aug • Live Lab",
+      daysPattern: "Weekend Masterclass",
       time: "08:00 PM – 10:00 PM IST",
       duration: "2 Hours"
     },
     seats: {
       enrolled: 45,
       total: 60
+    }
+  },
+  {
+    id: "live-6",
+    title: "Full-Stack Generative AI & Multi-Modal Systems",
+    description: "Master multimodal LLMs, audio/vision embeddings, and streaming full-stack AI user experiences.",
+    category: "AI Engineering",
+    classType: "Live Class",
+    level: "Advanced",
+    timeframeDays: 45,
+    tags: ["Live Class", "Full-Stack", "Cohort 3"],
+    image: "/images/courses/smart-contracts.png",
+    linkUrl: "/student/live-courses/live-multimodal",
+    statusBadge: "Enrolling",
+    schedule: {
+      dateFormatted: "Starts Next Month • Cohort 3",
+      daysPattern: "Tue & Thu Evenings",
+      time: "07:00 PM – 09:00 PM IST",
+      duration: "2 Hours"
+    },
+    seats: {
+      enrolled: 22,
+      total: 45
     }
   }
 ];
@@ -107,8 +176,14 @@ function CoursesContent() {
 
   // Live sidebar filters
   const [selectedTimeframe, setSelectedTimeframe] = useState<number | null>(null);
-  const [selectedClassType, setSelectedClassType] = useState<string | null>(null);
+  const [selectedClassTypes, setSelectedClassTypes] = useState<string[]>([]);
   const [savedBooked, setSavedBooked] = useState<Record<string, boolean>>({});
+
+  const toggleClassType = (type: string) => {
+    setSelectedClassTypes((prev) =>
+      prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]
+    );
+  };
 
   useEffect(() => {
     const typeParam = searchParams.get("type");
@@ -178,10 +253,24 @@ function CoursesContent() {
               ? `${nextSession.startTime} – ${nextSession.endTime || "09:00 PM"} IST`
               : "07:00 PM – 09:00 PM IST";
 
+            let calculatedDays = 30;
+            if (nextSession?.date) {
+              const diffMs = new Date(nextSession.date).getTime() - Date.now();
+              calculatedDays = Math.max(1, Math.ceil(diffMs / (1000 * 60 * 60 * 24)));
+            }
+
+            const titleLower = (c.title || "").toLowerCase();
+            let inferredClassType = "Live Class";
+            if (titleLower.includes("bootcamp") || (c.totalSessions && c.totalSessions >= 10)) {
+              inferredClassType = "Full Bootcamp";
+            } else if (titleLower.includes("workshop") || (c.totalSessions && c.totalSessions <= 3)) {
+              inferredClassType = "Workshop";
+            }
+
             return {
               id: c.id,
               title: c.title,
-              category: c.category || "Generative AI",
+              category: c.category || "AI Engineering",
               description:
                 c.shortDescription ||
                 c.description ||
@@ -191,8 +280,8 @@ function CoursesContent() {
               statusBadge: "Next Batch Starting Soon",
               linkUrl: `/student/live-courses/${c.id}`,
               tags: ["Live Cohort", `${c.totalSessions || 6} Sessions`, "Mentor-Led"],
-              classType: "Live Class",
-              timeframeDays: 30,
+              classType: inferredClassType,
+              timeframeDays: calculatedDays,
               schedule: {
                 dateFormatted: dateStr,
                 time: timeStr,
@@ -216,14 +305,30 @@ function CoursesContent() {
       });
   }, []);
 
+  // Real-time filter counts computed from inventory
+  const filterCounts = useMemo(() => {
+    const baseList = liveCategory === "All"
+      ? liveCoursesList
+      : liveCoursesList.filter((c) => c.category === liveCategory);
+
+    return {
+      next7: baseList.filter((c) => (c.timeframeDays ?? 30) <= 7).length,
+      next30: baseList.filter((c) => (c.timeframeDays ?? 30) <= 30).length,
+      next60: baseList.filter((c) => (c.timeframeDays ?? 30) <= 60).length,
+      liveClass: baseList.filter((c) => c.classType === "Live Class").length,
+      bootcamp: baseList.filter((c) => c.classType === "Full Bootcamp").length,
+      workshop: baseList.filter((c) => c.classType === "Workshop").length,
+    };
+  }, [liveCoursesList, liveCategory]);
+
   const filteredSelfPaced = selectedCategory === "all"
     ? courses
     : courses.filter(c => c.category?.toLowerCase() === selectedCategory.toLowerCase());
 
   const filteredLive = liveCoursesList.filter((course) => {
     if (liveCategory !== "All" && course.category !== liveCategory) return false;
-    if (selectedTimeframe !== null && course.timeframeDays > selectedTimeframe) return false;
-    if (selectedClassType !== null && course.classType !== selectedClassType) return false;
+    if (selectedTimeframe !== null && (course.timeframeDays ?? 30) > selectedTimeframe) return false;
+    if (selectedClassTypes.length > 0 && !selectedClassTypes.includes(course.classType)) return false;
     return true;
   });
 
@@ -375,13 +480,14 @@ function CoursesContent() {
                   <span className="text-xs font-black text-white uppercase tracking-wider flex items-center gap-1.5">
                     <Filter className="w-3.5 h-3.5 text-purple-400" /> Filters
                   </span>
-                  {(selectedTimeframe !== null || selectedClassType !== null) && (
+                  {(selectedTimeframe !== null || selectedClassTypes.length > 0 || liveCategory !== "All") && (
                     <button
                       onClick={() => {
                         setSelectedTimeframe(null);
-                        setSelectedClassType(null);
+                        setSelectedClassTypes([]);
+                        setLiveCategory("All");
                       }}
-                      className="text-[11px] font-bold text-purple-400 hover:underline"
+                      className="text-[11px] font-bold text-purple-400 hover:underline cursor-pointer"
                     >
                       Clear All
                     </button>
@@ -393,9 +499,9 @@ function CoursesContent() {
                   <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2.5">Timeframe</h4>
                   <div className="space-y-2">
                     {[
-                      { label: "Next 7 Days", days: 7, count: 2 },
-                      { label: "Next 30 Days", days: 30, count: 4 },
-                      { label: "Next 60 Days", days: 60, count: 6 }
+                      { label: "Next 7 Days", days: 7, count: filterCounts.next7 },
+                      { label: "Next 30 Days", days: 30, count: filterCounts.next30 },
+                      { label: "Next 60 Days", days: 60, count: filterCounts.next60 }
                     ].map((tf) => (
                       <label
                         key={tf.days}
@@ -406,7 +512,7 @@ function CoursesContent() {
                             type="checkbox"
                             checked={selectedTimeframe === tf.days}
                             onChange={() => setSelectedTimeframe(selectedTimeframe === tf.days ? null : tf.days)}
-                            className="w-4 h-4 rounded border-purple-500/30 bg-[#0B0F19] text-purple-600 focus:ring-purple-500 accent-purple-600"
+                            className="w-4 h-4 rounded border-purple-500/30 bg-[#0B0F19] text-purple-600 focus:ring-purple-500 accent-purple-600 cursor-pointer"
                           />
                           <span>{tf.label}</span>
                         </div>
@@ -423,28 +529,31 @@ function CoursesContent() {
                   <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2.5">Class Type</h4>
                   <div className="space-y-2">
                     {[
-                      { label: "Live Class", type: "Live Class", count: 3 },
-                      { label: "Full Bootcamp", type: "Full Bootcamp", count: 1 },
-                      { label: "Workshop", type: "Workshop", count: 2 }
-                    ].map((ct) => (
-                      <label
-                        key={ct.type}
-                        className="flex items-center justify-between text-xs font-semibold text-slate-300 cursor-pointer hover:text-purple-400 transition-colors"
-                      >
-                        <div className="flex items-center gap-2">
-                          <input
-                            type="checkbox"
-                            checked={selectedClassType === ct.type}
-                            onChange={() => setSelectedClassType(selectedClassType === ct.type ? null : ct.type)}
-                            className="w-4 h-4 rounded border-purple-500/30 bg-[#0B0F19] text-purple-600 focus:ring-purple-500 accent-purple-600"
-                          />
-                          <span>{ct.label}</span>
-                        </div>
-                        <span className="text-[10px] font-bold text-slate-400 bg-[#0B0F19] px-2 py-0.5 rounded-full border border-purple-500/20">
-                          {ct.count}
-                        </span>
-                      </label>
-                    ))}
+                      { label: "Live Class", type: "Live Class", count: filterCounts.liveClass },
+                      { label: "Full Bootcamp", type: "Full Bootcamp", count: filterCounts.bootcamp },
+                      { label: "Workshop", type: "Workshop", count: filterCounts.workshop }
+                    ].map((ct) => {
+                      const isChecked = selectedClassTypes.includes(ct.type);
+                      return (
+                        <label
+                          key={ct.type}
+                          className="flex items-center justify-between text-xs font-semibold text-slate-300 cursor-pointer hover:text-purple-400 transition-colors"
+                        >
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="checkbox"
+                              checked={isChecked}
+                              onChange={() => toggleClassType(ct.type)}
+                              className="w-4 h-4 rounded border-purple-500/30 bg-[#0B0F19] text-purple-600 focus:ring-purple-500 accent-purple-600 cursor-pointer"
+                            />
+                            <span>{ct.label}</span>
+                          </div>
+                          <span className="text-[10px] font-bold text-slate-400 bg-[#0B0F19] px-2 py-0.5 rounded-full border border-purple-500/20">
+                            {ct.count}
+                          </span>
+                        </label>
+                      );
+                    })}
                   </div>
                 </div>
 
@@ -454,7 +563,7 @@ function CoursesContent() {
                   <p className="text-[11px] text-slate-400 mb-3">Request a batch for your preferred timezone or schedule.</p>
                   <button
                     onClick={() => router.push("/signup")}
-                    className="w-full py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold text-xs shadow-md shadow-purple-600/20 transition-all"
+                    className="w-full py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold text-xs shadow-md shadow-purple-600/20 transition-all cursor-pointer"
                   >
                     Request Batch
                   </button>
@@ -467,7 +576,17 @@ function CoursesContent() {
                   <div className="w-full py-16 px-8 rounded-3xl border border-purple-500/20 bg-[#0c0922]/80 backdrop-blur-md flex flex-col items-center justify-center text-center">
                     <Calendar className="w-10 h-10 text-purple-400 mb-3" />
                     <h4 className="text-xl font-black text-white mb-1">No matching live batches</h4>
-                    <p className="text-xs text-slate-400">Try clearing your active filters to see all available classes.</p>
+                    <p className="text-xs text-slate-400 mb-4">Try clearing your active filters to see all available classes.</p>
+                    <button
+                      onClick={() => {
+                        setSelectedTimeframe(null);
+                        setSelectedClassTypes([]);
+                        setLiveCategory("All");
+                      }}
+                      className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-purple-600/20 cursor-pointer"
+                    >
+                      Reset All Filters
+                    </button>
                   </div>
                 ) : (
                   filteredLive.map((item) => {

@@ -1,6 +1,6 @@
 import { LearningLayout } from '@/components/layout/LearningLayout';
 import { notFound } from 'next/navigation';
-import { getCourseData } from '@/lib/courses/course-loader';
+import { getCourseDataAsync } from '@/lib/courses/course-loader';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,7 +12,7 @@ export default async function LearnPage({ params }: PageProps) {
   const { courseId } = await params;
   const decodedCourseId = decodeURIComponent(courseId);
 
-  const courseData = getCourseData(decodedCourseId);
+  const courseData = await getCourseDataAsync(decodedCourseId);
 
   if (!courseData) {
     notFound();

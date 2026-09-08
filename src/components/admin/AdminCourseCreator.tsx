@@ -315,6 +315,38 @@ export default function AdminCourseCreator() {
   // New Outcome input
   const [newOutcome, setNewOutcome] = useState("");
 
+  // Dynamic Instructor List
+  const [instructorList, setInstructorList] = useState<Array<{ id: string; name: string; title: string }>>([
+    { id: "admin-official", name: "Glarus Academy (Admin Official)", title: "Lead AI Research & Instruction Team" }
+  ]);
+
+  useEffect(() => {
+    async function loadInstructors() {
+      try {
+        const res = await fetch("/api/admin/live-training/assignments");
+        if (res.ok) {
+          const data = await res.json();
+          const loaded: Array<{ id: string; name: string; title: string }> = [
+            { id: "admin-official", name: "Glarus Academy (Admin Official)", title: "Lead AI Research & Instruction Team" }
+          ];
+          if (Array.isArray(data.instructors)) {
+            data.instructors.forEach((inst: any) => {
+              loaded.push({
+                id: inst.id,
+                name: inst.name,
+                title: inst.instructorApproval?.areasOfExpertise || inst.email || "Platform Instructor"
+              });
+            });
+          }
+          setInstructorList(loaded);
+        }
+      } catch (err) {
+        console.error("Failed to load instructors", err);
+      }
+    }
+    loadInstructors();
+  }, []);
+
   // AI Generation State
   const [aiTopic, setAiTopic] = useState("");
   const [isGeneratingAll, setIsGeneratingAll] = useState(false);
@@ -1068,7 +1100,7 @@ export default function AdminCourseCreator() {
                     <select
                       value={formData.instructorId}
                       onChange={e => {
-                        const sel = INSTRUCTOR_OPTIONS.find(i => i.id === e.target.value);
+                        const sel = instructorList.find(i => i.id === e.target.value);
                         setFormData({
                           ...formData,
                           instructorId: e.target.value,
@@ -1077,7 +1109,7 @@ export default function AdminCourseCreator() {
                       }}
                       className="w-full bg-background border border-white/10 focus:border-purple-500 rounded-2xl px-4 py-3 text-xs font-bold text-text outline-none"
                     >
-                      {INSTRUCTOR_OPTIONS.map(inst => (
+                      {instructorList.map(inst => (
                         <option key={inst.id} value={inst.id}>{inst.name} ({inst.title})</option>
                       ))}
                     </select>

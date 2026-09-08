@@ -127,8 +127,8 @@ export default function CourseDetailPage({ params }: { params: Promise<{ id: str
         const res = await fetch(`/api/courses/${id}`);
         if (res.ok) {
           const json = await res.json();
-          if (json.success && json.data && isMounted) {
-            const dbData = json.data;
+          const dbData = json.data || json.course;
+          if (dbData && isMounted) {
             const parsedOutcomes = safeJsonParse(dbData.learningOutcomes, null);
             const parsedProjects = safeJsonParse(dbData.projects, null);
             const parsedFaqs = safeJsonParse(dbData.faqs, null);
@@ -159,24 +159,27 @@ export default function CourseDetailPage({ params }: { params: Promise<{ id: str
               : catalogFallback.faqs;
 
             const mappedModules = Array.isArray(dbData.modules) && dbData.modules.length > 0
-              ? dbData.modules.map((mod: any, idx: number) => ({
-                  number: String(idx + 1).padStart(2, "0"),
-                  title: mod.title || `Module ${idx + 1}`,
-                  lessonsCount: mod.lessons?.length || 3,
-                  duration: mod.duration || "2h 15m",
-                  preview: idx === 0,
-                  lessons: (mod.lessons && mod.lessons.length > 0)
-                    ? mod.lessons.map((l: any, lIdx: number) => ({
-                        title: l.title || `Lesson ${lIdx + 1}`,
-                        duration: l.duration || "15m 00s",
-                        preview: l.isPreview || (idx === 0 && lIdx === 0)
-                      }))
-                    : [
-                        { title: "Introduction & Architecture", duration: "12m 00s", preview: true },
-                        { title: "Deep Dive Implementation", duration: "25m 00s" },
-                        { title: "Hands-on Practical Lab", duration: "30m 00s" }
-                      ]
-                }))
+              ? dbData.modules.map((mod: any, idx: number) => {
+                  const lessonsList = mod.lectures || mod.lessons || [];
+                  return {
+                    number: String(idx + 1).padStart(2, "0"),
+                    title: mod.title || `Module ${idx + 1}`,
+                    lessonsCount: lessonsList.length || 3,
+                    duration: mod.duration || "2h 15m",
+                    preview: idx === 0,
+                    lessons: lessonsList.length > 0
+                      ? lessonsList.map((l: any, lIdx: number) => ({
+                          title: l.title || `Lesson ${lIdx + 1}`,
+                          duration: l.duration || "15m 00s",
+                          preview: l.isPreview || (idx === 0 && lIdx === 0)
+                        }))
+                      : [
+                          { title: "Introduction & Architecture", duration: "12m 00s", preview: true },
+                          { title: "Deep Dive Implementation", duration: "25m 00s" },
+                          { title: "Hands-on Practical Lab", duration: "30m 00s" }
+                        ]
+                  };
+                })
               : catalogFallback.modules;
 
             const defaultFeatures = [
@@ -377,6 +380,7 @@ export default function CourseDetailPage({ params }: { params: Promise<{ id: str
                   projectsCount: course.projects.length,
                 }}
                 overviewText={course.description}
+                learningJourney={(course as any).learningJourney}
                 isLiveCohort={false}
               />
 

@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Bot, LogIn, Loader2 } from "lucide-react";
+import { Bot, LogIn, Loader2, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
 export default function LoginPage() {
@@ -25,6 +25,7 @@ function LoginContent() {
   const oauthError = searchParams.get("error");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(oauthError || "");
   const router = useRouter();
@@ -36,6 +37,12 @@ function LoginContent() {
     }
   }, [oauthError]);
 
+  const setTestAccount = (testEmail: string, testPass: string) => {
+    setEmail(testEmail);
+    setPassword(testPass);
+    setError("");
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -45,7 +52,7 @@ function LoginContent() {
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim(), password })
+        body: JSON.stringify({ email: email.trim(), password: password.trim() })
       });
 
       const data = await res.json();
@@ -94,10 +101,34 @@ function LoginContent() {
           <p className="text-subtext mt-1 text-sm">Sign in to your GlarusAcademy account</p>
           
           <div className="text-subtext mt-4 text-center text-xs space-y-1.5 bg-background/80 border border-card p-3 rounded-xl w-full">
-             <div className="font-semibold text-text mb-2">Test Accounts</div>
-             <div className="flex justify-between"><span>Admin:</span> <span className="text-primary font-mono">admin@gmail.com</span></div>
-             <div className="flex justify-between"><span>Instructor:</span> <span className="text-primary font-mono">piyushdhoke11@gmail.com</span></div>
-             <div className="flex justify-between"><span>Student:</span> <span className="text-primary font-mono">arun.sharma@gmail.com</span></div>
+             <div className="flex items-center justify-between font-semibold text-text mb-2">
+               <span>Test Accounts</span>
+               <span className="text-[10px] text-primary font-normal">Click to auto-fill</span>
+             </div>
+             <button 
+               type="button"
+               onClick={() => setTestAccount("admin@gmail.com", "Piyush@11")}
+               className="w-full flex justify-between items-center px-2 py-1.5 rounded-lg hover:bg-card/80 transition-colors cursor-pointer text-left"
+             >
+               <span className="text-subtext font-medium">Admin:</span>
+               <span className="text-primary font-mono text-xs">admin@gmail.com</span>
+             </button>
+             <button 
+               type="button"
+               onClick={() => setTestAccount("piyushdhoke11@gmail.com", "Piyush@11")}
+               className="w-full flex justify-between items-center px-2 py-1.5 rounded-lg hover:bg-card/80 transition-colors cursor-pointer text-left"
+             >
+               <span className="text-subtext font-medium">Instructor:</span>
+               <span className="text-primary font-mono text-xs">piyushdhoke11@gmail.com</span>
+             </button>
+             <button 
+               type="button"
+               onClick={() => setTestAccount("arun.sharma@gmail.com", "Arun@123")}
+               className="w-full flex justify-between items-center px-2 py-1.5 rounded-lg hover:bg-card/80 transition-colors cursor-pointer text-left"
+             >
+               <span className="text-subtext font-medium">Student:</span>
+               <span className="text-primary font-mono text-xs">arun.sharma@gmail.com</span>
+             </button>
              <div className="text-[10px] text-subtext/70 mt-1 pt-1 border-t border-card">Passwords: Admin/Instructor: Piyush@11 · Student: Arun@123</div>
           </div>
         </div>
@@ -123,14 +154,28 @@ function LoginContent() {
           
           <div>
             <label className="block text-sm font-medium text-text mb-1.5">Password</label>
-            <input 
-              type="password" 
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-background border border-card text-text rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:outline-none transition-all placeholder:text-subtext/50 text-sm"
-              placeholder="••••••••"
-            />
+            <div className="relative">
+              <input 
+                type={showPassword ? "text" : "password"}
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full bg-background border border-card text-text rounded-xl px-4 py-3 pr-11 focus:ring-2 focus:ring-primary focus:outline-none transition-all placeholder:text-subtext/50 text-sm"
+                placeholder="••••••••"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-subtext hover:text-text p-1 cursor-pointer transition-colors"
+                title={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? (
+                  <EyeOff className="w-4 h-4 text-subtext" />
+                ) : (
+                  <Eye className="w-4 h-4 text-subtext" />
+                )}
+              </button>
+            </div>
           </div>
 
           <button 

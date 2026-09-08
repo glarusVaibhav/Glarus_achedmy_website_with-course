@@ -23,12 +23,18 @@ export const DOMAIN_EVENT_TYPES = {
 
   // Student & Assignment Events
   STUDENT_ENROLLED: "STUDENT_ENROLLED",
+  STUDENT_ENROLLMENT_CONFIRMED: "STUDENT_ENROLLMENT_CONFIRMED",
   ASSIGNMENT_SUBMITTED: "ASSIGNMENT_SUBMITTED",
+  ASSIGNMENT_GRADED: "ASSIGNMENT_GRADED",
+  ASSIGNMENT_CREATED: "ASSIGNMENT_CREATED",
   ASSIGNMENT_REVIEW_REQUIRED: "ASSIGNMENT_REVIEW_REQUIRED",
   ASSIGNMENT_RESUBMITTED: "ASSIGNMENT_RESUBMITTED",
+  COURSE_MILESTONE: "COURSE_MILESTONE",
+  CERTIFICATE_ISSUED: "CERTIFICATE_ISSUED",
   STUDENT_COMPLETED_COURSE: "STUDENT_COMPLETED_COURSE",
   STUDENT_FEEDBACK_RECEIVED: "STUDENT_FEEDBACK_RECEIVED",
   STUDENT_HELP_REQUESTED: "STUDENT_HELP_REQUESTED",
+  STUDENT_ANNOUNCEMENT: "STUDENT_ANNOUNCEMENT",
 
   // Tasks & Admin Actions
   TASK_ASSIGNED: "TASK_ASSIGNED",
@@ -189,7 +195,76 @@ export interface LiveSessionReminderPayload {
   sessionTitle: string;
   liveCourseId: string;
   liveCourseTitle: string;
-  instructorId: string;
+  instructorId?: string;
+  studentIds?: string[];
   startsInMinutes: number;
   meetingUrl?: string | null;
 }
+
+export interface StudentEnrollmentConfirmationPayload {
+  studentId: string;
+  courseId: string;
+  courseTitle: string;
+  isLive?: boolean;
+}
+
+export interface AssignmentGradedPayload {
+  studentId: string;
+  assignmentId: string;
+  assignmentTitle: string;
+  courseId?: string;
+  courseTitle?: string;
+  grade?: string | number;
+  feedback?: string | null;
+}
+
+export interface AssignmentCreatedPayload {
+  courseId: string;
+  courseTitle: string;
+  assignmentId: string;
+  assignmentTitle: string;
+  dueDate?: string | null;
+}
+
+export interface LiveSessionCreatedPayload {
+  liveCourseId: string;
+  liveCourseTitle: string;
+  sessionId: string;
+  sessionTitle: string;
+  date?: string | Date;
+  startTime?: string;
+  meetingUrl?: string | null;
+}
+
+export interface LiveSessionCancelledPayload {
+  liveCourseId: string;
+  liveCourseTitle: string;
+  sessionId: string;
+  sessionTitle: string;
+  reason?: string;
+}
+
+export interface CourseMilestonePayload {
+  studentId: string;
+  courseId: string;
+  courseTitle: string;
+  milestonePercent: number; // 25, 50, 75, 100
+}
+
+export interface CertificateAvailablePayload {
+  studentId: string;
+  courseId?: string;
+  liveCourseId?: string;
+  courseTitle: string;
+  certificateId: string;
+  credentialId?: string | null;
+}
+
+export interface StudentAnnouncementPayload {
+  studentId?: string;
+  courseId?: string;
+  title: string;
+  message: string;
+  actionUrl?: string;
+}
+

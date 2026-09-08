@@ -1,3 +1,4 @@
+import prisma from "@/lib/db";
 import { DOMAIN_EVENT_TYPES } from "./events";
 import {
   DomainEvent,
@@ -22,6 +23,13 @@ import {
   VerificationDecisionPayload,
   PayoutCompletedPayload,
   LiveSessionReminderPayload,
+  AssignmentGradedPayload,
+  AssignmentCreatedPayload,
+  LiveSessionCreatedPayload,
+  LiveSessionCancelledPayload,
+  CourseMilestonePayload,
+  CertificateAvailablePayload,
+  StudentAnnouncementPayload,
 } from "./events";
 
 export class NotificationRuleEngine {
@@ -250,25 +258,51 @@ export class NotificationRuleEngine {
     this.registerRule<StudentEnrolledPayload>({
       eventType: DOMAIN_EVENT_TYPES.STUDENT_ENROLLED,
       resolve: async (event) => {
-        const { courseId, courseTitle, studentName, instructorId } = event.payload;
-        if (!instructorId) return null;
+        const { courseId, courseTitle, studentName, studentId, instructorId } = event.payload;
+        const notifications: ResolvedNotification[] = [];
 
-        return {
-          recipientId: instructorId,
-          actorId: event.actorId,
-          category: "STUDENT",
-          type: "STUDENT_ENROLLED",
-          priority: "NORMAL",
-          title: `New Student Enrollment`,
-          message: `${studentName || 'A new student'} enrolled in "${courseTitle}".`,
-          details: "Welcome your new learner and check their progress in the Students hub.",
-          entityType: "COURSE",
-          entityId: courseId,
-          actionUrl: `/instructor/students`,
-          icon: "user",
-          metadata: { courseId, courseTitle, studentName },
-          deduplicationKey: `STUDENT_ENROLLED:${courseId}:${event.payload.studentId}`
-        };
+        // 1. Notification to Instructor (if assigned)
+        if (instructorId) {
+          notifications.push({
+            recipientId: instructorId,
+            actorId: event.actorId,
+            category: "STUDENT",
+            type: "STUDENT_ENROLLED",
+            priority: "NORMAL",
+            title: `New Student Enrollment`,
+            message: `${studentName || 'A new student'} enrolled in "${courseTitle}".`,
+            details: "Welcome your new learner and check their progress in the Students hub.",
+            entityType: "COURSE",
+            entityId: courseId,
+            actionUrl: `/instructor/students`,
+            icon: "user",
+            metadata: { courseId, courseTitle, studentName },
+            deduplicationKey: `STUDENT_ENROLLED:${courseId}:${studentId || 'unknown'}`
+          });
+        }
+
+        // 2. Notification to Student Learner
+        const recipientStudentId = studentId || event.actorId;
+        if (recipientStudentId) {
+          notifications.push({
+            recipientId: recipientStudentId,
+            actorId: event.actorId,
+            category: "COURSE",
+            type: "STUDENT_ENROLLED",
+            priority: "NORMAL",
+            title: `Enrollment Confirmed: ${courseTitle}`,
+            message: `You're enrolled in "${courseTitle}". Start learning whenever you're ready!`,
+            details: "Access all modules, interactive code sandboxes, and video lectures in your dashboard.",
+            entityType: "COURSE",
+            entityId: courseId,
+            actionUrl: `/learn/${courseId}`,
+            icon: "book",
+            metadata: { courseId, courseTitle },
+            deduplicationKey: `STUDENT_ENROLLED_CONFIRM:${courseId}:${recipientStudentId}`
+          });
+        }
+
+        return notifications;
       }
     });
 
@@ -276,25 +310,48 @@ export class NotificationRuleEngine {
     this.registerRule<AssignmentSubmittedPayload>({
       eventType: DOMAIN_EVENT_TYPES.ASSIGNMENT_SUBMITTED,
       resolve: async (event) => {
-        const { assignmentId, assignmentTitle, submissionId, studentName, courseTitle, instructorId } = event.payload;
-        if (!instructorId) return null;
+        const { assignmentId, assignmentTitle, submissionId, studentName, studentId, courseTitle, instructorId } = event.payload;
+        const notifs: ResolvedNotification[] = [];
 
-        return {
-          recipientId: instructorId,
-          actorId: event.actorId,
-          category: "ASSIGNMENT",
-          type: "ASSIGNMENT_SUBMITTED",
-          priority: "NORMAL",
-          title: `Assignment Submitted`,
-          message: `${studentName} submitted "${assignmentTitle}" in ${courseTitle} for review.`,
-          details: "Review code solution, provide grades, and leave constructive feedback.",
-          entityType: "ASSIGNMENT",
-          entityId: assignmentId,
-          actionUrl: `/instructor/assignments`,
-          icon: "file",
-          metadata: { assignmentId, submissionId, studentName, assignmentTitle },
-          deduplicationKey: `ASSIGNMENT_SUBMITTED:${assignmentId}:${submissionId}`
-        };
+        if (instructorId) {
+          notifs.push({
+            recipientId: instructorId,
+            actorId: event.actorId,
+            category: "ASSIGNMENT",
+            type: "ASSIGNMENT_SUBMITTED",
+            priority: "NORMAL",
+            title: `Assignment Submitted`,
+            message: `${studentName} submitted "${assignmentTitle}" in ${courseTitle} for review.`,
+            details: "Review code solution, provide grades, and leave constructive feedback.",
+            entityType: "ASSIGNMENT",
+            entityId: assignmentId,
+            actionUrl: `/instructor/assignments`,
+            icon: "file",
+            metadata: { assignmentId, submissionId, studentName, assignmentTitle },
+            deduplicationKey: `ASSIGNMENT_SUBMITTED:${assignmentId}:${submissionId}`
+          });
+        }
+
+        if (studentId) {
+          notifs.push({
+            recipientId: studentId,
+            actorId: event.actorId,
+            category: "ASSIGNMENT",
+            type: "ASSIGNMENT_SUBMITTED",
+            priority: "NORMAL",
+            title: `Assignment Submitted Successfully`,
+            message: `Your solution for "${assignmentTitle}" has been received.`,
+            details: "Your instructor will review your code and provide feedback soon.",
+            entityType: "ASSIGNMENT",
+            entityId: assignmentId,
+            actionUrl: `/student/assignments`,
+            icon: "check-square",
+            metadata: { assignmentId, submissionId, assignmentTitle },
+            deduplicationKey: `STUDENT_ASSIGNMENT_SUBMITTED:${assignmentId}:${submissionId}`
+          });
+        }
+
+        return notifs;
       }
     });
 
@@ -302,32 +359,36 @@ export class NotificationRuleEngine {
     this.registerRule<TaskAssignedPayload>({
       eventType: DOMAIN_EVENT_TYPES.TASK_ASSIGNED,
       resolve: async (event) => {
-        const { taskId, taskTitle, priority, deadline, instructorId, description } = event.payload;
+        const { taskId, taskTitle, priority = "Normal", deadline, instructorId, description, assignedBy } = event.payload;
         if (!instructorId) return null;
 
-        const notifPriority: NotificationPriority =
-          priority === "Urgent" ? "URGENT" : priority === "High" ? "HIGH" : "NORMAL";
+        const prioMap: Record<string, NotificationPriority> = {
+          Urgent: "URGENT",
+          High: "HIGH",
+          Normal: "NORMAL",
+          Low: "LOW"
+        };
 
         return {
           recipientId: instructorId,
           actorId: event.actorId,
           category: "TASK",
           type: "TASK_ASSIGNED",
-          priority: notifPriority,
-          title: `New Task Assigned: ${taskTitle}`,
-          message: description || `Admin assigned you a new task: "${taskTitle}".`,
-          details: deadline ? `Due date: ${deadline}` : "Check task instructions in your task command center.",
+          priority: prioMap[priority] || "NORMAL",
+          title: `New Task: ${taskTitle}`,
+          message: `${assignedBy || "Academic Admin"} assigned you a new instruction: "${taskTitle}".`,
+          details: description || (deadline ? `Complete before ${deadline}.` : "Check task details and update status upon completion."),
           entityType: "TASK",
           entityId: taskId,
           actionUrl: `/instructor/tasks`,
           icon: "check-square",
           metadata: { taskId, taskTitle, deadline, priority },
-          deduplicationKey: `TASK_ASSIGNED:${taskId}:${instructorId}`
+          deduplicationKey: `TASK_ASSIGNED:${taskId}`
         };
       }
     });
 
-    // 11. VERIFICATION_APPROVED / REJECTED
+    // 11. VERIFICATION_DECISION
     this.registerRule<VerificationDecisionPayload>({
       eventType: DOMAIN_EVENT_TYPES.VERIFICATION_APPROVED,
       resolve: async (event) => {
@@ -335,18 +396,21 @@ export class NotificationRuleEngine {
         if (!instructorId) return null;
 
         const isApproved = decision === "APPROVED";
+        const isChanges = decision === "CHANGES_REQUESTED";
 
         return {
           recipientId: instructorId,
           actorId: event.actorId,
           category: "VERIFICATION",
-          type: isApproved ? "VERIFICATION_APPROVED" : "VERIFICATION_REJECTED",
-          priority: "HIGH",
-          title: isApproved ? "Instructor Profile Verified & Approved" : "Instructor Verification Status Update",
+          type: isApproved ? "VERIFICATION_APPROVED" : isChanges ? "VERIFICATION_CHANGES_REQUESTED" : "VERIFICATION_REJECTED",
+          priority: isApproved ? "HIGH" : "URGENT",
+          title: isApproved ? "Instructor Profile Verified!" : isChanges ? "Profile Updates Requested" : "Verification Declined",
           message: isApproved
-            ? "Congratulations! Your instructor application and KYC credentials have been approved. You now have full educator access."
-            : `Your instructor verification application status was updated to ${decision}. Feedback: ${feedback || 'Please update your details.'}`,
-          details: feedback || null,
+            ? "Congratulations! Your faculty profile has been fully verified and approved by the academic committee."
+            : isChanges
+            ? "Admin reviewed your verification application and requested updates before granting full access."
+            : "Your faculty verification request was declined. Please review admin notes.",
+          details: feedback || (isApproved ? "You can now publish self-paced masterclasses and lead live cohorts." : "Open verification tab to review requirements."),
           entityType: "USER",
           entityId: instructorId,
           actionUrl: `/instructor/verification`,
@@ -387,25 +451,200 @@ export class NotificationRuleEngine {
     this.registerRule<LiveSessionReminderPayload>({
       eventType: DOMAIN_EVENT_TYPES.LIVE_SESSION_REMINDER,
       resolve: async (event) => {
-        const { sessionId, sessionTitle, liveCourseTitle, instructorId, startsInMinutes, meetingUrl } = event.payload;
-        if (!instructorId) return null;
+        const { sessionId, sessionTitle, liveCourseId, liveCourseTitle, instructorId, studentIds, startsInMinutes, meetingUrl } = event.payload;
+        const notifs: ResolvedNotification[] = [];
+
+        // Notify Instructor
+        if (instructorId) {
+          notifs.push({
+            recipientId: instructorId,
+            actorId: null,
+            category: "REMINDER",
+            type: "LIVE_SESSION_REMINDER",
+            priority: startsInMinutes <= 20 ? "URGENT" : "HIGH",
+            title: `Live Class Reminder`,
+            message: `Your live session "${sessionTitle}" (${liveCourseTitle}) starts in ${startsInMinutes} minutes.`,
+            details: meetingUrl ? `Zoom / Meet Room: ${meetingUrl}. Please join 5 minutes early to test audio/video.` : "Please open your instructor dashboard to launch the live classroom.",
+            entityType: "LIVE_SESSION",
+            entityId: sessionId,
+            actionUrl: `/instructor/live-sessions`,
+            icon: "clock",
+            metadata: { sessionId, startsInMinutes, meetingUrl },
+            deduplicationKey: `LIVE_REMINDER:${sessionId}:${startsInMinutes}m:${instructorId}`
+          });
+        }
+
+        // Notify Enrolled Students
+        let targetStudents = studentIds;
+        if (!targetStudents && liveCourseId) {
+          try {
+            const enrollments = await prisma.liveCourseEnrollment.findMany({
+              where: { liveCourseId, status: "ACTIVE" },
+              select: { userId: true }
+            });
+            targetStudents = enrollments.map(e => e.userId);
+          } catch (e) {
+            console.error("Failed to query enrolled students for live reminder:", e);
+          }
+        }
+
+        if (targetStudents && targetStudents.length > 0) {
+          for (const sId of targetStudents) {
+            notifs.push({
+              recipientId: sId,
+              actorId: null,
+              category: "LIVE_SESSION",
+              type: "LIVE_SESSION_REMINDER",
+              priority: startsInMinutes <= 20 ? "URGENT" : "HIGH",
+              title: startsInMinutes <= 15 ? `🔵 Live Class Starting Now!` : `Live Class Reminder`,
+              message: `Your live class "${sessionTitle}" (${liveCourseTitle}) starts in ${startsInMinutes} minutes.`,
+              details: "Join the live interactive video room to learn directly with your instructor.",
+              entityType: "LIVE_SESSION",
+              entityId: sessionId,
+              actionUrl: `/live-classes/room/${sessionId}`,
+              icon: "radio",
+              metadata: { sessionId, liveCourseId, startsInMinutes },
+              deduplicationKey: `STUDENT_LIVE_REMINDER:${sessionId}:${startsInMinutes}m:${sId}`
+            });
+          }
+        }
+
+        return notifs;
+      }
+    });
+
+    // 14. ASSIGNMENT_GRADED (Student Alert)
+    this.registerRule<AssignmentGradedPayload>({
+      eventType: DOMAIN_EVENT_TYPES.ASSIGNMENT_GRADED,
+      resolve: async (event) => {
+        const { studentId, assignmentId, assignmentTitle, courseTitle, grade, feedback } = event.payload;
+        if (!studentId) return null;
 
         return {
-          recipientId: instructorId,
-          actorId: null,
-          category: "REMINDER",
-          type: "LIVE_SESSION_REMINDER",
-          priority: startsInMinutes <= 20 ? "URGENT" : "HIGH",
-          title: `Live Class Reminder`,
-          message: `Your live session "${sessionTitle}" (${liveCourseTitle}) starts in ${startsInMinutes} minutes.`,
-          details: meetingUrl ? `Zoom / Meet Room: ${meetingUrl}. Please join 5 minutes early to test audio/video.` : "Please open your instructor dashboard to launch the live classroom.",
-          entityType: "LIVE_SESSION",
-          entityId: sessionId,
-          actionUrl: `/instructor/live-sessions`,
-          icon: "clock",
-          metadata: { sessionId, startsInMinutes, meetingUrl },
-          deduplicationKey: `LIVE_REMINDER:${sessionId}:${startsInMinutes}m:${instructorId}`
+          recipientId: studentId,
+          actorId: event.actorId,
+          category: "ASSIGNMENT",
+          type: "ASSIGNMENT_SUBMITTED",
+          priority: "NORMAL",
+          title: `✓ Assignment Graded: ${assignmentTitle}`,
+          message: `Your submission for "${assignmentTitle}" in ${courseTitle || "your course"} has been graded${grade ? ` (Score: ${grade})` : ""}.`,
+          details: feedback || "Review instructor feedback and grades in your assignments hub.",
+          entityType: "ASSIGNMENT",
+          entityId: assignmentId,
+          actionUrl: `/student/assignments`,
+          icon: "file-check",
+          metadata: { assignmentId, grade, feedback },
+          deduplicationKey: `ASSIGNMENT_GRADED:${assignmentId}:${studentId}`
         };
+      }
+    });
+
+    // 15. COURSE_MILESTONE & COMPLETION
+    const resolveMilestone = async (event: DomainEvent<CourseMilestonePayload>) => {
+      const { studentId, courseId, courseTitle, milestonePercent } = event.payload;
+      if (!studentId) return null;
+
+      const isComplete = milestonePercent >= 100;
+
+      return {
+        recipientId: studentId,
+        actorId: event.actorId,
+        category: "COURSE" as NotificationCategory,
+        type: (isComplete ? "STUDENT_COMPLETED_COURSE" : "COURSE_UPDATED") as NotificationType,
+        priority: (isComplete ? "HIGH" : "NORMAL") as NotificationPriority,
+        title: isComplete ? `🏆 Course Completed: ${courseTitle}` : `🎉 ${milestonePercent}% Milestone Reached!`,
+        message: isComplete
+          ? `Congratulations! You have completed 100% of "${courseTitle}". Your certificate of completion is ready.`
+          : `Great momentum! You've completed ${milestonePercent}% of "${courseTitle}". Keep up the streak!`,
+        details: isComplete ? "Download or share your verified digital credential." : "Continue to next lecture module.",
+        entityType: "COURSE",
+        entityId: courseId,
+        actionUrl: isComplete ? `/student/certificates` : `/learn/${courseId}`,
+        icon: isComplete ? "award" : "sparkles",
+        metadata: { courseId, milestonePercent },
+        deduplicationKey: `MILESTONE:${courseId}:${milestonePercent}:${studentId}`
+      };
+    };
+
+    this.registerRule<CourseMilestonePayload>({
+      eventType: DOMAIN_EVENT_TYPES.COURSE_MILESTONE,
+      resolve: resolveMilestone,
+    });
+
+    this.registerRule<CourseMilestonePayload>({
+      eventType: DOMAIN_EVENT_TYPES.STUDENT_COMPLETED_COURSE,
+      resolve: resolveMilestone,
+    });
+
+    // 16. LIVE_SESSION_SCHEDULED / CREATED (Student Alert)
+    this.registerRule<LiveSessionCreatedPayload>({
+      eventType: DOMAIN_EVENT_TYPES.LIVE_SESSION_CREATED,
+      resolve: async (event) => {
+        const { liveCourseId, liveCourseTitle, sessionId, sessionTitle, date, startTime } = event.payload;
+        if (!liveCourseId) return null;
+
+        try {
+          const enrollments = await prisma.liveCourseEnrollment.findMany({
+            where: { liveCourseId, status: "ACTIVE" },
+            select: { userId: true }
+          });
+
+          return enrollments.map(e => ({
+            recipientId: e.userId,
+            actorId: event.actorId,
+            category: "LIVE_SESSION" as NotificationCategory,
+            type: "LIVE_SESSION_CREATED" as NotificationType,
+            priority: "NORMAL" as NotificationPriority,
+            title: `📅 New Live Class: ${sessionTitle}`,
+            message: `A new session has been added to "${liveCourseTitle}" on ${date || "scheduled date"} at ${startTime || "TBD"}.`,
+            details: "Mark your calendar and check session topics in your training timetable.",
+            entityType: "LIVE_SESSION",
+            entityId: sessionId,
+            actionUrl: `/calendar`,
+            icon: "calendar",
+            metadata: { liveCourseId, sessionId },
+            deduplicationKey: `LIVE_SESSION_CREATED_STUDENT:${sessionId}:${e.userId}`
+          }));
+        } catch (err) {
+          console.error("Error creating student notifications for new session:", err);
+          return null;
+        }
+      }
+    });
+
+    // 17. LIVE_SESSION_CANCELLED (Student Alert)
+    this.registerRule<LiveSessionCancelledPayload>({
+      eventType: DOMAIN_EVENT_TYPES.LIVE_SESSION_CANCELLED,
+      resolve: async (event) => {
+        const { liveCourseId, liveCourseTitle, sessionId, sessionTitle, reason } = event.payload;
+        if (!liveCourseId) return null;
+
+        try {
+          const enrollments = await prisma.liveCourseEnrollment.findMany({
+            where: { liveCourseId, status: "ACTIVE" },
+            select: { userId: true }
+          });
+
+          return enrollments.map(e => ({
+            recipientId: e.userId,
+            actorId: event.actorId,
+            category: "LIVE_SESSION" as NotificationCategory,
+            type: "LIVE_SESSION_CANCELLED" as NotificationType,
+            priority: "HIGH" as NotificationPriority,
+            title: `Live Class Cancelled: ${sessionTitle}`,
+            message: `The session "${sessionTitle}" (${liveCourseTitle}) has been cancelled.`,
+            details: reason ? `Reason: ${reason}` : "Your instructor will reschedule this session shortly.",
+            entityType: "LIVE_SESSION",
+            entityId: sessionId,
+            actionUrl: `/calendar`,
+            icon: "calendar",
+            metadata: { liveCourseId, sessionId, reason },
+            deduplicationKey: `LIVE_CANCELLED:${sessionId}:${e.userId}`
+          }));
+        } catch (err) {
+          console.error("Error notifying students of cancelled session:", err);
+          return null;
+        }
       }
     });
   }

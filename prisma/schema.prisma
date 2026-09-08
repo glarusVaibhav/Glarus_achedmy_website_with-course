@@ -162,6 +162,10 @@ model User {
   emailVerifiedAt       DateTime?
   authProvider          String                   @default("EMAIL")
   googleId              String?                  @unique
+  phone                 String?
+  bio                   String?
+  location              String?
+  avatar                String?
   courses               Course[]                 @relation("InstructorCourses")
   purchases             Purchase[]               @relation("UserPurchases")
   enrollments           Enrollment[]             @relation("UserEnrollments")

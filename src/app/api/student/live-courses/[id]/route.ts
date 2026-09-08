@@ -241,8 +241,7 @@ export async function GET(
       where: {
         OR: [
           { id: courseId },
-          { slug: courseId },
-          { id: 'live-course-genai' }
+          { slug: courseId }
         ]
       },
       include: {

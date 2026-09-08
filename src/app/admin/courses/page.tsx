@@ -42,7 +42,8 @@ import {
   Zap,
   LayoutGrid,
   List,
-  PieChart as PieChartIcon
+  PieChart as PieChartIcon,
+  Globe
 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -78,6 +79,7 @@ export interface CourseItem {
   revenue: number;
   refundRate: number;
   status: "PUBLISHED" | "PENDING_APPROVAL" | "DRAFT" | "REJECTED" | "ACTIVE" | "COMPLETED";
+  isPublished?: boolean;
   type: "SELF_PACED" | "LIVE_TRAINING";
   submittedAt?: string;
   updatedAt: string;
@@ -421,11 +423,14 @@ function CourseManagementContent() {
           const data = await coursesRes.json();
           if (data.courses && Array.isArray(data.courses)) {
             data.courses.forEach((c: any) => {
-              const statusMap: Record<string, CourseItem["status"]> = {
-                APPROVED: "PUBLISHED",
-                PENDING: "PENDING_APPROVAL",
-                REJECTED: "REJECTED"
-              };
+              const isPub = c.isPublished ?? (c.status === "PUBLISHED");
+              const computedStatus: CourseItem["status"] = isPub
+                ? "PUBLISHED"
+                : c.status === "PENDING"
+                ? "PENDING_APPROVAL"
+                : c.status === "REJECTED"
+                ? "REJECTED"
+                : "DRAFT";
 
               dbCourseList.push({
                 id: c.id,
@@ -433,15 +438,20 @@ function CourseManagementContent() {
                 shortTitle: c.title.length > 22 ? `${c.title.substring(0, 20)}...` : c.title,
                 instructor: c.instructor?.name || "Faculty Member",
                 instructorEmail: c.instructor?.email,
-                category: "AI & Technology",
+                category: c.category || "AI & Technology",
                 price: c.price || 999,
                 enrolledStudents: c.enrollments?.length || 0,
                 revenue: (c.purchases?.length || 0) * (c.price || 999),
                 refundRate: 0,
-                status: statusMap[c.status] || "PUBLISHED",
+                status: computedStatus,
+                isPublished: isPub,
                 type: "SELF_PACED",
-                updatedAt: c.updatedAt ? new Date(c.updatedAt).toLocaleDateString() : "Recent",
-                duration: `${c.modules?.length || 4} Modules`,
+                updatedAt: c.publishedAt
+                  ? new Date(c.publishedAt).toLocaleDateString()
+                  : c.updatedAt
+                  ? new Date(c.updatedAt).toLocaleDateString()
+                  : "Recent",
+                duration: c.duration || `${c.modules?.length || 4} Modules`,
                 sectionsCount: c.modules?.length || 4,
                 lessonsCount: (c.modules?.length || 4) * 5,
                 description: c.description || "",
@@ -592,6 +602,67 @@ function CourseManagementContent() {
     });
     return Array.from(map.entries()).map(([name, value]) => ({ name, value }));
   }, [courses]);
+
+  const [toastMessage, setToastMessage] = useState<{ text: string; type: "success" | "info" } | null>(null);
+
+  // Toggle publish status for self-paced courses
+  const handleTogglePublish = async (courseId: string, currentPublished: boolean) => {
+    const nextPublished = !currentPublished;
+    const nextStatus: CourseItem["status"] = nextPublished ? "PUBLISHED" : "DRAFT";
+
+    // Optimistic UI update
+    setCourses((prev) =>
+      prev.map((c) =>
+        c.id === courseId
+          ? {
+              ...c,
+              isPublished: nextPublished,
+              status: nextStatus,
+              updatedAt: nextPublished ? new Date().toLocaleDateString() : "Unpublished"
+            }
+          : c
+      )
+    );
+
+    setToastMessage({
+      text: nextPublished
+        ? "Course published live on landing page & catalog!"
+        : "Course unpublished and hidden from landing page.",
+      type: nextPublished ? "success" : "info"
+    });
+    setTimeout(() => setToastMessage(null), 3500);
+
+    try {
+      const res = await fetch(`/api/admin/courses/${encodeURIComponent(courseId)}/publish`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isPublished: nextPublished })
+      });
+
+      if (!res.ok) {
+        throw new Error("Server returned non-ok status");
+      }
+    } catch (err) {
+      console.error("Failed to toggle publish status:", err);
+      // Revert on error
+      setCourses((prev) =>
+        prev.map((c) =>
+          c.id === courseId
+            ? {
+                ...c,
+                isPublished: currentPublished,
+                status: currentPublished ? "PUBLISHED" : "DRAFT"
+              }
+            : c
+        )
+      );
+      setToastMessage({
+        text: "Failed to update publish status on server.",
+        type: "info"
+      });
+      setTimeout(() => setToastMessage(null), 3500);
+    }
+  };
 
   // Handle row click
   const handleCourseClick = (course: CourseItem) => {
@@ -1627,14 +1698,47 @@ function CourseManagementContent() {
                                   <ArrowRight className="w-3 h-3 ml-0.5" />
                                 </Link>
                               ) : (
-                                <Link
-                                  href={`/admin/courses/${encodeURIComponent(course.id)}`}
-                                  title="Inspect Full Course, Videos, Quizzes & Assignments"
-                                  className="px-2.5 py-1.5 rounded-lg bg-card hover:bg-purple-600 hover:text-white border border-white/10 text-xs font-bold text-subtext hover:text-white transition-all inline-flex items-center gap-1 cursor-pointer"
-                                >
-                                  <Eye className="w-3.5 h-3.5" />
-                                  <span>Inspect</span>
-                                </Link>
+                                <>
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      e.stopPropagation();
+                                      handleTogglePublish(course.id, isPublished);
+                                    }}
+                                    title={
+                                      isPublished
+                                        ? "Unpublish course and hide from landing page"
+                                        : "Publish course live on landing page & catalog"
+                                    }
+                                    className={`px-2.5 py-1.5 rounded-lg border text-xs font-bold transition-all inline-flex items-center gap-1.5 cursor-pointer shadow-sm ${
+                                      isPublished
+                                        ? "bg-amber-500/10 hover:bg-amber-500/25 border-amber-500/30 text-amber-400 hover:text-amber-300"
+                                        : "bg-emerald-500/15 hover:bg-emerald-600/30 border-emerald-500/40 text-emerald-300 hover:text-white"
+                                    }`}
+                                  >
+                                    {isPublished ? (
+                                      <>
+                                        <XCircle className="w-3.5 h-3.5 text-amber-400" />
+                                        <span>Unpublish</span>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                                        <span>Publish</span>
+                                      </>
+                                    )}
+                                  </button>
+
+                                  <Link
+                                    href={`/admin/courses/${encodeURIComponent(course.id)}`}
+                                    title="Inspect Full Course, Videos, Quizzes & Assignments"
+                                    className="px-2.5 py-1.5 rounded-lg bg-card hover:bg-purple-600 hover:text-white border border-white/10 text-xs font-bold text-subtext hover:text-white transition-all inline-flex items-center gap-1 cursor-pointer"
+                                  >
+                                    <Eye className="w-3.5 h-3.5" />
+                                    <span>Inspect</span>
+                                  </Link>
+                                </>
                               )}
                             </div>
                           </td>
@@ -1645,6 +1749,26 @@ function CourseManagementContent() {
                 </tbody>
               </table>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Floating Toast Notification */}
+      {toastMessage && (
+        <div className="fixed bottom-6 right-6 z-50 animate-in fade-in slide-in-from-bottom-5">
+          <div
+            className={`px-4 py-3 rounded-2xl shadow-2xl border flex items-center gap-2.5 backdrop-blur-xl text-xs font-bold ${
+              toastMessage.type === "success"
+                ? "bg-emerald-950/90 border-emerald-500/50 text-emerald-200"
+                : "bg-purple-950/90 border-purple-500/50 text-purple-200"
+            }`}
+          >
+            {toastMessage.type === "success" ? (
+              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+            ) : (
+              <Sparkles className="w-4 h-4 text-purple-400 shrink-0" />
+            )}
+            <span>{toastMessage.text}</span>
           </div>
         </div>
       )}

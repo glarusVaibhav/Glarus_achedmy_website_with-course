@@ -216,6 +216,33 @@ export default function CourseDetailPage({ params }: PageProps) {
     );
   }
 
+  const handleTogglePublish = async (nextPublish: boolean) => {
+    setProcessingDecision(true);
+    try {
+      const res = await fetch(`/api/admin/courses/${encodeURIComponent(course.id)}/publish`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isPublished: nextPublish })
+      });
+
+      if (!res.ok) throw new Error("Failed to update status");
+
+      const newStatus: DetailedCoursePreview["status"] = nextPublish ? "PUBLISHED" : "DRAFT";
+      setCourse((prev) => (prev ? { ...prev, status: newStatus } : null));
+
+      setDecisionBanner({
+        text: nextPublish
+          ? "Course published live on landing page & catalog!"
+          : "Course unpublished and hidden from landing page.",
+        type: nextPublish ? "success" : "warning"
+      });
+    } catch {
+      alert("Failed to update publish status. Please check your connection.");
+    } finally {
+      setProcessingDecision(false);
+    }
+  };
+
   // Handle Admin Decision
   const handleDecision = async (decision: "APPROVED" | "REJECTED" | "CHANGES_REQUESTED") => {
     setProcessingDecision(true);
@@ -254,6 +281,8 @@ export default function CourseDetailPage({ params }: PageProps) {
     }
   };
 
+  const isCoursePublished = course.status === "PUBLISHED";
+
   return (
     <div className="space-y-6 pb-20 font-sans animate-in fade-in duration-300">
       {/* ── TOP ACTION & STATUS BAR ── */}
@@ -266,32 +295,34 @@ export default function CourseDetailPage({ params }: PageProps) {
           <span>Back to Course Management</span>
         </Link>
 
-        {/* Approval Decision Controls */}
+        {/* Approval & Publish Decision Controls */}
         <div className="flex flex-wrap items-center gap-2 self-end sm:self-auto">
+          {isCoursePublished ? (
+            <button
+              onClick={() => handleTogglePublish(false)}
+              disabled={processingDecision}
+              className="px-4 py-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-400 hover:text-amber-300 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-sm disabled:opacity-50"
+            >
+              <RotateCcw className="w-3.5 h-3.5 text-amber-400" />
+              <span>Unpublish Course</span>
+            </button>
+          ) : (
+            <button
+              onClick={() => handleTogglePublish(true)}
+              disabled={processingDecision}
+              className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-all flex items-center gap-1.5 shadow-md shadow-emerald-600/20 cursor-pointer disabled:opacity-50"
+            >
+              <Check className="w-3.5 h-3.5" />
+              <span>Publish Course Live</span>
+            </button>
+          )}
+
           <button
             onClick={() => setShowFeedbackModal(true)}
-            className="px-3.5 py-2 rounded-xl bg-card hover:bg-white/5 border border-white/10 text-amber-400 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
+            className="px-3.5 py-2 rounded-xl bg-card hover:bg-white/5 border border-white/10 text-subtext hover:text-text text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
           >
-            <RotateCcw className="w-3.5 h-3.5" />
-            <span>Request Changes</span>
-          </button>
-
-          <button
-            onClick={() => handleDecision("REJECTED")}
-            disabled={processingDecision}
-            className="px-3.5 py-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/25 text-red-400 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-sm disabled:opacity-50"
-          >
-            <X className="w-3.5 h-3.5" />
-            <span>Reject</span>
-          </button>
-
-          <button
-            onClick={() => handleDecision("APPROVED")}
-            disabled={processingDecision}
-            className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold transition-all flex items-center gap-1.5 shadow-md shadow-purple-600/20 cursor-pointer disabled:opacity-50"
-          >
-            <Check className="w-4 h-4" />
-            <span>Approve & Publish Course</span>
+            <Edit3 className="w-3.5 h-3.5 text-purple-400" />
+            <span>Notes & Feedback</span>
           </button>
         </div>
       </div>

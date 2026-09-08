@@ -1,270 +1,387 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
 import { StudentPortalLayout } from "@/components/student/StudentPortalLayout";
 import {
   Bell,
-  Sparkles,
   Clock,
-  CheckCircle2,
   PlaySquare,
-  Calendar,
   Award,
   Radio,
   FileCheck,
   BookOpen,
-  MessageSquare,
   Check,
   ChevronRight,
-  Filter,
   Search,
   X,
   Sliders,
-  Settings,
   ShieldCheck,
-  Layers,
   ArrowLeft,
-  Flame,
   CheckCheck,
-  ExternalLink
+  Trash2,
+  RefreshCw,
+  ArrowUpRight,
+  CreditCard,
+  Inbox
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-interface StudentNotification {
+export interface StudentNotificationItem {
   id: string;
-  category: "LIVE" | "RECORDING" | "ASSIGNMENT" | "COURSE" | "CERTIFICATE" | "COMMUNITY";
-  courseTitle: string;
-  instructorName?: string;
+  category: string;
+  type?: string;
+  priority?: "URGENT" | "HIGH" | "NORMAL" | "LOW";
   title: string;
   message: string;
-  time: string;
+  description?: string;
+  details?: string;
+  isRead: boolean;
   isUnread: boolean;
-  href: string;
-  actionText: string;
-  priority?: "urgent" | "normal";
+  isArchived?: boolean;
+  timeAgo?: string;
+  createdAt?: string;
+  actionUrl?: string;
+  link?: string;
+  icon?: string;
+  actor?: {
+    id: string;
+    name: string | null;
+    email: string;
+  } | null;
+  metadata?: any;
+}
+
+// Clean leading emojis for a modern, typography-driven luxury feel
+function cleanText(text: string): string {
+  if (!text) return "";
+  return text.replace(/^[\p{Emoji}\p{Emoji_Presentation}\p{Extended_Pictographic}\s•\-]+/u, "").trim();
 }
 
 export default function StudentNotificationsPage() {
-  const [notifications, setNotifications] = useState<StudentNotification[]>([]);
+  const [notifications, setNotifications] = useState<StudentNotificationItem[]>([]);
+  const [unreadCount, setUnreadCount] = useState<number>(0);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const [activeCategory, setActiveCategory] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState("");
   const [isPreferencesOpen, setIsPreferencesOpen] = useState(false);
 
-  // Toggle Read Status
-  const toggleRead = (id: string, e: React.MouseEvent) => {
+  // Fetch student notifications from API
+  const fetchNotifications = useCallback(async (isBackground = false) => {
+    try {
+      if (!isBackground) setIsLoading(true);
+      else setIsRefreshing(true);
+
+      const res = await fetch("/api/student/notifications?limit=50");
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && Array.isArray(data.notifications)) {
+          setNotifications(data.notifications);
+          setUnreadCount(
+            typeof data.unreadCount === "number"
+              ? data.unreadCount
+              : data.notifications.filter((n: any) => !n.isRead).length
+          );
+        }
+      }
+    } catch (err) {
+      console.error("Failed to fetch student notifications:", err);
+    } finally {
+      setIsLoading(false);
+      setIsRefreshing(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchNotifications();
+    const interval = setInterval(() => fetchNotifications(true), 40000);
+    return () => clearInterval(interval);
+  }, [fetchNotifications]);
+
+  // Toggle Read / Unread Status
+  const toggleRead = async (id: string, currentReadStatus: boolean, e: React.MouseEvent) => {
     e.stopPropagation();
+    const targetStatus = !currentReadStatus;
+
     setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, isUnread: !n.isUnread } : n))
+      prev.map((n) =>
+        n.id === id ? { ...n, isRead: targetStatus, isUnread: !targetStatus } : n
+      )
     );
+    setUnreadCount((prev) => (targetStatus ? Math.max(0, prev - 1) : prev + 1));
+
+    try {
+      await fetch(`/api/student/notifications/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isRead: targetStatus }),
+      });
+    } catch (err) {
+      console.error("Failed to toggle notification status:", err);
+    }
   };
 
-  const markAllAsRead = () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, isUnread: false })));
+  // Mark All Notifications as Read
+  const markAllAsRead = async () => {
+    setNotifications((prev) =>
+      prev.map((n) => ({ ...n, isRead: true, isUnread: false }))
+    );
+    setUnreadCount(0);
+
+    try {
+      await fetch("/api/student/notifications/read-all", { method: "PATCH" });
+    } catch (err) {
+      console.error("Failed to mark all as read:", err);
+    }
+  };
+
+  // Delete notification
+  const deleteNotification = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const itemToDelete = notifications.find((n) => n.id === id);
+    setNotifications((prev) => prev.filter((n) => n.id !== id));
+    if (itemToDelete && !itemToDelete.isRead) {
+      setUnreadCount((prev) => Math.max(0, prev - 1));
+    }
+
+    try {
+      await fetch(`/api/student/notifications/${id}`, { method: "DELETE" });
+    } catch (err) {
+      console.error("Failed to delete notification:", err);
+    }
   };
 
   // Filter & Search Notifications
   const filteredNotifications = useMemo(() => {
     return notifications.filter((n) => {
-      if (activeCategory === "UNREAD" && !n.isUnread) return false;
-      if (activeCategory !== "ALL" && activeCategory !== "UNREAD" && n.category !== activeCategory) return false;
+      const isUnread = !n.isRead;
+      if (activeCategory === "UNREAD" && !isUnread) return false;
+
+      if (activeCategory !== "ALL" && activeCategory !== "UNREAD") {
+        if (activeCategory === "LIVE" && n.category !== "LIVE_SESSION" && n.category !== "LIVE") return false;
+        if (activeCategory === "RECORDING" && n.category !== "RECORDING") return false;
+        if (activeCategory === "ASSIGNMENT" && n.category !== "ASSIGNMENT") return false;
+        if (activeCategory === "COURSE" && n.category !== "COURSE") return false;
+        if (activeCategory === "CERTIFICATE" && n.category !== "CERTIFICATE") return false;
+        if (activeCategory === "PAYMENT" && n.category !== "PAYMENT") return false;
+      }
 
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
-        const matchTitle = n.title.toLowerCase().includes(q);
-        const matchMsg = n.message.toLowerCase().includes(q);
-        const matchCourse = n.courseTitle.toLowerCase().includes(q);
-        if (!matchTitle && !matchMsg && !matchCourse) return false;
+        const matchTitle = (n.title || "").toLowerCase().includes(q);
+        const matchMsg = (n.message || n.description || "").toLowerCase().includes(q);
+        const matchCategory = (n.category || "").toLowerCase().includes(q);
+        const matchActor = (n.actor?.name || "").toLowerCase().includes(q);
+        if (!matchTitle && !matchMsg && !matchCategory && !matchActor) return false;
       }
       return true;
     });
   }, [notifications, activeCategory, searchQuery]);
 
-  const unreadCount = notifications.filter((n) => n.isUnread).length;
-
-  const getCategoryConfig = (cat: StudentNotification["category"]) => {
+  const getCategoryConfig = (cat: string) => {
     switch (cat) {
+      case "LIVE_SESSION":
       case "LIVE":
         return {
-          label: "🔴 LIVE CLASS",
-          badge: "bg-red-500/15 text-red-400 border-red-500/30",
-          cardGradient: "bg-gradient-to-r from-red-950/40 via-card/70 to-card border-red-500/30 hover:border-red-500/60 shadow-red-500/5",
+          label: "Live Class",
+          badgeBg: "bg-rose-500/10 text-rose-400 border-rose-500/20",
+          iconBg: "bg-rose-500/10 text-rose-400 border border-rose-500/20",
           icon: Radio,
-          iconBox: "bg-red-500/20 text-red-400 border-red-500/40",
-          buttonColor: "bg-red-600 hover:bg-red-500 text-white shadow-red-600/30",
-          glowColor: "from-red-500/20 to-transparent",
+          actionText: "Join Live Room",
+          defaultHref: "/calendar",
         };
       case "RECORDING":
         return {
-          label: "🎬 RECORDED SESSION",
-          badge: "bg-purple-500/15 text-purple-300 border-purple-500/30",
-          cardGradient: "bg-gradient-to-r from-purple-950/30 via-card/70 to-card border-purple-500/30 hover:border-purple-500/60 shadow-purple-500/5",
+          label: "Recording",
+          badgeBg: "bg-purple-500/10 text-purple-300 border-purple-500/20",
+          iconBg: "bg-purple-500/10 text-purple-300 border border-purple-500/20",
           icon: PlaySquare,
-          iconBox: "bg-purple-500/20 text-purple-300 border-purple-500/40",
-          buttonColor: "bg-purple-600 hover:bg-purple-500 text-white shadow-purple-600/30",
-          glowColor: "from-purple-500/25 to-transparent",
+          actionText: "Watch Recording",
+          defaultHref: "/student/recorded-sessions",
         };
       case "ASSIGNMENT":
         return {
-          label: "📝 ASSIGNMENT",
-          badge: "bg-amber-500/15 text-amber-400 border-amber-500/30",
-          cardGradient: "bg-gradient-to-r from-amber-950/30 via-card/70 to-card border-amber-500/30 hover:border-amber-500/60 shadow-amber-500/5",
+          label: "Assignment",
+          badgeBg: "bg-amber-500/10 text-amber-300 border-amber-500/20",
+          iconBg: "bg-amber-500/10 text-amber-300 border border-amber-500/20",
           icon: FileCheck,
-          iconBox: "bg-amber-500/20 text-amber-400 border-amber-500/40",
-          buttonColor: "bg-amber-600 hover:bg-amber-500 text-white shadow-amber-600/30",
-          glowColor: "from-amber-500/20 to-transparent",
+          actionText: "View Assignment",
+          defaultHref: "/student/assignments",
         };
       case "COURSE":
         return {
-          label: "🎓 COURSE UPDATE",
-          badge: "bg-blue-500/15 text-blue-400 border-blue-500/30",
-          cardGradient: "bg-gradient-to-r from-blue-950/30 via-card/70 to-card border-blue-500/30 hover:border-blue-500/60 shadow-blue-500/5",
+          label: "Course Update",
+          badgeBg: "bg-blue-500/10 text-blue-300 border-blue-500/20",
+          iconBg: "bg-blue-500/10 text-blue-300 border border-blue-500/20",
           icon: BookOpen,
-          iconBox: "bg-blue-500/20 text-blue-400 border-blue-500/40",
-          buttonColor: "bg-blue-600 hover:bg-blue-500 text-white shadow-blue-600/30",
-          glowColor: "from-blue-500/20 to-transparent",
+          actionText: "Open Course",
+          defaultHref: "/student/courses",
         };
       case "CERTIFICATE":
         return {
-          label: "🏆 CERTIFICATE",
-          badge: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
-          cardGradient: "bg-gradient-to-r from-emerald-950/30 via-card/70 to-card border-emerald-500/30 hover:border-emerald-500/60 shadow-emerald-500/5",
+          label: "Certificate",
+          badgeBg: "bg-emerald-500/10 text-emerald-300 border-emerald-500/20",
+          iconBg: "bg-emerald-500/10 text-emerald-300 border border-emerald-500/20",
           icon: Award,
-          iconBox: "bg-emerald-500/20 text-emerald-400 border-emerald-500/40",
-          buttonColor: "bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-600/30",
-          glowColor: "from-emerald-500/20 to-transparent",
+          actionText: "View Certificate",
+          defaultHref: "/student/certificates",
         };
-      case "COMMUNITY":
+      case "PAYMENT":
         return {
-          label: "💬 INSTRUCTOR FEEDBACK",
-          badge: "bg-cyan-500/15 text-cyan-300 border-cyan-500/30",
-          cardGradient: "bg-gradient-to-r from-cyan-950/30 via-card/70 to-card border-cyan-500/30 hover:border-cyan-500/60 shadow-cyan-500/5",
-          icon: MessageSquare,
-          iconBox: "bg-cyan-500/20 text-cyan-300 border-cyan-500/40",
-          buttonColor: "bg-cyan-600 hover:bg-cyan-500 text-white shadow-cyan-600/30",
-          glowColor: "from-cyan-500/20 to-transparent",
+          label: "Payment",
+          badgeBg: "bg-emerald-500/10 text-emerald-300 border-emerald-500/20",
+          iconBg: "bg-emerald-500/10 text-emerald-300 border border-emerald-500/20",
+          icon: CreditCard,
+          actionText: "View Invoices",
+          defaultHref: "/student/payments",
         };
+      default:
+        return {
+          label: "Platform",
+          badgeBg: "bg-white/[0.06] text-neutral-300 border-white/10",
+          iconBg: "bg-white/[0.06] text-neutral-300 border border-white/10",
+          icon: Bell,
+          actionText: "View Details",
+          defaultHref: "/dashboard",
+        };
+    }
+  };
+
+  const getFilterCounts = (id: string) => {
+    switch (id) {
+      case "ALL":
+        return notifications.length;
+      case "UNREAD":
+        return unreadCount;
+      case "LIVE":
+        return notifications.filter((n) => n.category === "LIVE_SESSION" || n.category === "LIVE").length;
+      case "RECORDING":
+        return notifications.filter((n) => n.category === "RECORDING").length;
+      case "ASSIGNMENT":
+        return notifications.filter((n) => n.category === "ASSIGNMENT").length;
+      case "COURSE":
+        return notifications.filter((n) => n.category === "COURSE").length;
+      case "CERTIFICATE":
+        return notifications.filter((n) => n.category === "CERTIFICATE").length;
+      default:
+        return 0;
     }
   };
 
   return (
     <StudentPortalLayout>
-      <div className="w-full min-h-screen py-8 px-4 sm:px-8 max-w-[1550px] mx-auto space-y-8 text-text">
+      <div className="w-full min-h-screen py-8 px-4 sm:px-8 max-w-6xl mx-auto space-y-6 text-neutral-200">
 
-        {/* ───────── 1. HERO HEADER SECTION (Cosmic Gradient Glass) ───────── */}
-        <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-purple-950/40 via-card/80 to-blue-950/30 border border-purple-500/30 shadow-2xl relative overflow-hidden">
-          {/* Ambient Background Glows */}
-          <div className="absolute -top-20 -right-20 w-80 h-80 bg-purple-500/15 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute -bottom-20 -left-20 w-80 h-80 bg-blue-500/15 rounded-full blur-3xl pointer-events-none" />
-
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
-            {/* Title & Info */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <Link
-                  href="/dashboard"
-                  className="px-3 py-1 rounded-xl bg-card hover:bg-card/80 border border-card text-subtext hover:text-text text-xs font-bold flex items-center gap-1.5 transition-colors shadow-xs"
-                >
-                  <ArrowLeft className="w-3.5 h-3.5" />
-                  <span>Back to Portal</span>
-                </Link>
-                <span className="text-subtext/40">•</span>
-                <span className="text-xs font-black text-purple-400 uppercase tracking-widest flex items-center gap-1">
-                  <Sparkles className="w-3.5 h-3.5 text-purple-400" />
-                  Student Activity Hub
-                </span>
-              </div>
-
-              <div className="flex items-center gap-4">
-                <div className="p-3.5 rounded-2xl bg-gradient-to-br from-purple-500/20 to-blue-500/20 border border-purple-500/30 text-purple-400 shadow-inner">
-                  <Bell className="w-8 h-8 text-purple-400 animate-pulse" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-3 flex-wrap">
-                    <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-text">
-                      Platform <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-blue-400 to-cyan-400">Notifications</span>
-                    </h1>
-                    {unreadCount > 0 && (
-                      <span className="px-3 py-1 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40 text-xs font-black flex items-center gap-1.5 shadow-md">
-                        <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
-                        {unreadCount} Unread Alerts
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-xs sm:text-sm text-subtext mt-1 max-w-2xl font-medium">
-                    Live cohort class updates, assignment grading evaluations, newly unlocked modules, and certified credentials.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Quick Action Buttons */}
-            <div className="flex items-center gap-3 flex-wrap shrink-0">
-              {unreadCount > 0 && (
-                <button
-                  onClick={markAllAsRead}
-                  className="px-4 py-2.5 bg-card hover:bg-card/80 border border-card rounded-xl text-xs font-bold text-text flex items-center gap-2 transition-all cursor-pointer shadow-xs hover:border-purple-500/40 active:scale-95"
-                >
-                  <CheckCheck className="w-4 h-4 text-emerald-400" />
-                  <span>Mark All as Read</span>
-                </button>
-              )}
-
-              <button
-                onClick={() => setIsPreferencesOpen(true)}
-                className="px-4 py-2.5 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 text-purple-300 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer shadow-xs"
+        {/* ───────── 1. MINIMAL HEADER ───────── */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/[0.08]">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <Link
+                href="/dashboard"
+                className="text-neutral-400 hover:text-white transition-colors text-xs flex items-center gap-1 font-medium"
               >
-                <Sliders className="w-4 h-4 text-purple-400" />
-                <span>Alert Settings</span>
-              </button>
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span>Dashboard</span>
+              </Link>
             </div>
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
+                Notifications
+              </h1>
+              {unreadCount > 0 && (
+                <span className="px-2.5 py-0.5 rounded-full bg-rose-500/15 text-rose-300 border border-rose-500/20 text-xs font-semibold">
+                  {unreadCount} unread
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Quick Actions */}
+          <div className="flex items-center gap-2.5 shrink-0">
+            <button
+              onClick={() => fetchNotifications(false)}
+              disabled={isLoading || isRefreshing}
+              className="p-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-neutral-400 hover:text-white transition-colors cursor-pointer disabled:opacity-50"
+              title="Refresh notifications"
+            >
+              <RefreshCw className={`w-4 h-4 ${isRefreshing ? "animate-spin text-primary" : ""}`} />
+            </button>
+
+            {unreadCount > 0 && (
+              <button
+                onClick={markAllAsRead}
+                className="px-3.5 py-2 bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 rounded-xl text-xs font-semibold text-neutral-300 hover:text-white flex items-center gap-1.5 transition-colors cursor-pointer"
+              >
+                <CheckCheck className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Mark all as read</span>
+              </button>
+            )}
+
+            <button
+              onClick={() => setIsPreferencesOpen(true)}
+              className="p-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-neutral-400 hover:text-white transition-colors cursor-pointer"
+              title="Alert Preferences"
+            >
+              <Sliders className="w-4 h-4" />
+            </button>
           </div>
         </div>
 
-        {/* ───────── 2. CATEGORY PILLS & SEARCH BAR ───────── */}
-        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
-          {/* Filter Pills */}
-          <div className="flex items-center gap-2 overflow-x-auto scrollbar-none pb-1">
+        {/* ───────── 2. CATEGORY PILLS & SEARCH ───────── */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none pb-1">
             {[
-              { id: "ALL", label: "All Activity", count: notifications.length },
-              { id: "UNREAD", label: "Unread", count: unreadCount },
-              { id: "LIVE", label: "🔴 Live Classes", count: notifications.filter(n => n.category === "LIVE").length },
-              { id: "RECORDING", label: "🎬 Recordings", count: notifications.filter(n => n.category === "RECORDING").length },
-              { id: "ASSIGNMENT", label: "📝 Assignments", count: notifications.filter(n => n.category === "ASSIGNMENT").length },
-              { id: "COURSE", label: "🎓 Course Updates", count: notifications.filter(n => n.category === "COURSE").length },
-              { id: "CERTIFICATE", label: "🏆 Certificates", count: notifications.filter(n => n.category === "CERTIFICATE").length },
-            ].map((f) => (
-              <button
-                key={f.id}
-                onClick={() => setActiveCategory(f.id)}
-                className={`px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-2 shrink-0 border ${
-                  activeCategory === f.id
-                    ? "bg-primary text-white border-primary shadow-lg shadow-primary/25"
-                    : "bg-card/50 border-card text-subtext hover:text-text hover:bg-card/90"
-                }`}
-              >
-                <span>{f.label}</span>
-                <span className={`px-1.5 py-0.5 rounded-md text-[10px] ${activeCategory === f.id ? "bg-white/20 text-white" : "bg-card text-subtext"}`}>
-                  {f.count}
-                </span>
-              </button>
-            ))}
+              { id: "ALL", label: "All" },
+              { id: "UNREAD", label: "Unread" },
+              { id: "LIVE", label: "Live Classes" },
+              { id: "RECORDING", label: "Recordings" },
+              { id: "ASSIGNMENT", label: "Assignments" },
+              { id: "COURSE", label: "Courses" },
+              { id: "CERTIFICATE", label: "Certificates" },
+            ].map((f) => {
+              const count = getFilterCounts(f.id);
+              const isActive = activeCategory === f.id;
+              return (
+                <button
+                  key={f.id}
+                  onClick={() => setActiveCategory(f.id)}
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 shrink-0 border ${
+                    isActive
+                      ? "bg-white text-neutral-900 border-white shadow-xs font-bold"
+                      : "bg-white/[0.03] border-white/[0.08] text-neutral-400 hover:text-white hover:bg-white/[0.06]"
+                  }`}
+                >
+                  <span>{f.label}</span>
+                  {count > 0 && (
+                    <span
+                      className={`px-1.5 py-0.2 rounded-md text-[10px] ${
+                        isActive
+                          ? "bg-neutral-200 text-neutral-900"
+                          : "bg-white/[0.06] text-neutral-400"
+                      }`}
+                    >
+                      {count}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
           </div>
 
-          {/* Search Input */}
-          <div className="relative w-full md:w-80 shrink-0">
-            <Search className="w-4 h-4 text-subtext absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <div className="relative w-full sm:w-72 shrink-0">
+            <Search className="w-4 h-4 text-neutral-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
-              placeholder="Search notifications, courses..."
+              placeholder="Search notifications..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-8 py-2.5 bg-card/60 border border-card rounded-xl text-xs text-text placeholder:text-subtext focus:outline-none focus:border-purple-500 transition-all shadow-xs"
+              className="w-full pl-9 pr-8 py-2 bg-white/[0.03] border border-white/[0.08] rounded-xl text-xs text-neutral-200 placeholder:text-neutral-500 focus:outline-none focus:border-primary/50 transition-colors"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-subtext hover:text-text cursor-pointer"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-white cursor-pointer"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -272,25 +389,43 @@ export default function StudentNotificationsPage() {
           </div>
         </div>
 
-        {/* ───────── 3. NOTIFICATION CARDS LIST ───────── */}
-        <div className="space-y-4">
-          {filteredNotifications.length === 0 ? (
-            <div className="p-16 text-center border border-dashed border-card rounded-3xl bg-card/20 space-y-3 max-w-2xl mx-auto">
-              <div className="w-14 h-14 rounded-2xl bg-card border border-card text-subtext/40 flex items-center justify-center mx-auto">
-                <Bell className="w-7 h-7" />
+        {/* ───────── 3. NOTIFICATION LIST ───────── */}
+        <div className="space-y-2.5">
+          {isLoading ? (
+            <div className="space-y-2.5">
+              {[1, 2, 3, 4].map((idx) => (
+                <div
+                  key={idx}
+                  className="p-5 rounded-2xl border border-white/[0.06] bg-white/[0.02] animate-pulse flex items-start gap-3.5"
+                >
+                  <div className="w-9 h-9 rounded-xl bg-white/[0.06] shrink-0" />
+                  <div className="flex-1 space-y-2">
+                    <div className="w-24 h-3 bg-white/[0.06] rounded" />
+                    <div className="w-2/3 h-4 bg-white/[0.06] rounded" />
+                    <div className="w-full h-3 bg-white/[0.06] rounded" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : filteredNotifications.length === 0 ? (
+            <div className="py-16 px-4 text-center border border-dashed border-white/10 rounded-2xl bg-white/[0.01] space-y-2">
+              <div className="w-10 h-10 rounded-full bg-white/[0.04] border border-white/[0.08] flex items-center justify-center mx-auto text-neutral-500 mb-1">
+                <Inbox className="w-5 h-5" />
               </div>
-              <h4 className="font-black text-lg text-text">No Notifications Found</h4>
-              <p className="text-xs text-subtext leading-relaxed">
+              <h4 className="font-semibold text-sm text-neutral-200">No Notifications</h4>
+              <p className="text-xs text-neutral-500 max-w-sm mx-auto">
                 {searchQuery
                   ? `No alerts matched your search "${searchQuery}".`
-                  : "You are completely caught up with all live classes, assignments, and curriculum updates."}
+                  : activeCategory === "UNREAD"
+                  ? "You have read all notifications. Everything is caught up!"
+                  : "You're all caught up with your courses, assignments, and class schedules."}
               </p>
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery("")}
-                  className="px-4 py-2 bg-primary text-white rounded-xl text-xs font-bold cursor-pointer shadow-sm"
+                  className="mt-2 px-3 py-1.5 bg-white/[0.06] hover:bg-white/[0.1] text-white rounded-lg text-xs font-medium cursor-pointer"
                 >
-                  Clear Filter
+                  Clear search
                 </button>
               )}
             </div>
@@ -298,85 +433,104 @@ export default function StudentNotificationsPage() {
             filteredNotifications.map((n) => {
               const config = getCategoryConfig(n.category);
               const IconComp = config.icon;
+              const isUnread = !n.isRead;
+              const targetLink = n.actionUrl || n.link || config.defaultHref;
+              const timeDisplay = n.timeAgo || (n.createdAt ? new Date(n.createdAt).toLocaleDateString() : "Just now");
+              const displayTitle = cleanText(n.title);
+              const displayDesc = cleanText(n.message || n.description || "");
 
               return (
                 <div
                   key={n.id}
-                  className={`p-6 sm:p-7 rounded-3xl border transition-all duration-300 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative group overflow-hidden ${config.cardGradient} ${
-                    n.isUnread ? "ring-1 ring-white/10" : ""
+                  className={`p-4 sm:p-5 rounded-2xl border transition-all flex flex-col md:flex-row items-start md:items-center justify-between gap-4 relative group ${
+                    isUnread
+                      ? "bg-white/[0.035] border-white/[0.12] shadow-xs"
+                      : "bg-white/[0.015] border-white/[0.06] opacity-80 hover:opacity-100 hover:bg-white/[0.03]"
                   }`}
                 >
-                  {/* Subtle Top Glow Accent */}
-                  <div className={`absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r ${config.glowColor}`} />
-
-                  {/* Left Node, Badge, and Message */}
-                  <div className="flex items-start gap-4 sm:gap-5 min-w-0 flex-1">
-                    {/* Glowing Icon Box */}
-                    <div className={`w-13 h-13 rounded-2xl border flex items-center justify-center shrink-0 shadow-lg mt-0.5 group-hover:scale-105 transition-transform ${config.iconBox}`}>
-                      <IconComp className="w-6 h-6" />
+                  {/* Left Icon & Text */}
+                  <div className="flex items-start gap-3.5 min-w-0 flex-1">
+                    {/* Icon */}
+                    <div
+                      className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 mt-0.5 ${config.iconBg}`}
+                    >
+                      <IconComp className="w-4 h-4" />
                     </div>
 
-                    <div className="space-y-2 min-w-0 flex-1">
-                      {/* Top Meta Line: Badge, Course, Timestamp */}
-                      <div className="flex items-center gap-2.5 flex-wrap">
-                        <span className={`px-2.5 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wider border shadow-xs ${config.badge}`}>
+                    <div className="space-y-1 min-w-0 flex-1">
+                      {/* Meta top line */}
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span
+                          className={`text-[9px] font-semibold px-2 py-0.5 rounded-md border tracking-wide uppercase ${config.badgeBg}`}
+                        >
                           {config.label}
                         </span>
 
-                        <span className="text-subtext/40">•</span>
-
-                        <span className="text-xs font-bold text-text flex items-center gap-1">
-                          <Layers className="w-3.5 h-3.5 text-purple-400 shrink-0" />
-                          {n.courseTitle}
-                        </span>
-
-                        <span className="text-subtext/40">•</span>
-
-                        <span className="text-xs text-subtext font-semibold flex items-center gap-1">
-                          <Clock className="w-3 h-3 text-subtext/70 shrink-0" />
-                          {n.time}
-                        </span>
-
-                        {n.isUnread && (
-                          <span className="px-2 py-0.5 rounded-md bg-rose-500 text-white text-[9px] font-black uppercase tracking-wider animate-pulse shadow-sm">
-                            NEW
+                        {n.priority === "URGENT" && (
+                          <span className="px-1.5 py-0.5 rounded bg-rose-500/15 text-rose-300 border border-rose-500/20 text-[9px] font-semibold uppercase">
+                            Urgent
                           </span>
+                        )}
+
+                        <span className="text-neutral-500">•</span>
+
+                        <span className="text-[11px] text-neutral-400 font-medium flex items-center gap-1">
+                          <Clock className="w-3 h-3 text-neutral-500" />
+                          {timeDisplay}
+                        </span>
+
+                        {isUnread && (
+                          <span className="w-1.5 h-1.5 rounded-full bg-primary ring-2 ring-primary/30" />
                         )}
                       </div>
 
-                      {/* Notification Title */}
-                      <h3 className="font-black text-lg sm:text-xl text-text group-hover:text-white transition-colors leading-snug">
-                        {n.title}
+                      {/* Title */}
+                      <h3 className="font-bold text-sm sm:text-[15px] text-white group-hover:text-primary transition-colors leading-snug">
+                        {displayTitle}
                       </h3>
 
-                      {/* Detailed Message */}
-                      <p className="text-xs sm:text-sm text-subtext leading-relaxed max-w-4xl">
-                        {n.message}
+                      {/* Message */}
+                      <p className="text-xs text-neutral-400 leading-relaxed max-w-3xl font-normal">
+                        {displayDesc}
                       </p>
 
-                      {n.instructorName && (
-                        <div className="pt-1 text-xs text-subtext font-medium flex items-center gap-1.5">
-                          <span>Instructor: <strong className="text-text">{n.instructorName}</strong></span>
-                        </div>
+                      {n.actor?.name && (
+                        <p className="text-[11px] text-neutral-500 pt-0.5">
+                          From <span className="text-neutral-300 font-medium">{n.actor.name}</span>
+                        </p>
                       )}
                     </div>
                   </div>
 
                   {/* Right Action CTAs */}
-                  <div className="flex items-center gap-3 shrink-0 self-end md:self-center pt-2 md:pt-0">
+                  <div className="flex items-center gap-2 shrink-0 self-end md:self-center">
                     <button
-                      onClick={(e) => toggleRead(n.id, e)}
-                      title={n.isUnread ? "Mark as read" : "Mark as unread"}
-                      className="p-2.5 rounded-xl bg-card/80 hover:bg-card border border-card text-subtext hover:text-text transition-colors cursor-pointer"
+                      onClick={(e) => toggleRead(n.id, n.isRead, e)}
+                      title={n.isRead ? "Mark as unread" : "Mark as read"}
+                      className="p-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-neutral-400 hover:text-white transition-colors cursor-pointer"
                     >
-                      {n.isUnread ? <Check className="w-4 h-4 text-emerald-400" /> : <Clock className="w-4 h-4" />}
+                      {n.isRead ? <Clock className="w-3.5 h-3.5" /> : <Check className="w-3.5 h-3.5 text-emerald-400" />}
+                    </button>
+
+                    <button
+                      onClick={(e) => deleteNotification(n.id, e)}
+                      title="Delete alert"
+                      className="p-2 rounded-xl bg-white/[0.04] hover:bg-rose-500/15 border border-white/10 hover:border-rose-500/30 text-neutral-400 hover:text-rose-300 transition-colors cursor-pointer"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
                     </button>
 
                     <Link
-                      href={n.href}
-                      className={`px-5 py-2.5 rounded-xl font-black text-xs flex items-center gap-2 transition-all hover:scale-105 cursor-pointer shadow-lg active:scale-95 ${config.buttonColor}`}
+                      href={targetLink}
+                      onClick={() => {
+                        if (!n.isRead) {
+                          toggleRead(n.id, false, { stopPropagation: () => {} } as any);
+                        }
+                      }}
+                      className="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-white text-neutral-900 hover:bg-neutral-200 transition-colors flex items-center gap-1 shadow-xs cursor-pointer"
                     >
-                      <span>{n.actionText}</span>
+                      <span>{config.actionText}</span>
+                      <ArrowUpRight className="w-3.5 h-3.5 opacity-70" />
                     </Link>
                   </div>
                 </div>
@@ -385,48 +539,48 @@ export default function StudentNotificationsPage() {
           )}
         </div>
 
-        {/* ───────── 4. NOTIFICATION PREFERENCES MODAL ───────── */}
+        {/* ───────── 4. ALERT PREFERENCES MODAL ───────── */}
         <AnimatePresence>
           {isPreferencesOpen && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md">
               <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
+                initial={{ opacity: 0, scale: 0.96 }}
                 animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                className="bg-card border border-card rounded-3xl p-6 sm:p-8 max-w-md w-full space-y-6 shadow-2xl relative"
+                exit={{ opacity: 0, scale: 0.96 }}
+                className="bg-[#0f141c] border border-white/10 rounded-2xl p-6 max-w-md w-full space-y-5 shadow-2xl relative"
               >
-                <div className="flex items-center justify-between border-b border-card pb-4">
+                <div className="flex items-center justify-between border-b border-white/[0.08] pb-3.5">
                   <div className="flex items-center gap-2.5">
-                    <div className="p-2 rounded-xl bg-purple-500/15 text-purple-400">
-                      <Sliders className="w-5 h-5" />
+                    <div className="p-2 rounded-xl bg-white/[0.06] text-white">
+                      <Sliders className="w-4 h-4" />
                     </div>
                     <div>
-                      <h3 className="font-black text-lg text-text">Notification Alerts</h3>
-                      <p className="text-xs text-subtext">Manage student alert channels</p>
+                      <h3 className="font-bold text-sm text-white">Notification Channels</h3>
+                      <p className="text-xs text-neutral-400">Manage student notification delivery</p>
                     </div>
                   </div>
                   <button
                     onClick={() => setIsPreferencesOpen(false)}
-                    className="p-2 rounded-xl bg-background text-subtext hover:text-text cursor-pointer"
+                    className="p-1.5 rounded-lg bg-white/[0.04] text-neutral-400 hover:text-white cursor-pointer"
                   >
                     <X className="w-4 h-4" />
                   </button>
                 </div>
 
-                <div className="space-y-4 text-xs">
+                <div className="space-y-2.5 text-xs">
                   {[
-                    { title: "Live Class Reminders", desc: "Get alerted 15 minutes before workshops start.", enabled: true },
-                    { title: "Assignment Grades & Feedback", desc: "Instant alert when instructor reviews your code.", enabled: true },
-                    { title: "New Module & Lab Releases", desc: "Notification when new lessons are added.", enabled: true },
-                    { title: "Browser Push Alerts", desc: "Receive desktop popups for urgent announcements.", enabled: false }
+                    { title: "Live Class Reminders", desc: "Alerts 15 minutes before workshops start." },
+                    { title: "Assignment Grades & Feedback", desc: "Instant alert when instructor reviews your code." },
+                    { title: "New Module & Lab Releases", desc: "Notification when new lectures are added." },
+                    { title: "Course Milestones & Badges", desc: "Milestones and certificate achievements." },
                   ].map((pref, idx) => (
-                    <div key={idx} className="p-3.5 bg-background/60 border border-card rounded-2xl flex items-center justify-between gap-3">
+                    <div key={idx} className="p-3 bg-white/[0.02] border border-white/[0.06] rounded-xl flex items-center justify-between gap-3">
                       <div>
-                        <p className="font-bold text-text">{pref.title}</p>
-                        <p className="text-[11px] text-subtext mt-0.5">{pref.desc}</p>
+                        <p className="font-semibold text-neutral-200">{pref.title}</p>
+                        <p className="text-[11px] text-neutral-400 mt-0.5">{pref.desc}</p>
                       </div>
-                      <div className="w-10 h-6 bg-purple-600 rounded-full p-1 cursor-pointer flex items-center justify-end">
-                        <div className="w-4 h-4 bg-white rounded-full shadow-sm" />
+                      <div className="w-9 h-5 bg-primary rounded-full p-0.5 cursor-pointer flex items-center justify-end">
+                        <div className="w-4 h-4 bg-white rounded-full shadow-xs" />
                       </div>
                     </div>
                   ))}
@@ -435,9 +589,9 @@ export default function StudentNotificationsPage() {
                 <div className="flex justify-end pt-2">
                   <button
                     onClick={() => setIsPreferencesOpen(false)}
-                    className="px-6 py-2.5 bg-primary hover:bg-primary/90 text-white font-bold text-xs rounded-xl shadow-md cursor-pointer"
+                    className="px-4 py-2 bg-white text-neutral-900 font-semibold text-xs rounded-xl hover:bg-neutral-200 transition-colors shadow-xs cursor-pointer"
                   >
-                    Save Preferences
+                    Save Changes
                   </button>
                 </div>
               </motion.div>
