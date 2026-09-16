@@ -19,7 +19,25 @@ export async function POST(req: Request) {
       tags: tagList,
     });
 
-    if (sessionId && effectiveUserId) {
+    if (!sessionId || !effectiveUserId) {
+      return NextResponse.json(
+        { error: 'A valid sessionId and authenticated user are required.' },
+        { status: 400 }
+      );
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: effectiveUserId },
+      select: { id: true },
+    });
+
+    if (!user) {
+      return NextResponse.json(
+        { error: 'The feedback user could not be found.' },
+        { status: 401 }
+      );
+    }
+
       // 1. Fetch live session details to get course and lead instructor
       const liveSession = await prisma.liveSession.findUnique({
         where: { id: sessionId },
@@ -34,13 +52,18 @@ export async function POST(req: Request) {
         },
       });
 
-      const instructorId = liveSession?.liveCourse?.leadInstructorId || null;
-      const liveCourseId = liveSession?.liveCourse?.id || null;
+      if (!liveSession) {
+        return NextResponse.json(
+          { error: 'The live session could not be found.' },
+          { status: 404 }
+        );
+      }
+
+      const instructorId = liveSession.liveCourse.leadInstructorId || null;
+      const liveCourseId = liveSession.liveCourse.id;
 
       // 2. Save / Update in the InstructorReview table
-      let savedReview = null;
-      try {
-        savedReview = await prisma.instructorReview.upsert({
+      const savedReview = await prisma.instructorReview.upsert({
           where: {
             sessionId_studentId: {
               sessionId,
@@ -68,9 +91,6 @@ export async function POST(req: Request) {
             status: 'PUBLISHED',
           },
         });
-      } catch (reviewErr) {
-        console.warn('[Meeting Feedback] InstructorReview table insert/update failed:', reviewErr);
-      }
 
       // 3. Update or create student attendance with feedback notes and exit timestamp
       const formattedNote = [
@@ -150,17 +170,7 @@ export async function POST(req: Request) {
           feedback: feedbackText,
         },
       });
-    }
-
-    return NextResponse.json({
-      success: true,
-      message: 'Feedback processed.',
-      data: {
-        sessionId,
-        rating: ratingNum,
-        feedback: feedbackText,
-      },
-    });
+    
   } catch (err: any) {
     console.error('[Meeting Feedback API Error]:', err);
     return NextResponse.json(

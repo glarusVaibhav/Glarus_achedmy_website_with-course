@@ -197,6 +197,7 @@ export default function ZoomSession({
 
   // Derive user identity & role ('INSTRUCTOR' or 'STUDENT')
   const effectiveUserId = propUserId || user?.id || `user-${Math.random().toString(36).substring(2, 9)}`;
+  const feedbackUserId = propUserId || user?.id;
   const effectiveRole: 'INSTRUCTOR' | 'STUDENT' =
     propRole === 'STUDENT' || user?.role === 'STUDENT' ? 'STUDENT' : 'INSTRUCTOR';
   const effectiveUserName = propUserName || user?.name || (effectiveRole === 'INSTRUCTOR' ? 'Instructor' : 'Student');
@@ -1124,17 +1125,23 @@ export default function ZoomSession({
     if (e) e.preventDefault();
     setIsSubmittingFeedback(true);
     try {
-      await fetch('/api/meetings/feedback', {
+      const response = await fetch('/api/meetings/feedback', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           sessionId,
-          userId: effectiveUserId,
+          userId: feedbackUserId,
           rating: feedbackRating,
           feedback: feedbackText,
           tags: [],
         }),
       });
+
+      if (!response.ok) {
+        const result = await response.json().catch(() => null);
+        throw new Error(result?.error || 'Feedback could not be saved');
+      }
+
       setFeedbackSubmitted(true);
       setTimeout(() => {
         const targetUrl = getExitRedirectUrl();

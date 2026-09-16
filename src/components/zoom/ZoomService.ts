@@ -1,5 +1,5 @@
 const API_BASE =
-  process.env.NEXT_PUBLIC_ZOOM_API_URL || 'http://192.168.1.24:8000/meetings';
+  process.env.PYTHON_PUBLIC_ZOOM_API_URL || 'http://192.168.1.3:8000/meetings';
 
 export interface ZoomSignatureResponse {
   sdk_key?: string;
@@ -20,7 +20,7 @@ export interface RecordingSyncResponse {
 
 /**
  * Fetch Zoom Video SDK signature directly from backend.
- * Endpoint: http://192.168.1.24:8000/meetings/signature
+ * Endpoint: http://192.168.1.3:8000/meetings/signature
  * 
  * Request payload:
  * {
@@ -81,7 +81,7 @@ export const fetchZoomSignature = async (
 
 /**
  * Call backend leave endpoint
- * Endpoint: http://192.168.1.24:8000/meetings/leave
+ * Endpoint: http://192.168.1.3:8000/meetings/leave
  */
 export const leaveZoomMeeting = async (
   sessionId: string,
@@ -109,7 +109,7 @@ export const leaveZoomMeeting = async (
 
 /**
  * Call backend end endpoint
- * Endpoint: http://192.168.1.24:8000/meetings/end (PATCH method)
+ * Endpoint: http://192.168.1.3:8000/meetings/end (PATCH method)
  */
 export const endZoomMeeting = async (
   sessionId: string,
@@ -137,7 +137,7 @@ export const endZoomMeeting = async (
 
 /**
  * Sync recording from Zoom cloud to MinIO and store the URL in database.
- * Endpoint: http://192.168.1.24:8000/meetings/{meeting_id}/recordings/sync (POST method)
+ * Endpoint: http://192.168.1.3:8000/meetings/{meeting_id}/recordings/sync (POST method)
  * 
  * Note: The {session_id} URL parameter on the Python backend expects the Zoom MEETING ID.
  */
