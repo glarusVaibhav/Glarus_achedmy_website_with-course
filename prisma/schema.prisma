@@ -191,6 +191,8 @@ model User {
   sessionAssignments    SessionAssignment[]
   courseCreationPermission InstructorCoursePermission?
   reviewedCoursePermissions InstructorCoursePermission[] @relation("AdminReviewedCoursePermissions")
+  givenInstructorReviews    InstructorReview[]           @relation("StudentInstructorReviews")
+  receivedInstructorReviews InstructorReview[]           @relation("InstructorReceivedReviews")
 }
 
 model Course {
@@ -228,6 +230,7 @@ model Course {
   reviewsCount     Int             @default(0)
   courseApproval   CourseApproval?
   assignments      Assignment[]    @relation("CourseAssignments")
+  instructorReviews InstructorReview[] @relation("CourseInstructorReviews")
 }
 
 model Purchase {
@@ -612,6 +615,7 @@ model LiveCourse {
   purchases          Purchase[]             @relation("LiveCoursePurchases")
   certificates       Certificate[]          @relation("LiveCourseCertificates")
   assignmentsList    Assignment[]           @relation("LiveCourseAssignments")
+  instructorReviews  InstructorReview[]     @relation("LiveCourseInstructorReviews")
   createdAt          DateTime               @default(now())
   updatedAt          DateTime               @updatedAt
 }
@@ -634,6 +638,7 @@ model LiveSession {
   meetingUrl               String?
   recordingUrl             String?
   recordingStatus          String?                    @default("unavailable")
+  recStatus                String?
   actualEnd_at             DateTime?
   agenda                   SessionAgendaItem[]
   topics                   SessionTopic[]
@@ -647,6 +652,7 @@ model LiveSession {
   recordingProgressRecords SessionRecordingProgress[]
   sessionAssignmentsList   Assignment[]               @relation("SessionAssignments")
   notes                    StudentNote[]
+  instructorReviews        InstructorReview[]         @relation("LiveSessionInstructorReviews")
   createdAt                DateTime                   @default(now())
   updatedAt                DateTime                   @updatedAt
 }
@@ -990,6 +996,49 @@ model interactive_modules {
   interactive_courses interactive_courses   @relation(fields: [course_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@index([course_id])
+}
+
+model InstructorReview {
+  id           String       @id @default(cuid())
+  
+  // Student giving the review
+  studentId    String
+  student      User         @relation("StudentInstructorReviews", fields: [studentId], references: [id], onDelete: Cascade)
+  
+  // Instructor receiving the review
+  instructorId String?
+  instructor   User?        @relation("InstructorReceivedReviews", fields: [instructorId], references: [id], onDelete: SetNull)
+  
+  // Associated Live Session
+  sessionId    String?
+  session      LiveSession? @relation("LiveSessionInstructorReviews", fields: [sessionId], references: [id], onDelete: Cascade)
+  
+  // Associated Live Course
+  liveCourseId String?
+  liveCourse   LiveCourse?  @relation("LiveCourseInstructorReviews", fields: [liveCourseId], references: [id], onDelete: Cascade)
+  
+  // Associated Self-Paced Course
+  courseId     String?
+  course       Course?      @relation("CourseInstructorReviews", fields: [courseId], references: [id], onDelete: Cascade)
+  
+  // Review metrics & content
+  rating       Int          @default(5) // 1 to 5 stars
+  feedback     String?      // Student feedback text
+  tags         String[]     @default([]) // e.g. ["Clear Explanations", "Engaging"]
+  isAnonymous  Boolean      @default(false)
+  status       String       @default("PUBLISHED") // "PUBLISHED" | "PENDING" | "HIDDEN" | "FLAGGED"
+  
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  @@unique([sessionId, studentId])
+  @@index([studentId])
+  @@index([instructorId])
+  @@index([sessionId])
+  @@index([liveCourseId])
+  @@index([courseId])
+  @@index([rating])
+  @@index([createdAt])
 }
 
 

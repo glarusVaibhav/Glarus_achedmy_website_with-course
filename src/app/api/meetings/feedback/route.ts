@@ -6,10 +6,10 @@ export async function POST(req: Request) {
   try {
     const session = await getSession().catch(() => null);
     const body = await req.json().catch(() => ({}));
-    const { sessionId, userId: bodyUserId, rating, feedback, tags } = body;
+    const { sessionId, userId: bodyUserId, rating, feedback, tags, isAnonymous } = body;
 
     const effectiveUserId = session?.id || bodyUserId;
-    const ratingNum = typeof rating === 'number' ? Math.min(5, Math.max(1, rating)) : 5;
+    const ratingNum = typeof rating === 'number' ? Math.min(5, Math.max(1, Math.round(rating))) : 5;
     const feedbackText = typeof feedback === 'string' ? feedback.trim() : '';
     const tagList = Array.isArray(tags) ? tags.filter((t: any) => typeof t === 'string') : [];
 
@@ -20,7 +20,59 @@ export async function POST(req: Request) {
     });
 
     if (sessionId && effectiveUserId) {
-      // 1. Update or create student attendance with feedback notes and exit timestamp
+      // 1. Fetch live session details to get course and lead instructor
+      const liveSession = await prisma.liveSession.findUnique({
+        where: { id: sessionId },
+        include: {
+          liveCourse: {
+            select: {
+              id: true,
+              title: true,
+              leadInstructorId: true,
+            },
+          },
+        },
+      });
+
+      const instructorId = liveSession?.liveCourse?.leadInstructorId || null;
+      const liveCourseId = liveSession?.liveCourse?.id || null;
+
+      // 2. Save / Update in the InstructorReview table
+      let savedReview = null;
+      try {
+        savedReview = await prisma.instructorReview.upsert({
+          where: {
+            sessionId_studentId: {
+              sessionId,
+              studentId: effectiveUserId,
+            },
+          },
+          update: {
+            instructorId,
+            liveCourseId,
+            rating: ratingNum,
+            feedback: feedbackText,
+            tags: tagList,
+            isAnonymous: Boolean(isAnonymous),
+            status: 'PUBLISHED',
+          },
+          create: {
+            studentId: effectiveUserId,
+            instructorId,
+            sessionId,
+            liveCourseId,
+            rating: ratingNum,
+            feedback: feedbackText,
+            tags: tagList,
+            isAnonymous: Boolean(isAnonymous),
+            status: 'PUBLISHED',
+          },
+        });
+      } catch (reviewErr) {
+        console.warn('[Meeting Feedback] InstructorReview table insert/update failed:', reviewErr);
+      }
+
+      // 3. Update or create student attendance with feedback notes and exit timestamp
       const formattedNote = [
         `Rating: ${ratingNum}/5`,
         tagList.length > 0 ? `Tags: ${tagList.join(', ')}` : null,
@@ -54,32 +106,19 @@ export async function POST(req: Request) {
         console.warn('[Meeting Feedback] Attendance update skipped or failed:', attErr);
       }
 
-      // 2. Look up live session to notify instructor
-      try {
-        const liveSession = await prisma.liveSession.findUnique({
-          where: { id: sessionId },
-          include: {
-            liveCourse: {
-              select: {
-                id: true,
-                title: true,
-                leadInstructorId: true,
-              },
-            },
-          },
-        });
-
-        if (liveSession?.liveCourse?.leadInstructorId) {
-          const studentName = session?.name || 'A student';
+      // 4. Notify instructor about the new student review
+      if (instructorId) {
+        try {
+          const studentName = isAnonymous ? 'A student (Anonymous)' : (session?.name || 'A student');
           await prisma.notification.create({
             data: {
-              recipientId: liveSession.liveCourse.leadInstructorId,
+              recipientId: instructorId,
               actorId: effectiveUserId,
               category: 'LIVE_SESSION',
               type: 'STUDENT_FEEDBACK_RECEIVED',
               priority: 'NORMAL',
-              title: `New Live Session Rating: ${ratingNum}/5 Stars`,
-              message: `${studentName} left a ${ratingNum}/5 star review for "${liveSession.title}".`,
+              title: `New Student Review: ${ratingNum}/5 Stars`,
+              message: `${studentName} left a ${ratingNum}/5 star review for "${liveSession?.title || 'Live Session'}".`,
               details: feedbackText || (tagList.length > 0 ? `Tags: ${tagList.join(', ')}` : 'No additional comments provided.'),
               entityType: 'LIVE_SESSION',
               entityId: sessionId,
@@ -90,20 +129,32 @@ export async function POST(req: Request) {
                 feedback: feedbackText,
                 tags: tagList,
                 sessionId,
-                sessionTitle: liveSession.title,
-                courseTitle: liveSession.liveCourse.title,
+                sessionTitle: liveSession?.title,
+                courseTitle: liveSession?.liveCourse?.title,
+                reviewId: savedReview?.id,
               }),
             },
           });
+        } catch (notifErr) {
+          console.warn('[Meeting Feedback] Notification creation skipped or failed:', notifErr);
         }
-      } catch (notifErr) {
-        console.warn('[Meeting Feedback] Notification creation skipped or failed:', notifErr);
       }
+
+      return NextResponse.json({
+        success: true,
+        message: 'Feedback submitted and review saved successfully.',
+        data: {
+          reviewId: savedReview?.id,
+          sessionId,
+          rating: ratingNum,
+          feedback: feedbackText,
+        },
+      });
     }
 
     return NextResponse.json({
       success: true,
-      message: 'Feedback submitted successfully.',
+      message: 'Feedback processed.',
       data: {
         sessionId,
         rating: ratingNum,
@@ -118,3 +169,76 @@ export async function POST(req: Request) {
     );
   }
 }
+
+export async function GET(req: Request) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const sessionId = searchParams.get('sessionId');
+    const instructorId = searchParams.get('instructorId');
+    const liveCourseId = searchParams.get('liveCourseId');
+
+    const where: any = {};
+    if (sessionId) where.sessionId = sessionId;
+    if (instructorId) where.instructorId = instructorId;
+    if (liveCourseId) where.liveCourseId = liveCourseId;
+
+    const reviews = await prisma.instructorReview.findMany({
+      where,
+      include: {
+        student: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatar: true,
+          },
+        },
+        session: {
+          select: {
+            id: true,
+            title: true,
+            sessionNumber: true,
+          },
+        },
+        liveCourse: {
+          select: {
+            id: true,
+            title: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    const averageRating = reviews.length > 0
+      ? reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length
+      : 5.0;
+
+    return NextResponse.json({
+      success: true,
+      totalReviews: reviews.length,
+      averageRating: parseFloat(averageRating.toFixed(1)),
+      reviews: reviews.map((r) => ({
+        id: r.id,
+        rating: r.rating,
+        feedback: r.feedback,
+        tags: r.tags,
+        isAnonymous: r.isAnonymous,
+        createdAt: r.createdAt,
+        student: r.isAnonymous ? { name: 'Anonymous Student', avatar: null } : r.student,
+        sessionTitle: r.session?.title,
+        sessionNumber: r.session?.sessionNumber,
+        courseTitle: r.liveCourse?.title,
+      })),
+    });
+  } catch (err: any) {
+    console.error('[Meeting Feedback GET API Error]:', err);
+    return NextResponse.json(
+      { error: err?.message || 'Failed to fetch reviews' },
+      { status: 500 }
+    );
+  }
+}
+
