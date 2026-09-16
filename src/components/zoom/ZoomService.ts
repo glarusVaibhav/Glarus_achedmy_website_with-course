@@ -1,4 +1,4 @@
-const API_BASE = 'http://192.168.1.16:8000/meetings';
+const API_BASE = 'http://192.168.1.17:8000/meetings';
 
 export interface ZoomSignatureResponse {
   sdk_key?: string;
@@ -11,14 +11,15 @@ export interface ZoomSignatureResponse {
 }
 
 export interface RecordingSyncResponse {
-  session_id: string;
-  meeting_id: string;
-  minio_url: string;
+  session_id?: string;
+  meeting_id?: string;
+  minio_url?: string;
+  recording_url?: string;
 }
 
 /**
  * Fetch Zoom Video SDK signature directly from backend.
- * Endpoint: http://192.168.1.17:8000/meetings/signature
+ * Endpoint: http://192.168.1.24:8000/meetings/signature
  * 
  * Request payload:
  * {
@@ -79,7 +80,7 @@ export const fetchZoomSignature = async (
 
 /**
  * Call backend leave endpoint
- * Endpoint: http://192.168.1.17:8000/meetings/leave
+ * Endpoint: http://192.168.1.24:8000/meetings/leave
  */
 export const leaveZoomMeeting = async (
   sessionId: string,
@@ -107,7 +108,7 @@ export const leaveZoomMeeting = async (
 
 /**
  * Call backend end endpoint
- * Endpoint: http://192.168.1.17:8000/meetings/end (PATCH method)
+ * Endpoint: http://192.168.1.24:8000/meetings/end (PATCH method)
  */
 export const endZoomMeeting = async (
   sessionId: string,
@@ -135,14 +136,25 @@ export const endZoomMeeting = async (
 
 /**
  * Sync recording from Zoom cloud to MinIO and store the URL in database.
- * Endpoint: http://192.168.1.17:8000/meetings/{session_id}/recordings/sync (POST method)
+ * Endpoint: http://192.168.1.24:8000/meetings/{meeting_id}/recordings/sync (POST method)
+ * 
+ * Note: The {session_id} URL parameter on the Python backend expects the Zoom MEETING ID.
  */
 export const syncSessionRecording = async (
-  sessionId: string
+  meetingId: string,
+  sessionId?: string
 ): Promise<RecordingSyncResponse | null> => {
   try {
-    console.log(`[Zoom Recording] Triggering recording sync for session: ${sessionId}`);
-    const response = await fetch(`${API_BASE}/${sessionId}/recordings/sync`, {
+    const targetSessionId = sessionId || meetingId;
+    const requestUrl = `${API_BASE}/${meetingId}/recordings/sync`;
+
+    console.log(`\n================== [ZOOM RECORDING SYNC] ==================`);
+    console.log(`[Zoom Recording Sync] URL CALLED: ${requestUrl}`);
+    console.log(`[Zoom Recording Sync] Passing meetingId as path param: "${meetingId}"`);
+    console.log(`[Zoom Recording Sync] Internal DB Session ID: "${targetSessionId}"`);
+    console.log(`===========================================================\n`);
+
+    const response = await fetch(requestUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -151,15 +163,38 @@ export const syncSessionRecording = async (
 
     if (!response.ok) {
       const errorText = await response.text().catch(() => '');
-      console.warn(`[Zoom Recording] Sync recording failed with status ${response.status}:`, errorText);
+      console.warn(`[Zoom Recording Sync] Request failed with HTTP ${response.status}:`, errorText);
       return null;
     }
 
     const data = await response.json();
-    console.log('[Zoom Recording] Recording synced successfully:', data);
+    console.log('[Zoom Recording Sync] Response received from microservice:', data);
+
+    const recordingUrl = data.minio_url || data.recording_url;
+    if (recordingUrl) {
+      console.log(`[Zoom Recording Sync] Persisting recordingUrl to Postgres DB: ${recordingUrl}`);
+      const persistResponse = await fetch('/api/instructor/live-sessions', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId: targetSessionId, recordingUrl }),
+      });
+
+      if (!persistResponse.ok) {
+        const persistError = await persistResponse.text().catch(() => '');
+        console.error(
+          `[Zoom Recording Sync] Failed to update PostgreSQL DB (status ${persistResponse.status}):`,
+          persistError
+        );
+      } else {
+        console.log(`[Zoom Recording Sync] Successfully saved recordingUrl in Postgres for sessionId: ${targetSessionId}`);
+      }
+    } else {
+      console.warn('[Zoom Recording Sync] Sync response did not contain minio_url or recording_url:', data);
+    }
+
     return data;
   } catch (error) {
-    console.error('[Zoom Recording] Error syncing session recording:', error);
+    console.error('[Zoom Recording Sync] Error syncing session recording:', error);
     return null;
   }
 };

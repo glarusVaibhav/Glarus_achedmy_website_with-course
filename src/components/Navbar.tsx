@@ -16,6 +16,7 @@ import { NotificationBell } from "./NotificationBell";
 export function Navbar() {
   const pathname = usePathname();
   const isAdmin = pathname?.startsWith("/admin");
+  const isLiveRoom = pathname?.startsWith("/live-classes/room");
   const items = useCartStore((state) => state.items);
   const wishlistItems = useWishlist((state) => state.items);
   const { user, isLoading } = useAuth();
@@ -40,6 +41,7 @@ export function Navbar() {
 
   // The admin portal renders its own unified AdminHeader — hide the global navbar there
   if (isAdmin) return null;
+  if (isLiveRoom) return null;
 
   // Minimal distraction-free navbar for Self-Paced Learning Mode (only Logo on left, Login/Avatar on right)
   if (isLearningMode) {

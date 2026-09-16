@@ -305,6 +305,10 @@ export async function PATCH(req: Request) {
       data: updateData
     });
 
+    console.log(
+      `\n[Next.js Server] LiveSession Updated in Postgres DB -> ID: "${sessionId}" | recordingUrl: "${recordingUrl || '(unchanged)'}" | status: "${status || '(unchanged)'}"\n`
+    );
+
     return NextResponse.json({ session: updatedSession });
   } catch (error: any) {
     console.error("Instructor Live Session PATCH Error:", error);

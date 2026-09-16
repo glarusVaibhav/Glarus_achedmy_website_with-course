@@ -1,2 +1,10 @@
 export { default as ZoomSession } from './ZoomSession';
+export { default as ZoomVideoSettingsModal } from './ZoomVideoSettingsModal';
+export { default as ZoomReactionsMenu } from './ZoomReactionsMenu';
+export { default as ZoomFloatingReactions } from './ZoomFloatingReactions';
+export { default as ZoomAnnotationToolbar } from './ZoomAnnotationToolbar';
+export * from './ZoomVideoSettingsModal';
+export * from './ZoomReactionsMenu';
+export * from './ZoomFloatingReactions';
+export * from './ZoomAnnotationToolbar';
 export * from './ZoomService';
