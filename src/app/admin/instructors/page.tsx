@@ -23,10 +23,13 @@ import {
   RotateCcw,
   Loader2,
   Code2,
-  Briefcase
+  Briefcase,
+  Lock
 } from "lucide-react";
+import { formatDate } from "@/lib/dateTime";
+import { AdminInstructorPermissionsTab } from "@/components/admin/AdminInstructorPermissionsTab";
 
-export type InstructorTab = "all" | "approvals" | "verified" | "suspended";
+export type InstructorTab = "all" | "approvals" | "permissions" | "verified" | "suspended";
 
 export interface InstructorItem {
   id: string;
@@ -193,7 +196,7 @@ function InstructorsContent() {
   // Sync tab from URL if changed
   useEffect(() => {
     const tabFromUrl = searchParams.get("tab") as InstructorTab;
-    if (tabFromUrl && ["all", "approvals", "verified", "suspended"].includes(tabFromUrl)) {
+    if (tabFromUrl && ["all", "approvals", "permissions", "verified", "suspended"].includes(tabFromUrl)) {
       setActiveTab(tabFromUrl);
     }
   }, [searchParams]);
@@ -256,7 +259,7 @@ function InstructorsContent() {
                 rating: 5.0,
                 verificationStatus: verifStatus,
                 accountStatus: accStatus,
-                joinedDate: app.createdAt ? new Date(app.createdAt).toLocaleDateString() : "Recent",
+                joinedDate: app.createdAt ? formatDate(app.createdAt) : "Recent",
                 assignedTasksCount: 0,
                 liveSessionsCount: 0,
                 rawApproval: app
@@ -394,6 +397,18 @@ function InstructorsContent() {
           </button>
 
           <button
+            onClick={() => setActiveTab("permissions")}
+            className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
+              activeTab === "permissions"
+                ? "bg-purple-600 text-white shadow-sm"
+                : "text-subtext hover:text-text hover:bg-white/5"
+            }`}
+          >
+            <Lock className="w-3.5 h-3.5" />
+            <span>Course Permissions</span>
+          </button>
+
+          <button
             onClick={() => setActiveTab("suspended")}
             className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
               activeTab === "suspended"
@@ -406,7 +421,13 @@ function InstructorsContent() {
         </div>
       </div>
 
+      {/* ── Tab: Course Creation Permissions ── */}
+      {activeTab === "permissions" && (
+        <AdminInstructorPermissionsTab />
+      )}
+
       {/* Main Content: Instructor Table & Filters */}
+      {activeTab !== "permissions" && (
       <div className="space-y-4">
         {/* Search and Filters Bar */}
         <div className="bg-card border border-white/10 rounded-2xl p-4 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-3">
@@ -585,6 +606,7 @@ function InstructorsContent() {
           </div>
         </div>
       </div>
+      )}
     </div>
   );
 }

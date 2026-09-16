@@ -34,6 +34,9 @@ import {
   SlidersHorizontal
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { DatePicker } from "@/components/ui/date-picker";
+import { TimePicker } from "@/components/ui/time-picker";
+import { formatDate, formatTime } from "@/lib/dateTime";
 
 export type TaskType =
   | "LIVE_SESSION"
@@ -1295,23 +1298,19 @@ export function InstructorTasksView({ isDemoUser = false, onNavigateTab }: Instr
             </div>
 
             <form onSubmit={handleRequestChangesSubmit} className="space-y-3.5">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-medium text-slate-300 mb-1">Suggested Date (Optional)</label>
-                  <input
-                    type="date"
+                  <DatePicker
                     value={suggestedDate}
-                    onChange={(e) => setSuggestedDate(e.target.value)}
-                    className="w-full bg-white/[0.04] border border-white/[0.08] focus:border-indigo-500 rounded-xl px-3 py-2 text-xs font-medium text-slate-200 focus:outline-none"
+                    onChange={(val) => setSuggestedDate(val)}
                   />
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-slate-300 mb-1">Suggested Time</label>
-                  <input
-                    type="time"
+                  <TimePicker
                     value={suggestedTime}
-                    onChange={(e) => setSuggestedTime(e.target.value)}
-                    className="w-full bg-white/[0.04] border border-white/[0.08] focus:border-indigo-500 rounded-xl px-3 py-2 text-xs font-medium text-slate-200 focus:outline-none"
+                    onChange={(val) => setSuggestedTime(val)}
                   />
                 </div>
               </div>

@@ -214,21 +214,33 @@ export default function LiveTrainingPage() {
     return courses.flatMap((c) => c.sessions);
   }, [courses]);
 
-  // Filtered Courses based on Search Query
+  // Filtered and Sorted Courses based on Search Query (LIVE NOW courses placed at the TOP)
   const filteredCourses = useMemo(() => {
-    if (!searchQuery.trim()) return courses;
-    const q = searchQuery.toLowerCase();
-    return courses.filter((c) => {
-      const matchTitle = c.title.toLowerCase().includes(q);
-      const matchDesc = c.description.toLowerCase().includes(q);
-      const matchInstructor = c.instructor.name.toLowerCase().includes(q);
-      const matchBatch = c.badge.toLowerCase().includes(q);
-      const matchSession = c.sessions.some(
-        (s) =>
-          s.title.toLowerCase().includes(q) ||
-          s.topics.some((t) => t.toLowerCase().includes(q))
-      );
-      return matchTitle || matchDesc || matchInstructor || matchBatch || matchSession;
+    let result = courses;
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      result = courses.filter((c) => {
+        const matchTitle = c.title.toLowerCase().includes(q);
+        const matchDesc = c.description.toLowerCase().includes(q);
+        const matchInstructor = c.instructor.name.toLowerCase().includes(q);
+        const matchBatch = c.badge.toLowerCase().includes(q);
+        const matchSession = c.sessions.some(
+          (s) =>
+            s.title.toLowerCase().includes(q) ||
+            s.topics.some((t) => t.toLowerCase().includes(q))
+        );
+        return matchTitle || matchDesc || matchInstructor || matchBatch || matchSession;
+      });
+    }
+
+    // Sort: Courses with an active LIVE session (liveNow > 0) come FIRST at the top!
+    return [...result].sort((a, b) => {
+      const aIsLive = a.sessions.some((s) => s.status === "live") ? 1 : 0;
+      const bIsLive = b.sessions.some((s) => s.status === "live") ? 1 : 0;
+      if (aIsLive !== bIsLive) {
+        return bIsLive - aIsLive; // Live courses appear above non-live courses
+      }
+      return 0;
     });
   }, [courses, searchQuery]);
 

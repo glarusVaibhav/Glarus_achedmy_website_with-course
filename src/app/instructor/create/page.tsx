@@ -1,10 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { 
   Sparkles, CheckCircle2, Circle, Edit3, RefreshCw, Check, 
-  ChevronRight, Layout, FileText, Video, PlayCircle, Loader2, Save
+  ChevronRight, Layout, FileText, Video, PlayCircle, Loader2, Save,
+  Lock, Clock, AlertCircle
 } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { InstructorPermissionModal } from "@/components/instructor/courses/InstructorPermissionModal";
+import { CourseCreationPermissionStatus } from "@/lib/permissions/courseCreationPermission";
 
 interface AIModule {
   id: string;
@@ -14,6 +19,37 @@ interface AIModule {
 }
 
 export default function CourseCreatorWizard() {
+  const router = useRouter();
+  const [checkingPermission, setCheckingPermission] = useState(true);
+  const [permissionStatus, setPermissionStatus] = useState<CourseCreationPermissionStatus>("NOT_REQUESTED");
+  const [canCreateCourse, setCanCreateCourse] = useState(false);
+  const [permissionData, setPermissionData] = useState<any>({});
+  const [isPermissionModalOpen, setIsPermissionModalOpen] = useState(false);
+
+  const fetchPermission = async () => {
+    try {
+      const res = await fetch("/api/instructor/course-creation-permission");
+      if (res.ok) {
+        const data = await res.json();
+        setPermissionStatus(data.status || "NOT_REQUESTED");
+        setCanCreateCourse(Boolean(data.canCreateCourse || data.allowed || data.isAdmin));
+        setPermissionData({
+          requestedAt: data.requestedAt,
+          reviewedAt: data.reviewedAt,
+          rejectionReason: data.rejectionReason,
+          notes: data.notes
+        });
+      }
+    } catch (e) {
+      console.warn("Permission check notice:", e);
+    } finally {
+      setCheckingPermission(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPermission();
+  }, []);
   const [currentStep, setCurrentStep] = useState(2);
   const [topic, setTopic] = useState("");
   const [isGeneratingAll, setIsGeneratingAll] = useState(false);
@@ -136,6 +172,66 @@ export default function CourseCreatorWizard() {
     { num: 3, title: "Content & Media", icon: Video },
     { num: 4, title: "Final Review", icon: CheckCircle2 }
   ];
+
+  if (checkingPermission) {
+    return (
+      <div className="w-full min-h-screen flex items-center justify-center bg-background text-purple-400">
+        <Loader2 className="w-8 h-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (!canCreateCourse) {
+    return (
+      <div className="w-full min-h-screen bg-background text-text flex items-center justify-center p-6">
+        <div className="p-8 md:p-12 rounded-3xl bg-[#0E131F] border border-purple-500/30 text-center max-w-xl mx-auto space-y-6 shadow-2xl">
+          <div className="w-16 h-16 rounded-3xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center mx-auto shadow-xl shadow-purple-500/10">
+            <Lock className="w-8 h-8 text-purple-400" />
+          </div>
+          <div className="space-y-2">
+            <span className="text-[10px] font-black uppercase tracking-widest text-purple-400">
+              Access Restricted
+            </span>
+            <h2 className="text-2xl font-black text-white">Course Creation Permission Required</h2>
+            <p className="text-xs sm:text-sm text-slate-400 max-w-md mx-auto leading-relaxed">
+              You must request and receive Administrator approval before accessing the AI Course Architect and curriculum creation studio.
+            </p>
+          </div>
+          <div className="flex items-center justify-center gap-3 pt-2">
+            <button
+              onClick={() => router.push("/instructor")}
+              className="px-5 py-2.5 rounded-xl bg-white/[0.05] hover:bg-white/[0.08] text-slate-300 text-xs font-bold transition-colors cursor-pointer border border-white/[0.06]"
+            >
+              Back to Dashboard
+            </button>
+            <button
+              onClick={() => setIsPermissionModalOpen(true)}
+              className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-bold transition-all shadow-lg shadow-purple-600/25 flex items-center gap-2 cursor-pointer"
+            >
+              {permissionStatus === "PENDING" ? <Clock className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
+              <span>{permissionStatus === "PENDING" ? "View Request Status" : "Request Permission"}</span>
+            </button>
+          </div>
+        </div>
+
+        <InstructorPermissionModal
+          isOpen={isPermissionModalOpen}
+          onClose={() => setIsPermissionModalOpen(false)}
+          status={permissionStatus}
+          requestedAt={permissionData.requestedAt}
+          reviewedAt={permissionData.reviewedAt}
+          rejectionReason={permissionData.rejectionReason}
+          notes={permissionData.notes}
+          onPermissionRequested={() => {
+            fetchPermission();
+          }}
+          onStartCreating={() => {
+            fetchPermission();
+          }}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex text-text font-sans selection:bg-purple-500/30">

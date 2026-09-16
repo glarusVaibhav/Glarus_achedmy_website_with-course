@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import {
   ClipboardList,
   Plus,
@@ -19,6 +19,7 @@ import {
   Code,
   Upload,
   Link2,
+  ExternalLink,
   HelpCircle,
   Folder,
   Calendar,
@@ -42,9 +43,13 @@ import {
   ArrowRight,
   ArrowLeft,
   TrendingUp,
-  AlertTriangle
+  AlertTriangle,
+  Loader2
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { DatePicker } from "@/components/ui/date-picker";
+import { TimePicker } from "@/components/ui/time-picker";
+import { formatDate, formatTime } from "@/lib/dateTime";
 
 /* ═══════════════════════════════════════════════
    TYPES
@@ -73,6 +78,7 @@ export interface AssignmentItem {
   id: string;
   title: string;
   course: string;
+  courseId?: string;
   module: string;
   dueDate: string;
   submissionsCount: number;
@@ -93,6 +99,9 @@ export interface StudentSubmission {
   status: "Submitted" | "Pending Review" | "Graded" | "Late";
   submittedText?: string;
   submittedFileName?: string;
+  fileUrl?: string;
+  githubUrl?: string;
+  liveUrl?: string;
   rubricScores?: Record<string, number>;
   feedback?: string;
 }
@@ -640,6 +649,28 @@ export function InstructorAssignmentsView({
     if (isDemoUser) {
       if (assignments.length === 0) setAssignments(INITIAL_ASSIGNMENTS);
       if (submissionsList.length === 0) setSubmissionsList(INITIAL_SUBMISSIONS);
+    } else {
+      // Fetch live assignments from API
+      fetch("/api/instructor/assignments")
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success && Array.isArray(data.assignments) && data.assignments.length > 0) {
+            setAssignments(data.assignments);
+            const allSubs = data.assignments.flatMap((a: any) => a.submissions || []);
+            if (allSubs.length > 0) {
+              setSubmissionsList(allSubs);
+            }
+          } else if (assignments.length === 0) {
+            setAssignments(INITIAL_ASSIGNMENTS);
+            setSubmissionsList(INITIAL_SUBMISSIONS);
+          }
+        })
+        .catch(() => {
+          if (assignments.length === 0) {
+            setAssignments(INITIAL_ASSIGNMENTS);
+            setSubmissionsList(INITIAL_SUBMISSIONS);
+          }
+        });
     }
   }, [isDemoUser]);
 
@@ -763,6 +794,10 @@ export function InstructorAssignmentsView({
 
   /* Wizard State */
   const [wizardStep, setWizardStep] = useState(1);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isUploadingResource, setIsUploadingResource] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+
   const [wizardData, setWizardData] = useState({
     title: "",
     description: "",
@@ -773,17 +808,15 @@ export function InstructorAssignmentsView({
     passingMarks: 40,
     estimatedDuration: 120,
     type: "Coding Assignment" as AssignmentItem["type"],
-    dueDate: "2026-08-25T23:59",
+    dueDate: "2026-08-25",
+    dueTime: "11:59 PM",
     allowLate: true,
     latePenalty: 10,
     maxAttempts: 3,
     allowResubmission: true,
     assignmentScope: "Individual",
     evaluationMode: "Manual Review",
-    resources: [
-      { name: "Starter_Code_Template.zip", type: "zip" },
-      { name: "Assignment_Guidelines.pdf", type: "pdf" }
-    ],
+    resources: [] as { name: string; url?: string; size?: number; type?: string }[],
     rubric: [
       { id: "r1", title: "Code Quality & Clean Architecture", marks: 25, weight: 25, description: "Clean code structure, modular design, and proper naming conventions." },
       { id: "r2", title: "Documentation & Comments", marks: 15, weight: 15, description: "Detailed README documentation and inline code comments." },
@@ -791,6 +824,57 @@ export function InstructorAssignmentsView({
       { id: "r4", title: "Creativity & Advanced Features", marks: 20, weight: 20, description: "Bonus features, error handling, or performance optimizations." }
     ]
   });
+
+  const handleResourceFileUpload = async (files: FileList | File[]) => {
+    if (!files || files.length === 0) return;
+    setIsUploadingResource(true);
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("category", "resource");
+        
+        const res = await fetch("/api/upload", {
+          method: "POST",
+          body: formData
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          const ext = file.name.split(".").pop()?.toLowerCase() || "file";
+          setWizardData((prev) => ({
+            ...prev,
+            resources: [
+              ...prev.resources,
+              {
+                name: file.name,
+                url: data.url,
+                size: file.size,
+                type: ext
+              }
+            ]
+          }));
+          showToast(`Uploaded "${file.name}" to MinIO successfully!`);
+        } else {
+          showToast(`Failed to upload "${file.name}"`);
+        }
+      }
+    } catch (err: any) {
+      console.error("Resource upload error:", err);
+      showToast("Upload error. Please try again.");
+    } finally {
+      setIsUploadingResource(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
+  const handleRemoveResource = (indexToRemove: number) => {
+    setWizardData((prev) => ({
+      ...prev,
+      resources: prev.resources.filter((_, idx) => idx !== indexToRemove)
+    }));
+  };
 
   /* Calculate Stats */
   const totalAssignments = assignments.length;
@@ -872,14 +956,40 @@ export function InstructorAssignmentsView({
     return submissionsList.filter(s => s.status === "Graded").length;
   }, [submissionsList]);
 
-  const handleCreateAssignment = (status: "Draft" | "Published") => {
+  const handleCreateAssignment = async (status: "Draft" | "Published") => {
     if (!wizardData.title.trim()) return;
+    
+    let createdId = `asg-${Date.now()}`;
+    try {
+      const res = await fetch("/api/instructor/assignments", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: wizardData.title.trim(),
+          description: wizardData.description,
+          moduleName: wizardData.module,
+          dueDate: new Date(`${wizardData.dueDate} ${wizardData.dueTime || "23:59:00"}`).toISOString(),
+          totalMarks: Number(wizardData.totalMarks) || 100,
+          pointsLabel: `${wizardData.totalMarks} Pts`,
+          instructions: wizardData.rubric.map(r => `${r.title}: ${r.description}`)
+        })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.assignment?.id) {
+          createdId = data.assignment.id;
+        }
+      }
+    } catch (e) {
+      console.warn("Notice saving assignment to backend:", e);
+    }
+
     const newAsg: AssignmentItem = {
-      id: `asg-${Date.now()}`,
+      id: createdId,
       title: wizardData.title.trim(),
       course: wizardData.course,
       module: wizardData.module,
-      dueDate: wizardData.dueDate.replace("T", " "),
+      dueDate: `${wizardData.dueDate} ${wizardData.dueTime || "11:59 PM"}`,
       submissionsCount: 0,
       totalStudents: 45,
       pendingReviewCount: 0,
@@ -903,7 +1013,8 @@ export function InstructorAssignmentsView({
       passingMarks: 40,
       estimatedDuration: 120,
       type: "Coding Assignment",
-      dueDate: "2026-08-25T23:59",
+      dueDate: "2026-08-25",
+      dueTime: "11:59 PM",
       allowLate: true,
       latePenalty: 10,
       maxAttempts: 3,
@@ -936,11 +1047,12 @@ export function InstructorAssignmentsView({
     }));
   };
 
-  const handleSaveGrade = () => {
+  const handleSaveGrade = async () => {
     if (!selectedSubmissionToReview) return;
     
+    const targetSub = selectedSubmissionToReview;
     setSubmissionsList(prev => prev.map(s => {
-      if (s.id === selectedSubmissionToReview.id) {
+      if (s.id === targetSub.id) {
         return {
           ...s,
           score: reviewScore,
@@ -961,6 +1073,19 @@ export function InstructorAssignmentsView({
       }));
     }
 
+    // Persist to DB if live record
+    try {
+      if (targetSub.id && !targetSub.id.startsWith("sub-")) {
+        await fetch(`/api/instructor/assignments/submissions/${targetSub.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ score: reviewScore, feedback: reviewFeedback }),
+        });
+      }
+    } catch (e) {
+      console.warn("Notice persisting grade to backend:", e);
+    }
+
     showToast(`Graded submission for ${selectedSubmissionToReview.studentName} (${reviewScore}/100)`);
     setSelectedSubmissionToReview(null);
   };
@@ -975,8 +1100,8 @@ export function InstructorAssignmentsView({
       const isPast = d.getTime() < now.getTime();
       const diffDays = Math.ceil((d.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
       
-      const dateFormatted = d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-      const timeFormatted = d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
+      const dateFormatted = formatDate(d);
+      const timeFormatted = formatTime(d);
       
       let badge = null;
       if (isPast) {
@@ -1987,13 +2112,81 @@ export function InstructorAssignmentsView({
               </div>
 
               {/* Student Submission Answer / File */}
-              <div className="p-4 bg-[#161E2E] border border-white/[0.06] rounded-xl space-y-2">
-                <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Submitted Work</span>
-                <p className="text-xs text-slate-200 leading-relaxed">{selectedSubmissionToReview.submittedText || "No text description attached."}</p>
-                {selectedSubmissionToReview.submittedFileName && (
-                  <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-[#0E131F] border border-white/[0.08] rounded-lg text-xs font-medium text-indigo-300 mt-2">
-                    <FileDown className="w-3.5 h-3.5 text-indigo-400" />
-                    <span>{selectedSubmissionToReview.submittedFileName}</span>
+              <div className="p-4 bg-[#161E2E] border border-white/[0.06] rounded-xl space-y-3">
+                <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Submitted Work & Attachments</span>
+                
+                {selectedSubmissionToReview.submittedText && (
+                  <p className="text-xs text-slate-200 leading-relaxed bg-[#0E131F]/60 p-3 rounded-lg border border-white/[0.04]">
+                    {selectedSubmissionToReview.submittedText}
+                  </p>
+                )}
+
+                {/* Interactive Links: GitHub & Live Demo */}
+                <div className="flex flex-wrap items-center gap-2 pt-1">
+                  {selectedSubmissionToReview.githubUrl && (
+                    <a
+                      href={selectedSubmissionToReview.githubUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-500/15 hover:bg-indigo-500/25 border border-indigo-500/30 text-indigo-300 text-xs font-semibold transition-all hover:scale-[1.02] cursor-pointer"
+                    >
+                      <Code className="w-3.5 h-3.5" />
+                      <span>Open GitHub Repo</span>
+                      <ExternalLink className="w-3 h-3 ml-0.5 opacity-70" />
+                    </a>
+                  )}
+
+                  {selectedSubmissionToReview.liveUrl && (
+                    <a
+                      href={selectedSubmissionToReview.liveUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 text-xs font-semibold transition-all hover:scale-[1.02] cursor-pointer"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                      <span>Test Live Demo</span>
+                    </a>
+                  )}
+                </div>
+
+                {/* Interactive File Preview / Download (PDF / ZIP / Code Archive) */}
+                {(selectedSubmissionToReview.submittedFileName || selectedSubmissionToReview.fileUrl) && (
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 bg-[#0E131F] border border-white/[0.08] rounded-xl text-xs mt-2">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 shrink-0">
+                        <FileText className="w-4 h-4" />
+                      </div>
+                      <div className="truncate">
+                        <span className="font-medium text-slate-200 block truncate">
+                          {selectedSubmissionToReview.submittedFileName || "submission_file.pdf"}
+                        </span>
+                        <span className="text-[10px] text-slate-400">
+                          {selectedSubmissionToReview.submittedFileName?.endsWith(".pdf") ? "PDF Document" : "Project Archive"} • Stored in MinIO
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0">
+                      <a
+                        href={selectedSubmissionToReview.fileUrl || `/api/storage/file?key=${encodeURIComponent(`courses/${selectedAssignmentDetails?.courseId || "general"}/assignments/${selectedSubmissionToReview.submittedFileName}`)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 text-white font-semibold text-xs transition-all shadow-sm shadow-indigo-600/20 cursor-pointer"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                        <span>{selectedSubmissionToReview.submittedFileName?.endsWith(".pdf") ? "Open & Preview PDF" : "Open File"}</span>
+                        <ExternalLink className="w-3 h-3 opacity-75" />
+                      </a>
+
+                      <a
+                        href={selectedSubmissionToReview.fileUrl || `/api/storage/file?key=${encodeURIComponent(`courses/${selectedAssignmentDetails?.courseId || "general"}/assignments/${selectedSubmissionToReview.submittedFileName}`)}`}
+                        download={selectedSubmissionToReview.submittedFileName || "submission_archive"}
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] text-slate-300 hover:text-white border border-white/[0.08] text-xs font-medium transition-colors cursor-pointer"
+                      >
+                        <FileDown className="w-3.5 h-3.5" />
+                        <span>Download</span>
+                      </a>
+                    </div>
                   </div>
                 )}
               </div>
@@ -2228,14 +2421,22 @@ export function InstructorAssignmentsView({
                 {/* STEP 3 */}
                 {wizardStep === 3 && (
                   <div className="space-y-4">
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-200 mb-1.5">Due Date & Submission Deadline</label>
-                      <input
-                        type="datetime-local"
-                        value={wizardData.dueDate}
-                        onChange={(e) => setWizardData({ ...wizardData, dueDate: e.target.value })}
-                        className="w-full bg-[#161E2E] border border-white/[0.08] focus:border-indigo-500 rounded-xl px-3.5 py-2.5 text-xs text-white outline-none"
-                      />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-200 mb-1.5">Due Date *</label>
+                        <DatePicker
+                          value={wizardData.dueDate}
+                          onChange={(val) => setWizardData({ ...wizardData, dueDate: val })}
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-200 mb-1.5">Due Time</label>
+                        <TimePicker
+                          value={wizardData.dueTime || "11:59 PM"}
+                          onChange={(val) => setWizardData({ ...wizardData, dueTime: val })}
+                        />
+                      </div>
                     </div>
 
                     <div className="flex items-center justify-between p-3.5 bg-[#161E2E] border border-white/[0.06] rounded-xl">
@@ -2253,27 +2454,133 @@ export function InstructorAssignmentsView({
                   </div>
                 )}
 
-                {/* STEP 4 */}
+                {/* STEP 4: RESOURCE ATTACHMENTS */}
                 {wizardStep === 4 && (
-                  <div className="space-y-3">
-                    <span className="text-xs font-semibold text-slate-200 block">Starter Files & References</span>
-                    <div className="p-6 border-2 border-dashed border-white/[0.1] rounded-2xl text-center bg-[#161E2E]/40 space-y-2">
-                      <Upload className="w-6 h-6 mx-auto text-indigo-400" />
-                      <p className="text-xs text-slate-300 font-medium">Drag & drop guidelines, code templates or PDFs</p>
-                      <p className="text-[10px] text-slate-500">ZIP, PDF, PY, IPYNB supported (Max 50MB)</p>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold text-slate-200 block">Starter Files & PDF References</span>
+                      <span className="text-[10px] text-indigo-400 font-mono">MinIO Cloud Storage</span>
                     </div>
 
-                    <div className="space-y-2 pt-2">
-                      <span className="text-[11px] font-semibold text-slate-400 uppercase">Attached Resources ({wizardData.resources.length})</span>
-                      {wizardData.resources.map((res, idx) => (
-                        <div key={idx} className="p-3 bg-[#161E2E] border border-white/[0.06] rounded-xl flex items-center justify-between text-xs">
-                          <div className="flex items-center gap-2">
-                            <FileText className="w-4 h-4 text-indigo-400" />
-                            <span className="text-slate-200 font-medium">{res.name}</span>
-                          </div>
-                          <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded font-mono">Ready</span>
+                    {/* Hidden File Input */}
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      multiple
+                      accept=".pdf,.zip,.py,.ipynb,.doc,.docx,.txt,.json,.tar,.gz,.png,.jpg,.jpeg"
+                      onChange={(e) => e.target.files && handleResourceFileUpload(e.target.files)}
+                      className="hidden"
+                    />
+
+                    {/* Interactive Drag and Drop Upload Zone */}
+                    <div
+                      onDragOver={(e) => {
+                        e.preventDefault();
+                        setIsDragging(true);
+                      }}
+                      onDragLeave={() => setIsDragging(false)}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        setIsDragging(false);
+                        if (e.dataTransfer.files) handleResourceFileUpload(e.dataTransfer.files);
+                      }}
+                      onClick={() => fileInputRef.current?.click()}
+                      className={`p-8 border-2 border-dashed rounded-2xl text-center transition-all cursor-pointer ${
+                        isDragging
+                          ? "border-indigo-500 bg-indigo-500/10 scale-[1.01]"
+                          : "border-white/[0.12] hover:border-indigo-500/50 bg-[#161E2E]/60 hover:bg-[#161E2E]"
+                      }`}
+                    >
+                      {isUploadingResource ? (
+                        <div className="flex flex-col items-center justify-center space-y-2.5 py-3">
+                          <Loader2 className="w-8 h-8 text-indigo-400 animate-spin" />
+                          <p className="text-xs font-semibold text-white">Uploading to MinIO Storage...</p>
+                          <p className="text-[10px] text-slate-400">Encrypting and creating secure storage proxy link</p>
                         </div>
-                      ))}
+                      ) : (
+                        <div className="space-y-3">
+                          <div className="w-12 h-12 mx-auto rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
+                            <Upload className="w-6 h-6" />
+                          </div>
+                          <div>
+                            <p className="text-xs text-slate-200 font-semibold">
+                              Drag & drop files here, or <span className="text-indigo-400 underline underline-offset-2">Browse Files</span>
+                            </p>
+                            <p className="text-[10px] text-slate-500 mt-1">
+                              Supports PDF, ZIP, PY, IPYNB, DOCX, JSON (Max 50MB per file)
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              fileInputRef.current?.click();
+                            }}
+                            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition-all shadow-md shadow-indigo-600/20 cursor-pointer"
+                          >
+                            <Plus className="w-3.5 h-3.5" />
+                            <span>Choose Files from Device</span>
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Attached Resources List */}
+                    <div className="space-y-2 pt-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                          Attached Resources ({wizardData.resources.length})
+                        </span>
+                        {wizardData.resources.length > 0 && (
+                          <span className="text-[10px] text-slate-500">Files will be accessible to enrolled students</span>
+                        )}
+                      </div>
+
+                      {wizardData.resources.length === 0 ? (
+                        <div className="p-4 rounded-xl bg-[#161E2E]/40 border border-white/[0.04] text-center text-xs text-slate-500">
+                          No resource files attached yet. Click above to upload assignment guidelines, templates, or starter datasets.
+                        </div>
+                      ) : (
+                        wizardData.resources.map((res, idx) => (
+                          <div
+                            key={idx}
+                            className="p-3 bg-[#161E2E] border border-white/[0.08] hover:border-white/[0.15] rounded-xl flex items-center justify-between text-xs transition-colors"
+                          >
+                            <div className="flex items-center gap-3 min-w-0">
+                              <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 shrink-0">
+                                {res.type === "pdf" ? (
+                                  <FileText className="w-4 h-4 text-rose-400" />
+                                ) : res.type === "zip" || res.type === "tar" || res.type === "gz" ? (
+                                  <Folder className="w-4 h-4 text-amber-400" />
+                                ) : (
+                                  <Code className="w-4 h-4 text-indigo-400" />
+                                )}
+                              </div>
+                              <div className="truncate">
+                                <span className="text-slate-200 font-semibold block truncate">{res.name}</span>
+                                <span className="text-[10px] text-slate-400">
+                                  {res.size ? `${(res.size / (1024 * 1024)).toFixed(2)} MB • ` : ""}
+                                  Stored in MinIO
+                                </span>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-2 shrink-0">
+                              <span className="text-[10px] text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full font-mono">
+                                Ready
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveResource(idx)}
+                                title="Remove file"
+                                className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors cursor-pointer"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </div>
+                        ))
+                      )}
                     </div>
                   </div>
                 )}

@@ -655,7 +655,7 @@ export default function RecordedSessionsPage() {
                         <div className="text-xs text-slate-400 flex flex-wrap items-center gap-x-3 gap-y-1 pt-1">
                           <span className="flex items-center gap-1.5">
                             <Users className="w-3.5 h-3.5 text-purple-400 shrink-0" />
-                            <span>Instructor: <strong className="text-slate-200 font-semibold">{recording.instructor}</strong></span>
+                            <span>Instructor: <strong className="text-slate-200 font-semibold">{typeof recording.instructor === 'object' && recording.instructor ? (recording.instructor as any).name : (recording.instructor || 'Instructor')}</strong></span>
                           </span>
                           <span className="text-white/20">•</span>
                           <span className="flex items-center gap-1 text-slate-400 font-medium">
@@ -832,7 +832,7 @@ export default function RecordedSessionsPage() {
                       {previewAgendaRecording.sessionTitle}
                     </h3>
                     <p className="text-xs text-slate-400">
-                      Course: <strong className="text-purple-300 font-semibold">{previewAgendaRecording.courseName}</strong> • Instructor: {previewAgendaRecording.instructor} • Live Class Date: {avail.formattedClassDate}
+                      Course: <strong className="text-purple-300 font-semibold">{previewAgendaRecording.courseName}</strong> • Instructor: {typeof previewAgendaRecording.instructor === 'object' && previewAgendaRecording.instructor ? (previewAgendaRecording.instructor as any).name : (previewAgendaRecording.instructor || 'Instructor')} • Live Class Date: {avail.formattedClassDate}
                     </p>
                   </div>
 

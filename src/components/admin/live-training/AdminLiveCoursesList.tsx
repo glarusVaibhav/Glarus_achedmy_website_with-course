@@ -32,6 +32,7 @@ import {
   EyeOff,
   Loader2
 } from "lucide-react";
+import { formatDate, formatTime } from "@/lib/dateTime";
 
 export interface LiveCourseCardItem {
   id: string;
@@ -705,11 +706,11 @@ export default function AdminLiveCoursesList() {
                           Next: Session {course.nextSession.sessionNumber}
                         </span>
                         <span className="text-subtext">
-                          {course.nextSession.date ? new Date(course.nextSession.date).toLocaleDateString([], { month: "short", day: "numeric" }) : "TBA"}
+                          {course.nextSession.date ? formatDate(course.nextSession.date) : "TBA"}
                         </span>
                       </div>
                       <p className="text-xs font-bold text-text truncate">{course.nextSession.title}</p>
-                      <p className="text-[10px] text-subtext">{course.nextSession.startTime} – {course.nextSession.endTime}</p>
+                      <p className="text-[10px] text-subtext">{formatTime(course.nextSession.startTime)} – {formatTime(course.nextSession.endTime)}</p>
                     </div>
                   ) : (
                     <div className="p-3 rounded-xl bg-background/40 border border-white/5 text-center">

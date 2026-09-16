@@ -39,6 +39,8 @@ export async function GET(req: Request) {
         duration: c.duration,
         startDate: c.startDate,
         endDate: c.endDate,
+        registrationStartDate: c.registrationStartDate,
+        registrationEndDate: c.registrationEndDate,
         timezone: c.timezone,
         totalSessions: c.totalSessions || c.sessions.length,
         maxStudents: c.maxStudents,

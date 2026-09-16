@@ -1,4 +1,5 @@
 import prisma from '@/lib/db';
+import { formatDate } from '@/lib/dateTime';
 
 export class CertificateService {
   /**
@@ -29,11 +30,7 @@ export class CertificateService {
         title,
         instructor: instructorName,
         issueDate: c.issueDate.toISOString(),
-        issueDateFormatted: c.issueDate.toLocaleDateString('en-US', {
-          month: 'long',
-          day: 'numeric',
-          year: 'numeric',
-        }),
+        issueDateFormatted: formatDate(c.issueDate),
         credentialId,
         verificationUrl: `/verify/${credentialId}`,
         downloadUrl: c.certificateUrl || `/api/student/certificates/${c.id}/download`,

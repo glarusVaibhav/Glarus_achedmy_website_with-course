@@ -26,6 +26,7 @@ import {
   Inbox
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { formatDate } from "@/lib/dateTime";
 
 export interface StudentNotificationItem {
   id: string;
@@ -435,7 +436,7 @@ export default function StudentNotificationsPage() {
               const IconComp = config.icon;
               const isUnread = !n.isRead;
               const targetLink = n.actionUrl || n.link || config.defaultHref;
-              const timeDisplay = n.timeAgo || (n.createdAt ? new Date(n.createdAt).toLocaleDateString() : "Just now");
+              const timeDisplay = n.timeAgo || (n.createdAt ? formatDate(n.createdAt) : "Just now");
               const displayTitle = cleanText(n.title);
               const displayDesc = cleanText(n.message || n.description || "");
 

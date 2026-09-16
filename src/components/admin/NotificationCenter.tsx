@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
   Bell,
@@ -14,14 +14,18 @@ import {
   Radio,
   ExternalLink,
   ShieldCheck,
+  KeyRound,
+  ShieldAlert,
   Sparkles,
-  X
+  X,
+  AlertCircle
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { formatDate, formatTime } from "@/lib/dateTime";
 
 export interface AdminNotification {
   id: string;
-  type: "INSTRUCTOR_APPROVAL" | "COURSE_APPROVAL" | "TASK_SUBMISSION" | "REFUND_REQUEST" | "LIVE_RESCHEDULE" | "SYSTEM";
+  type: string;
   title: string;
   message: string;
   timestamp: string;
@@ -32,86 +36,101 @@ export interface AdminNotification {
   actionHref?: string;
 }
 
-const INITIAL_NOTIFICATIONS: AdminNotification[] = [
-  {
-    id: "notif-1",
-    type: "INSTRUCTOR_APPROVAL",
-    title: "Instructor Verification Application",
-    message: "Alex Chen applied for Instructor status with 5+ yrs experience & uploaded resume.",
-    timestamp: "25m ago",
-    timeGroup: "Today",
-    isRead: false,
-    priority: "High",
-    actionLabel: "Review Profile",
-    actionHref: "/admin/instructors?tab=approvals"
-  },
-  {
-    id: "notif-2",
-    type: "TASK_SUBMISSION",
-    title: "Task Deliverable Submitted",
-    message: "Jessica Lin submitted deliverables for 'TSK-1044: Build Python Code Lab'.",
-    timestamp: "1h ago",
-    timeGroup: "Today",
-    isRead: false,
-    priority: "Critical",
-    actionLabel: "Review Task",
-    actionHref: "/admin/tasks?search=TSK-1044"
-  },
-  {
-    id: "notif-3",
-    type: "REFUND_REQUEST",
-    title: "Refund Request Requires Action",
-    message: "Priya Nair requested a refund of ₹999 for 'React Masterclass' (Accidental purchase).",
-    timestamp: "3h ago",
-    timeGroup: "Today",
-    isRead: false,
-    priority: "Normal",
-    actionLabel: "Process Refund",
-    actionHref: "/admin/payments?tab=refunds"
-  },
-  {
-    id: "notif-4",
-    type: "COURSE_APPROVAL",
-    title: "Course Ready for Validation",
-    message: "Jordan Walke submitted 'Mastering Next.js 14' (14h 20m, 2 sections).",
-    timestamp: "Yesterday",
-    timeGroup: "Earlier",
-    isRead: true,
-    priority: "High",
-    actionLabel: "Inspect Course",
-    actionHref: "/admin/courses?tab=approvals"
-  },
-  {
-    id: "notif-5",
-    type: "LIVE_RESCHEDULE",
-    title: "Live Session Reschedule Request",
-    message: "Alex Chen requested shifting 'Advanced RAG Architecture' from 6:00 PM to 7:00 PM.",
-    timestamp: "2 days ago",
-    timeGroup: "Earlier",
-    isRead: true,
-    priority: "Normal",
-    actionLabel: "View Schedule",
-    actionHref: "/admin/instructors?tab=live"
-  }
-];
-
-const NOTIF_ICONS: Record<AdminNotification["type"], React.ElementType> = {
+const NOTIF_ICONS: Record<string, React.ElementType> = {
   INSTRUCTOR_APPROVAL: GraduationCap,
+  PERMISSIONS_UPDATED: KeyRound,
+  INSTRUCTOR_PERMISSION: KeyRound,
   COURSE_APPROVAL: BookOpen,
   TASK_SUBMISSION: CheckSquare,
   REFUND_REQUEST: RotateCcw,
   LIVE_RESCHEDULE: Radio,
-  SYSTEM: ShieldCheck
+  SYSTEM: ShieldCheck,
 };
 
+function formatNotificationTime(dateString: string): { timestamp: string; timeGroup: "Today" | "Earlier" } {
+  try {
+    const d = new Date(dateString);
+    if (isNaN(d.getTime())) return { timestamp: "Recently", timeGroup: "Today" };
+
+    const now = new Date();
+    const isToday =
+      d.getDate() === now.getDate() &&
+      d.getMonth() === now.getMonth() &&
+      d.getFullYear() === now.getFullYear();
+
+    const diffMinutes = Math.floor((now.getTime() - d.getTime()) / (1000 * 60));
+    if (diffMinutes < 1) return { timestamp: "Just now", timeGroup: "Today" };
+    if (diffMinutes < 60) return { timestamp: `${diffMinutes}m ago`, timeGroup: "Today" };
+    if (diffMinutes < 1440 && isToday) return { timestamp: `${Math.floor(diffMinutes / 60)}h ago`, timeGroup: "Today" };
+
+    return {
+      timestamp: formatDate(d),
+      timeGroup: isToday ? "Today" : "Earlier"
+    };
+  } catch {
+    return { timestamp: "Recently", timeGroup: "Today" };
+  }
+}
+
 export default function NotificationCenter() {
-  const [notifications, setNotifications] = useState<AdminNotification[]>(INITIAL_NOTIFICATIONS);
+  const [notifications, setNotifications] = useState<AdminNotification[]>([]);
+  const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState<"All" | "Unread">("All");
   const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
-  const unreadCount = notifications.filter((n) => !n.isRead).length;
+  const fetchAdminNotifications = useCallback(async () => {
+    try {
+      const res = await fetch("/api/admin/notifications?limit=30");
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data.notifications) && data.notifications.length > 0) {
+          const mapped: AdminNotification[] = data.notifications.map((n: any) => {
+            const timeMeta = formatNotificationTime(n.createdAt);
+            const priority: AdminNotification["priority"] =
+              n.priority === "URGENT" || n.priority === "CRITICAL"
+                ? "Critical"
+                : n.priority === "HIGH"
+                ? "High"
+                : "Normal";
+
+            let defaultActionLabel = "Inspect";
+            if (n.entityType === "INSTRUCTOR_PERMISSION" || n.type === "PERMISSIONS_UPDATED") {
+              defaultActionLabel = "Review Permissions";
+            } else if (n.actionUrl?.includes("instructors")) {
+              defaultActionLabel = "Review Profile";
+            } else if (n.actionUrl?.includes("courses")) {
+              defaultActionLabel = "Review Course";
+            }
+
+            return {
+              id: n.id,
+              type: n.type || "SYSTEM",
+              title: n.title,
+              message: n.message,
+              timestamp: timeMeta.timestamp,
+              timeGroup: timeMeta.timeGroup,
+              isRead: n.isRead,
+              priority,
+              actionLabel: defaultActionLabel,
+              actionHref: n.actionUrl || "/admin/instructors?tab=permissions"
+            };
+          });
+          setNotifications(mapped);
+          return;
+        }
+      }
+    } catch {
+      /* ignore fetch error */
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchAdminNotifications();
+    const interval = setInterval(fetchAdminNotifications, 15000);
+    return () => clearInterval(interval);
+  }, [fetchAdminNotifications]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -123,15 +142,28 @@ export default function NotificationCenter() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const markAsRead = (id: string, e?: React.MouseEvent) => {
+  const unreadCount = notifications.filter((n) => !n.isRead).length;
+
+  const markAsRead = async (id: string, e?: React.MouseEvent) => {
     e?.stopPropagation();
     setNotifications((prev) =>
       prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
     );
+
+    try {
+      await fetch(`/api/admin/notifications/${id}/read`, { method: "PATCH" });
+    } catch {
+      /* ignore */
+    }
   };
 
-  const markAllAsRead = () => {
+  const markAllAsRead = async () => {
     setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+    try {
+      await fetch("/api/admin/notifications/read-all", { method: "POST" });
+    } catch {
+      /* ignore */
+    }
   };
 
   const handleAction = (item: AdminNotification) => {
@@ -153,13 +185,16 @@ export default function NotificationCenter() {
     <div className="relative" ref={dropdownRef}>
       {/* Bell Trigger Button */}
       <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 rounded-lg text-subtext hover:text-text hover:bg-white/5 transition-colors focus:outline-none"
+        onClick={() => {
+          setIsOpen(!isOpen);
+          if (!isOpen) fetchAdminNotifications();
+        }}
+        className="relative p-2 rounded-lg text-subtext hover:text-text hover:bg-white/5 transition-colors focus:outline-none cursor-pointer"
         title="Admin Notifications"
       >
         <Bell className="w-5 h-5" />
         {unreadCount > 0 && (
-          <span className="absolute top-0.5 right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-purple-600 text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-card">
+          <span className="absolute top-0.5 right-0.5 min-w-[18px] h-4.5 px-1 rounded-full bg-purple-600 text-white text-[10px] font-black flex items-center justify-center ring-2 ring-card animate-pulse shadow-md">
             {unreadCount}
           </span>
         )}
@@ -185,19 +220,29 @@ export default function NotificationCenter() {
                   </span>
                 )}
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2.5">
                 {unreadCount > 0 && (
                   <button
                     onClick={markAllAsRead}
-                    className="text-[11px] font-semibold text-purple-400 hover:text-purple-300 flex items-center gap-1 transition-colors"
+                    className="text-[11px] font-semibold text-purple-400 hover:text-purple-300 flex items-center gap-1 transition-colors cursor-pointer"
                   >
                     <CheckCheck className="w-3.5 h-3.5" />
                     <span>Mark all read</span>
                   </button>
                 )}
                 <button
+                  onClick={() => {
+                    setIsOpen(false);
+                    router.push("/admin/notifications");
+                  }}
+                  className="text-[11px] font-semibold text-purple-400 hover:text-purple-300 flex items-center gap-1 transition-colors cursor-pointer"
+                >
+                  <span>View all</span>
+                  <ExternalLink className="w-3 h-3" />
+                </button>
+                <button
                   onClick={() => setIsOpen(false)}
-                  className="p-1 rounded text-subtext hover:text-text hover:bg-white/5"
+                  className="p-1 rounded text-subtext hover:text-text hover:bg-white/5 cursor-pointer"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
@@ -208,7 +253,7 @@ export default function NotificationCenter() {
             <div className="flex items-center gap-2 px-4 py-2 border-b border-white/5 bg-card text-xs">
               <button
                 onClick={() => setActiveFilter("All")}
-                className={`px-3 py-1 rounded-lg font-medium transition-all ${
+                className={`px-3 py-1 rounded-lg font-medium transition-all cursor-pointer ${
                   activeFilter === "All"
                     ? "bg-purple-500/20 text-purple-300 border border-purple-500/30"
                     : "text-subtext hover:text-text"
@@ -218,7 +263,7 @@ export default function NotificationCenter() {
               </button>
               <button
                 onClick={() => setActiveFilter("Unread")}
-                className={`px-3 py-1 rounded-lg font-medium transition-all ${
+                className={`px-3 py-1 rounded-lg font-medium transition-all cursor-pointer ${
                   activeFilter === "Unread"
                     ? "bg-purple-500/20 text-purple-300 border border-purple-500/30"
                     : "text-subtext hover:text-text"
@@ -234,7 +279,7 @@ export default function NotificationCenter() {
                 <div className="py-12 text-center text-subtext space-y-1">
                   <Check className="w-8 h-8 mx-auto opacity-30 text-emerald-400 mb-2" />
                   <p className="text-sm font-semibold text-text">All caught up!</p>
-                  <p className="text-xs">No notifications require administrative review.</p>
+                  <p className="text-xs">No pending notifications require administrative review.</p>
                 </div>
               ) : (
                 <>
@@ -272,6 +317,20 @@ export default function NotificationCenter() {
                 </>
               )}
             </div>
+
+            {/* Footer: View All Notifications */}
+            <div className="p-2.5 bg-background/50 border-t border-white/10 text-center">
+              <button
+                onClick={() => {
+                  setIsOpen(false);
+                  router.push("/admin/notifications");
+                }}
+                className="w-full py-2 px-3 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer border border-purple-500/20 hover:border-purple-500/40"
+              >
+                <span>View All Notifications</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </button>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -288,7 +347,7 @@ function NotificationCard({
   onAction: () => void;
   onMarkRead: (e: React.MouseEvent) => void;
 }) {
-  const Icon = NOTIF_ICONS[item.type] || ShieldCheck;
+  const Icon = NOTIF_ICONS[item.type] || (item.title.includes("Permission") ? KeyRound : ShieldCheck);
 
   return (
     <div
@@ -333,7 +392,7 @@ function NotificationCard({
               <button
                 onClick={onMarkRead}
                 title="Mark as read"
-                className="text-[10px] text-subtext hover:text-text px-1.5 py-0.5 rounded hover:bg-white/10 transition-colors"
+                className="text-[10px] text-subtext hover:text-text px-1.5 py-0.5 rounded hover:bg-white/10 transition-colors cursor-pointer"
               >
                 Mark read
               </button>

@@ -35,6 +35,7 @@ import {
   Lock,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { formatDate, formatTime } from "@/lib/dateTime";
 
 /* ═══════════════════════════════════════════════
    TYPES
@@ -678,7 +679,7 @@ function formatSessionToLiveClass(s: any, course?: any): LiveClassItem {
   const dateLabel = isToday
     ? "Today"
     : sessionDate
-    ? sessionDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+    ? formatDate(sessionDate)
     : "TBD";
 
   const parsedTime = parseTimeString(s.startTime);
@@ -695,7 +696,7 @@ function formatSessionToLiveClass(s: any, course?: any): LiveClassItem {
     const sessionEnd = new Date(sessionStart.getTime() + durationMinutes * 60 * 1000);
     // Unlocks strictly 5 minutes prior to session start
     const preJoinWindow = new Date(sessionStart.getTime() - 5 * 60 * 1000);
-    unlockTimeStr = preJoinWindow.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    unlockTimeStr = formatTime(preJoinWindow);
 
     minutesUntilStart = Math.ceil((sessionStart.getTime() - now.getTime()) / (60 * 1000));
 
@@ -875,9 +876,35 @@ export function InstructorLiveDashboard({
     return activeClasses
       .filter(c => c.status !== "COMPLETED" && (c.dateLabel === "Today" || c.status === "LIVE_NOW" || c.status === "STARTS_SOON"))
       .sort((a, b) => {
+        // 1. Prioritize active LIVE NOW / unlocked sessions at the very top
+        const aIsLive = a.status === "LIVE_NOW" || a.canStart ? 1 : 0;
+        const bIsLive = b.status === "LIVE_NOW" || b.canStart ? 1 : 0;
+        if (aIsLive !== bIsLive) {
+          return bIsLive - aIsLive; // Active live session first
+        }
+
+        // 2. Prioritize STARTS_SOON next
+        const aStartsSoon = a.status === "STARTS_SOON" ? 1 : 0;
+        const bStartsSoon = b.status === "STARTS_SOON" ? 1 : 0;
+        if (aStartsSoon !== bStartsSoon) {
+          return bStartsSoon - aStartsSoon;
+        }
+
+        // 3. Chronological sorting by rawDate
         const timeA = a.rawDate ? new Date(a.rawDate).getTime() : 0;
         const timeB = b.rawDate ? new Date(b.rawDate).getTime() : 0;
-        return timeA - timeB;
+        if (timeA !== timeB) return timeA - timeB;
+
+        // 4. Chronological sorting by start time
+        const parsedA = parseTimeString(a.timeRange?.split("–")[0]?.trim() || a.timeRange?.split("-")[0]?.trim());
+        const parsedB = parseTimeString(b.timeRange?.split("–")[0]?.trim() || b.timeRange?.split("-")[0]?.trim());
+        if (parsedA && parsedB) {
+          const minutesA = parsedA.hours * 60 + parsedA.minutes;
+          const minutesB = parsedB.hours * 60 + parsedB.minutes;
+          return minutesA - minutesB;
+        }
+
+        return 0;
       });
   }, [activeClasses]);
 

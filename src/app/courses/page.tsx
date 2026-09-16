@@ -18,6 +18,8 @@ import {
   Star 
 } from "lucide-react";
 import Link from "next/link";
+import { formatDate, formatTime } from "@/lib/dateTime";
+import { formatRegistrationWindow } from "@/components/landing/InteractiveCourses";
 
 const LIVE_CATEGORIES = ["All", "AI Engineering", "LLMOps", "Agentic AI", "Cloud", "Career Bootcamp"];
 
@@ -241,17 +243,12 @@ function CoursesContent() {
           const dbLive = data.courses.map((c: any) => {
             const nextSession = c.sessions?.[0];
             const dateStr = nextSession?.date
-              ? new Date(nextSession.date).toLocaleDateString("en-US", {
-                  weekday: "short",
-                  month: "short",
-                  day: "numeric",
-                  year: "numeric"
-                })
+              ? formatDate(nextSession.date)
               : "Upcoming Cohort";
 
             const timeStr = nextSession?.startTime
-              ? `${nextSession.startTime} – ${nextSession.endTime || "09:00 PM"} IST`
-              : "07:00 PM – 09:00 PM IST";
+              ? `${formatTime(nextSession.startTime)} – ${formatTime(nextSession.endTime || "09:00 PM")}`
+              : "07:00 PM – 09:00 PM";
 
             let calculatedDays = 30;
             if (nextSession?.date) {
@@ -267,6 +264,12 @@ function CoursesContent() {
               inferredClassType = "Workshop";
             }
 
+            const regWindow = formatRegistrationWindow(
+              c.registrationStartDate,
+              c.registrationEndDate,
+              c.startDate
+            );
+
             return {
               id: c.id,
               title: c.title,
@@ -277,11 +280,14 @@ function CoursesContent() {
                 "Live hands-on training with industry mentors and practical capstone projects.",
               image: c.thumbnail || "/images/courses/generative-ai.png",
               level: c.level || "Intermediate",
-              statusBadge: "Next Batch Starting Soon",
+              statusBadge: regWindow.isOpen ? "ENROLLING NOW" : (regWindow.isUpcoming ? "OPENS SOON" : "CLOSED"),
               linkUrl: `/student/live-courses/${c.id}`,
               tags: ["Live Cohort", `${c.totalSessions || 6} Sessions`, "Mentor-Led"],
               classType: inferredClassType,
               timeframeDays: calculatedDays,
+              registrationStartDate: c.registrationStartDate || null,
+              registrationEndDate: c.registrationEndDate || null,
+              registrationWindow: regWindow,
               schedule: {
                 dateFormatted: dateStr,
                 time: timeStr,
@@ -613,19 +619,39 @@ function CoursesContent() {
                         {/* Middle: Course Info & Tags */}
                         <div className="flex-1 flex flex-col justify-between">
                           <div>
-                            <div className="flex items-center justify-between gap-2 mb-2">
+                            <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
                               <span className="text-xs font-black text-purple-400 uppercase tracking-widest">
                                 {item.category}
                               </span>
+                              {item.registrationWindow && (
+                                <span className={`px-2.5 py-0.5 rounded-full border text-[11px] font-black uppercase tracking-wider flex items-center gap-1.5 shadow-xs ${item.registrationWindow.badgeColor}`}>
+                                  <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
+                                  {item.registrationWindow.label}
+                                </span>
+                              )}
                             </div>
 
                             <h3 className="text-xl md:text-2xl font-black text-white mb-2 group-hover:text-purple-300 transition-colors leading-snug">
                               {item.title}
                             </h3>
 
-                            <p className="text-xs md:text-sm font-medium text-slate-300/80 leading-relaxed line-clamp-2 mb-4">
+                            <p className="text-xs md:text-sm font-medium text-slate-300/80 leading-relaxed line-clamp-2 mb-3">
                               {item.description}
                             </p>
+
+                            {/* Live Registration Window Bar */}
+                            {item.registrationWindow && (
+                              <div className="p-2.5 rounded-2xl bg-purple-950/20 border border-purple-500/20 mb-3.5 flex flex-wrap items-center justify-between gap-2 text-xs">
+                                <div className="flex items-center gap-2">
+                                  <Clock className="w-3.5 h-3.5 text-purple-400 shrink-0" />
+                                  <span className="text-slate-400 font-semibold">Registration:</span>
+                                  <span className="font-bold text-white">{item.registrationWindow.fullWindowFormatted}</span>
+                                </div>
+                                <span className="text-[10px] font-black uppercase tracking-wider text-purple-300 bg-purple-500/15 px-2 py-0.5 rounded-md border border-purple-500/25">
+                                  {item.registrationWindow.countdownText}
+                                </span>
+                              </div>
+                            )}
                           </div>
 
                           {/* Metadata Chips */}

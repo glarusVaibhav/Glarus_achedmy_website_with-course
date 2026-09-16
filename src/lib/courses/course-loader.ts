@@ -96,7 +96,7 @@ export async function getCourseDataAsync(courseId: string): Promise<CourseJSON |
                   type: 'concept',
                   content: {
                     title: lec.title,
-                    explanation: lec.description || `Comprehensive interactive guide and code walkthrough for ${lec.title}.`,
+                    explanation: (lec as any).description || `Comprehensive interactive guide and code walkthrough for ${lec.title}.`,
                     videoUrl: lec.videoUrl || undefined,
                   },
                 },
@@ -122,7 +122,7 @@ export async function getCourseDataAsync(courseId: string): Promise<CourseJSON |
                 type: 'concept',
                 content: {
                   title: mod.title,
-                  explanation: mod.description || `${mod.title} curriculum module and foundational concepts.`,
+                  explanation: (mod as any).description || `${mod.title} curriculum module and foundational concepts.`,
                 },
               },
             ],

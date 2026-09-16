@@ -28,6 +28,7 @@ import {
   Laptop
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { formatDate, formatTime } from "@/lib/dateTime";
 
 interface EnrolledSessionItem {
   id: string;
@@ -270,11 +271,11 @@ export default function LiveCourseEnrolledView({
                   <div className="space-y-1.5 text-xs text-muted-foreground font-medium">
                     <div className="flex items-center gap-2">
                       <Calendar className="w-4 h-4 text-purple-500" />
-                      <span>{new Date(nextSession.date).toLocaleDateString("en-US", { weekday: "short", day: "numeric", month: "short", year: "numeric" })}</span>
+                      <span>{formatDate(nextSession.date)}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Clock className="w-4 h-4 text-purple-500" />
-                      <span>{nextSession.startTime} – {nextSession.endTime} ({nextSession.duration})</span>
+                      <span>{formatTime(nextSession.startTime)} – {formatTime(nextSession.endTime)} ({nextSession.duration})</span>
                     </div>
                   </div>
                 </div>
@@ -442,12 +443,12 @@ export default function LiveCourseEnrolledView({
                       <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground font-medium">
                         <span className="flex items-center gap-1">
                           <Calendar className="w-3.5 h-3.5 text-purple-500" />
-                          {new Date(sess.date).toLocaleDateString("en-US", { weekday: "short", day: "numeric", month: "short" })}
+                          {formatDate(sess.date)}
                         </span>
                         <span>•</span>
                         <span className="flex items-center gap-1">
                           <Clock className="w-3.5 h-3.5 text-purple-500" />
-                          {sess.startTime} – {sess.endTime}
+                          {formatTime(sess.startTime)} – {formatTime(sess.endTime)}
                         </span>
 
                         {/* Recording status pill if completed */}
@@ -593,11 +594,11 @@ export default function LiveCourseEnrolledView({
                   <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-2 text-xs">
                     <div className="flex items-center gap-2 text-foreground font-semibold">
                       <Calendar className="w-4 h-4 text-purple-500" />
-                      <span>{new Date(selectedSessionForDrawer.date).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}</span>
+                      <span>{formatDate(selectedSessionForDrawer.date)}</span>
                     </div>
                     <div className="flex items-center gap-2 text-muted-foreground font-medium">
                       <Clock className="w-4 h-4 text-purple-500" />
-                      <span>{selectedSessionForDrawer.startTime} – {selectedSessionForDrawer.endTime} ({selectedSessionForDrawer.duration})</span>
+                      <span>{formatTime(selectedSessionForDrawer.startTime)} – {formatTime(selectedSessionForDrawer.endTime)} ({selectedSessionForDrawer.duration})</span>
                     </div>
                   </div>
 

@@ -45,6 +45,12 @@ export const DOMAIN_EVENT_TYPES = {
   TASK_CANCELLED: "TASK_CANCELLED",
   ADMIN_INSTRUCTION: "ADMIN_INSTRUCTION",
 
+  // Course Creation Permission Events
+  COURSE_CREATION_PERMISSION_REQUESTED: "COURSE_CREATION_PERMISSION_REQUESTED",
+  COURSE_CREATION_PERMISSION_APPROVED: "COURSE_CREATION_PERMISSION_APPROVED",
+  COURSE_CREATION_PERMISSION_REJECTED: "COURSE_CREATION_PERMISSION_REJECTED",
+  COURSE_CREATION_PERMISSION_REVOKED: "COURSE_CREATION_PERMISSION_REVOKED",
+
   // Instructor Verification Events
   VERIFICATION_SUBMITTED: "VERIFICATION_SUBMITTED",
   VERIFICATION_APPROVED: "VERIFICATION_APPROVED",
@@ -266,5 +272,20 @@ export interface StudentAnnouncementPayload {
   title: string;
   message: string;
   actionUrl?: string;
+}
+
+export interface CourseCreationPermissionRequestedPayload {
+  instructorId: string;
+  instructorName: string;
+  instructorEmail: string;
+  notes?: string | null;
+}
+
+export interface CourseCreationPermissionDecisionPayload {
+  instructorId: string;
+  decision: "APPROVED" | "REJECTED" | "GRANTED" | "REVOKED";
+  feedback?: string | null;
+  adminId?: string;
+  adminName?: string;
 }
 

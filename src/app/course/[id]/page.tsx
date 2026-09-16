@@ -35,6 +35,7 @@ import { useEnrollmentStore } from "@/store/useEnrollmentStore";
 import { useAuth } from "@/context/AuthContext";
 import { CourseOverview } from "@/components/course/CourseOverview";
 import { getCourseDetails, CourseDetailItem } from "@/lib/courseCatalogDetails";
+import { formatDate } from "@/lib/dateTime";
 
 const OUTCOME_ICONS = [Cpu, Layers, Database, Bot, ShieldCheck, Sparkles, Code2, Brain, Award];
 
@@ -203,7 +204,7 @@ export default function CourseDetailPage({ params }: { params: Promise<{ id: str
               category: dbData.category || catalogFallback.category,
               level: dbData.level || catalogFallback.level,
               duration: dbData.duration || catalogFallback.duration,
-              lastUpdated: new Date(dbData.updatedAt || Date.now()).toLocaleDateString("en-US", { month: "long", year: "numeric" }),
+              lastUpdated: formatDate(dbData.updatedAt || Date.now()),
               price: dbData.price !== undefined ? Number(dbData.price) : catalogFallback.price,
               originalPrice: dbData.originalPrice ? Number(dbData.originalPrice) : (dbData.price ? Math.round(Number(dbData.price) * 1.5) : catalogFallback.originalPrice),
               rating: catalogFallback.rating || 5.0,

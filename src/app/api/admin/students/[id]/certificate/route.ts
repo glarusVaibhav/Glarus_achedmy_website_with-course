@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { getSession } from "@/lib/auth";
+import { formatDate } from "@/lib/dateTime";
 
 export async function POST(
   req: Request,
@@ -103,7 +104,7 @@ export async function POST(
         id: certificate.id,
         credentialId: certificate.credentialId,
         title: courseName,
-        issueDate: certificate.issueDate.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }),
+        issueDate: formatDate(certificate.issueDate),
         status: "Issued"
       }
     });

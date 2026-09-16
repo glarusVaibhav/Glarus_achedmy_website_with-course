@@ -1,6 +1,7 @@
 import prisma from '@/lib/db';
 import { emitDomainEvent } from '@/lib/notifications/eventDispatcher';
 import { DOMAIN_EVENT_TYPES } from '@/lib/notifications/events';
+import { formatDate } from '@/lib/dateTime';
 
 export interface CheckoutItemInput {
   id: string;
@@ -278,11 +279,7 @@ export class PurchaseService {
         invoiceNumber: p.invoice?.invoiceNumber || `INV-${p.id.slice(0, 8).toUpperCase()}`,
         course: courseTitle,
         category,
-        date: new Date(p.createdAt).toLocaleDateString('en-US', {
-          month: 'short',
-          day: '2-digit',
-          year: 'numeric',
-        }),
+        date: formatDate(p.createdAt),
         amount: p.amount,
         currency: p.currency,
         paymentMethod: p.paymentMethod === 'CARD' ? 'Credit / Debit Card' : p.paymentMethod,

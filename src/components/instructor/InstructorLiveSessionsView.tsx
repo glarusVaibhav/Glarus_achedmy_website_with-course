@@ -50,6 +50,9 @@ import {
   UserCheck
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { DatePicker } from "@/components/ui/date-picker";
+import { TimePicker } from "@/components/ui/time-picker";
+import { formatDate, formatTime, validateTimeRange } from "@/lib/dateTime";
 
 /* ═══════════════════════════════════════════════════════════════
    TYPES & DATA MODELS
@@ -1085,7 +1088,7 @@ export function InstructorLiveSessionsView({
                   cohortBadge: c.duration || "Live Cohort",
                   batchName: "Live Fast-Track Cohort",
                   date: s.date ? new Date(s.date).toISOString().split("T")[0] : new Date().toISOString().split("T")[0],
-                  displayDate: s.date ? new Date(s.date).toLocaleDateString([], { month: "short", day: "numeric" }) : "Today",
+                  displayDate: s.date ? formatDate(s.date) : "Today",
                   startTime: s.startTime || "07:00 PM",
                   endTime: s.endTime || "09:00 PM",
                   duration: s.duration || "120 min",
@@ -1407,31 +1410,60 @@ export function InstructorLiveSessionsView({
   };
 
   // Handle Reschedule Submit
-  const handleRescheduleSubmit = (e: React.FormEvent) => {
+  const handleRescheduleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedSessionForReschedule || !rescheduleDate || !rescheduleReason.trim()) return;
 
-    setCohorts((prevCohorts) =>
-      prevCohorts.map((cohort) => ({
-        ...cohort,
-        sessions: cohort.sessions.map((s) =>
-          s.id === selectedSessionForReschedule.id
-            ? {
-                ...s,
-                assignmentStatus: "RESCHEDULE_PENDING",
-                requestedNewDate: rescheduleDate,
-                requestedNewTime: rescheduleTime,
-                rescheduleReason: rescheduleReason.trim()
-              }
-            : s
-        )
-      }))
-    );
+    const targetSession = selectedSessionForReschedule;
+    const dateToSubmit = rescheduleDate;
+    const timeToSubmit = rescheduleTime;
+    const reasonToSubmit = rescheduleReason.trim();
 
-    setSelectedSessionForReschedule(null);
-    setRescheduleReason("");
-    setRescheduleDate("");
-    showToast("Reschedule request submitted to Academic Operations for review.");
+    try {
+      const res = await fetch(`/api/admin/live-training/sessions/${targetSession.id}/reschedule`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          newDate: dateToSubmit,
+          newStartTime: timeToSubmit,
+          reason: reasonToSubmit,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        showToast(data.error || "Failed to submit reschedule request.");
+        return;
+      }
+
+      setCohorts((prevCohorts) =>
+        prevCohorts.map((cohort) => ({
+          ...cohort,
+          sessions: cohort.sessions.map((s) =>
+            s.id === targetSession.id
+              ? {
+                  ...s,
+                  assignmentStatus: "RESCHEDULE_PENDING",
+                  requestedNewDate: dateToSubmit,
+                  requestedNewTime: timeToSubmit,
+                  rescheduleReason: reasonToSubmit,
+                  date: data.session?.date ? new Date(data.session.date).toISOString().split("T")[0] : s.date,
+                  startTime: data.session?.startTime || s.startTime,
+                }
+              : s
+          ),
+        }))
+      );
+
+      setSelectedSessionForReschedule(null);
+      setRescheduleReason("");
+      setRescheduleDate("");
+      showToast(data.message || "Reschedule notification sent to Administration.");
+    } catch (err: any) {
+      console.error("Reschedule submit error:", err);
+      showToast("Network error submitting reschedule request.");
+    }
   };
 
   // ── Session Edit Handlers (with Admin Lock Protection) ──
@@ -1478,7 +1510,7 @@ export function InstructorLiveSessionsView({
                 ...s,
                 editPermissionStatus: "UNLOCKED",
                 editPermissionGrantedBy: "Academic Operations Admin",
-                editPermissionGrantedAt: "Today at " + new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+                editPermissionGrantedAt: "Today at " + formatTime(new Date())
               }
             : s
         )
@@ -1507,6 +1539,14 @@ export function InstructorLiveSessionsView({
   const handleSaveSessionEdits = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedSessionForEdit) return;
+
+    if (editFormStartTime && editFormEndTime) {
+      const timeVal = validateTimeRange(editFormStartTime, editFormEndTime);
+      if (!timeVal.isValid) {
+        showToast(timeVal.error || "End time must be after start time");
+        return;
+      }
+    }
 
     const parsedTopics = editFormTopics
       .split(",")
@@ -2235,7 +2275,7 @@ export function InstructorLiveSessionsView({
                   Teaching Schedule For
                 </span>
                 <h3 className="text-base font-bold text-white mt-0.5">
-                  {selectedDateObj.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                  {formatDate(selectedDateObj)}
                 </h3>
                 <p className="text-xs text-slate-400 mt-0.5">
                   {selectedDateSessions.length} {selectedDateSessions.length === 1 ? "Session" : "Sessions"} Scheduled
@@ -2512,14 +2552,13 @@ export function InstructorLiveSessionsView({
                           <span>Enter Live Room →</span>
                         </Link>
                       ) : (
-                        <Link
-                          href={`/live-classes/room/${session.id}`}
-                          className="px-3 py-1.5 text-blue-400 hover:text-blue-300 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/25 text-xs font-semibold rounded-xl flex items-center gap-1.5 transition-all cursor-pointer shadow-xs"
-                          title="Open Zoom Video SDK live room"
+                        <span
+                          className="px-3 py-1.5 text-slate-400 bg-white/[0.03] border border-white/[0.08] text-xs font-medium rounded-xl flex items-center gap-1.5 select-none cursor-default shadow-xs"
+                          title="Session has not started yet"
                         >
-                          <Video className="w-3.5 h-3.5" />
-                          <span>Start Room</span>
-                        </Link>
+                          <Clock className="w-3.5 h-3.5 text-slate-500" />
+                          <span>Upcoming</span>
+                        </span>
                       )}
 
                       <button
@@ -2611,7 +2650,7 @@ export function InstructorLiveSessionsView({
               <div>
                 <h3 className="text-sm font-bold text-white">Today's Schedule</h3>
                 <p className="text-xs text-slate-500">
-                  {new Date().toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" })}
+                  {formatDate(new Date())}
                 </p>
               </div>
               <span className="text-[11px] font-semibold text-slate-400 bg-white/[0.04] px-2.5 py-1 rounded-lg border border-white/[0.06]">
@@ -2672,12 +2711,10 @@ export function InstructorLiveSessionsView({
                             <span>Completed</span>
                           </span>
                         ) : (
-                          <Link
-                            href={`/live-classes/room/${ts.id}`}
-                            className="px-3 py-1 bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 hover:text-white border border-blue-500/30 text-xs font-semibold rounded-lg transition-all"
-                          >
-                            Start Session
-                          </Link>
+                          <span className="px-3 py-1 bg-white/[0.04] border border-white/[0.08] text-slate-400 text-xs font-semibold rounded-lg flex items-center gap-1.5 select-none cursor-default shadow-xs" title="Session has not started yet">
+                            <Clock className="w-3.5 h-3.5 text-slate-500" />
+                            <span>Upcoming</span>
+                          </span>
                         )}
                         <button
                           onClick={() => setSelectedSessionForAgenda(ts)}
@@ -3073,23 +3110,18 @@ export function InstructorLiveSessionsView({
               <form onSubmit={handleRescheduleSubmit} className="space-y-3">
                 <div>
                   <label className="block text-slate-400 mb-1 font-medium">Requested Date *</label>
-                  <input
-                    type="date"
-                    required
+                  <DatePicker
                     value={rescheduleDate}
-                    onChange={(e) => setRescheduleDate(e.target.value)}
-                    className="w-full bg-white/[0.03] border border-white/[0.08] rounded-xl p-2.5 text-white"
+                    onChange={(val) => setRescheduleDate(val)}
+                    required
                   />
                 </div>
 
                 <div>
                   <label className="block text-slate-400 mb-1 font-medium">Requested Time *</label>
-                  <input
-                    type="time"
-                    required
+                  <TimePicker
                     value={rescheduleTime}
-                    onChange={(e) => setRescheduleTime(e.target.value)}
-                    className="w-full bg-white/[0.03] border border-white/[0.08] rounded-xl p-2.5 text-white"
+                    onChange={(val) => setRescheduleTime(val)}
                   />
                 </div>
 
@@ -3320,36 +3352,26 @@ export function InstructorLiveSessionsView({
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div className="space-y-1">
                     <label className="block text-slate-300 font-semibold">Date *</label>
-                    <input
-                      type="date"
-                      required
+                    <DatePicker
                       value={editFormDate}
-                      onChange={(e) => setEditFormDate(e.target.value)}
-                      className="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.1] rounded-xl text-white focus:outline-none focus:border-amber-500/50 font-mono"
+                      onChange={(val) => setEditFormDate(val)}
+                      required
                     />
                   </div>
 
                   <div className="space-y-1">
                     <label className="block text-slate-300 font-semibold">Start Time *</label>
-                    <input
-                      type="text"
-                      required
+                    <TimePicker
                       value={editFormStartTime}
-                      onChange={(e) => setEditFormStartTime(e.target.value)}
-                      placeholder="10:00 AM"
-                      className="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.1] rounded-xl text-white focus:outline-none focus:border-amber-500/50 font-mono"
+                      onChange={(val) => setEditFormStartTime(val)}
                     />
                   </div>
 
                   <div className="space-y-1">
                     <label className="block text-slate-300 font-semibold">End Time *</label>
-                    <input
-                      type="text"
-                      required
+                    <TimePicker
                       value={editFormEndTime}
-                      onChange={(e) => setEditFormEndTime(e.target.value)}
-                      placeholder="11:30 AM"
-                      className="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.1] rounded-xl text-white focus:outline-none focus:border-amber-500/50 font-mono"
+                      onChange={(val) => setEditFormEndTime(val)}
                     />
                   </div>
                 </div>

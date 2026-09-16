@@ -640,7 +640,7 @@ export default function RecordedSessionPlayerPage({
                   <div className="w-7 h-7 rounded-full bg-purple-600 text-white font-bold flex items-center justify-center text-xs">
                     {recording.instructorAvatar || "IN"}
                   </div>
-                  <span>Instructor: <strong className="text-white font-semibold">{recording.instructor}</strong></span>
+                  <span>Instructor: <strong className="text-white font-semibold">{typeof recording.instructor === 'object' && recording.instructor ? (recording.instructor as any).name : (recording.instructor || 'Instructor')}</strong></span>
                 </div>
 
                 <div className="flex items-center gap-1.5">

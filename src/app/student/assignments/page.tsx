@@ -105,6 +105,7 @@ function StudentAssignmentsContent() {
   const [submitLiveUrl, setSubmitLiveUrl] = useState("");
   const [submitNotes, setSubmitNotes] = useState("");
   const [submitFileName, setSubmitFileName] = useState("");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -201,13 +202,43 @@ function StudentAssignmentsContent() {
     e.preventDefault();
     if (!submittingAssignment) return;
 
-    if (!submitGithub.trim() && !submitLiveUrl.trim() && !submitFileName.trim()) {
+    if (!submitGithub.trim() && !submitLiveUrl.trim() && !submitFileName.trim() && !selectedFile) {
       showToast("Please provide at least a GitHub repository, live URL, or project file.");
       return;
     }
 
     setIsSubmitting(true);
+    let uploadedFileUrl: string | undefined = undefined;
+    let finalFileName: string = submitFileName || (selectedFile ? selectedFile.name : "project_source_archive.zip");
 
+    // 1. If user selected a physical file, upload it to MinIO storage first
+    if (selectedFile) {
+      try {
+        const formData = new FormData();
+        formData.append("file", selectedFile);
+        formData.append("category", "assignment");
+        if (submittingAssignment.courseId) {
+          formData.append("courseId", submittingAssignment.courseId);
+        }
+
+        const uploadRes = await fetch("/api/upload", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (uploadRes.ok) {
+          const uploadData = await uploadRes.json();
+          uploadedFileUrl = uploadData.url;
+          if (uploadData.fileName) {
+            finalFileName = uploadData.fileName;
+          }
+        }
+      } catch (uploadErr) {
+        console.warn("MinIO file upload notice:", uploadErr);
+      }
+    }
+
+    // 2. Submit Assignment Record to Backend & Database
     try {
       await fetch(`/api/student/assignments/${submittingAssignment.id}/submit`, {
         method: "POST",
@@ -215,7 +246,8 @@ function StudentAssignmentsContent() {
         body: JSON.stringify({
           githubUrl: submitGithub || undefined,
           liveUrl: submitLiveUrl || undefined,
-          fileName: submitFileName || "project_source_archive.zip",
+          fileName: finalFileName,
+          fileUrl: uploadedFileUrl || undefined,
           notes: submitNotes || undefined,
         }),
       });
@@ -232,7 +264,8 @@ function StudentAssignmentsContent() {
             submission: {
               githubUrl: submitGithub || undefined,
               liveUrl: submitLiveUrl || undefined,
-              fileName: submitFileName || "project_source_archive.zip",
+              fileName: finalFileName,
+              fileUrl: uploadedFileUrl || undefined,
               notes: submitNotes || undefined,
               submittedAt: "Just now"
             }
@@ -245,6 +278,7 @@ function StudentAssignmentsContent() {
     setIsSubmitting(false);
     showToast(`Assignment "${submittingAssignment.title}" submitted successfully!`);
     setSubmittingAssignment(null);
+    setSelectedFile(null);
     setSubmitGithub("");
     setSubmitLiveUrl("");
     setSubmitNotes("");
@@ -616,7 +650,7 @@ function StudentAssignmentsContent() {
                   </p>
 
                   <p className="text-[11px] text-slate-400 pt-0.5">
-                    Instructor: <strong className="text-slate-300 font-medium">{item.instructor}</strong>
+                    Instructor: <strong className="text-slate-300 font-medium">{typeof item.instructor === 'object' && item.instructor ? (item.instructor as any).name : (item.instructor || 'Instructor')}</strong>
                   </p>
                 </div>
 
@@ -746,7 +780,10 @@ function StudentAssignmentsContent() {
                         id="asg-file-upload"
                         onChange={(e) => {
                           const file = e.target.files?.[0];
-                          if (file) setSubmitFileName(file.name);
+                          if (file) {
+                            setSelectedFile(file);
+                            setSubmitFileName(file.name);
+                          }
                         }}
                       />
                       <label
@@ -853,7 +890,7 @@ function StudentAssignmentsContent() {
                     </div>
                     <div className="text-right">
                       <div className="text-slate-400 font-medium">Evaluated by</div>
-                      <div className="text-sm font-bold text-white">{viewingFeedback.instructor}</div>
+                      <div className="text-sm font-bold text-white">{typeof viewingFeedback.instructor === 'object' && viewingFeedback.instructor ? (viewingFeedback.instructor as any).name : (viewingFeedback.instructor || 'Instructor')}</div>
                       <div className="text-[10px] text-slate-400">{viewingFeedback.gradedDate}</div>
                     </div>
                   </div>

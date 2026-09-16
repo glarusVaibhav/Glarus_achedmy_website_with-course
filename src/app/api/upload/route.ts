@@ -2,6 +2,11 @@ import { NextResponse } from "next/server";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import { getSession } from "@/lib/auth";
+import {
+  uploadCourseMaterial,
+  generateObjectKey,
+  getCourseBucketName
+} from "@/lib/storage/minioClient";
 
 export const dynamic = "force-dynamic";
 
@@ -44,6 +49,24 @@ const ALLOWED_TYPES: Record<string, { mimeTypes: string[]; extensions: string[];
     extensions: [".pdf", ".doc", ".docx", ".ppt", ".pptx", ".zip", ".txt", ".md", ".json", ".jpg", ".png"],
     maxSizeMB: 100,
   },
+  assignment: {
+    mimeTypes: [
+      "application/pdf",
+      "application/zip",
+      "application/x-zip-compressed",
+      "application/x-tar",
+      "application/gzip",
+      "text/plain",
+      "text/x-python",
+      "text/markdown",
+      "application/json",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "application/octet-stream",
+    ],
+    extensions: [".pdf", ".zip", ".tar", ".gz", ".py", ".ipynb", ".doc", ".docx", ".txt", ".md", ".json", ".csv"],
+    maxSizeMB: 100,
+  },
   document: {
     mimeTypes: [
       "application/pdf",
@@ -77,6 +100,7 @@ export async function POST(req: Request) {
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
     const category = (formData.get("category") as string) || "general";
+    const courseId = (formData.get("courseId") as string) || undefined;
 
     if (!file) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
@@ -115,30 +139,50 @@ export async function POST(req: Request) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Ensure uploads directory exists in public
-    const uploadsDir = path.join(process.cwd(), "public", "uploads");
-    await mkdir(uploadsDir, { recursive: true });
+    // 1. PRIMARY STORAGE: Upload to MinIO Object Storage
+    try {
+      const objectKey = generateObjectKey(category, originalName, courseId);
+      const minioResult = await uploadCourseMaterial(buffer, objectKey, file.type || "application/octet-stream", originalName);
 
-    // Clean filename
-    const sanitizedBase = path
-      .basename(originalName, ext)
-      .replace(/[^a-zA-Z0-9_-]/g, "_")
-      .slice(0, 40);
-    const uniqueFileName = `${category}_${Date.now()}_${sanitizedBase}${ext}`;
-    const filePath = path.join(uploadsDir, uniqueFileName);
+      return NextResponse.json({
+        success: true,
+        url: minioResult.url,
+        objectKey: minioResult.objectKey,
+        bucket: minioResult.bucket,
+        fileName: originalName,
+        size: file.size,
+        mimeType: file.type,
+        storage: "minio"
+      });
+    } catch (minioErr: any) {
+      console.warn("[Upload] MinIO storage error, engaging fallback:", minioErr?.message);
 
-    // Save file
-    await writeFile(filePath, buffer);
+      // 2. FALLBACK STORAGE: Save locally to /public/uploads/ if MinIO is temporarily unreachable
+      const uploadsDir = path.join(process.cwd(), "public", "uploads");
+      await mkdir(uploadsDir, { recursive: true });
 
-    const publicUrl = `/uploads/${uniqueFileName}`;
+      const sanitizedBase = path
+        .basename(originalName, ext)
+        .replace(/[^a-zA-Z0-9_-]/g, "_")
+        .slice(0, 40);
+      const uniqueFileName = `${category}_${Date.now()}_${sanitizedBase}${ext}`;
+      const filePath = path.join(uploadsDir, uniqueFileName);
 
-    return NextResponse.json({
-      success: true,
-      url: publicUrl,
-      fileName: originalName,
-      size: file.size,
-      mimeType: file.type,
-    });
+      await writeFile(filePath, buffer);
+
+      const publicUrl = `/uploads/${uniqueFileName}`;
+
+      return NextResponse.json({
+        success: true,
+        url: publicUrl,
+        objectKey: uniqueFileName,
+        bucket: "local",
+        fileName: originalName,
+        size: file.size,
+        mimeType: file.type,
+        storage: "local"
+      });
+    }
   } catch (error: any) {
     console.error("Upload error:", error);
     return NextResponse.json(
@@ -147,3 +191,4 @@ export async function POST(req: Request) {
     );
   }
 }
+

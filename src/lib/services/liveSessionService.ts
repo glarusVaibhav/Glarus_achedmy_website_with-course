@@ -1,5 +1,6 @@
 import prisma from '@/lib/db';
 import { requireSessionEnrollment } from './studentAuthService';
+import { formatTime } from '@/lib/dateTime';
 
 export interface LiveClassPayload {
   id: string;
@@ -118,7 +119,7 @@ export class LiveSessionService {
             title: s.title,
             instructor: instructorName,
             batchName: en.batchName,
-            date: (s.date ? new Date(s.date) : new Date()).toISOString(),
+            date: (computed.sessionStart || (s.date ? new Date(s.date) : new Date())).toISOString(),
             duration: s.duration,
             status: computed.status,
             meetingLink: s.meetingUrl || 'https://zoom.us/j/glarus-live-room',
@@ -202,6 +203,16 @@ export class LiveSessionService {
       return new Date(a.date).getTime() - new Date(b.date).getTime();
     });
 
+    // Sort courses: Courses with an active LIVE / ONGOING session come FIRST at the top!
+    coursesList.sort((a, b) => {
+      const aIsLive = a.sessions.some((s: any) => s.status === 'live') ? 1 : 0;
+      const bIsLive = b.sessions.some((s: any) => s.status === 'live') ? 1 : 0;
+      if (aIsLive !== bIsLive) {
+        return bIsLive - aIsLive;
+      }
+      return 0;
+    });
+
     return { courses: coursesList, classes: liveClassesList };
   }
 
@@ -216,7 +227,7 @@ export class LiveSessionService {
 
     if (!computed.canJoin && computed.status !== 'ONGOING') {
       throw new Error(
-        `Class has not started yet. The live room unlocks 15 minutes before the session starts (${computed.sessionStart?.toLocaleTimeString()}).`
+        `Class has not started yet. The live room unlocks 15 minutes before the session starts (${computed.sessionStart ? formatTime(computed.sessionStart) : "soon"}).`
       );
     }
 

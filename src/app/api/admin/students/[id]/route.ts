@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { getSession } from "@/lib/auth";
+import { formatDate, formatTime } from "@/lib/dateTime";
 
 export async function GET(
   req: Request,
@@ -132,7 +133,7 @@ export async function GET(
       const lc = liveEnr.liveCourse;
       const nextSession = lc.sessions[0];
       const nextSessionFormatted = nextSession?.date
-        ? `${nextSession.date.toLocaleDateString("en-GB", { weekday: "short" })}, ${nextSession.startTime || "07:00 PM"}`
+        ? `${formatDate(nextSession.date)}, ${formatTime(nextSession.startTime || "07:00 PM")}`
         : "Sat, 07:00 PM";
 
       const subs = user.assignmentSubmissions.filter((s) => s.assignment.liveCourseId === lc.id);
@@ -144,7 +145,7 @@ export async function GET(
         id: lc.id,
         title: lc.title,
         progress: liveEnr.progress,
-        enrolledDate: liveEnr.enrolledAt.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }),
+        enrolledDate: formatDate(liveEnr.enrolledAt),
         completed: liveEnr.progress === 100,
         type: "LIVE",
         batchName: liveEnr.batchName || "Weekend Live Batch A",
@@ -173,7 +174,7 @@ export async function GET(
         id: c.id,
         title: c.title,
         progress: enr.progress,
-        enrolledDate: enr.createdAt.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }),
+        enrolledDate: formatDate(enr.createdAt),
         completed: enr.isCompleted || enr.progress === 100,
         type: "SELF_PACED",
         price: c.price || 5500,
@@ -205,7 +206,7 @@ export async function GET(
         title: sub.assignment.title || `${courseTitle} — Practical Project`,
         courseTitle,
         moduleName: sub.assignment.moduleName || `Module ${idx + 1} Assessment`,
-        submittedDate: sub.submittedAt.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }),
+        submittedDate: formatDate(sub.submittedAt),
         evaluatedBy: instructorName,
         score: score,
         maxScore: sub.assignment.totalMarks || 100,
@@ -223,8 +224,8 @@ export async function GET(
         id: cert.id,
         credentialId: cert.credentialId || `GLARUS-${courseId.toUpperCase()}-2026`,
         title: courseTitle,
-        enrolledDate: cert.issueDate.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }),
-        issueDate: cert.issueDate.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }),
+        enrolledDate: formatDate(cert.issueDate),
+        issueDate: formatDate(cert.issueDate),
         downloadUrl: cert.certificateUrl || `/api/student/certificates/${cert.credentialId}/download`,
         status: "Issued"
       };
@@ -254,7 +255,7 @@ export async function GET(
         title,
         amount: p.amount,
         currency: p.currency,
-        date: p.createdAt.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }),
+        date: formatDate(p.createdAt),
         paymentMethod: p.paymentMethod || "Online Payment",
         status: p.paymentStatus === "COMPLETED" ? "Completed" : "Pending"
       };
@@ -285,7 +286,7 @@ export async function GET(
       avatar: initials,
       status: computedStatus,
       rawStatus: user.status,
-      joinedDate: user.createdAt.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }),
+      joinedDate: formatDate(user.createdAt),
       lastActive: lastActiveStr,
       metrics: {
         totalCourses: enrolledCourses.length,

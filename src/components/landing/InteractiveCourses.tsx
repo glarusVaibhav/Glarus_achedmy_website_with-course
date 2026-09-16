@@ -29,6 +29,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCartStore } from "@/store/cartStore";
 import { Course as CartCourse } from "@/components/CourseCard";
+import { formatDate, formatTime } from "@/lib/dateTime";
 
 export interface Course {
   id: string;
@@ -49,6 +50,16 @@ export interface Course {
   cta?: string;
 }
 
+export interface LiveCourseRegistrationWindow {
+  isOpen: boolean;
+  isUpcoming: boolean;
+  isClosed: boolean;
+  label: string;
+  countdownText: string;
+  fullWindowFormatted: string;
+  badgeColor: string;
+}
+
 export interface LiveCourseDetail {
   id: string;
   title: string;
@@ -60,6 +71,9 @@ export interface LiveCourseDetail {
   badgeType: "UPCOMING";
   linkUrl: string;
   tags: string[];
+  registrationStartDate?: string | null;
+  registrationEndDate?: string | null;
+  registrationWindow?: LiveCourseRegistrationWindow;
   instructor: {
     name: string;
     role: string;
@@ -81,6 +95,91 @@ export interface LiveCourseDetail {
   ctaText: string;
   classType: "Live Class" | "Full Bootcamp" | "Workshop";
   timeframeDays: number;
+}
+
+export function formatRegistrationWindow(
+  regStart?: string | null,
+  regEnd?: string | null,
+  courseStart?: string | null
+): LiveCourseRegistrationWindow {
+  if (!regStart && !regEnd) {
+    return {
+      isOpen: true,
+      isUpcoming: false,
+      isClosed: false,
+      label: "Registration Open",
+      countdownText: "Seats filling fast",
+      fullWindowFormatted: "Open for Enrollment",
+      badgeColor: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30"
+    };
+  }
+
+  const now = new Date();
+  const startDate = regStart ? new Date(regStart) : null;
+  const endDate = regEnd ? new Date(regEnd) : (courseStart ? new Date(courseStart) : null);
+
+  const startFormatted = startDate && !isNaN(startDate.getTime())
+    ? `${formatDate(startDate)} ${formatTime(startDate.toISOString())}`
+    : "Immediate";
+  const endFormatted = endDate && !isNaN(endDate.getTime())
+    ? `${formatDate(endDate)} ${formatTime(endDate.toISOString())}`
+    : "Until Cohort Starts";
+
+  const fullWindow = `${startFormatted} – ${endFormatted}`;
+
+  // If registration starts in the future
+  if (startDate && !isNaN(startDate.getTime()) && now < startDate) {
+    const diffMs = startDate.getTime() - now.getTime();
+    const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+    return {
+      isOpen: false,
+      isUpcoming: true,
+      isClosed: false,
+      label: `Opens in ${diffDays}d`,
+      countdownText: `Starts ${formatDate(startDate)} at ${formatTime(startDate.toISOString())}`,
+      fullWindowFormatted: fullWindow,
+      badgeColor: "bg-amber-500/15 text-amber-300 border-amber-500/30"
+    };
+  }
+
+  // If registration ended in the past
+  if (endDate && !isNaN(endDate.getTime()) && now > endDate) {
+    return {
+      isOpen: false,
+      isUpcoming: false,
+      isClosed: true,
+      label: "Registration Closed",
+      countdownText: `Closed on ${formatDate(endDate)}`,
+      fullWindowFormatted: fullWindow,
+      badgeColor: "bg-rose-500/15 text-rose-400 border-rose-500/30"
+    };
+  }
+
+  // Currently open / active
+  let countdownText = "Enrollment Active";
+  if (endDate && !isNaN(endDate.getTime())) {
+    const diffMs = endDate.getTime() - now.getTime();
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffHours <= 24 && diffHours > 0) {
+      countdownText = `Closes in ${diffHours} hour${diffHours > 1 ? "s" : ""}!`;
+    } else if (diffDays <= 7) {
+      countdownText = `Closes in ${diffDays} day${diffDays > 1 ? "s" : ""} (${formatDate(endDate)})`;
+    } else {
+      countdownText = `Deadline: ${formatDate(endDate)}`;
+    }
+  }
+
+  return {
+    isOpen: true,
+    isUpcoming: false,
+    isClosed: false,
+    label: "Registration Open",
+    countdownText,
+    fullWindowFormatted: fullWindow,
+    badgeColor: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30"
+  };
 }
 
 const SELF_PACED_COURSES: Course[] = [
@@ -118,6 +217,12 @@ const ENRICHED_LIVE_COURSES: LiveCourseDetail[] = [
     tags: ["Live Class", "Limited Seats", "5 Projects"],
     classType: "Live Class",
     timeframeDays: 5,
+    registrationStartDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+    registrationEndDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
+    registrationWindow: formatRegistrationWindow(
+      new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+      new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString()
+    ),
     instructor: {
       name: "Alex Chen",
       role: "FAANG Staff Engineer",
@@ -151,6 +256,12 @@ const ENRICHED_LIVE_COURSES: LiveCourseDetail[] = [
     tags: ["Live Class", "Includes Projects", "Live Mentorship"],
     classType: "Live Class",
     timeframeDays: 14,
+    registrationStartDate: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+    registrationEndDate: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString(),
+    registrationWindow: formatRegistrationWindow(
+      new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+      new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString()
+    ),
     instructor: {
       name: "Elena Rostova",
       role: "ML Engineer at Meta",
@@ -417,17 +528,12 @@ export default function InteractiveCourses() {
           const dbLive: LiveCourseDetail[] = data.courses.map((c: any) => {
             const nextSession = c.sessions?.[0];
             const dateStr = nextSession?.date
-              ? new Date(nextSession.date).toLocaleDateString("en-US", {
-                  weekday: "short",
-                  month: "short",
-                  day: "numeric",
-                  year: "numeric"
-                })
+              ? formatDate(nextSession.date)
               : "Upcoming Cohort";
 
             const timeStr = nextSession?.startTime
-              ? `${nextSession.startTime} – ${nextSession.endTime || "09:00 PM"} IST`
-              : "07:00 PM – 09:00 PM IST";
+              ? `${formatTime(nextSession.startTime)} – ${formatTime(nextSession.endTime || "09:00 PM")}`
+              : "07:00 PM – 09:00 PM";
 
             let calculatedDays = 30;
             if (nextSession?.date) {
@@ -443,6 +549,12 @@ export default function InteractiveCourses() {
               inferredClassType = "Workshop";
             }
 
+            const regWindow = formatRegistrationWindow(
+              c.registrationStartDate,
+              c.registrationEndDate,
+              c.startDate
+            );
+
             return {
               id: c.id,
               title: c.title,
@@ -453,12 +565,15 @@ export default function InteractiveCourses() {
                 "Live hands-on training with industry mentors and practical capstone projects.",
               image: c.thumbnail || "/images/courses/generative-ai.png",
               level: `Level: ${c.level || "Intermediate"}`,
-              statusBadge: "ENROLLING NOW",
+              statusBadge: regWindow.isOpen ? "ENROLLING NOW" : (regWindow.isUpcoming ? "OPENS SOON" : "CLOSED"),
               badgeType: "UPCOMING" as const,
               linkUrl: `/student/live-courses/${c.id}`,
               tags: ["Live Cohort", `${c.totalSessions || 6} Sessions`, "Mentor-Led"],
               classType: inferredClassType,
               timeframeDays: calculatedDays,
+              registrationStartDate: c.registrationStartDate || null,
+              registrationEndDate: c.registrationEndDate || null,
+              registrationWindow: regWindow,
               instructor: {
                 name: c.leadInstructor?.name || "Lead AI Architect",
                 role: "Lead Cohort Instructor",
@@ -533,6 +648,8 @@ export default function InteractiveCourses() {
   const filteredSelfPaced = selfPacedCategory === "All"
     ? selfPacedCourses
     : selfPacedCourses.filter(c => c.category === selfPacedCategory);
+
+  const displayedSelfPaced = filteredSelfPaced.slice(0, 6);
 
   const handleCategoryChange = (cat: string) => {
     if (activeMode === "self-paced") {
@@ -626,7 +743,7 @@ export default function InteractiveCourses() {
                   ? "bg-background/20 text-background"
                   : "bg-card border border-card/60 text-subtext"
               }`}>
-                {SELF_PACED_COURSES.length}
+                {selfPacedCourses.length}
               </span>
             </button>
 
@@ -649,7 +766,7 @@ export default function InteractiveCourses() {
                   ? "bg-white/20 text-white"
                   : "bg-card border border-card/60 text-subtext"
               }`}>
-                {ENRICHED_LIVE_COURSES.length}
+                {liveCoursesList.length}
               </span>
             </button>
           </div>
@@ -696,7 +813,7 @@ export default function InteractiveCourses() {
                   transition={{ duration: 0.25, ease: "easeInOut" }}
                   className="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-3 gap-6"
                 >
-                  {filteredSelfPaced.map((course, idx) => (
+                  {displayedSelfPaced.map((course, idx) => (
                     <motion.div
                       key={course.id}
                       initial={{ opacity: 0, scale: 0.95 }}
@@ -791,6 +908,38 @@ export default function InteractiveCourses() {
                   ))}
                 </motion.div>
               </AnimatePresence>
+
+              {/* View All Self-Paced Courses CTA Bar */}
+              {filteredSelfPaced.length > 6 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: 0.15 }}
+                  className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 p-5 sm:p-6 rounded-3xl bg-card/70 border border-purple-500/25 backdrop-blur-md shadow-xl"
+                >
+                  <div className="flex items-center gap-3.5 text-center sm:text-left">
+                    <div className="w-11 h-11 rounded-2xl bg-purple-500/15 border border-purple-500/30 flex items-center justify-center text-purple-400 shrink-0 shadow-sm">
+                      <Sparkles className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <p className="text-sm sm:text-base font-black text-text">
+                        Showing 6 of {filteredSelfPaced.length} Self-Paced Courses
+                      </p>
+                      <p className="text-xs text-subtext mt-0.5">
+                        Browse all curriculums, compare topics, and start learning right away.
+                      </p>
+                    </div>
+                  </div>
+
+                  <Link
+                    href="/courses?type=self-paced"
+                    className="group px-6 py-3 rounded-full bg-gradient-to-r from-purple-600 via-purple-500 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-black text-xs sm:text-sm flex items-center gap-2 shadow-lg shadow-purple-600/30 hover:shadow-purple-600/50 hover:scale-105 active:scale-95 transition-all cursor-pointer whitespace-nowrap"
+                  >
+                    <span>View All {filteredSelfPaced.length} Courses</span>
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  </Link>
+                </motion.div>
+              )}
 
               {filteredSelfPaced.length === 0 && (
                 <div className="py-16 text-center text-subtext">
@@ -1099,19 +1248,39 @@ export default function InteractiveCourses() {
                       {/* Middle: Course Info & Tags */}
                       <div className="flex-1 flex flex-col justify-between">
                         <div>
-                          <div className="flex items-center justify-between gap-2 mb-2">
+                          <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
                             <span className="text-xs font-black text-purple-400 uppercase tracking-widest">
                               {item.category}
                             </span>
+                            {item.registrationWindow && (
+                              <span className={`px-2.5 py-0.5 rounded-full border text-[11px] font-black uppercase tracking-wider flex items-center gap-1.5 shadow-xs ${item.registrationWindow.badgeColor}`}>
+                                <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
+                                {item.registrationWindow.label}
+                              </span>
+                            )}
                           </div>
 
                           <h3 className="text-xl md:text-2xl font-black text-text mb-2 group-hover:text-purple-400 transition-colors leading-snug">
                             {item.title}
                           </h3>
 
-                          <p className="text-xs md:text-sm font-medium text-subtext leading-relaxed line-clamp-2 mb-4">
+                          <p className="text-xs md:text-sm font-medium text-subtext leading-relaxed line-clamp-2 mb-3">
                             {item.description}
                           </p>
+
+                          {/* Live Registration Window Bar */}
+                          {item.registrationWindow && (
+                            <div className="p-2.5 rounded-2xl bg-purple-950/20 border border-purple-500/20 mb-3.5 flex flex-wrap items-center justify-between gap-2 text-xs">
+                              <div className="flex items-center gap-2">
+                                <Clock className="w-3.5 h-3.5 text-purple-400 shrink-0" />
+                                <span className="text-subtext font-semibold">Registration:</span>
+                                <span className="font-bold text-text">{item.registrationWindow.fullWindowFormatted}</span>
+                              </div>
+                              <span className="text-[10px] font-black uppercase tracking-wider text-purple-300 bg-purple-500/15 px-2 py-0.5 rounded-md border border-purple-500/25">
+                                {item.registrationWindow.countdownText}
+                              </span>
+                            </div>
+                          )}
                         </div>
 
                         {/* Metadata Chips */}

@@ -9,7 +9,7 @@ import {
   Activity, Bell, Edit3, RefreshCw, Check, Save, PlayCircle, Layout,
   CheckCircle2, IndianRupee, TrendingUp, Eye, Trash2, Clock, Calendar,
   Image as ImageIcon, UploadCloud, Paperclip, ShieldCheck, CheckSquare,
-  ArrowUpRight, PlusCircle, Award
+  ArrowUpRight, PlusCircle, Award, Lock
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -24,6 +24,9 @@ import { InstructorStudentsView } from "@/components/instructor/InstructorStuden
 import { useAuth } from "@/context/AuthContext";
 import { InstructorLiveDashboard } from "@/components/instructor/InstructorLiveDashboard";
 import { InstructorSelfPacedCoursesView } from "@/components/instructor/InstructorSelfPacedCoursesView";
+import { InstructorPermissionModal } from "@/components/instructor/courses/InstructorPermissionModal";
+import { CourseCreationPermissionStatus } from "@/lib/permissions/courseCreationPermission";
+import { formatDate } from "@/lib/dateTime";
 
 /* ═══════════════════════════════════════════════
    TYPE DEFINITIONS
@@ -367,13 +370,17 @@ export default function InstructorDashboard() {
 
   const handleFileUpload = async (
     file: File,
-    category: "image" | "video" | "resource" | "article" | "photo"
+    category: "image" | "video" | "resource" | "article" | "photo",
+    targetCourseId?: string
   ): Promise<string | null> => {
     setUploadingTarget(category);
     try {
       const formData = new FormData();
       formData.append("file", file);
       formData.append("category", category);
+      if (targetCourseId) {
+        formData.append("courseId", targetCourseId);
+      }
 
       const res = await fetch("/api/upload", {
         method: "POST",
@@ -903,7 +910,7 @@ export default function InstructorDashboard() {
         ...formData,
         price: parseFloat(formData.price) || 0,
         originalPrice: parseFloat(formData.originalPrice) || 0,
-        title: formData.title || aiTopic || `Course - ${new Date().toLocaleDateString()}`,
+        title: formData.title || aiTopic || `Course - ${formatDate(new Date())}`,
         modules: builderModules.map((m, idx) => ({
           title: m.title,
           order: idx + 1,
@@ -911,7 +918,20 @@ export default function InstructorDashboard() {
             title: l.title,
             type: l.type === "empty" ? "video" : l.type,
             videoUrl: l.videoUrl || null,
-            duration: l.videoDuration || "15m",
+            duration: l.videoDuration || "15m 00s",
+            description: l.description || null,
+            notes: l.description || null,
+            notesContent: l.description || null,
+            articleContent: l.articleContent || null,
+            imageUrl1: l.imageUrl1 || null,
+            imageUrl2: l.imageUrl2 || null,
+            imageCaption: l.imageCaption || null,
+            sandboxLang: l.sandboxLang || null,
+            sandboxCode: l.sandboxCode || null,
+            quizQuestions: l.quizQuestions || undefined,
+            resources: l.resources || (l.resourceFileUrl ? [{ id: `res-${lIdx}`, title: l.title, url: l.resourceFileUrl, type: l.fileType || "PDF" }] : undefined),
+            resourceFileUrl: l.resourceFileUrl || null,
+            fileType: l.fileType || null,
             order: lIdx + 1
           }))
         }))
@@ -946,6 +966,36 @@ export default function InstructorDashboard() {
   const [isEditingVerification, setIsEditingVerification] = useState(false);
   const [verifyingLoading, setVerifyingLoading] = useState(true);
 
+  /* ── Course Creation Permission State ── */
+  const [permissionStatus, setPermissionStatus] = useState<CourseCreationPermissionStatus>("NOT_REQUESTED");
+  const [canCreateCourse, setCanCreateCourse] = useState(false);
+  const [permissionData, setPermissionData] = useState<{
+    requestedAt?: string | null;
+    reviewedAt?: string | null;
+    rejectionReason?: string | null;
+    notes?: string | null;
+  }>({});
+  const [isPermissionModalOpen, setIsPermissionModalOpen] = useState(false);
+
+  const fetchPermission = async () => {
+    try {
+      const res = await fetch("/api/instructor/course-creation-permission");
+      if (res.ok) {
+        const data = await res.json();
+        setPermissionStatus(data.status || "NOT_REQUESTED");
+        setCanCreateCourse(Boolean(data.canCreateCourse || data.allowed || data.isAdmin));
+        setPermissionData({
+          requestedAt: data.requestedAt,
+          reviewedAt: data.reviewedAt,
+          rejectionReason: data.rejectionReason,
+          notes: data.notes
+        });
+      }
+    } catch (e) {
+      console.warn("Permission fetch notice:", e);
+    }
+  };
+
   const fetchVerification = async () => {
     try {
       const res = await fetch("/api/instructor/verification");
@@ -965,6 +1015,7 @@ export default function InstructorDashboard() {
 
   useEffect(() => {
     fetchVerification();
+    fetchPermission();
     fetchAll();
   }, []);
 
@@ -1017,7 +1068,20 @@ export default function InstructorDashboard() {
             title: l.title,
             type: l.type === "empty" ? "video" : l.type,
             videoUrl: l.videoUrl || null,
-            duration: l.videoDuration || "15m",
+            duration: l.videoDuration || "15m 00s",
+            description: l.description || null,
+            notes: l.description || null,
+            notesContent: l.description || null,
+            articleContent: l.articleContent || null,
+            imageUrl1: l.imageUrl1 || null,
+            imageUrl2: l.imageUrl2 || null,
+            imageCaption: l.imageCaption || null,
+            sandboxLang: l.sandboxLang || null,
+            sandboxCode: l.sandboxCode || null,
+            quizQuestions: l.quizQuestions || undefined,
+            resources: l.resources || (l.resourceFileUrl ? [{ id: `res-${lIdx}`, title: l.title, url: l.resourceFileUrl, type: l.fileType || "PDF" }] : undefined),
+            resourceFileUrl: l.resourceFileUrl || null,
+            fileType: l.fileType || null,
             order: lIdx + 1
           }))
         })) : aiModules.map((m, idx) => ({
@@ -1235,6 +1299,15 @@ export default function InstructorDashboard() {
       badgeColor: "bg-purple-500/20 text-purple-300 border-purple-500/30",
     },
     {
+      id: "Create Course",
+      icon: canCreateCourse ? Sparkles : permissionStatus === "PENDING" ? Clock : Lock,
+      badge: canCreateCourse ? "Ready" : permissionStatus === "PENDING" ? "Pending" : "Locked",
+      iconColor: canCreateCourse ? "text-emerald-400" : permissionStatus === "PENDING" ? "text-amber-400" : "text-slate-400",
+      iconBox: canCreateCourse ? "bg-emerald-500/10 border-emerald-500/20 group-hover:border-emerald-500/40 group-hover:bg-emerald-500/15" : permissionStatus === "PENDING" ? "bg-amber-500/10 border-amber-500/20 group-hover:border-amber-500/40 group-hover:bg-amber-500/15" : "bg-slate-500/10 border-slate-500/20 group-hover:border-slate-500/40 group-hover:bg-slate-500/15",
+      activeBg: "bg-gradient-to-r from-purple-600/20 via-purple-500/15 to-indigo-600/10 border-purple-500/40 text-white shadow-lg shadow-purple-600/15",
+      badgeColor: canCreateCourse ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/30" : permissionStatus === "PENDING" ? "bg-amber-500/20 text-amber-300 border-amber-500/30" : "bg-slate-500/20 text-slate-400 border-slate-500/30",
+    },
+    {
       id: "Live Sessions",
       icon: Tv,
       badge: isDemoUser ? 2 : null,
@@ -1260,6 +1333,15 @@ export default function InstructorDashboard() {
       iconBox: "bg-amber-500/10 border-amber-500/20 group-hover:border-amber-500/40 group-hover:bg-amber-500/15",
       activeBg: "bg-gradient-to-r from-amber-600/20 via-amber-500/15 to-orange-600/10 border-amber-500/40 text-white shadow-lg shadow-amber-600/15",
       badgeColor: "bg-amber-500/20 text-amber-300 border-amber-500/30",
+    },
+    {
+      id: "Assignments",
+      icon: ClipboardList,
+      badge: isDemoUser ? 4 : null,
+      iconColor: "text-indigo-400",
+      iconBox: "bg-indigo-500/10 border-indigo-500/20 group-hover:border-indigo-500/40 group-hover:bg-indigo-500/15",
+      activeBg: "bg-gradient-to-r from-indigo-600/20 via-indigo-500/15 to-purple-600/10 border-indigo-500/40 text-white shadow-lg shadow-indigo-600/15",
+      badgeColor: "bg-indigo-500/20 text-indigo-300 border-indigo-500/30",
     },
   ];
 
@@ -1328,6 +1410,15 @@ export default function InstructorDashboard() {
               <button
                 key={item.id}
                 onClick={() => {
+                  if (item.id === "Create Course") {
+                    if (!canCreateCourse) {
+                      setIsPermissionModalOpen(true);
+                      return;
+                    }
+                    setWizardStep(1);
+                    setActiveTab("Create Course");
+                    return;
+                  }
                   if (item.id === "Live Sessions") {
                     setLiveSessionsFilter({ viewMode: "COMMAND_CENTER" });
                   } else if (item.id === "Class Recordings") {
@@ -1485,13 +1576,32 @@ export default function InstructorDashboard() {
           )}
 
           {/* ══════════════════════════════════════
+             TAB: ASSIGNMENTS
+             ══════════════════════════════════════ */}
+          {activeTab === "Assignments" && (
+            <InstructorAssignmentsView
+              isDemoUser={isDemoUser}
+              initialFilter={assignmentsFilter}
+              onClearFilter={() => setAssignmentsFilter(null)}
+              onBack={() => setActiveTab("Dashboard")}
+            />
+          )}
+
+          {/* ══════════════════════════════════════
              TAB: SELF-PACED COURSES
              ══════════════════════════════════════ */}
           {activeTab === "Self-Paced Courses" && (
             <InstructorSelfPacedCoursesView
               dbCourses={courses}
               isDemoUser={isDemoUser}
+              permissionStatus={permissionStatus}
+              canCreateCourse={canCreateCourse}
+              onRequestPermission={() => setIsPermissionModalOpen(true)}
               onCreateCourse={() => {
+                if (!canCreateCourse) {
+                  setIsPermissionModalOpen(true);
+                  return;
+                }
                 setWizardStep(1);
                 setActiveTab("Create Course");
               }}
@@ -1506,6 +1616,37 @@ export default function InstructorDashboard() {
              TAB: CREATE COURSE
              ══════════════════════════════════════ */}
           {activeTab === "Create Course" && (
+            !canCreateCourse ? (
+              <div className="p-8 md:p-12 rounded-3xl bg-[#0E131F] border border-purple-500/30 text-center max-w-2xl mx-auto space-y-6 my-10 shadow-2xl">
+                <div className="w-16 h-16 rounded-3xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center mx-auto shadow-xl shadow-purple-500/10">
+                  <Lock className="w-8 h-8 text-purple-400" />
+                </div>
+                <div className="space-y-2">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-purple-400">
+                    Restricted Functionality
+                  </span>
+                  <h2 className="text-2xl font-black text-white">Course Creation Requires Approval</h2>
+                  <p className="text-xs sm:text-sm text-slate-400 max-w-md mx-auto leading-relaxed">
+                    You need administrator approval before you can architect and create new courses on GlarusAcademy.
+                  </p>
+                </div>
+                <div className="flex items-center justify-center gap-3 pt-2">
+                  <button
+                    onClick={() => setActiveTab("Self-Paced Courses")}
+                    className="px-5 py-2.5 rounded-xl bg-white/[0.05] hover:bg-white/[0.08] text-slate-300 text-xs font-bold transition-colors cursor-pointer border border-white/[0.06]"
+                  >
+                    Back to Courses
+                  </button>
+                  <button
+                    onClick={() => setIsPermissionModalOpen(true)}
+                    className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-bold transition-all shadow-lg shadow-purple-600/25 flex items-center gap-2 cursor-pointer"
+                  >
+                    {permissionStatus === "PENDING" ? <Clock className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
+                    <span>{permissionStatus === "PENDING" ? "View Request Status" : "Request Permission"}</span>
+                  </button>
+                </div>
+              </div>
+            ) : (
             <div className="flex gap-8 animate-in fade-in duration-300">
               {/* Left Stepper */}
               <div className="w-64 shrink-0 hidden lg:block">
@@ -2438,6 +2579,7 @@ export default function InstructorDashboard() {
 
               </div>
             </div>
+            )
           )}
 
           {/* ══════════════════════════════════════
@@ -2858,19 +3000,91 @@ export default function InstructorDashboard() {
       {/* ═══════ VIDEO UPLOAD MODAL ═══════ */}
       {contentModal === "video" && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in" onClick={() => setContentModal(null)}>
-          <div className="bg-card border border-card w-full max-w-md p-8 rounded-3xl shadow-2xl animate-in zoom-in-95" onClick={e => e.stopPropagation()}>
-            <button onClick={() => setContentModal(null)} className="absolute top-6 right-6 text-subtext hover:text-text"><X className="w-6 h-6" /></button>
-            <h2 className="text-xl font-bold text-text mb-6 flex items-center gap-2"><Video className="w-5 h-5 text-blue-500" /> Add Video Lesson</h2>
+          <div className="bg-card border border-card w-full max-w-lg p-6 md:p-8 rounded-3xl shadow-2xl animate-in zoom-in-95" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold text-text flex items-center gap-2">
+                <Video className="w-5 h-5 text-blue-500" /> Add Video Lesson
+              </h2>
+              <button onClick={() => setContentModal(null)} className="text-subtext hover:text-text p-1 cursor-pointer">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-bold text-text mb-2">Lesson Title</label>
-                <input value={videoTitle} onChange={e => setVideoTitle(e.target.value)} className="w-full bg-background border border-card rounded-xl px-4 py-3 text-text outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g. Introduction to Neural Networks" />
+                <label className="block text-xs font-bold text-text mb-1">Lesson Title *</label>
+                <input
+                  value={videoTitle}
+                  onChange={e => setVideoTitle(e.target.value)}
+                  className="w-full bg-background border border-card rounded-xl px-4 py-2.5 text-xs text-text outline-none focus:ring-2 focus:ring-blue-500 font-medium"
+                  placeholder="e.g. Introduction to Neural Networks"
+                />
               </div>
+
+              {/* Video Upload Dropzone */}
+              <div className="p-4 bg-background/50 border-2 border-dashed border-blue-500/30 hover:border-blue-500/60 rounded-2xl text-center space-y-1.5 transition-all">
+                <input
+                  type="file"
+                  id="quick-video-upload-file"
+                  accept="video/mp4,video/webm,video/quicktime,video/x-m4v,video/mkv,.mp4,.mov,.webm,.m4v,.mkv"
+                  className="hidden"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    const url = await handleFileUpload(file, "video");
+                    if (url) {
+                      setVideoUrl(url);
+                    }
+                  }}
+                />
+                <label
+                  htmlFor="quick-video-upload-file"
+                  className="cursor-pointer flex flex-col items-center justify-center gap-1"
+                >
+                  {uploadingTarget === "video" ? (
+                    <div className="flex items-center gap-2 text-blue-400 font-bold text-xs py-2">
+                      <Loader2 className="w-5 h-5 animate-spin" /> Uploading Video File...
+                    </div>
+                  ) : (
+                    <>
+                      <div className="w-10 h-10 rounded-xl bg-blue-500/15 text-blue-400 flex items-center justify-center shadow-sm">
+                        <UploadCloud className="w-5 h-5" />
+                      </div>
+                      <p className="text-xs font-bold text-text">Click or Drag & Drop to Upload Video File</p>
+                      <p className="text-[10px] text-subtext">MP4, WebM, MOV up to 500MB</p>
+                    </>
+                  )}
+                </label>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <div className="h-[1px] bg-card flex-1" />
+                <span className="text-[10px] uppercase font-bold text-subtext tracking-wider">Or Paste External Link</span>
+                <div className="h-[1px] bg-card flex-1" />
+              </div>
+
               <div>
-                <label className="block text-sm font-bold text-text mb-2">Video URL</label>
-                <input value={videoUrl} onChange={e => setVideoUrl(e.target.value)} className="w-full bg-background border border-card rounded-xl px-4 py-3 text-text outline-none focus:ring-2 focus:ring-blue-500" placeholder="https://youtube.com/watch?v=..." />
+                <label className="block text-xs font-bold text-text mb-1">Video Stream or YouTube / Vimeo URL</label>
+                <input
+                  value={videoUrl}
+                  onChange={e => setVideoUrl(e.target.value)}
+                  className="w-full bg-background border border-card rounded-xl px-4 py-2.5 text-xs text-text outline-none focus:ring-2 focus:ring-blue-500 font-mono"
+                  placeholder="https://youtube.com/watch?v=... or /uploads/video.mp4"
+                />
               </div>
-              <button onClick={addVideoLesson} disabled={!videoTitle.trim()} className="w-full py-3 bg-blue-500 hover:bg-blue-400 disabled:bg-blue-500/40 text-white rounded-xl font-bold">Add Video</button>
+
+              {videoUrl && (
+                <p className="text-[11px] text-blue-400 font-mono bg-blue-500/10 p-2 rounded-lg border border-blue-500/20 truncate">
+                  ✓ Attached: {videoUrl}
+                </p>
+              )}
+
+              <button
+                onClick={addVideoLesson}
+                disabled={!videoTitle.trim() || !videoUrl.trim()}
+                className="w-full py-2.5 bg-blue-500 hover:bg-blue-400 disabled:bg-blue-500/40 text-white rounded-xl font-bold text-xs shadow-md transition-all cursor-pointer"
+              >
+                Add Video Lesson
+              </button>
             </div>
           </div>
         </div>
@@ -3987,14 +4201,66 @@ export default function InstructorDashboard() {
                     <button
                       type="button"
                       onClick={() => setEditingLesson({ ...editingLesson, lesson: { ...editingLesson.lesson, videoUrl: "" } })}
-                      className="text-xs text-rose-400 hover:underline"
+                      className="text-xs text-rose-400 hover:underline cursor-pointer"
                     >
                       Remove Video
                     </button>
                   )}
                 </div>
+
+                {/* Video Upload Dropzone */}
+                <div className="p-5 bg-card/40 border-2 border-dashed border-blue-500/30 hover:border-blue-500/60 rounded-2xl text-center space-y-2 transition-all">
+                  <input
+                    type="file"
+                    id="topic-video-upload-file"
+                    accept="video/mp4,video/webm,video/quicktime,video/x-m4v,video/mkv,.mp4,.mov,.webm,.m4v,.mkv"
+                    className="hidden"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      const url = await handleFileUpload(file, "video");
+                      if (url && editingLesson) {
+                        setEditingLesson({
+                          ...editingLesson,
+                          lesson: {
+                            ...editingLesson.lesson,
+                            videoUrl: url
+                          }
+                        });
+                      }
+                    }}
+                  />
+                  <label
+                    htmlFor="topic-video-upload-file"
+                    className="cursor-pointer flex flex-col items-center justify-center gap-2"
+                  >
+                    {uploadingTarget === "video" ? (
+                      <div className="flex items-center gap-2 text-blue-400 font-bold text-xs py-3">
+                        <Loader2 className="w-5 h-5 animate-spin" /> Uploading Video File (MP4/WebM/MOV)...
+                      </div>
+                    ) : (
+                      <>
+                        <div className="w-12 h-12 rounded-2xl bg-blue-500/15 text-blue-400 flex items-center justify-center shadow-md">
+                          <UploadCloud className="w-6 h-6" />
+                        </div>
+                        <div>
+                          <p className="text-xs font-bold text-text">Click or Drag & Drop to Upload Video File</p>
+                          <p className="text-[10px] text-subtext mt-0.5">Supports MP4, WebM, QuickTime MOV up to 500MB</p>
+                        </div>
+                      </>
+                    )}
+                  </label>
+                </div>
+
+                {/* Divider */}
+                <div className="flex items-center gap-3">
+                  <div className="h-[1px] bg-card flex-1" />
+                  <span className="text-[10px] uppercase font-bold text-subtext tracking-wider">Or Paste External Video URL</span>
+                  <div className="h-[1px] bg-card flex-1" />
+                </div>
+
                 <div>
-                  <label className="block text-xs font-bold text-text mb-1">Video Stream or YouTube / Vimeo / MP4 URL *</label>
+                  <label className="block text-xs font-bold text-text mb-1">Video Stream or YouTube / Vimeo / MP4 URL</label>
                   <input
                     type="text"
                     value={editingLesson.lesson.videoUrl || ""}
@@ -4003,10 +4269,44 @@ export default function InstructorDashboard() {
                     placeholder="e.g. https://www.youtube.com/watch?v=dQw4w9WgXcQ or https://cdn.example.com/video.mp4"
                   />
                 </div>
+
                 {editingLesson.lesson.videoUrl && (
-                  <div className="p-3.5 bg-blue-500/10 border border-blue-500/20 rounded-xl space-y-2">
-                    <span className="text-xs font-bold text-blue-400 flex items-center gap-1.5"><Video className="w-4 h-4" /> Video Attached</span>
-                    <p className="text-[11px] text-subtext truncate font-mono">{editingLesson.lesson.videoUrl}</p>
+                  <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-2xl space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-blue-400 flex items-center gap-1.5">
+                        <Video className="w-4 h-4" /> Video Attached & Ready
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setEditingLesson({ ...editingLesson, lesson: { ...editingLesson.lesson, videoUrl: "" } })}
+                        className="text-[11px] text-rose-400 hover:underline cursor-pointer font-bold"
+                      >
+                        Clear Video
+                      </button>
+                    </div>
+                    <p className="text-[11px] text-subtext truncate font-mono bg-background/50 p-2 rounded-lg border border-white/5">{editingLesson.lesson.videoUrl}</p>
+
+                    {/* In-Modal Video Preview */}
+                    <div className="rounded-xl overflow-hidden bg-black/80 border border-white/10 max-h-56 flex items-center justify-center shadow-lg">
+                      {editingLesson.lesson.videoUrl.includes("youtube.com") || editingLesson.lesson.videoUrl.includes("youtu.be") ? (
+                        <iframe
+                          src={`https://www.youtube-nocookie.com/embed/${
+                            editingLesson.lesson.videoUrl.includes("v=")
+                              ? editingLesson.lesson.videoUrl.split("v=")[1]?.split("&")[0]
+                              : editingLesson.lesson.videoUrl.split("youtu.be/")[1]?.split("?")[0]
+                          }`}
+                          className="w-full h-48"
+                          allowFullScreen
+                          title="Video Preview"
+                        />
+                      ) : (
+                        <video
+                          src={editingLesson.lesson.videoUrl}
+                          controls
+                          className="w-full max-h-48 object-contain"
+                        />
+                      )}
+                    </div>
                   </div>
                 )}
               </div>
@@ -4956,6 +5256,23 @@ export default function InstructorDashboard() {
           </div>
         </div>
       )}
+
+      <InstructorPermissionModal
+        isOpen={isPermissionModalOpen}
+        onClose={() => setIsPermissionModalOpen(false)}
+        status={permissionStatus}
+        requestedAt={permissionData.requestedAt}
+        reviewedAt={permissionData.reviewedAt}
+        rejectionReason={permissionData.rejectionReason}
+        notes={permissionData.notes}
+        onPermissionRequested={() => {
+          fetchPermission();
+        }}
+        onStartCreating={() => {
+          setWizardStep(1);
+          setActiveTab("Create Course");
+        }}
+      />
 
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 

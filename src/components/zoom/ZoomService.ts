@@ -1,4 +1,4 @@
-const API_BASE = 'http://192.168.1.17:8000/meetings';
+const API_BASE = 'http://192.168.1.16:8000/meetings';
 
 export interface ZoomSignatureResponse {
   sdk_key?: string;

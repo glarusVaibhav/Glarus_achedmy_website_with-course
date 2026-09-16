@@ -45,7 +45,7 @@ export function Navbar() {
   if (isLearningMode) {
     return (
       <nav className="sticky top-0 z-40 w-full border-b border-white/5 bg-background/95 backdrop-blur-md">
-        <div className="w-full mx-auto px-4 sm:px-8 h-14 flex items-center justify-between transition-all">
+        <div className="w-full px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between transition-all">
           {/* Left: Logo (Clicking redirects to Main Home with full UI) */}
           <Link href="/" className="flex items-center cursor-pointer select-none group py-1" title="Back to Main Home">
             <Logo className="h-8 sm:h-9 w-auto" />
@@ -82,18 +82,19 @@ export function Navbar() {
 
   return (
     <nav className="sticky top-0 z-40 w-full border-b border-border/30 bg-background/80 backdrop-blur-md">
-      <div className="w-full mx-auto px-6 sm:px-10 h-16 flex items-center justify-between transition-all max-w-[1650px]">
-        {/* Left: Logo */}
-        <Link href="/" className="flex items-center cursor-pointer select-none group py-1">
-          <Logo className="h-8 sm:h-9 w-auto" />
-        </Link>
+      <div className="w-full px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between transition-all">
+        {/* Left: Logo & Navigation Links */}
+        <div className="flex items-center gap-8">
+          <Link href="/" className="flex items-center cursor-pointer select-none group py-1">
+            <Logo className="h-8 sm:h-9 w-auto" />
+          </Link>
 
-        {/* Middle: Links */}
-        <div className="hidden md:flex items-center gap-8">
-          <Link href="/courses" className="text-subtext hover:text-text transition-colors text-sm font-medium">Courses</Link>
-          {mounted && user && (
-            <Link href={getDashboardRoute()} className="text-subtext hover:text-text transition-colors text-sm font-medium">Dashboard</Link>
-          )}
+          <div className="hidden md:flex items-center gap-6">
+            <Link href="/courses" className="text-subtext hover:text-text transition-colors text-sm font-medium">Courses</Link>
+            {mounted && user && (
+              <Link href={getDashboardRoute()} className="text-subtext hover:text-text transition-colors text-sm font-medium">Dashboard</Link>
+            )}
+          </div>
         </div>
 
         {/* Right Action Icons & Auth */}

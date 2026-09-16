@@ -35,9 +35,9 @@ import {
   Unlock,
   Settings,
   Shield,
-  Video,
   ChevronRight
 } from "lucide-react";
+import { formatDate, formatTime } from "@/lib/dateTime";
 
 type ViewMode = "BY_COURSE" | "FLAT_LIST";
 
@@ -1181,9 +1181,9 @@ export default function AdminInstructorAssignmentsView() {
                                       {sess.date ? (
                                         <>
                                           <p className="font-bold text-white">
-                                            {new Date(sess.date).toLocaleDateString([], { month: "short", day: "numeric" })}
+                                            {formatDate(sess.date)}
                                           </p>
-                                          <p className="text-[10px] text-subtext">{sess.startTime} – {sess.endTime}</p>
+                                          <p className="text-[10px] text-subtext">{formatTime(sess.startTime)} – {formatTime(sess.endTime)}</p>
                                         </>
                                       ) : (
                                         <span className="text-[10px] text-subtext/60">Schedule TBA</span>
@@ -1350,9 +1350,9 @@ export default function AdminInstructorAssignmentsView() {
                       {assign.session?.date ? (
                         <>
                           <p className="font-semibold text-white">
-                            {new Date(assign.session.date).toLocaleDateString([], { month: "short", day: "numeric" })}
+                            {formatDate(assign.session.date)}
                           </p>
-                          <p className="text-[10px]">{assign.session.startTime} – {assign.session.endTime}</p>
+                          <p className="text-[10px]">{formatTime(assign.session.startTime)} – {formatTime(assign.session.endTime)}</p>
                         </>
                       ) : (
                         <span className="text-[10px]">Lead Schedule</span>
@@ -1474,7 +1474,7 @@ export default function AdminInstructorAssignmentsView() {
                     <div>
                       <h4 className="text-sm font-bold text-white">{sess.title}</h4>
                       <p className="text-[11px] text-subtext">
-                        {sess.date ? `${new Date(sess.date).toLocaleDateString([], { month: "short", day: "numeric" })} · ${sess.startTime} - ${sess.endTime}` : "Schedule TBA"}
+                        {sess.date ? `${formatDate(sess.date)} · ${formatTime(sess.startTime)} - ${formatTime(sess.endTime)}` : "Schedule TBA"}
                       </p>
                     </div>
                   </div>

@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import NotificationCenter from "@/components/admin/NotificationCenter";
 import GlobalSearchModal from "@/components/admin/GlobalSearchModal";
+import { useAuth } from "@/context/AuthContext";
 
 interface PageMeta {
   title: string;
@@ -120,9 +121,28 @@ interface AdminHeaderProps {
 
 export default function AdminHeader({ onToggleSidebar }: AdminHeaderProps) {
   const pathname = usePathname();
+  const { user, logout } = useAuth();
   const [searchOpen, setSearchOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
+
+  const adminInitials = user?.name
+    ? user.name
+        .split(" ")
+        .map((n) => n[0])
+        .join("")
+        .slice(0, 2)
+        .toUpperCase()
+    : user?.email
+    ? user.email.slice(0, 2).toUpperCase()
+    : "AD";
+  const adminName = user?.name || "Super Admin";
+  const adminEmail = user?.email || "admin@glarus.edu";
+
+  const handleLogout = async () => {
+    setProfileMenuOpen(false);
+    await logout();
+  };
 
   useEffect(() => {
     const handleOpenSearch = () => setSearchOpen(true);
@@ -234,11 +254,11 @@ export default function AdminHeader({ onToggleSidebar }: AdminHeaderProps) {
               aria-expanded={profileMenuOpen}
             >
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-600 to-indigo-700 flex items-center justify-center text-white font-bold text-xs border border-white/10 shrink-0">
-                AD
+                {adminInitials}
               </div>
               <div className="hidden md:block text-left leading-tight">
-                <p className="text-xs font-semibold text-text">Super Admin</p>
-                <p className="text-[11px] text-subtext hidden lg:block">admin@glarus.edu</p>
+                <p className="text-xs font-semibold text-text">{adminName}</p>
+                <p className="text-[11px] text-subtext hidden lg:block">{adminEmail}</p>
               </div>
               <ChevronDown
                 className={`w-3.5 h-3.5 text-subtext hidden md:block transition-transform duration-200 ${
@@ -251,8 +271,8 @@ export default function AdminHeader({ onToggleSidebar }: AdminHeaderProps) {
             {profileMenuOpen && (
               <div className="absolute right-0 mt-2 w-56 bg-card border border-white/10 rounded-xl shadow-2xl z-50 overflow-hidden py-1.5 animate-in fade-in zoom-in-95 duration-150">
                 <div className="px-4 py-2.5 border-b border-white/5">
-                  <p className="text-xs font-bold text-text">Super Admin</p>
-                  <p className="text-[11px] text-subtext truncate">admin@glarus.edu</p>
+                  <p className="text-xs font-bold text-text">{adminName}</p>
+                  <p className="text-[11px] text-subtext truncate">{adminEmail}</p>
                 </div>
 
                 <div className="p-1 space-y-0.5 text-xs font-medium">
@@ -276,14 +296,14 @@ export default function AdminHeader({ onToggleSidebar }: AdminHeaderProps) {
                 </div>
 
                 <div className="p-1 border-t border-white/5">
-                  <Link
-                    href="/login"
-                    onClick={() => setProfileMenuOpen(false)}
-                    className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors text-xs font-semibold"
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors text-xs font-semibold text-left"
                   >
                     <LogOut className="w-4 h-4" />
                     <span>Logout</span>
-                  </Link>
+                  </button>
                 </div>
               </div>
             )}

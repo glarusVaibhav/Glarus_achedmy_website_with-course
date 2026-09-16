@@ -1,19 +1,39 @@
+export interface LessonResource {
+  id?: string;
+  title: string;
+  url: string;
+  type?: string;
+  size?: string;
+}
+
+export interface LessonQuizQuestion {
+  question: string;
+  options: string[];
+  correctAnswerIndex?: number;
+  correctIndex?: number;
+  explanation?: string;
+}
+
 export interface LessonItem {
   id: string;
   title: string;
-  type: "video" | "quiz" | "assignment" | "resource";
+  type: "video" | "quiz" | "assignment" | "resource" | "image" | "sandbox" | "text" | "multi";
   duration?: string;
   size?: string;
   videoUrl?: string;
   description?: string;
   notes?: string;
-  // For Quizzes
-  quizQuestions?: {
-    question: string;
-    options: string[];
-    correctAnswerIndex: number;
-    explanation: string;
-  }[];
+  notesContent?: string;
+  articleContent?: string;
+  // For Photos & Diagrams
+  imageUrl1?: string;
+  imageUrl2?: string;
+  imageCaption?: string;
+  // For Interactive Code Sandboxes
+  sandboxLang?: string;
+  sandboxCode?: string;
+  // For Quizzes / MCQs
+  quizQuestions?: LessonQuizQuestion[];
   // For Assignments
   assignmentBrief?: string;
   deliverables?: string[];
@@ -22,6 +42,7 @@ export interface LessonItem {
   // For Resources
   resourceUrl?: string;
   resourceFileName?: string;
+  resources?: LessonResource[];
 }
 
 export interface SectionItem {

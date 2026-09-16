@@ -34,6 +34,7 @@ import { CourseLifecycleStatus, getGovernanceDisplay } from "@/lib/coursePermiss
 import { CourseDataGrid, DataGridCourseItem } from "./courses/CourseDataGrid";
 import { CourseCardView } from "./courses/CourseCardView";
 import { CourseReviewDrawer, DrawerCourseData } from "./courses/CourseReviewDrawer";
+import { formatDate } from "@/lib/dateTime";
 
 export interface SelfPacedLesson {
   id: string;
@@ -243,6 +244,9 @@ const INITIAL_DEMO_COURSES: SelfPacedCourseItem[] = [
 interface InstructorSelfPacedCoursesViewProps {
   dbCourses?: any[];
   isDemoUser?: boolean;
+  permissionStatus?: string;
+  canCreateCourse?: boolean;
+  onRequestPermission?: () => void;
   onCreateCourse: () => void;
   onOpenCourseBuilder?: (courseId: string) => void;
   onNavigateTab?: (tabName: string, filterOptions?: any) => void;
@@ -251,6 +255,9 @@ interface InstructorSelfPacedCoursesViewProps {
 export function InstructorSelfPacedCoursesView({
   dbCourses = [],
   isDemoUser = false,
+  permissionStatus = "NOT_REQUESTED",
+  canCreateCourse = false,
+  onRequestPermission,
   onCreateCourse,
   onOpenCourseBuilder,
   onNavigateTab,
@@ -285,7 +292,7 @@ export function InstructorSelfPacedCoursesView({
           totalLessons: totalLes,
           totalStudents: c.enrollments?.length || 0,
           submissionDate: c.courseApproval?.createdAt
-            ? new Date(c.courseApproval.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+            ? formatDate(c.courseApproval.createdAt)
             : "",
           adminFeedback: c.courseApproval?.feedback || (status === "CHANGES_REQUESTED" ? "Please update module objectives and add hands-on projects." : undefined),
           lastActivityText:
@@ -300,8 +307,8 @@ export function InstructorSelfPacedCoursesView({
               : "Draft saved",
           iconType: (i % 2 === 0 ? "brain" : "cpu") as any,
           description: c.description || "",
-          createdAt: c.createdAt ? new Date(c.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "",
-          updatedAt: c.updatedAt ? new Date(c.updatedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "",
+          createdAt: c.createdAt ? formatDate(c.createdAt) : "",
+          updatedAt: c.updatedAt ? formatDate(c.updatedAt) : "",
           modules: []
         };
       });
@@ -347,7 +354,7 @@ export function InstructorSelfPacedCoursesView({
             totalLessons: totalLes,
             totalStudents: c.enrollments?.length || 0,
             submissionDate: c.courseApproval?.createdAt
-              ? new Date(c.courseApproval.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+              ? formatDate(c.courseApproval.createdAt)
               : "",
             adminFeedback: c.courseApproval?.feedback || (status === "CHANGES_REQUESTED" ? "Please update module objectives and add hands-on projects." : undefined),
             lastActivityText:
@@ -362,8 +369,8 @@ export function InstructorSelfPacedCoursesView({
                 : "Draft saved",
             iconType: (i % 2 === 0 ? "brain" : "cpu") as any,
             description: c.description || "",
-            createdAt: c.createdAt ? new Date(c.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "",
-            updatedAt: c.updatedAt ? new Date(c.updatedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "",
+            createdAt: c.createdAt ? formatDate(c.createdAt) : "",
+            updatedAt: c.updatedAt ? formatDate(c.updatedAt) : "",
             modules: []
           };
         });
@@ -517,7 +524,7 @@ export function InstructorSelfPacedCoursesView({
       console.warn("Backend sync notice:", e);
     }
 
-    const todayStr = new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+    const todayStr = formatDate(new Date());
     setCourses((prev) =>
       prev.map((c) =>
         c.id === submitModalCourse.id
@@ -555,7 +562,7 @@ export function InstructorSelfPacedCoursesView({
     e.preventDefault();
     if (!editModalCourse) return;
 
-    const todayStr = new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+    const todayStr = formatDate(new Date());
 
     setCourses((prev) =>
       prev.map((c) =>
@@ -842,6 +849,36 @@ export function InstructorSelfPacedCoursesView({
                   ⌘K
                 </kbd>
               </div>
+
+              {/* Create Course Action Button with Permission State */}
+              <button
+                onClick={canCreateCourse ? onCreateCourse : (onRequestPermission || onCreateCourse)}
+                className={`px-3.5 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all shadow-md cursor-pointer shrink-0 ${
+                  canCreateCourse
+                    ? "bg-purple-600 hover:bg-purple-500 text-white shadow-purple-600/20"
+                    : permissionStatus === "PENDING"
+                    ? "bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30"
+                    : "bg-white/[0.05] hover:bg-white/[0.08] text-slate-300 border border-white/[0.08]"
+                }`}
+                title={canCreateCourse ? "Create a new course with AI" : "Course creation is restricted. Click to view or request permission."}
+              >
+                {canCreateCourse ? (
+                  <>
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Create Course</span>
+                  </>
+                ) : permissionStatus === "PENDING" ? (
+                  <>
+                    <Clock className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Create Course (Pending)</span>
+                  </>
+                ) : (
+                  <>
+                    <Lock className="w-3.5 h-3.5 text-slate-400" />
+                    <span>Create Course (Locked)</span>
+                  </>
+                )}
+              </button>
             </div>
           </div>
 
@@ -1026,8 +1063,8 @@ export function InstructorSelfPacedCoursesView({
                   adminFeedback: undefined,
                   totalStudents: 0,
                   lastActivityText: "Draft created",
-                  createdAt: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
-                  updatedAt: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+                  createdAt: formatDate(new Date()),
+                  updatedAt: formatDate(new Date()),
                 };
                 setCourses(prev => [newCourse, ...prev]);
                 showToast(`Duplicated course "${c.title}" as draft.`);
@@ -1060,8 +1097,8 @@ export function InstructorSelfPacedCoursesView({
                   adminFeedback: undefined,
                   totalStudents: 0,
                   lastActivityText: "Draft created",
-                  createdAt: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
-                  updatedAt: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+                  createdAt: formatDate(new Date()),
+                  updatedAt: formatDate(new Date()),
                 };
                 setCourses(prev => [newCourse, ...prev]);
                 showToast(`Duplicated course "${c.title}" as draft.`);

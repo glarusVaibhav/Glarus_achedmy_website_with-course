@@ -51,5 +51,13 @@ export async function setSession(payload: any) {
 
 export async function clearSession() {
   const cookieStore = await cookies();
+  cookieStore.set('auth_token', '', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
+    maxAge: 0,
+    expires: new Date(0),
+  });
   cookieStore.delete('auth_token');
 }

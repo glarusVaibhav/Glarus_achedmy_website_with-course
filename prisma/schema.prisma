@@ -189,6 +189,8 @@ model User {
   leadLiveCourses       LiveCourse[]             @relation("LeadInstructorLiveCourses")
   createdLiveCourses    LiveCourse[]             @relation("CreatorLiveCourses")
   sessionAssignments    SessionAssignment[]
+  courseCreationPermission InstructorCoursePermission?
+  reviewedCoursePermissions InstructorCoursePermission[] @relation("AdminReviewedCoursePermissions")
 }
 
 model Course {
@@ -326,14 +328,30 @@ model Module {
 }
 
 model Lecture {
-  id        String          @id @default(cuid())
-  title     String
-  videoUrl  String?
-  module    Module          @relation(fields: [moduleId], references: [id], onDelete: Cascade)
-  moduleId  String
-  progress  VideoProgress[]
-  notes     StudentNote[]
-  order     Int
+  id              String          @id @default(cuid())
+  title           String
+  videoUrl        String?
+  type            String?         @default("video")
+  duration        String?         @default("15m 00s")
+  description     String?
+  notesContent    String?
+  articleContent  String?
+  imageUrl1       String?
+  imageUrl2       String?
+  imageCaption    String?
+  sandboxLang     String?
+  sandboxCode     String?
+  quizQuestions   Json?
+  resources       Json?
+  deliverables    Json?
+  starterFileName String?
+  starterFileUrl  String?
+  assignmentBrief String?
+  module          Module          @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  moduleId        String
+  progress        VideoProgress[]
+  notes           StudentNote[]
+  order           Int
 }
 
 model VideoProgress {
@@ -566,6 +584,8 @@ model LiveCourse {
   duration           String?                @default("6 Weeks")
   startDate          DateTime?
   endDate            DateTime?
+  registrationStartDate DateTime?
+  registrationEndDate   DateTime?
   timezone           String                 @default("Asia/Kolkata (IST)")
   totalSessions      Int                    @default(0)
   maxStudents        Int                    @default(50)
@@ -696,6 +716,9 @@ model SessionAssignment {
   liveCourseId        String?
   instructor          User         @relation(fields: [instructorId], references: [id], onDelete: Cascade)
   instructorId        String
+  assignmentRole      String       @default("PRIMARY_LEAD") // "PRIMARY_LEAD" | "SUBSTITUTE" | "CO_INSTRUCTOR" | "TA"
+  isSubstitute        Boolean      @default(false)
+  notes               String?
   canView             Boolean      @default(true)
   canEdit             Boolean      @default(false)
   canEditAgenda       Boolean      @default(false)
@@ -708,6 +731,10 @@ model SessionAssignment {
   canManageRecording  Boolean      @default(false)
   assignedBy          String?      @default("Academic Administration")
   assignedAt          DateTime     @default(now())
+
+  @@index([instructorId])
+  @@index([liveCourseId])
+  @@index([sessionId])
 }
 
 model SessionChangeHistory {
@@ -850,3 +877,119 @@ model RateLimit {
 
   @@index([expiresAt])
 }
+
+model PasswordResetRequest {
+  id                  String    @id @default(cuid())
+  userId              String?
+  email               String    @unique
+  otpHash             String
+  otpExpiresAt        DateTime
+  otpAttempts         Int       @default(0)
+  otpVerifiedAt       DateTime?
+  resetTokenHash      String?
+  resetTokenExpiresAt DateTime?
+  resetUsedAt         DateTime?
+  resendCount         Int       @default(0)
+  lastResendAt        DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@index([email])
+  @@index([otpExpiresAt])
+  @@index([resetTokenExpiresAt])
+}
+
+enum CourseCreationPermissionStatus {
+  NOT_REQUESTED
+  PENDING
+  APPROVED
+  REJECTED
+  REVOKED
+}
+
+model InstructorCoursePermission {
+  id              String                         @id @default(cuid())
+  instructorId    String                         @unique
+  instructor      User                           @relation(fields: [instructorId], references: [id], onDelete: Cascade)
+  status          CourseCreationPermissionStatus @default(NOT_REQUESTED)
+  canCreateCourse Boolean                        @default(false)
+  requestedAt     DateTime?
+  reviewedAt      DateTime?
+  reviewedById    String?
+  reviewedBy      User?                          @relation("AdminReviewedCoursePermissions", fields: [reviewedById], references: [id], onDelete: SetNull)
+  rejectionReason String?
+  notes           String?
+  requestHistory  Json?                          @default("[]")
+  createdAt       DateTime                       @default(now())
+  updatedAt       DateTime                       @updatedAt
+
+  @@index([instructorId])
+  @@index([status])
+}
+
+model interactive_concept_stages {
+  id                        String                      @id
+  lesson_id                 String
+  title                     String                      @default("")
+  content_hash              String?
+  created_at                DateTime                    @default(now()) @db.Timestamptz(6)
+  updated_at                DateTime                    @default(now()) @db.Timestamptz(6)
+  interactive_lessons       interactive_lessons         @relation(fields: [lesson_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  interactive_lesson_audios interactive_lesson_audios[]
+
+  @@index([lesson_id])
+}
+
+model interactive_courses {
+  id                  String                @id
+  course_code         String?
+  course_name         String
+  description         String                @default("")
+  created_at          DateTime              @default(now()) @db.Timestamptz(6)
+  updated_at          DateTime              @default(now()) @db.Timestamptz(6)
+  interactive_modules interactive_modules[]
+}
+
+model interactive_lesson_audios {
+  id                         String                     @id @db.Uuid
+  concept_stage_id           String
+  voice_name                 String
+  language                   String                     @default("en")
+  audio_object_key           String
+  subtitle_data              Json                       @default("[]")
+  generation_hash            String
+  generation_version         Int                        @default(1)
+  is_active                  Boolean                    @default(true)
+  created_at                 DateTime                   @default(now()) @db.Timestamptz(6)
+  updated_at                 DateTime                   @default(now()) @db.Timestamptz(6)
+  interactive_concept_stages interactive_concept_stages @relation(fields: [concept_stage_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([concept_stage_id, voice_name, language, generation_version], map: "interactive_lesson_audios_identity_key")
+}
+
+model interactive_lessons {
+  id                         String                       @id
+  module_id                  String
+  lesson_name                String?
+  title                      String
+  created_at                 DateTime                     @default(now()) @db.Timestamptz(6)
+  updated_at                 DateTime                     @default(now()) @db.Timestamptz(6)
+  interactive_concept_stages interactive_concept_stages[]
+  interactive_modules        interactive_modules          @relation(fields: [module_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([module_id])
+}
+
+model interactive_modules {
+  id                  String                @id
+  course_id           String
+  title               String
+  created_at          DateTime              @default(now()) @db.Timestamptz(6)
+  updated_at          DateTime              @default(now()) @db.Timestamptz(6)
+  interactive_lessons interactive_lessons[]
+  interactive_courses interactive_courses   @relation(fields: [course_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([course_id])
+}
+
+

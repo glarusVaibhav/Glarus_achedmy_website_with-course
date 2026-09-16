@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { getSession } from "@/lib/auth";
+import { formatDate, formatTime } from "@/lib/dateTime";
 
 export async function GET(req: Request) {
   try {
@@ -124,7 +125,7 @@ export async function GET(req: Request) {
           id: course.id,
           title: course.title,
           progress: enr.progress,
-          enrolledDate: enr.createdAt.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }),
+          enrolledDate: formatDate(enr.createdAt),
           completed: enr.isCompleted,
           type: "SELF_PACED",
           price: course.price,
@@ -142,7 +143,7 @@ export async function GET(req: Request) {
         const liveCourse = liveEnr.liveCourse;
         const nextSession = liveCourse.sessions[0];
         const nextSessionFormatted = nextSession?.date
-          ? `${nextSession.date.toLocaleDateString("en-GB", { weekday: "short" })}, ${nextSession.startTime || "07:00 PM"}`
+          ? `${formatDate(nextSession.date)}, ${formatTime(nextSession.startTime || "07:00 PM")}`
           : "Sat, 07:00 PM";
 
         const liveSubmissions = user.assignmentSubmissions.filter((sub) => sub.assignment.liveCourseId === liveCourse.id);
@@ -156,7 +157,7 @@ export async function GET(req: Request) {
             id: liveCourse.id,
             title: liveCourse.title,
             progress: liveEnr.progress,
-            enrolledDate: liveEnr.enrolledAt.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }),
+            enrolledDate: formatDate(liveEnr.enrolledAt),
             completed: liveEnr.progress === 100,
             type: "LIVE",
             batchName: liveEnr.batchName || "Weekend Live Batch A",
@@ -200,7 +201,7 @@ export async function GET(req: Request) {
         lastActive: lastActiveStr,
         status: computedStatus,
         rawStatus: user.status,
-        joinedDate: user.createdAt.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }),
+        joinedDate: formatDate(user.createdAt),
         createdAt: user.createdAt.toISOString()
       };
     });

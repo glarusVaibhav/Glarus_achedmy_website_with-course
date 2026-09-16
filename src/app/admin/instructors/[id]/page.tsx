@@ -37,13 +37,32 @@ import {
   Eye,
   Play,
   Download,
-  Maximize2
+  Maximize2,
+  Lock,
+  Unlock,
+  KeyRound,
+  ShieldAlert
 } from "lucide-react";
+import { formatDate, formatTime } from "@/lib/dateTime";
 import {
   MOCK_INSTRUCTORS_DETAILED,
   DetailedInstructorItem,
   getDetailedInstructorById
 } from "@/lib/mockInstructors";
+
+interface CoursePermissionState {
+  status: "NOT_REQUESTED" | "PENDING" | "APPROVED" | "REJECTED" | "REVOKED";
+  canCreateCourse: boolean;
+  requestedAt?: string | null;
+  reviewedAt?: string | null;
+  rejectionReason?: string | null;
+  notes?: string | null;
+  reviewedBy?: {
+    id: string;
+    name: string | null;
+    email: string | null;
+  } | null;
+}
 
 function getEmbeddableVideoUrl(url?: string): { isDirectVideo: boolean; embedUrl: string } {
   if (!url) return { isDirectVideo: false, embedUrl: "" };
@@ -109,6 +128,15 @@ export default function InstructorDetailPage({ params }: PageProps) {
   const [previewResumeModal, setPreviewResumeModal] = useState(false);
   const [previewVideoModal, setPreviewVideoModal] = useState(false);
 
+  // Course Creation Permission State
+  const [coursePermission, setCoursePermission] = useState<CoursePermissionState>({
+    status: "NOT_REQUESTED",
+    canCreateCourse: false
+  });
+  const [permissionProcessing, setPermissionProcessing] = useState(false);
+  const [showPermissionRejectModal, setShowPermissionRejectModal] = useState(false);
+  const [permissionFeedback, setPermissionFeedback] = useState("");
+
   useEffect(() => {
     async function loadInstructorData() {
       // 1. First check mock list
@@ -121,6 +149,24 @@ export default function InstructorDetailPage({ params }: PageProps) {
           const data = await res.json();
           const user = data.user;
           const approval = data.approval || user?.instructorApproval;
+          const perm = data.courseCreationPermission || user?.courseCreationPermission;
+
+          if (perm) {
+            setCoursePermission({
+              status: perm.status,
+              canCreateCourse: perm.canCreateCourse,
+              requestedAt: perm.requestedAt,
+              reviewedAt: perm.reviewedAt,
+              rejectionReason: perm.rejectionReason,
+              notes: perm.notes,
+              reviewedBy: perm.reviewedBy
+            });
+          } else {
+            setCoursePermission({
+              status: "NOT_REQUESTED",
+              canCreateCourse: false
+            });
+          }
 
           if (approval || user) {
             const fullName =
@@ -184,7 +230,7 @@ export default function InstructorDetailPage({ params }: PageProps) {
               modulesCount: c.modules?.length || 8,
               rating: c.rating || 4.9,
               reviewsCount: c.reviewsCount || 24,
-              createdAt: c.createdAt ? new Date(c.createdAt).toLocaleDateString() : "Recent"
+              createdAt: c.createdAt ? formatDate(c.createdAt) : "Recent"
             })) || mockFound?.createdCourses || [];
 
             // Map assigned live cohorts from sessionAssignments / leadLiveCourses
@@ -194,8 +240,8 @@ export default function InstructorDetailPage({ params }: PageProps) {
               cohortName: sa.liveCourse?.category || "Live Batch Alpha",
               sessionTitle: sa.session?.title || "Live Interactive Session",
               sessionNumber: sa.session?.sessionNumber || 1,
-              date: sa.session?.date ? new Date(sa.session.date).toLocaleDateString() : "Upcoming",
-              time: sa.session?.startTime ? `${sa.session.startTime} - ${sa.session.endTime || "End"}` : "07:00 PM IST",
+              date: sa.session?.date ? formatDate(sa.session.date) : "Upcoming",
+              time: sa.session?.startTime ? `${formatTime(sa.session.startTime)} - ${formatTime(sa.session.endTime || "09:00 PM")}` : "07:00 PM",
               meetingPlatform: sa.liveCourse?.meetingPlatform || "Zoom",
               meetingUrl: sa.session?.meetingUrl || sa.liveCourse?.meetingUrl || undefined,
               status: (sa.session?.status as any) || "SCHEDULED",
@@ -220,7 +266,7 @@ export default function InstructorDetailPage({ params }: PageProps) {
               rating: mockFound?.rating || 4.9,
               verificationStatus: verifStatus,
               accountStatus: accountStatus,
-              joinedDate: user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : mockFound?.joinedDate || "Recent",
+              joinedDate: user?.createdAt ? formatDate(user.createdAt) : mockFound?.joinedDate || "Recent",
               version: approval?.version || mockFound?.version || 1,
               feedback: approval?.feedback || mockFound?.feedback || "",
 
@@ -326,6 +372,54 @@ export default function InstructorDetailPage({ params }: PageProps) {
       alert("Failed to process approval decision. Please check your connection.");
     } finally {
       setProcessingDecision(false);
+    }
+  };
+
+  // Handle Course Creation Permission Actions
+  const handlePermissionAction = async (
+    action: "APPROVE" | "REJECT" | "GRANT" | "REVOKE",
+    feedback?: string
+  ) => {
+    if (!instructor) return;
+    setPermissionProcessing(true);
+    try {
+      const res = await fetch("/api/admin/instructors/permissions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          instructorId: instructor.id,
+          action,
+          feedback: feedback?.trim() || undefined
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.error || "Failed to update course creation permission.");
+        return;
+      }
+
+      setCoursePermission({
+        status: data.status,
+        canCreateCourse: data.permission?.canCreateCourse ?? (data.status === "APPROVED"),
+        requestedAt: data.permission?.requestedAt,
+        reviewedAt: data.permission?.reviewedAt,
+        rejectionReason: data.permission?.rejectionReason,
+        notes: data.permission?.notes,
+        reviewedBy: data.permission?.reviewedBy
+      });
+
+      setDecisionBanner({
+        text: data.message || `Course creation permission updated to ${data.status}.`,
+        type: data.status === "APPROVED" ? "success" : data.status === "REJECTED" ? "error" : "warning"
+      });
+
+      setShowPermissionRejectModal(false);
+      setPermissionFeedback("");
+    } catch (err) {
+      console.error("Error updating course permission:", err);
+      alert("Network error updating course creation permission.");
+    } finally {
+      setPermissionProcessing(false);
     }
   };
 
@@ -443,6 +537,27 @@ export default function InstructorDetailPage({ params }: PageProps) {
                   }`}
                 >
                   {instructor.accountStatus}
+                </span>
+
+                <span
+                  className={`px-2.5 py-0.5 rounded-full text-xs font-black border flex items-center gap-1 uppercase tracking-wider ${
+                    coursePermission.status === "APPROVED"
+                      ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
+                      : coursePermission.status === "PENDING"
+                      ? "bg-amber-500/10 text-amber-400 border-amber-500/30"
+                      : coursePermission.status === "REVOKED"
+                      ? "bg-rose-500/10 text-rose-400 border-rose-500/30"
+                      : coursePermission.status === "REJECTED"
+                      ? "bg-red-500/10 text-red-400 border-red-500/30"
+                      : "bg-zinc-500/15 text-zinc-400 border-zinc-500/30"
+                  }`}
+                >
+                  {coursePermission.status === "APPROVED" ? (
+                    <Unlock className="w-3 h-3 text-emerald-400" />
+                  ) : (
+                    <Lock className="w-3 h-3" />
+                  )}
+                  <span>Course Creation: {coursePermission.status.replace("_", " ")}</span>
                 </span>
 
                 <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-white/5 border border-white/10 text-subtext">
@@ -1176,6 +1291,267 @@ export default function InstructorDetailPage({ params }: PageProps) {
                 </>
               )}
             </button>
+          </div>
+
+          {/* ── COURSE CREATION PERMISSION WORKFLOW CARD ── */}
+          <div className="bg-card border border-white/10 rounded-2xl shadow-xl p-6 sm:p-8 space-y-6 mt-8">
+            <div className="border-b border-white/10 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <h3 className="text-sm font-black text-text uppercase tracking-wider flex items-center gap-2">
+                  <KeyRound className="w-4 h-4 text-purple-400" />
+                  <span>Course Creation Permission Workflow</span>
+                </h3>
+                <p className="text-xs text-subtext mt-1">
+                  Govern whether this instructor is authorized to author, build, and publish new courses.
+                </p>
+              </div>
+
+              {/* Permission Status Pill */}
+              <div className="shrink-0">
+                <span
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black border uppercase tracking-wider ${
+                    coursePermission.status === "APPROVED"
+                      ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/30 shadow-sm shadow-emerald-500/10"
+                      : coursePermission.status === "PENDING"
+                      ? "bg-amber-500/15 text-amber-400 border-amber-500/30"
+                      : coursePermission.status === "REVOKED"
+                      ? "bg-rose-500/15 text-rose-400 border-rose-500/30"
+                      : coursePermission.status === "REJECTED"
+                      ? "bg-red-500/15 text-red-400 border-red-500/30"
+                      : "bg-zinc-500/15 text-zinc-400 border-zinc-500/30"
+                  }`}
+                >
+                  {coursePermission.status === "APPROVED" ? (
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                  ) : coursePermission.status === "PENDING" ? (
+                    <AlertCircle className="w-4 h-4 text-amber-400" />
+                  ) : (
+                    <Lock className="w-4 h-4" />
+                  )}
+                  <span>{coursePermission.status.replace("_", " ")}</span>
+                </span>
+              </div>
+            </div>
+
+            {/* Status Hero Callout */}
+            {coursePermission.status === "APPROVED" ? (
+              <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-500/15 via-emerald-500/10 to-teal-500/10 border border-emerald-500/30 flex items-start gap-3.5 shadow-md">
+                <div className="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center shrink-0 mt-0.5">
+                  <Unlock className="w-5 h-5" />
+                </div>
+                <div className="space-y-1">
+                  <h4 className="text-xs font-black text-emerald-400 uppercase tracking-widest">
+                    Course Creation Access Granted
+                  </h4>
+                  <p className="text-xs text-text leading-relaxed font-medium">
+                    This instructor has active permission to author and publish self-paced and cohort courses.
+                  </p>
+                </div>
+              </div>
+            ) : coursePermission.status === "PENDING" ? (
+              <div className="p-4 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-start gap-3.5">
+                <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0 mt-0.5">
+                  <AlertCircle className="w-5 h-5" />
+                </div>
+                <div className="space-y-1">
+                  <h4 className="text-xs font-black text-amber-400 uppercase tracking-widest">
+                    Permission Request Pending Review
+                  </h4>
+                  <p className="text-xs text-text leading-relaxed font-medium">
+                    The instructor requested course creation privileges. Please review their proposal below and approve or reject.
+                  </p>
+                </div>
+              </div>
+            ) : coursePermission.status === "REVOKED" ? (
+              <div className="p-4 rounded-2xl bg-rose-500/15 border border-rose-500/30 flex items-start gap-3.5">
+                <div className="w-9 h-9 rounded-xl bg-rose-500/20 text-rose-400 flex items-center justify-center shrink-0 mt-0.5">
+                  <Lock className="w-5 h-5" />
+                </div>
+                <div className="space-y-1">
+                  <h4 className="text-xs font-black text-rose-400 uppercase tracking-widest">
+                    Course Creation Access Revoked
+                  </h4>
+                  <p className="text-xs text-text leading-relaxed font-medium">
+                    Course creation permission has been revoked. The instructor cannot create new courses, but all existing courses remain active and intact.
+                  </p>
+                </div>
+              </div>
+            ) : coursePermission.status === "REJECTED" ? (
+              <div className="p-4 rounded-2xl bg-red-500/15 border border-red-500/30 flex items-start gap-3.5">
+                <div className="w-9 h-9 rounded-xl bg-red-500/20 text-red-400 flex items-center justify-center shrink-0 mt-0.5">
+                  <X className="w-5 h-5" />
+                </div>
+                <div className="space-y-1">
+                  <h4 className="text-xs font-black text-red-400 uppercase tracking-widest">
+                    Permission Request Rejected
+                  </h4>
+                  <p className="text-xs text-text leading-relaxed font-medium">
+                    The previous request was rejected. You can grant access directly if requirements have been met.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="p-4 rounded-2xl bg-white/5 border border-white/10 flex items-start gap-3.5">
+                <div className="w-9 h-9 rounded-xl bg-white/10 text-subtext flex items-center justify-center shrink-0 mt-0.5">
+                  <Lock className="w-5 h-5" />
+                </div>
+                <div className="space-y-1">
+                  <h4 className="text-xs font-black text-subtext uppercase tracking-widest">
+                    Locked By Default (Not Requested)
+                  </h4>
+                  <p className="text-xs text-subtext leading-relaxed font-medium">
+                    The instructor has not submitted a request yet. You can proactively grant course creation privileges below.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Request & Review Details */}
+            <div className="p-4 sm:p-5 rounded-2xl bg-background/60 border border-white/10 grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+              <div>
+                <span className="text-[10px] text-subtext uppercase font-black tracking-wider block mb-1">
+                  Requested On
+                </span>
+                <span className="font-bold text-text">
+                  {coursePermission.requestedAt ? formatDate(coursePermission.requestedAt) : "Not submitted"}
+                </span>
+              </div>
+              <div>
+                <span className="text-[10px] text-subtext uppercase font-black tracking-wider block mb-1">
+                  Last Reviewed
+                </span>
+                <span className="font-bold text-text">
+                  {coursePermission.reviewedAt ? formatDate(coursePermission.reviewedAt) : "Never"}
+                </span>
+              </div>
+              <div>
+                <span className="text-[10px] text-subtext uppercase font-black tracking-wider block mb-1">
+                  Reviewed By
+                </span>
+                <span className="font-bold text-purple-300">
+                  {coursePermission.reviewedBy?.name || coursePermission.reviewedBy?.email || "Platform Admin"}
+                </span>
+              </div>
+            </div>
+
+            {/* Request Notes */}
+            {coursePermission.notes && (
+              <div className="p-4 rounded-xl bg-purple-500/10 border border-purple-500/20 space-y-1">
+                <span className="text-[11px] font-black text-purple-300 uppercase tracking-widest block">
+                  Instructor Request Note / Topic Proposal
+                </span>
+                <p className="text-xs text-text leading-relaxed font-medium">{coursePermission.notes}</p>
+              </div>
+            )}
+
+            {/* Rejection / Revocation Reason */}
+            {coursePermission.rejectionReason && (
+              <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 space-y-1">
+                <span className="text-[11px] font-black text-red-400 uppercase tracking-widest block">
+                  Previous Admin Rejection Feedback
+                </span>
+                <p className="text-xs text-text leading-relaxed font-medium">{coursePermission.rejectionReason}</p>
+              </div>
+            )}
+
+            {/* Course Creation Action Buttons */}
+            <div className="flex flex-col sm:flex-row items-center justify-end gap-2.5 pt-2">
+              {coursePermission.status === "PENDING" && (
+                <>
+                  <button
+                    onClick={() => setShowPermissionRejectModal(true)}
+                    disabled={permissionProcessing}
+                    className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-red-500/15 hover:bg-red-500/25 border border-red-500/30 text-red-300 text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                    <span>Reject Permission Request</span>
+                  </button>
+
+                  <button
+                    onClick={() => handlePermissionAction("APPROVE")}
+                    disabled={permissionProcessing}
+                    className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-all shadow-md shadow-emerald-600/20 flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+                  >
+                    <Check className="w-3.5 h-3.5" />
+                    <span>{permissionProcessing ? "Saving..." : "Approve Course Creation"}</span>
+                  </button>
+                </>
+              )}
+
+              {coursePermission.status === "APPROVED" && (
+                <button
+                  onClick={() => {
+                    const reason = prompt("Enter optional reason for revoking course creation privileges:");
+                    if (reason !== null) {
+                      handlePermissionAction("REVOKE", reason);
+                    }
+                  }}
+                  disabled={permissionProcessing}
+                  className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/30 text-rose-300 text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+                >
+                  <Lock className="w-3.5 h-3.5" />
+                  <span>{permissionProcessing ? "Saving..." : "Revoke Course Creation Access"}</span>
+                </button>
+              )}
+
+              {(coursePermission.status === "NOT_REQUESTED" ||
+                coursePermission.status === "REJECTED" ||
+                coursePermission.status === "REVOKED") && (
+                <button
+                  onClick={() => handlePermissionAction("GRANT")}
+                  disabled={permissionProcessing}
+                  className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-bold transition-all shadow-md shadow-purple-600/20 flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+                >
+                  <Unlock className="w-3.5 h-3.5" />
+                  <span>{permissionProcessing ? "Saving..." : "Grant Course Creation Access Directly"}</span>
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── REJECT PERMISSION REASON MODAL ── */}
+      {showPermissionRejectModal && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-card border border-white/10 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl animate-in zoom-in-95">
+            <div className="flex items-center justify-between">
+              <h3 className="font-bold text-text text-sm flex items-center gap-2">
+                <ShieldAlert className="w-4 h-4 text-red-400" />
+                Reject Course Creation Request
+              </h3>
+              <button
+                onClick={() => setShowPermissionRejectModal(false)}
+                className="text-subtext hover:text-text p-1"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <p className="text-xs text-subtext">
+              Provide helpful feedback explaining why this request was not approved so the instructor can improve their proposal:
+            </p>
+            <textarea
+              value={permissionFeedback}
+              onChange={(e) => setPermissionFeedback(e.target.value)}
+              placeholder="e.g. Please provide a more detailed syllabus outline or complete instructor onboarding..."
+              rows={4}
+              className="w-full bg-background border border-white/10 rounded-xl p-3 text-xs text-text placeholder:text-subtext/60 focus:outline-none focus:border-purple-500/50 resize-none font-medium"
+            />
+            <div className="flex items-center justify-end gap-2 pt-2">
+              <button
+                onClick={() => setShowPermissionRejectModal(false)}
+                className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-subtext hover:text-text text-xs font-bold cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handlePermissionAction("REJECT", permissionFeedback)}
+                disabled={permissionProcessing}
+                className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold transition-all disabled:opacity-50 cursor-pointer"
+              >
+                {permissionProcessing ? "Rejecting..." : "Confirm Rejection"}
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -43,12 +43,23 @@ export async function GET(
             session: true,
             liveCourse: true
           }
+        },
+        courseCreationPermission: {
+          include: {
+            reviewedBy: {
+              select: { id: true, name: true, email: true }
+            }
+          }
         }
       }
     });
 
     if (user) {
-      return NextResponse.json({ user, approval: user.instructorApproval });
+      return NextResponse.json({
+        user,
+        approval: user.instructorApproval,
+        courseCreationPermission: user.courseCreationPermission
+      });
     }
 
     // Also check instructor approval table directly if no user match

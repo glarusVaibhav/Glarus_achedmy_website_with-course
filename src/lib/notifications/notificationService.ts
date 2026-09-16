@@ -1,4 +1,5 @@
 import prisma from "@/lib/db";
+import { formatDate } from "@/lib/dateTime";
 import { notificationRuleEngine } from "./ruleEngine";
 import {
   DomainEvent,
@@ -440,10 +441,7 @@ export class NotificationService {
       return `${diffWeeks} week${diffWeeks > 1 ? "s" : ""} ago`;
     }
 
-    return new Date(date).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-    });
+    return formatDate(date);
   }
 }
 

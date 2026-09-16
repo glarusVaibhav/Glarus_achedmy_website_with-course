@@ -59,7 +59,7 @@ export async function GET(
           title: m.title,
           topics:
             m.lectures.length > 0
-              ? m.lectures.map((l, lIdx) => ({
+              ? m.lectures.map((l: any, lIdx) => ({
                   id: l.id || `lec-${mIdx}-${lIdx}`,
                   title: l.title,
                   duration: l.duration || "15m",
@@ -75,7 +75,7 @@ export async function GET(
                 ],
         }));
 
-        lessons = dbCourse.modules.flatMap((m, mIdx) =>
+        lessons = dbCourse.modules.flatMap((m: any, mIdx) =>
           (m.lectures.length > 0
             ? m.lectures
             : [{ id: m.id, title: m.title, description: m.description, videoUrl: null }]

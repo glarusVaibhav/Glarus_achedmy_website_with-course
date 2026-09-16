@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { getSession } from "@/lib/auth";
 
+import { checkInstructorCourseCreationPermission } from "@/lib/permissions/courseCreationPermission";
+
 export async function GET() {
   try {
     const courses = await prisma.course.findMany({
@@ -31,14 +33,16 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
-    // Instructors must be verified before creating courses (admins bypass)
+    // Instructors must have course-creation permission APPROVED (admins bypass)
     if (session.role === "INSTRUCTOR") {
-      const approval = await prisma.instructorApproval.findUnique({
-        where: { userId: session.id },
-      });
-      if (!approval || approval.status !== "APPROVED") {
+      const permissionCheck = await checkInstructorCourseCreationPermission(session.id);
+      if (!permissionCheck.allowed) {
         return NextResponse.json(
-          { error: "You must complete instructor verification before creating courses." },
+          {
+            error: "COURSE_CREATION_PERMISSION_REQUIRED",
+            message: permissionCheck.message || "Admin permission is required before you can create courses.",
+            status: permissionCheck.status
+          },
           { status: 403 }
         );
       }
@@ -133,20 +137,46 @@ export async function POST(req: Request) {
             title: m.title || `Module ${mIdx + 1}`,
             order: mIdx + 1,
             lectures: m.lessons && Array.isArray(m.lessons) ? {
-              create: m.lessons.map((l: any, lIdx: number) => ({
-                title: typeof l === "string" ? l : (l.title || `Lesson ${lIdx + 1}`),
-                videoUrl: typeof l === "object" ? l.videoUrl || null : null,
-                order: lIdx + 1
-              }))
+              create: m.lessons.map((l: any, lIdx: number) => {
+                const isObj = typeof l === "object" && l !== null;
+                return {
+                  title: isObj ? l.title || `Lesson ${lIdx + 1}` : l,
+                  videoUrl: isObj ? l.videoUrl || null : null,
+                  type: isObj ? l.type || "video" : "video",
+                  duration: isObj ? l.duration || l.videoDuration || "15m 00s" : "15m 00s",
+                  description: isObj ? l.description || null : null,
+                  notesContent: isObj ? l.notesContent || l.notes || null : null,
+                  articleContent: isObj ? l.articleContent || null : null,
+                  imageUrl1: isObj ? l.imageUrl1 || null : null,
+                  imageUrl2: isObj ? l.imageUrl2 || null : null,
+                  imageCaption: isObj ? l.imageCaption || null : null,
+                  sandboxLang: isObj ? l.sandboxLang || null : null,
+                  sandboxCode: isObj ? l.sandboxCode || null : null,
+                  quizQuestions: isObj && l.quizQuestions ? l.quizQuestions : undefined,
+                  resources: isObj && l.resources ? l.resources : (isObj && l.resourceFileUrl ? [{ id: `res-${lIdx}`, title: l.title || "Resource File", url: l.resourceFileUrl, type: l.fileType || "PDF" }] : undefined),
+                  deliverables: isObj && l.deliverables ? l.deliverables : undefined,
+                  starterFileName: isObj ? l.starterFileName || null : null,
+                  starterFileUrl: isObj ? l.starterFileUrl || null : null,
+                  assignmentBrief: isObj ? l.assignmentBrief || null : null,
+                  order: lIdx + 1
+                };
+              })
             } : undefined
           }))
-        } : undefined
+        } : undefined,
+        courseApproval: {
+          create: {
+            status: shouldPublish ? "APPROVED" : courseStatus === "APPROVED" ? "APPROVED" : "PENDING",
+            contentPreview: serializeJson({ modules })
+          }
+        }
       },
       include: {
         modules: {
           include: { lectures: true }
         },
-        instructor: { select: { name: true, email: true } }
+        instructor: { select: { name: true, email: true } },
+        courseApproval: true
       }
     });
 

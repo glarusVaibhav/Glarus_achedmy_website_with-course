@@ -33,17 +33,65 @@ export async function POST(
       return NextResponse.json({ error: "Session not found" }, { status: 404 });
     }
 
-    // If request made by instructor, check their canReschedule permission
-    if (session.role === "INSTRUCTOR") {
-      const assignment = liveSession.assignments.find((a) => a.instructorId === session.id);
-      if (!assignment || !assignment.canReschedule) {
-        return NextResponse.json({ error: "You do not have permission to reschedule this session. Please contact Admin." }, { status: 403 });
-      }
-    }
-
     const oldScheduleStr = `${liveSession.date ? new Date(liveSession.date).toISOString().split('T')[0] : "Unscheduled"} (${liveSession.startTime} - ${liveSession.endTime})`;
     const newScheduleStr = `${newDate} (${newStartTime || liveSession.startTime} - ${newEndTime || liveSession.endTime})`;
 
+    // Check if user has direct reschedule authority (Admin or Super Instructor with canReschedule)
+    const assignment = liveSession.assignments.find((a) => a.instructorId === session.id);
+    const canDirectReschedule = session.role === "ADMIN" || (assignment && assignment.canReschedule);
+
+    // If standard instructor without canReschedule, treat as a Reschedule Request to Admin
+    if (!canDirectReschedule) {
+      await prisma.sessionChangeHistory.create({
+        data: {
+          sessionId: id,
+          changedBy: `${session.name || "Instructor"} (${session.email || session.id})`,
+          changeType: "RESCHEDULE_REQUESTED",
+          previousValue: oldScheduleStr,
+          newValue: newScheduleStr,
+          reason: `[Reschedule Request from Instructor] ${reason}`
+        }
+      });
+
+      // Create instant notifications for all Admins
+      const admins = await prisma.user.findMany({
+        where: { role: "ADMIN" },
+        select: { id: true }
+      });
+
+      for (const admin of admins) {
+        await prisma.notification.create({
+          data: {
+            recipientId: admin.id,
+            actorId: session.id,
+            category: "ADMIN",
+            type: "TASK_UPDATED",
+            priority: "HIGH",
+            title: `Session Reschedule Requested: ${liveSession.title}`,
+            message: `Instructor ${session.name || "Instructor"} requested to move Session ${liveSession.sessionNumber} (${liveSession.liveCourse?.title}) to ${newDate} at ${newStartTime || liveSession.startTime}.`,
+            details: `Reason: "${reason}". Please review in Academic Operations.`,
+            entityType: "LIVE_SESSION",
+            entityId: id,
+            actionUrl: `/admin/live-training/sessions/${id}`,
+            icon: "clock",
+            deduplicationKey: `RESCHEDULE_REQ:${id}:${newDate}:${Date.now()}`
+          }
+        });
+      }
+
+      return NextResponse.json({
+        success: true,
+        requested: true,
+        message: "Reschedule request submitted to Academic Administration for review.",
+        changeSummary: {
+          from: oldScheduleStr,
+          to: newScheduleStr,
+          reason
+        }
+      });
+    }
+
+    // Direct Reschedule (Admin or Super Instructor)
     const updatedSession = await prisma.$transaction(async (tx) => {
       const updated = await tx.liveSession.update({
         where: { id },
@@ -91,6 +139,32 @@ export async function POST(
         instructorIds,
       },
     });
+
+    // Notify all Admins as well
+    const admins = await prisma.user.findMany({
+      where: { role: "ADMIN" },
+      select: { id: true }
+    });
+
+    for (const admin of admins) {
+      await prisma.notification.create({
+        data: {
+          recipientId: admin.id,
+          actorId: session.id,
+          category: "ADMIN",
+          type: "LIVE_SESSION_RESCHEDULED",
+          priority: "HIGH",
+          title: `Class Rescheduled: ${liveSession.title}`,
+          message: `${session.name || "Instructor"} (${session.role}) rescheduled Session ${liveSession.sessionNumber} (${liveSession.liveCourse?.title}) to ${newDate} at ${newStartTime || liveSession.startTime}.`,
+          details: `Reason: "${reason}".`,
+          entityType: "LIVE_SESSION",
+          entityId: id,
+          actionUrl: `/admin/live-training/sessions/${id}`,
+          icon: "calendar",
+          deduplicationKey: `ADMIN_RESCHEDULED:${id}:${newDate}:${Date.now()}`
+        }
+      });
+    }
 
     // Record in AuditLog
     const adminUser = session.role === "ADMIN" ? session.id : liveSession.liveCourse.createdById || session.id;

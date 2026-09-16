@@ -30,6 +30,9 @@ import {
   Archive,
   Save
 } from "lucide-react";
+import { DatePicker } from "@/components/ui/date-picker";
+import { TimePicker } from "@/components/ui/time-picker";
+import { formatDate, formatTime, validateTimeRange } from "@/lib/dateTime";
 
 export default function AdminLiveCourseDetail() {
   const params = useParams();
@@ -214,6 +217,14 @@ export default function AdminLiveCourseDetail() {
     e.preventDefault();
     if (!newSessionData.title.trim()) return;
 
+    if (newSessionData.startTime && newSessionData.endTime) {
+      const timeVal = validateTimeRange(newSessionData.startTime, newSessionData.endTime);
+      if (!timeVal.isValid) {
+        setErrorMessage(timeVal.error || "End time must be after start time");
+        return;
+      }
+    }
+
     setIsProcessing(true);
     try {
       const res = await fetch("/api/admin/live-training/sessions", {
@@ -254,6 +265,14 @@ export default function AdminLiveCourseDetail() {
     e.preventDefault();
     if (!rescheduleForm.newDate || !rescheduleForm.reason.trim() || !selectedSessionForReschedule) {
       return;
+    }
+
+    if (rescheduleForm.newStartTime && rescheduleForm.newEndTime) {
+      const timeVal = validateTimeRange(rescheduleForm.newStartTime, rescheduleForm.newEndTime);
+      if (!timeVal.isValid) {
+        setErrorMessage(timeVal.error || "End time must be after start time");
+        return;
+      }
     }
 
     setIsProcessing(true);
@@ -509,7 +528,7 @@ export default function AdminLiveCourseDetail() {
         <div className="p-4 rounded-2xl bg-card border border-white/10 space-y-1">
           <p className="text-[10px] text-subtext font-bold uppercase tracking-wider">Schedule Cadence</p>
           <p className="text-sm font-bold text-text truncate">
-            {course.startDate ? new Date(course.startDate).toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" }) : "TBA"}
+            {course.startDate ? formatDate(course.startDate) : "TBA"}
           </p>
           <p className="text-[10px] text-subtext truncate">{course.timezone}</p>
         </div>
@@ -607,12 +626,12 @@ export default function AdminLiveCourseDetail() {
                       <div className="flex items-center gap-3 pt-1 text-[11px] text-subtext flex-wrap">
                         <span className="flex items-center gap-1">
                           <Calendar className="w-3 h-3 text-purple-400" />
-                          {sess.date ? new Date(sess.date).toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" }) : "Unscheduled"}
+                          {sess.date ? formatDate(sess.date) : "Unscheduled"}
                         </span>
                         <span>•</span>
                         <span className="flex items-center gap-1">
                           <Clock className="w-3 h-3 text-purple-400" />
-                          {sess.startTime} – {sess.endTime} ({sess.duration})
+                          {formatTime(sess.startTime)} – {formatTime(sess.endTime)} ({sess.duration})
                         </span>
                         <span>•</span>
                         <span className="flex items-center gap-1 font-semibold text-text">
@@ -922,11 +941,9 @@ export default function AdminLiveCourseDetail() {
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <label className="font-bold text-text">Date</label>
-                  <input
-                    type="date"
+                  <DatePicker
                     value={newSessionData.date}
-                    onChange={(e) => setNewSessionData({ ...newSessionData, date: e.target.value })}
-                    className="w-full h-9 px-3 rounded-xl bg-background border border-white/10 text-text focus:outline-none focus:border-purple-500/50"
+                    onChange={(val) => setNewSessionData({ ...newSessionData, date: val })}
                   />
                 </div>
 
@@ -936,7 +953,7 @@ export default function AdminLiveCourseDetail() {
                     type="text"
                     value={newSessionData.duration}
                     onChange={(e) => setNewSessionData({ ...newSessionData, duration: e.target.value })}
-                    className="w-full h-9 px-3 rounded-xl bg-background border border-white/10 text-text focus:outline-none focus:border-purple-500/50"
+                    className="w-full h-10 px-3 rounded-xl bg-background border border-white/10 text-text text-xs font-medium focus:outline-none focus:border-purple-500/50"
                   />
                 </div>
               </div>
@@ -944,21 +961,17 @@ export default function AdminLiveCourseDetail() {
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <label className="font-bold text-text">Start Time</label>
-                  <input
-                    type="text"
+                  <TimePicker
                     value={newSessionData.startTime}
-                    onChange={(e) => setNewSessionData({ ...newSessionData, startTime: e.target.value })}
-                    className="w-full h-9 px-3 rounded-xl bg-background border border-white/10 text-text focus:outline-none focus:border-purple-500/50"
+                    onChange={(val) => setNewSessionData({ ...newSessionData, startTime: val })}
                   />
                 </div>
 
                 <div className="space-y-1">
                   <label className="font-bold text-text">End Time</label>
-                  <input
-                    type="text"
+                  <TimePicker
                     value={newSessionData.endTime}
-                    onChange={(e) => setNewSessionData({ ...newSessionData, endTime: e.target.value })}
-                    className="w-full h-9 px-3 rounded-xl bg-background border border-white/10 text-text focus:outline-none focus:border-purple-500/50"
+                    onChange={(val) => setNewSessionData({ ...newSessionData, endTime: val })}
                   />
                 </div>
               </div>
@@ -1012,8 +1025,8 @@ export default function AdminLiveCourseDetail() {
               <p className="text-subtext">
                 Current:{" "}
                 <span className="text-amber-300 font-semibold">
-                  {selectedSessionForReschedule.date ? new Date(selectedSessionForReschedule.date).toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" }) : "Unscheduled"}{" "}
-                  ({selectedSessionForReschedule.startTime} - {selectedSessionForReschedule.endTime})
+                  {selectedSessionForReschedule.date ? formatDate(selectedSessionForReschedule.date) : "Unscheduled"}{" "}
+                  ({formatTime(selectedSessionForReschedule.startTime)} – {formatTime(selectedSessionForReschedule.endTime)})
                 </span>
               </p>
             </div>
@@ -1021,33 +1034,29 @@ export default function AdminLiveCourseDetail() {
             <div className="space-y-3 text-xs">
               <div className="space-y-1">
                 <label className="font-bold text-text">New Date *</label>
-                <input
-                  type="date"
+                <DatePicker
                   required
                   value={rescheduleForm.newDate}
-                  onChange={(e) => setRescheduleForm({ ...rescheduleForm, newDate: e.target.value })}
-                  className="w-full h-9 px-3 rounded-xl bg-background border border-white/10 text-text focus:outline-none focus:border-purple-500/50"
+                  onChange={(val) => setRescheduleForm({ ...rescheduleForm, newDate: val })}
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="font-bold text-text">New Start Time</label>
-                  <input
-                    type="text"
+                  <label className="font-bold text-text">New Start Time *</label>
+                  <TimePicker
+                    required
                     value={rescheduleForm.newStartTime}
-                    onChange={(e) => setRescheduleForm({ ...rescheduleForm, newStartTime: e.target.value })}
-                    className="w-full h-9 px-3 rounded-xl bg-background border border-white/10 text-text focus:outline-none focus:border-purple-500/50"
+                    onChange={(val) => setRescheduleForm({ ...rescheduleForm, newStartTime: val })}
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="font-bold text-text">New End Time</label>
-                  <input
-                    type="text"
+                  <label className="font-bold text-text">New End Time *</label>
+                  <TimePicker
+                    required
                     value={rescheduleForm.newEndTime}
-                    onChange={(e) => setRescheduleForm({ ...rescheduleForm, newEndTime: e.target.value })}
-                    className="w-full h-9 px-3 rounded-xl bg-background border border-white/10 text-text focus:outline-none focus:border-purple-500/50"
+                    onChange={(val) => setRescheduleForm({ ...rescheduleForm, newEndTime: val })}
                   />
                 </div>
               </div>
@@ -1060,7 +1069,7 @@ export default function AdminLiveCourseDetail() {
                   value={rescheduleForm.reason}
                   onChange={(e) => setRescheduleForm({ ...rescheduleForm, reason: e.target.value })}
                   placeholder="e.g. Instructor travel conflict, guest speaker availability..."
-                  className="w-full p-2.5 rounded-xl bg-background border border-white/10 text-text focus:outline-none focus:border-purple-500/50"
+                  className="w-full p-2.5 rounded-xl bg-background border border-white/10 text-text focus:outline-none focus:border-purple-500/50 text-xs"
                 />
               </div>
             </div>

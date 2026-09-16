@@ -5,6 +5,8 @@
  * exactly 30 days after the original live class/session date (completedAt).
  */
 
+import { formatDate } from "./dateTime";
+
 export interface RecordingAvailability {
   classDate: Date;
   expiresAt: Date;
@@ -71,17 +73,8 @@ export function calculateRecordingAvailability(
     warningLevel = "amber";
   }
 
-  const formattedClassDate = classDate.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-
-  const formattedExpiresAt = expiresAt.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
+  const formattedClassDate = formatDate(classDate);
+  const formattedExpiresAt = formatDate(expiresAt);
 
   let badgeLabel = "";
   let statusMessage = "";

@@ -32,6 +32,9 @@ import {
   ShieldCheck,
   UserCheck
 } from "lucide-react";
+import { DatePicker } from "@/components/ui/date-picker";
+import { TimePicker } from "@/components/ui/time-picker";
+import { formatDateTime, validateTimeRange } from "@/lib/dateTime";
 
 export default function AdminSessionBuilder() {
   const params = useParams();
@@ -300,6 +303,15 @@ export default function AdminSessionBuilder() {
     e.preventDefault();
     if (!rescheduleForm.newDate || !rescheduleForm.reason.trim()) return;
 
+    if (rescheduleForm.newStartTime && rescheduleForm.newEndTime) {
+      const timeVal = validateTimeRange(rescheduleForm.newStartTime, rescheduleForm.newEndTime);
+      if (!timeVal.isValid) {
+        setErrorMessage(timeVal.error || "End time must be after start time");
+        setTimeout(() => setErrorMessage(""), 4000);
+        return;
+      }
+    }
+
     try {
       const res = await fetch(`/api/admin/live-training/sessions/${sessionId}/reschedule`, {
         method: "POST",
@@ -312,9 +324,14 @@ export default function AdminSessionBuilder() {
         setSuccessMessage("Session rescheduled and change history logged!");
         fetchSession();
         setTimeout(() => setSuccessMessage(""), 3000);
+      } else {
+        setErrorMessage("Failed to reschedule session");
+        setTimeout(() => setErrorMessage(""), 4000);
       }
     } catch (err) {
       console.error(err);
+      setErrorMessage("Error connecting to server");
+      setTimeout(() => setErrorMessage(""), 4000);
     }
   };
 
@@ -886,7 +903,7 @@ export default function AdminSessionBuilder() {
                     {hist.changeType}
                   </span>
                   <span className="text-[10px] text-subtext">
-                    {new Date(hist.createdAt).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                    {formatDateTime(hist.createdAt)}
                   </span>
                 </div>
                 <p className="font-semibold text-text">Changed by: {hist.changedBy}</p>
@@ -1073,33 +1090,27 @@ export default function AdminSessionBuilder() {
             <div className="space-y-3 text-xs">
               <div className="space-y-1">
                 <label className="font-bold text-text">New Date *</label>
-                <input
-                  type="date"
-                  required
+                <DatePicker
                   value={rescheduleForm.newDate}
-                  onChange={(e) => setRescheduleForm({ ...rescheduleForm, newDate: e.target.value })}
-                  className="w-full h-9 px-3 rounded-xl bg-background border border-white/10 text-text focus:outline-none focus:border-purple-500/50"
+                  onChange={(val) => setRescheduleForm({ ...rescheduleForm, newDate: val })}
+                  required
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="font-bold text-text">Start Time</label>
-                  <input
-                    type="text"
+                  <label className="font-bold text-text">New Start Time</label>
+                  <TimePicker
                     value={rescheduleForm.newStartTime}
-                    onChange={(e) => setRescheduleForm({ ...rescheduleForm, newStartTime: e.target.value })}
-                    className="w-full h-9 px-3 rounded-xl bg-background border border-white/10 text-text focus:outline-none focus:border-purple-500/50"
+                    onChange={(val) => setRescheduleForm({ ...rescheduleForm, newStartTime: val })}
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="font-bold text-text">End Time</label>
-                  <input
-                    type="text"
+                  <label className="font-bold text-text">New End Time</label>
+                  <TimePicker
                     value={rescheduleForm.newEndTime}
-                    onChange={(e) => setRescheduleForm({ ...rescheduleForm, newEndTime: e.target.value })}
-                    className="w-full h-9 px-3 rounded-xl bg-background border border-white/10 text-text focus:outline-none focus:border-purple-500/50"
+                    onChange={(val) => setRescheduleForm({ ...rescheduleForm, newEndTime: val })}
                   />
                 </div>
               </div>

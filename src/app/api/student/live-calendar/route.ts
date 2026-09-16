@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/db';
 import { getSession } from '@/lib/auth';
 import { LiveSessionService } from '@/lib/services/liveSessionService';
+import { formatTime } from '@/lib/dateTime';
 
 export interface CalendarEvent {
   id: string;
@@ -62,8 +63,8 @@ export async function GET() {
             courseTitle: lc.title,
             batchName: en.batchName,
             date: dateStr,
-            startTime: s.startTime || classDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            endTime: s.endTime || new Date(classDate.getTime() + 120 * 60 * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            startTime: formatTime(s.startTime || classDate),
+            endTime: formatTime(s.endTime || new Date(classDate.getTime() + 120 * 60 * 1000)),
             duration: s.duration || '120 Minutes',
             status: eventStatus,
             meetingLink: s.meetingUrl || 'https://zoom.us/j/glarus-live-room',

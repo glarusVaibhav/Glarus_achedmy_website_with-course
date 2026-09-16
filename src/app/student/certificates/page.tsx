@@ -108,7 +108,7 @@ export default function StudentCertificatesPage() {
                 <div className="space-y-1">
                   <h3 className="font-extrabold text-base text-text">{cert.courseTitle}</h3>
                   <div className="text-xs text-subtext flex items-center justify-between">
-                    <span>Instructor: {cert.instructor}</span>
+                    <span>Instructor: {typeof cert.instructor === 'object' && cert.instructor ? (cert.instructor as any).name : (cert.instructor || 'Instructor')}</span>
                     <span>Issued: {cert.issueDate}</span>
                   </div>
                 </div>

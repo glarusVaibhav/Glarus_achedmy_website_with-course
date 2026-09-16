@@ -1,6 +1,7 @@
 import prisma from '@/lib/db';
 import { emitDomainEvent } from '@/lib/notifications/eventDispatcher';
 import { DOMAIN_EVENT_TYPES } from '@/lib/notifications/events';
+import { formatDate } from '@/lib/dateTime';
 
 export interface AssignmentSubmissionInput {
   githubUrl?: string;
@@ -94,7 +95,7 @@ export class AssignmentService {
         courseId: a.courseId || a.liveCourseId || a.id,
         module: a.moduleName || 'Core Curriculum',
         instructor: instructorName,
-        dueDate: a.dueDate.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }),
+        dueDate: formatDate(a.dueDate),
         dueTimestamp: a.dueDate.toISOString(),
         status: sub ? (sub.status as 'PENDING' | 'IN_REVIEW' | 'GRADED') : 'PENDING',
         points: a.pointsLabel,
@@ -104,14 +105,14 @@ export class AssignmentService {
         description: a.description,
         instructions: a.instructions,
         feedback: sub?.feedback || undefined,
-        gradedDate: sub?.gradedAt ? sub.gradedAt.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }) : undefined,
+        gradedDate: sub?.gradedAt ? formatDate(sub.gradedAt) : undefined,
         submission: sub
           ? {
               githubUrl: sub.githubUrl || undefined,
               liveUrl: sub.liveUrl || undefined,
               fileName: sub.fileName || undefined,
               notes: sub.notes || undefined,
-              submittedAt: sub.submittedAt ? sub.submittedAt.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }) : undefined,
+              submittedAt: sub.submittedAt ? formatDate(sub.submittedAt) : undefined,
             }
           : undefined,
       };

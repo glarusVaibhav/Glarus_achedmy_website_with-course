@@ -37,7 +37,8 @@ import {
   X,
   Radio,
   Briefcase,
-  Building2
+  Building2,
+  UploadCloud
 } from "lucide-react";
 
 export interface AIModuleItem {
@@ -268,6 +269,39 @@ export default function AdminCourseCreator() {
     internshipCompanyPartner: "Partner AI Startups & Tech Incubators",
     internshipDescription: "Learners who complete all course milestones and achieve >= 75% on the capstone project receive direct onboarding into a 2-month mentored industry internship."
   });
+
+  const [videoUploading, setVideoUploading] = useState(false);
+
+  const handleAdminVideoUpload = async (file: File) => {
+    setVideoUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("category", "video");
+
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: fd,
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Upload failed");
+      }
+
+      if (activeLessonModal) {
+        setActiveLessonModal({
+          ...activeLessonModal,
+          lesson: { ...activeLessonModal.lesson, videoUrl: data.url }
+        });
+      }
+      showToast(`Uploaded ${file.name}!`, "success");
+    } catch (err: any) {
+      showToast(err.message || "Failed to upload video", "error");
+    } finally {
+      setVideoUploading(false);
+    }
+  };
 
   // AI Auto-Generate Landing Page Assets Handler
   const handleAutoGenerateLanding = async () => {
@@ -755,11 +789,24 @@ export default function AdminCourseCreator() {
         modules: builderModules.length > 0 ? builderModules.map((bm, idx) => ({
           title: bm.title,
           order: idx + 1,
-          lessons: bm.lessons.map((l, lIdx) => ({
+          lessons: bm.lessons.map((l: any, lIdx: number) => ({
             title: l.title,
-            type: l.type,
+            type: l.type || "video",
             videoUrl: l.videoUrl || null,
-            duration: l.duration || "15m",
+            duration: l.duration || "15m 00s",
+            description: l.description || null,
+            notes: l.notes || l.description || null,
+            notesContent: l.notesContent || l.notes || l.description || null,
+            articleContent: l.articleContent || null,
+            imageUrl1: l.imageUrl1 || null,
+            imageUrl2: l.imageUrl2 || null,
+            imageCaption: l.imageCaption || null,
+            sandboxLang: l.sandboxLang || null,
+            sandboxCode: l.sandboxCode || null,
+            quizQuestions: l.quizQuestions || undefined,
+            resources: l.resources || (l.resourceFileUrl ? [{ id: `res-${lIdx}`, title: l.title, url: l.resourceFileUrl, type: l.fileType || "PDF" }] : undefined),
+            resourceFileUrl: l.resourceFileUrl || null,
+            fileType: l.fileType || null,
             order: lIdx + 1
           }))
         })) : aiModules.map((am, idx) => ({
@@ -2523,7 +2570,48 @@ export default function AdminCourseCreator() {
 
             {/* Type Specific Fields */}
             {activeLessonModal.lesson.type === "video" && (
-              <div className="space-y-3">
+              <div className="space-y-4">
+                {/* Video Upload Dropzone */}
+                <div className="p-5 bg-card/40 border-2 border-dashed border-purple-500/30 hover:border-purple-500/60 rounded-2xl text-center space-y-2 transition-all">
+                  <input
+                    type="file"
+                    id="admin-lesson-video-upload"
+                    accept="video/mp4,video/webm,video/quicktime,video/x-m4v,video/mkv,.mp4,.mov,.webm,.m4v,.mkv"
+                    className="hidden"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      await handleAdminVideoUpload(file);
+                    }}
+                  />
+                  <label
+                    htmlFor="admin-lesson-video-upload"
+                    className="cursor-pointer flex flex-col items-center justify-center gap-2"
+                  >
+                    {videoUploading ? (
+                      <div className="flex items-center gap-2 text-purple-400 font-bold text-xs py-3">
+                        <Loader2 className="w-5 h-5 animate-spin" /> Uploading Video File (MP4/WebM/MOV)...
+                      </div>
+                    ) : (
+                      <>
+                        <div className="w-12 h-12 rounded-2xl bg-purple-500/15 text-purple-400 flex items-center justify-center shadow-md">
+                          <UploadCloud className="w-6 h-6" />
+                        </div>
+                        <div>
+                          <p className="text-xs font-bold text-text">Click or Drag & Drop to Upload Video File</p>
+                          <p className="text-[10px] text-subtext mt-0.5">Supports MP4, WebM, QuickTime MOV up to 500MB</p>
+                        </div>
+                      </>
+                    )}
+                  </label>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <div className="h-[1px] bg-white/10 flex-1" />
+                  <span className="text-[10px] uppercase font-bold text-subtext tracking-wider">Or Paste External Video URL</span>
+                  <div className="h-[1px] bg-white/10 flex-1" />
+                </div>
+
                 <div className="space-y-1.5">
                   <label className="block text-xs font-bold text-text">Video Stream / Embed URL</label>
                   <input
@@ -2536,6 +2624,27 @@ export default function AdminCourseCreator() {
                     className="w-full bg-background border border-white/10 rounded-xl px-4 py-2.5 text-xs text-text outline-none font-mono focus:border-purple-500"
                   />
                 </div>
+
+                {activeLessonModal.lesson.videoUrl && (
+                  <div className="p-3.5 bg-purple-500/10 border border-purple-500/20 rounded-2xl space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-purple-300 flex items-center gap-1.5">
+                        <Video className="w-4 h-4 text-purple-400" /> Video Attached & Ready
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setActiveLessonModal({
+                          ...activeLessonModal,
+                          lesson: { ...activeLessonModal.lesson, videoUrl: "" }
+                        })}
+                        className="text-[11px] text-rose-400 hover:underline cursor-pointer font-bold"
+                      >
+                        Clear Video
+                      </button>
+                    </div>
+                    <p className="text-[11px] text-subtext truncate font-mono bg-background/50 p-2 rounded-lg border border-white/5">{activeLessonModal.lesson.videoUrl}</p>
+                  </div>
+                )}
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
                     <label className="block text-xs font-bold text-text">Duration</label>

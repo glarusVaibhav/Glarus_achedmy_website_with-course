@@ -37,6 +37,9 @@ import {
   CalendarCheck,
   Tag
 } from "lucide-react";
+import { DatePicker } from "@/components/ui/date-picker";
+import { TimePicker } from "@/components/ui/time-picker";
+import { formatDate, formatTime, validateTimeRange } from "@/lib/dateTime";
 
 type ViewType = "MONTH" | "WEEK" | "DAY" | "AGENDA";
 
@@ -309,6 +312,14 @@ export default function AdminLiveCalendarView() {
     e.preventDefault();
     if (!selectedSessionModal || !rescheduleForm.newDate || !rescheduleForm.reason) return;
 
+    if (rescheduleForm.newStartTime && rescheduleForm.newEndTime) {
+      const timeVal = validateTimeRange(rescheduleForm.newStartTime, rescheduleForm.newEndTime);
+      if (!timeVal.isValid) {
+        showToast(timeVal.error || "End time must be after start time", "error");
+        return;
+      }
+    }
+
     setIsRescheduling(true);
     try {
       const res = await fetch(`/api/admin/live-training/sessions/${selectedSessionModal.id}/reschedule`, {
@@ -339,6 +350,14 @@ export default function AdminLiveCalendarView() {
     if (!quickScheduleForm.liveCourseId || !quickScheduleForm.title || !quickScheduleForm.date) {
       showToast("Please fill in all required fields", "error");
       return;
+    }
+
+    if (quickScheduleForm.startTime && quickScheduleForm.endTime) {
+      const timeVal = validateTimeRange(quickScheduleForm.startTime, quickScheduleForm.endTime);
+      if (!timeVal.isValid) {
+        showToast(timeVal.error || "End time must be after start time", "error");
+        return;
+      }
     }
 
     setIsQuickScheduling(true);
@@ -386,7 +405,7 @@ export default function AdminLiveCalendarView() {
   const monthName = currentDate.toLocaleString("default", { month: "long" });
   const yearNum = currentDate.getFullYear();
   const todayKey = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}-${String(new Date().getDate()).padStart(2, "0")}`;
-  const currentDayFormatted = currentDate.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
+  const currentDayFormatted = formatDate(currentDate);
   const currentDayKey = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, "0")}-${String(currentDate.getDate()).padStart(2, "0")}`;
 
   return (
@@ -1099,10 +1118,10 @@ export default function AdminLiveCalendarView() {
                   <div className="flex items-center gap-4 text-xs shrink-0">
                     <div className="text-right">
                       <p className="font-bold text-purple-300">
-                        {sess.date ? new Date(sess.date).toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" }) : "TBA"}
+                        {sess.date ? formatDate(sess.date) : "TBA"}
                       </p>
                       <p className="text-[10px] text-subtext">
-                        {sess.startTime} - {sess.endTime}
+                        {formatTime(sess.startTime)} – {formatTime(sess.endTime)}
                       </p>
                     </div>
 
@@ -1247,35 +1266,29 @@ export default function AdminLiveCalendarView() {
                 />
               </div>
 
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div className="space-y-1 col-span-1">
                   <label className="font-bold text-white">Date *</label>
-                  <input
-                    type="date"
-                    required
+                  <DatePicker
                     value={quickScheduleForm.date}
-                    onChange={(e) => setQuickScheduleForm({ ...quickScheduleForm, date: e.target.value })}
-                    className="w-full h-10 px-2.5 rounded-xl bg-background border border-white/10 text-white focus:outline-none focus:border-purple-500/50"
+                    onChange={(val) => setQuickScheduleForm({ ...quickScheduleForm, date: val })}
+                    required
                   />
                 </div>
 
                 <div className="space-y-1 col-span-1">
                   <label className="font-bold text-white">Start Time</label>
-                  <input
-                    type="text"
+                  <TimePicker
                     value={quickScheduleForm.startTime}
-                    onChange={(e) => setQuickScheduleForm({ ...quickScheduleForm, startTime: e.target.value })}
-                    className="w-full h-10 px-2.5 rounded-xl bg-background border border-white/10 text-white focus:outline-none focus:border-purple-500/50"
+                    onChange={(val) => setQuickScheduleForm({ ...quickScheduleForm, startTime: val })}
                   />
                 </div>
 
                 <div className="space-y-1 col-span-1">
                   <label className="font-bold text-white">End Time</label>
-                  <input
-                    type="text"
+                  <TimePicker
                     value={quickScheduleForm.endTime}
-                    onChange={(e) => setQuickScheduleForm({ ...quickScheduleForm, endTime: e.target.value })}
-                    className="w-full h-10 px-2.5 rounded-xl bg-background border border-white/10 text-white focus:outline-none focus:border-purple-500/50"
+                    onChange={(val) => setQuickScheduleForm({ ...quickScheduleForm, endTime: val })}
                   />
                 </div>
               </div>
@@ -1341,8 +1354,8 @@ export default function AdminLiveCalendarView() {
               <div className="flex justify-between items-center">
                 <span className="text-subtext">Date & Time:</span>
                 <span className="font-bold text-white">
-                  {selectedSessionModal.date ? new Date(selectedSessionModal.date).toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" }) : "TBA"}{" "}
-                  ({selectedSessionModal.startTime} - {selectedSessionModal.endTime})
+                  {selectedSessionModal.date ? formatDate(selectedSessionModal.date) : "TBA"}{" "}
+                  ({formatTime(selectedSessionModal.startTime)} - {formatTime(selectedSessionModal.endTime)})
                 </span>
               </div>
               <div className="flex justify-between items-center">
@@ -1399,7 +1412,7 @@ export default function AdminLiveCalendarView() {
                 type="button"
                 onClick={() => {
                   setRescheduleForm({
-                    newDate: selectedSessionModal.date ? new Date(selectedSessionModal.date).toISOString().split("T")[0] : "",
+                    newDate: selectedSessionModal.date ? (typeof selectedSessionModal.date === "string" ? selectedSessionModal.date.split("T")[0] : new Date(selectedSessionModal.date).toISOString().split("T")[0]) : "",
                     newStartTime: selectedSessionModal.startTime || "07:00 PM",
                     newEndTime: selectedSessionModal.endTime || "09:00 PM",
                     reason: ""
@@ -1449,33 +1462,27 @@ export default function AdminLiveCalendarView() {
             <div className="space-y-3 text-xs">
               <div className="space-y-1">
                 <label className="font-bold text-white">New Date *</label>
-                <input
-                  type="date"
-                  required
+                <DatePicker
                   value={rescheduleForm.newDate}
-                  onChange={(e) => setRescheduleForm({ ...rescheduleForm, newDate: e.target.value })}
-                  className="w-full h-10 px-3 rounded-xl bg-background border border-white/10 text-white focus:outline-none focus:border-purple-500/50"
+                  onChange={(val) => setRescheduleForm({ ...rescheduleForm, newDate: val })}
+                  required
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <label className="font-bold text-white">New Start Time</label>
-                  <input
-                    type="text"
+                  <TimePicker
                     value={rescheduleForm.newStartTime}
-                    onChange={(e) => setRescheduleForm({ ...rescheduleForm, newStartTime: e.target.value })}
-                    className="w-full h-10 px-3 rounded-xl bg-background border border-white/10 text-white focus:outline-none focus:border-purple-500/50"
+                    onChange={(val) => setRescheduleForm({ ...rescheduleForm, newStartTime: val })}
                   />
                 </div>
 
                 <div className="space-y-1">
                   <label className="font-bold text-white">New End Time</label>
-                  <input
-                    type="text"
+                  <TimePicker
                     value={rescheduleForm.newEndTime}
-                    onChange={(e) => setRescheduleForm({ ...rescheduleForm, newEndTime: e.target.value })}
-                    className="w-full h-10 px-3 rounded-xl bg-background border border-white/10 text-white focus:outline-none focus:border-purple-500/50"
+                    onChange={(val) => setRescheduleForm({ ...rescheduleForm, newEndTime: val })}
                   />
                 </div>
               </div>

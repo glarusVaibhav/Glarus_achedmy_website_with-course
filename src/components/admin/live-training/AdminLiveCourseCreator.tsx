@@ -43,6 +43,9 @@ import {
   Briefcase,
   Building2
 } from "lucide-react";
+import { DatePicker } from "@/components/ui/date-picker";
+import { TimePicker } from "@/components/ui/time-picker";
+import { formatDate, formatTime } from "@/lib/dateTime";
 
 export interface AISessionItem {
   id?: string;
@@ -110,6 +113,10 @@ export interface LiveCourseFormData {
   duration: string;
   startDate: string;
   endDate: string;
+  registrationStartDate: string;
+  registrationStartTime: string;
+  registrationEndDate: string;
+  registrationEndTime: string;
   sessionFrequency: string;
   defaultDuration: string;
   preferredDays: string[];
@@ -192,6 +199,10 @@ export default function AdminLiveCourseCreator() {
     duration: "6 Weeks · 12 Live Sessions",
     startDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
     endDate: new Date(Date.now() + 49 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
+    registrationStartDate: new Date().toISOString().split("T")[0],
+    registrationStartTime: "09:00 AM",
+    registrationEndDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
+    registrationEndTime: "11:59 PM",
     sessionFrequency: "2 sessions per week",
     defaultDuration: "120 min",
     preferredDays: ["Monday", "Wednesday"],
@@ -627,6 +638,63 @@ export default function AdminLiveCourseCreator() {
     };
   }, [formData.startDate, formData.endDate, formData.preferredDays]);
 
+  // Live Registration Window Preview Helper
+  const getRegistrationPreviewInfo = useMemo(() => {
+    if (!formData.registrationStartDate && !formData.registrationEndDate) {
+      return { status: "UNSET", label: "Registration Window Not Set", badge: "UNSET", color: "text-subtext bg-white/5 border-white/10" };
+    }
+
+    try {
+      const now = new Date();
+      const startDateTime = formData.registrationStartDate
+        ? new Date(`${formData.registrationStartDate} ${formData.registrationStartTime || "00:00"}`)
+        : null;
+      const endDateTime = formData.registrationEndDate
+        ? new Date(`${formData.registrationEndDate} ${formData.registrationEndTime || "23:59"}`)
+        : null;
+
+      if (startDateTime && !isNaN(startDateTime.getTime()) && now < startDateTime) {
+        const diffMs = startDateTime.getTime() - now.getTime();
+        const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+        return {
+          status: "UPCOMING",
+          label: `Registration Opens in ${diffDays} day${diffDays > 1 ? "s" : ""} (${formatDate(formData.registrationStartDate)} at ${formData.registrationStartTime})`,
+          badge: "OPENS SOON",
+          color: "text-amber-300 bg-amber-500/15 border-amber-500/30"
+        };
+      }
+
+      if (endDateTime && !isNaN(endDateTime.getTime()) && now > endDateTime) {
+        return {
+          status: "CLOSED",
+          label: `Registration Closed on ${formatDate(formData.registrationEndDate)} at ${formData.registrationEndTime}`,
+          badge: "CLOSED",
+          color: "text-rose-400 bg-rose-500/15 border-rose-500/30"
+        };
+      }
+
+      if (endDateTime && !isNaN(endDateTime.getTime())) {
+        const diffMs = endDateTime.getTime() - now.getTime();
+        const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+        return {
+          status: "OPEN",
+          label: `Registration is Live & Open! Closes in ${diffDays} day${diffDays > 1 ? "s" : ""} (${formatDate(formData.registrationEndDate)} at ${formData.registrationEndTime})`,
+          badge: "ACTIVE & OPEN",
+          color: "text-emerald-300 bg-emerald-500/15 border-emerald-500/30"
+        };
+      }
+
+      return {
+        status: "OPEN",
+        label: "Registration is Active and Open!",
+        badge: "ACTIVE",
+        color: "text-emerald-300 bg-emerald-500/15 border-emerald-500/30"
+      };
+    } catch {
+      return { status: "OPEN", label: "Registration Window Configured", badge: "CONFIGURED", color: "text-purple-300 bg-purple-500/15 border-purple-500/30" };
+    }
+  }, [formData.registrationStartDate, formData.registrationStartTime, formData.registrationEndDate, formData.registrationEndTime]);
+
   // Add Item Helpers
   const addPrerequisite = () => {
     if (!newPrereq.trim()) return;
@@ -924,11 +992,34 @@ export default function AdminLiveCourseCreator() {
     setErrorMessage("");
 
     try {
+      let regStartISO: string | null = null;
+      let regEndISO: string | null = null;
+
+      if (formData.registrationStartDate) {
+        try {
+          const timePart = formData.registrationStartTime || "09:00 AM";
+          regStartISO = new Date(`${formData.registrationStartDate} ${timePart}`).toISOString();
+        } catch {
+          regStartISO = new Date(formData.registrationStartDate).toISOString();
+        }
+      }
+
+      if (formData.registrationEndDate) {
+        try {
+          const timePart = formData.registrationEndTime || "11:59 PM";
+          regEndISO = new Date(`${formData.registrationEndDate} ${timePart}`).toISOString();
+        } catch {
+          regEndISO = new Date(formData.registrationEndDate).toISOString();
+        }
+      }
+
       const res = await fetch("/api/admin/live-training/courses", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...formData,
+          registrationStartDate: regStartISO,
+          registrationEndDate: regEndISO,
           targetAudience: Array.isArray(formData.targetAudience)
             ? (formData.targetAudience as any[]).join(", ")
             : (formData.targetAudience || ""),
@@ -1989,24 +2080,95 @@ export default function AdminLiveCourseCreator() {
               </p>
             </div>
 
+            {/* ── Cohort Registration Window (Open to End Time) ── */}
+            <div className="p-5 rounded-2xl bg-gradient-to-br from-purple-950/40 via-card to-background border border-purple-500/30 space-y-4 shadow-md">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-white/10">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-purple-500/20 border border-purple-500/30 text-purple-300 flex items-center justify-center shrink-0">
+                    <Clock className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-text flex items-center gap-2">
+                      <span>Cohort Registration Window</span>
+                      <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                        Landing Page Displayed
+                      </span>
+                    </h3>
+                    <p className="text-xs text-subtext mt-0.5">
+                      Set exact registration opening & deadline cutoff times. Prospective students see these live countdowns on the landing page.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Live Status Badge Preview */}
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className={`px-3 py-1 rounded-full border text-xs font-bold flex items-center gap-1.5 ${getRegistrationPreviewInfo.color}`}>
+                    <span className="w-2 h-2 rounded-full bg-current animate-pulse" />
+                    {getRegistrationPreviewInfo.label}
+                  </span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* Registration Start Date */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-text flex items-center gap-1">
+                    <span>Registration Opens (Date) *</span>
+                  </label>
+                  <DatePicker
+                    value={formData.registrationStartDate}
+                    onChange={(val) => setFormData({ ...formData, registrationStartDate: val })}
+                    required
+                  />
+                </div>
+
+                {/* Registration Start Time */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-text">Opens (Time)</label>
+                  <TimePicker
+                    value={formData.registrationStartTime}
+                    onChange={(val) => setFormData({ ...formData, registrationStartTime: val })}
+                  />
+                </div>
+
+                {/* Registration End Date */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-text flex items-center gap-1">
+                    <span>Registration Deadline (Date) *</span>
+                  </label>
+                  <DatePicker
+                    value={formData.registrationEndDate}
+                    onChange={(val) => setFormData({ ...formData, registrationEndDate: val })}
+                    required
+                  />
+                </div>
+
+                {/* Registration End Time */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-text">Deadline (Time)</label>
+                  <TimePicker
+                    value={formData.registrationEndTime}
+                    onChange={(val) => setFormData({ ...formData, registrationEndTime: val })}
+                  />
+                </div>
+              </div>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-text">Cohort Start Date *</label>
-                <input
-                  type="date"
+                <DatePicker
                   value={formData.startDate}
-                  onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
-                  className="w-full h-10 px-3.5 rounded-xl bg-background border border-white/10 text-text text-xs focus:outline-none focus:border-purple-500/50"
+                  onChange={(val) => setFormData({ ...formData, startDate: val })}
+                  required
                 />
               </div>
 
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-text">Cohort End Date</label>
-                <input
-                  type="date"
+                <DatePicker
                   value={formData.endDate}
-                  onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
-                  className="w-full h-10 px-3.5 rounded-xl bg-background border border-white/10 text-text text-xs focus:outline-none focus:border-purple-500/50"
+                  onChange={(val) => setFormData({ ...formData, endDate: val })}
                 />
               </div>
 
@@ -2027,12 +2189,9 @@ export default function AdminLiveCourseCreator() {
 
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-text">Preferred Start Time</label>
-                <input
-                  type="text"
+                <TimePicker
                   value={formData.preferredStartTime}
-                  onChange={(e) => setFormData({ ...formData, preferredStartTime: e.target.value })}
-                  placeholder="e.g. 07:00 PM"
-                  className="w-full h-10 px-3.5 rounded-xl bg-background border border-white/10 text-text text-xs focus:outline-none focus:border-purple-500/50"
+                  onChange={(val) => setFormData({ ...formData, preferredStartTime: val })}
                 />
               </div>
 
@@ -2493,9 +2652,9 @@ export default function AdminLiveCourseCreator() {
                           <h4 className="text-xs font-bold text-text line-clamp-1">{sess.title}</h4>
                           <p className="text-[11px] text-subtext line-clamp-1 mt-0.5">{sess.description}</p>
                           <div className="flex items-center gap-2 mt-2 pt-2 border-t border-white/5 text-[10px] text-subtext">
-                            <span>{sess.date || "Date TBA"}</span>
+                            <span>{sess.date ? formatDate(sess.date) : "Date TBA"}</span>
                             <span>•</span>
-                            <span>{sess.startTime || "07:00 PM"}</span>
+                            <span>{sess.startTime ? formatTime(sess.startTime) : "07:00 PM"}</span>
                             <span>•</span>
                             <span className="text-emerald-400 font-semibold">{sess.agenda?.length || 0} agenda items</span>
                           </div>
@@ -2548,31 +2707,27 @@ export default function AdminLiveCourseCreator() {
 
                       <div className="space-y-1.5">
                         <label className="text-xs font-bold text-text">Session Date</label>
-                        <input
-                          type="date"
+                        <DatePicker
                           value={aiGeneratedSessions[activeSessionIndex].date || ""}
-                          onChange={(e) => handleUpdateActiveSession("date", e.target.value)}
-                          className="w-full h-10 px-3.5 rounded-xl bg-background border border-white/10 text-text text-xs focus:outline-none focus:border-purple-500/50"
+                          onChange={(val) => handleUpdateActiveSession("date", val)}
                         />
                       </div>
 
                       <div className="space-y-1.5">
                         <label className="text-xs font-bold text-text">Start Time – End Time</label>
                         <div className="flex gap-2">
-                          <input
-                            type="text"
-                            value={aiGeneratedSessions[activeSessionIndex].startTime}
-                            onChange={(e) => handleUpdateActiveSession("startTime", e.target.value)}
-                            placeholder="07:00 PM"
-                            className="w-1/2 h-10 px-3 rounded-xl bg-background border border-white/10 text-text text-xs focus:outline-none focus:border-purple-500/50"
-                          />
-                          <input
-                            type="text"
-                            value={aiGeneratedSessions[activeSessionIndex].endTime}
-                            onChange={(e) => handleUpdateActiveSession("endTime", e.target.value)}
-                            placeholder="09:00 PM"
-                            className="w-1/2 h-10 px-3 rounded-xl bg-background border border-white/10 text-text text-xs focus:outline-none focus:border-purple-500/50"
-                          />
+                          <div className="w-1/2">
+                            <TimePicker
+                              value={aiGeneratedSessions[activeSessionIndex].startTime}
+                              onChange={(val) => handleUpdateActiveSession("startTime", val)}
+                            />
+                          </div>
+                          <div className="w-1/2">
+                            <TimePicker
+                              value={aiGeneratedSessions[activeSessionIndex].endTime}
+                              onChange={(val) => handleUpdateActiveSession("endTime", val)}
+                            />
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -3177,8 +3332,14 @@ export default function AdminLiveCourseCreator() {
                 <span className="font-bold text-text">{aiGeneratedSessions.length || sessionCount} Sessions</span>
               </div>
               <div className="flex justify-between">
+                <span className="text-subtext">Registration Window:</span>
+                <span className="font-bold text-purple-300 text-right">
+                  {formData.registrationStartDate ? formatDate(formData.registrationStartDate) : "Now"} – {formData.registrationEndDate ? formatDate(formData.registrationEndDate) : "Open"}
+                </span>
+              </div>
+              <div className="flex justify-between">
                 <span className="text-subtext">Start Date:</span>
-                <span className="font-bold text-text">{formData.startDate || "Immediate"}</span>
+                <span className="font-bold text-text">{formData.startDate ? formatDate(formData.startDate) : "Immediate"}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-subtext">Meeting Platform:</span>

@@ -227,6 +227,8 @@ export async function PUT(
       duration,
       startDate,
       endDate,
+      registrationStartDate,
+      registrationEndDate,
       timezone,
       maxStudents,
       status,
@@ -252,6 +254,8 @@ export async function PUT(
     if (duration !== undefined) updateData.duration = duration;
     if (startDate !== undefined) updateData.startDate = startDate ? new Date(startDate) : null;
     if (endDate !== undefined) updateData.endDate = endDate ? new Date(endDate) : null;
+    if (registrationStartDate !== undefined) updateData.registrationStartDate = registrationStartDate ? new Date(registrationStartDate) : null;
+    if (registrationEndDate !== undefined) updateData.registrationEndDate = registrationEndDate ? new Date(registrationEndDate) : null;
     if (timezone !== undefined) updateData.timezone = timezone;
     if (status !== undefined) {
       updateData.status = status;

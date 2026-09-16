@@ -1,4 +1,5 @@
 import prisma from "@/lib/db";
+import { formatDate, formatTime } from "@/lib/dateTime";
 import { DOMAIN_EVENT_TYPES } from "./events";
 import {
   DomainEvent,
@@ -30,6 +31,8 @@ import {
   CourseMilestonePayload,
   CertificateAvailablePayload,
   StudentAnnouncementPayload,
+  CourseCreationPermissionRequestedPayload,
+  CourseCreationPermissionDecisionPayload,
 } from "./events";
 
 export class NotificationRuleEngine {
@@ -178,8 +181,8 @@ export class NotificationRuleEngine {
         const { sessionId, sessionTitle, liveCourseId, liveCourseTitle, instructorId, sessionNumber, date, startTime } = event.payload;
         if (!instructorId) return null;
 
-        const formattedTime = startTime ? ` at ${startTime}` : "";
-        const formattedDate = date ? ` on ${new Date(date).toLocaleDateString()}` : "";
+        const formattedTime = startTime ? ` at ${formatTime(startTime)}` : "";
+        const formattedDate = date ? ` on ${formatDate(date)}` : "";
 
         return {
           recipientId: instructorId,
@@ -207,6 +210,9 @@ export class NotificationRuleEngine {
         const { sessionId, sessionTitle, liveCourseTitle, newDate, newStartTime, reason, instructorIds } = event.payload;
         if (!instructorIds || instructorIds.length === 0) return null;
 
+        const formattedNewDate = formatDate(newDate);
+        const formattedNewTime = formatTime(newStartTime);
+
         return instructorIds.map((instructorId) => ({
           recipientId: instructorId,
           actorId: event.actorId,
@@ -214,7 +220,7 @@ export class NotificationRuleEngine {
           type: "LIVE_SESSION_RESCHEDULED" as NotificationType,
           priority: "HIGH" as NotificationPriority,
           title: `Class Rescheduled: ${sessionTitle}`,
-          message: `Live class "${sessionTitle}" (${liveCourseTitle}) has been moved to ${newDate} at ${newStartTime}.`,
+          message: `Live class "${sessionTitle}" (${liveCourseTitle}) has been moved to ${formattedNewDate} at ${formattedNewTime}.`,
           details: `Reschedule justification: ${reason || "Operational timetable adjustment."}`,
           entityType: "LIVE_SESSION",
           entityId: sessionId,
@@ -596,7 +602,7 @@ export class NotificationRuleEngine {
             type: "LIVE_SESSION_CREATED" as NotificationType,
             priority: "NORMAL" as NotificationPriority,
             title: `📅 New Live Class: ${sessionTitle}`,
-            message: `A new session has been added to "${liveCourseTitle}" on ${date || "scheduled date"} at ${startTime || "TBD"}.`,
+            message: `A new session has been added to "${liveCourseTitle}" on ${formatDate(date, "scheduled date")} at ${formatTime(startTime, "TBD")}.`,
             details: "Mark your calendar and check session topics in your training timetable.",
             entityType: "LIVE_SESSION",
             entityId: sessionId,
@@ -647,7 +653,114 @@ export class NotificationRuleEngine {
         }
       }
     });
+
+    // 18. COURSE_CREATION_PERMISSION_REQUESTED (Notify Admins)
+    this.registerRule<CourseCreationPermissionRequestedPayload>({
+      eventType: DOMAIN_EVENT_TYPES.COURSE_CREATION_PERMISSION_REQUESTED,
+      resolve: async (event) => {
+        const { instructorId, instructorName, instructorEmail, notes } = event.payload;
+        try {
+          const admins = await prisma.user.findMany({
+            where: { role: "ADMIN" },
+            select: { id: true }
+          });
+
+          return admins.map(admin => ({
+            recipientId: admin.id,
+            actorId: instructorId,
+            category: "ADMIN" as NotificationCategory,
+            type: "PERMISSIONS_UPDATED" as NotificationType,
+            priority: "HIGH" as NotificationPriority,
+            title: `Course Creation Permission Requested`,
+            message: `${instructorName || "Instructor"} requested permission to create and publish courses.`,
+            details: notes ? `Instructor note: "${notes}"` : "Review instructor background and grant/reject course-creation access.",
+            entityType: "INSTRUCTOR_PERMISSION",
+            entityId: instructorId,
+            actionUrl: `/admin/instructors?tab=permissions`,
+            icon: "shield",
+            metadata: { instructorId, instructorName, instructorEmail, notes },
+            deduplicationKey: `COURSE_PERM_REQUEST:${instructorId}:${Date.now()}`
+          }));
+        } catch (err) {
+          console.error("Error notifying admins of course creation request:", err);
+          return null;
+        }
+      }
+    });
+
+    // 19. COURSE_CREATION_PERMISSION_APPROVED (Notify Instructor)
+    this.registerRule<CourseCreationPermissionDecisionPayload>({
+      eventType: DOMAIN_EVENT_TYPES.COURSE_CREATION_PERMISSION_APPROVED,
+      resolve: async (event) => {
+        const { instructorId, feedback, adminName } = event.payload;
+        return {
+          recipientId: instructorId,
+          actorId: event.actorId,
+          category: "COURSE" as NotificationCategory,
+          type: "PERMISSIONS_UPDATED" as NotificationType,
+          priority: "HIGH" as NotificationPriority,
+          title: `🎉 Course Creation Privileges Approved!`,
+          message: `Your course creation request has been approved by ${adminName || "Platform Administration"}. You can now create and architect new courses.`,
+          details: feedback || "Use our AI Copilot and Curriculum Designer in the Course Creator Studio to build your curriculum.",
+          entityType: "INSTRUCTOR_PERMISSION",
+          entityId: instructorId,
+          actionUrl: `/instructor`,
+          icon: "sparkles",
+          metadata: { instructorId, approved: true },
+          deduplicationKey: `COURSE_PERM_APPROVED:${instructorId}:${Date.now()}`
+        };
+      }
+    });
+
+    // 20. COURSE_CREATION_PERMISSION_REJECTED (Notify Instructor)
+    this.registerRule<CourseCreationPermissionDecisionPayload>({
+      eventType: DOMAIN_EVENT_TYPES.COURSE_CREATION_PERMISSION_REJECTED,
+      resolve: async (event) => {
+        const { instructorId, feedback, adminName } = event.payload;
+        return {
+          recipientId: instructorId,
+          actorId: event.actorId,
+          category: "ADMIN" as NotificationCategory,
+          type: "PERMISSIONS_UPDATED" as NotificationType,
+          priority: "NORMAL" as NotificationPriority,
+          title: `Course Creation Request Update`,
+          message: `Your course creation permission request was not approved at this time.`,
+          details: feedback ? `Reviewer feedback: ${feedback}` : "You may re-apply after updating your profile and verification materials.",
+          entityType: "INSTRUCTOR_PERMISSION",
+          entityId: instructorId,
+          actionUrl: `/instructor`,
+          icon: "alert",
+          metadata: { instructorId, approved: false, feedback },
+          deduplicationKey: `COURSE_PERM_REJECTED:${instructorId}:${Date.now()}`
+        };
+      }
+    });
+
+    // 21. COURSE_CREATION_PERMISSION_REVOKED (Notify Instructor)
+    this.registerRule<CourseCreationPermissionDecisionPayload>({
+      eventType: DOMAIN_EVENT_TYPES.COURSE_CREATION_PERMISSION_REVOKED,
+      resolve: async (event) => {
+        const { instructorId, feedback } = event.payload;
+        return {
+          recipientId: instructorId,
+          actorId: event.actorId,
+          category: "ADMIN" as NotificationCategory,
+          type: "PERMISSIONS_UPDATED" as NotificationType,
+          priority: "HIGH" as NotificationPriority,
+          title: `Course Creation Permission Updated`,
+          message: `Your course creation privileges have been revoked by Platform Administration.`,
+          details: feedback ? `Details: ${feedback}. Note: Your existing published and draft courses remain active.` : "Your existing courses and live sessions remain active. Contact administration if you believe this is an error.",
+          entityType: "INSTRUCTOR_PERMISSION",
+          entityId: instructorId,
+          actionUrl: `/instructor`,
+          icon: "shield",
+          metadata: { instructorId, revoked: true },
+          deduplicationKey: `COURSE_PERM_REVOKED:${instructorId}:${Date.now()}`
+        };
+      }
+    });
   }
 }
+
 
 export const notificationRuleEngine = new NotificationRuleEngine();

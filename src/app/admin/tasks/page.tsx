@@ -29,6 +29,8 @@ import {
   MoreVertical,
   Loader2
 } from "lucide-react";
+import { DatePicker } from "@/components/ui/date-picker";
+import { formatDate } from "@/lib/dateTime";
 
 export type AdminTaskStatus =
   | "ALL"
@@ -213,7 +215,7 @@ function AdminTasksContent() {
         instructor: inst.name,
         instructorEmail: inst.email,
         course: newCourse || "All Courses / Academy Wide",
-        deadline: newDeadline || "Open",
+        deadline: newDeadline ? formatDate(newDeadline) : "Open",
         compensation: parseFloat(newCompensation) || 0,
         paymentStatus: "Pending",
         priority: newPriority,
@@ -223,7 +225,7 @@ function AdminTasksContent() {
           newType.includes("Broadcast") || newType.includes("Message")
             ? ["Read & Acknowledge Message"]
             : ["Primary Deliverable File/Repo", "Documentation Summary"],
-        createdAt: "Today"
+        createdAt: formatDate(new Date())
       }));
 
       setTasks([...createdTasks, ...tasks]);
@@ -236,7 +238,7 @@ function AdminTasksContent() {
         instructor: newInstructor,
         instructorEmail: instructorObj ? instructorObj.email : `${newInstructor.toLowerCase().replace(" ", ".")}@glarus.edu`,
         course: newCourse || "General",
-        deadline: newDeadline,
+        deadline: newDeadline ? formatDate(newDeadline) : "Open",
         compensation: parseFloat(newCompensation) || 0,
         paymentStatus: "Pending",
         priority: newPriority,
@@ -246,7 +248,7 @@ function AdminTasksContent() {
           newType.includes("Broadcast") || newType.includes("Message")
             ? ["Read & Acknowledge Message"]
             : ["Primary Deliverable File/Repo", "Documentation Summary"],
-        createdAt: "Today"
+        createdAt: formatDate(new Date())
       };
 
       setTasks([newTask, ...tasks]);
@@ -730,12 +732,9 @@ function AdminTasksContent() {
                   <label className="text-[11px] font-bold text-subtext uppercase tracking-wider block mb-1">
                     Deadline
                   </label>
-                  <input
-                    type="text"
+                  <DatePicker
                     value={newDeadline}
-                    onChange={(e) => setNewDeadline(e.target.value)}
-                    placeholder="e.g. 30 Aug 2026"
-                    className="w-full bg-background border border-white/10 rounded-xl px-3 py-2 text-xs text-text focus:outline-none focus:border-purple-500/50"
+                    onChange={(val) => setNewDeadline(val)}
                   />
                 </div>
 

@@ -45,6 +45,7 @@ import {
   PieChart as PieChartIcon,
   Globe
 } from "lucide-react";
+import { formatDate } from "@/lib/dateTime";
 import {
   ResponsiveContainer,
   BarChart,
@@ -447,9 +448,9 @@ function CourseManagementContent() {
                 isPublished: isPub,
                 type: "SELF_PACED",
                 updatedAt: c.publishedAt
-                  ? new Date(c.publishedAt).toLocaleDateString()
+                  ? formatDate(c.publishedAt)
                   : c.updatedAt
-                  ? new Date(c.updatedAt).toLocaleDateString()
+                  ? formatDate(c.updatedAt)
                   : "Recent",
                 duration: c.duration || `${c.modules?.length || 4} Modules`,
                 sectionsCount: c.modules?.length || 4,
@@ -495,13 +496,13 @@ function CourseManagementContent() {
                 refundRate: 0,
                 status: statusMap[lc.status] || "ACTIVE",
                 type: "LIVE_TRAINING",
-                updatedAt: lc.startDate ? `Starts ${new Date(lc.startDate).toLocaleDateString()}` : "Active Cohort",
+                updatedAt: lc.startDate ? `Starts ${formatDate(lc.startDate)}` : "Active Cohort",
                 duration: lc.duration || "6 Weeks",
                 sectionsCount: lc.totalSessions || 8,
                 lessonsCount: lc.totalSessions || 8,
                 totalSessions: lc.totalSessions || 8,
                 liveCohortBatch: lc.level ? `${lc.level} Live Cohort` : "Active Live Cohort",
-                liveStartDate: lc.startDate ? `Starts ${new Date(lc.startDate).toLocaleDateString()}` : "Live Schedule",
+                liveStartDate: lc.startDate ? `Starts ${formatDate(lc.startDate)}` : "Live Schedule",
                 liveLink: `/admin/live-training/courses/${lc.id}`,
                 description: lc.description || "",
                 thumbnailGradient: lc.thumbnailGradient || "from-emerald-950 to-slate-950",
@@ -618,7 +619,7 @@ function CourseManagementContent() {
               ...c,
               isPublished: nextPublished,
               status: nextStatus,
-              updatedAt: nextPublished ? new Date().toLocaleDateString() : "Unpublished"
+              updatedAt: nextPublished ? formatDate(new Date()) : "Unpublished"
             }
           : c
       )

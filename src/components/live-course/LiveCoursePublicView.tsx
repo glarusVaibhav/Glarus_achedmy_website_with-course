@@ -28,6 +28,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 
 import { useCartStore } from "@/store/cartStore";
+import { formatRegistrationWindow, LiveCourseRegistrationWindow } from "@/components/landing/InteractiveCourses";
 
 interface SessionItem {
   id: string;
@@ -76,6 +77,11 @@ interface PublicCourseData {
   category: string;
   level: string;
   duration: string;
+  startDate?: string | null;
+  endDate?: string | null;
+  registrationStartDate?: string | null;
+  registrationEndDate?: string | null;
+  registrationWindow?: LiveCourseRegistrationWindow;
   price: number;
   originalPrice: number;
   previewVideoUrl?: string | null;
@@ -222,6 +228,12 @@ export default function LiveCoursePublicView({ course }: LiveCoursePublicViewPro
     "Lifetime Access to HD Session Recordings"
   ]);
 
+  const regWindow = formatRegistrationWindow(
+    course.registrationStartDate,
+    course.registrationEndDate,
+    course.startDate
+  );
+
   return (
     <div className="min-h-screen bg-background text-foreground transition-colors duration-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
@@ -261,6 +273,12 @@ export default function LiveCoursePublicView({ course }: LiveCoursePublicViewPro
               <span className="px-3 py-1 rounded-md bg-slate-500/10 text-slate-700 dark:text-slate-300 border border-slate-500/20 text-xs font-bold">
                 {course.level}
               </span>
+              {regWindow && (
+                <span className={`px-3 py-1 rounded-md border text-xs font-black uppercase tracking-wider flex items-center gap-1.5 ${regWindow.badgeColor}`}>
+                  <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
+                  {regWindow.label}
+                </span>
+              )}
             </div>
 
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-[1.15] text-foreground">
@@ -271,8 +289,27 @@ export default function LiveCoursePublicView({ course }: LiveCoursePublicViewPro
               {course.subtitle || course.shortDescription || course.description}
             </p>
 
+            {/* Registration Window Banner */}
+            {regWindow && (
+              <div className="p-4 rounded-2xl bg-gradient-to-r from-purple-950/30 via-card to-background border border-purple-500/25 flex flex-wrap items-center justify-between gap-3 text-xs shadow-sm">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-purple-500/15 border border-purple-500/30 flex items-center justify-center text-purple-400 shrink-0">
+                    <Clock className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <div className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Registration Starts – Ends</div>
+                    <div className="text-xs sm:text-sm font-bold text-foreground">{regWindow.fullWindowFormatted}</div>
+                  </div>
+                </div>
+                <span className={`px-3 py-1 rounded-full border text-xs font-extrabold flex items-center gap-1.5 ${regWindow.badgeColor}`}>
+                  <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
+                  {regWindow.countdownText}
+                </span>
+              </div>
+            )}
+
             {/* Metadata Pills */}
-            <div className="flex flex-wrap items-center gap-4 text-xs sm:text-sm text-muted-foreground pt-2">
+            <div className="flex flex-wrap items-center gap-4 text-xs sm:text-sm text-muted-foreground pt-1">
               <div className="flex items-center gap-2 font-medium">
                 <Radio className="w-4 h-4 text-purple-600 dark:text-purple-400" />
                 <span><strong className="text-foreground">{course.sessions.length}</strong> Live Sessions</span>
@@ -297,7 +334,7 @@ export default function LiveCoursePublicView({ course }: LiveCoursePublicViewPro
 
           {/* Right Purchase / Access Card */}
           <div className="lg:col-span-5 w-full">
-            <div className="rounded-3xl bg-card border border-border/80 shadow-2xl p-6 sm:p-8 space-y-6 relative overflow-hidden backdrop-blur-xl">
+            <div className="rounded-3xl bg-card border border-border/80 shadow-2xl p-6 sm:p-8 space-y-5 relative overflow-hidden backdrop-blur-xl">
               {/* Subtle top accent gradient */}
               <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-500" />
 
@@ -321,6 +358,16 @@ export default function LiveCoursePublicView({ course }: LiveCoursePublicViewPro
                   </span>
                 )}
               </div>
+
+              {/* Registration Window Pill */}
+              {regWindow && (
+                <div className="p-3 rounded-xl bg-purple-950/25 border border-purple-500/25 flex items-center justify-between gap-2 text-xs">
+                  <span className="text-muted-foreground font-semibold flex items-center gap-1.5">
+                    <Clock className="w-3.5 h-3.5 text-purple-400" /> Registration:
+                  </span>
+                  <span className="font-bold text-purple-300">{regWindow.countdownText}</span>
+                </div>
+              )}
 
               {/* Next Batch Highlights */}
               {selectedBatch && (

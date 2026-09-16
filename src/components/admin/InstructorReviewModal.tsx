@@ -6,6 +6,7 @@ import {
   MessageSquare, User, Phone, Video, Globe, BookOpen, Sparkles, Award,
   CheckCircle2, Compass, Layers, Eye, Play, Download
 } from "lucide-react";
+import { formatDate } from "@/lib/dateTime";
 
 interface InstructorApprovalData {
   id: string;
@@ -131,7 +132,7 @@ export default function InstructorReviewModal({ approval, onClose, onDecision }:
             {approval.status === "CHANGES_REQUESTED" && <AlertCircle className="w-4 h-4" />}
             {approval.status === "REJECTED" && <X className="w-4 h-4" />}
             Status: {approval.status.replace("_", " ")}
-            {approval.reviewedAt && ` • Reviewed on ${new Date(approval.reviewedAt).toLocaleDateString()}`}
+            {approval.reviewedAt && ` • Reviewed on ${formatDate(approval.reviewedAt)}`}
           </div>
         )}
 
@@ -394,7 +395,7 @@ export default function InstructorReviewModal({ approval, onClose, onDecision }:
           <section className="bg-background border border-card/40 rounded-2xl p-4 shadow-sm text-xs text-subtext font-semibold flex items-center justify-between">
             <span>ID: <span className="text-text font-mono">{approval.id.slice(0, 10)}...</span></span>
             <span>Version: <span className="text-purple-400 font-mono font-bold">v{approval.version || 1}</span></span>
-            <span>Submitted: {new Date(approval.createdAt).toLocaleDateString()}</span>
+            <span>Submitted: {formatDate(approval.createdAt)}</span>
           </section>
         </div>
 

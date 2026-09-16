@@ -21,7 +21,8 @@ import {
   Video,
   Calendar,
   Layers,
-  UserCheck
+  UserCheck,
+  KeyRound
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Logo } from "@/components/Logo";
@@ -53,6 +54,13 @@ const SIDEBAR_NAVIGATION: NavGroup[] = [
         icon: GraduationCap,
         badge: 3,
         badgeColor: "bg-purple-500/20 text-purple-300 border-purple-500/30"
+      },
+      {
+        name: "Course Permissions",
+        href: "/admin/instructors?tab=permissions",
+        icon: KeyRound,
+        badge: "Perms",
+        badgeColor: "bg-emerald-500/20 text-emerald-300 border-emerald-500/30"
       },
       {
         name: "Student Management",

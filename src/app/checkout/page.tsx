@@ -12,7 +12,8 @@ function CheckoutContent() {
   const { total, items, addItem, clearCart } = useCartStore();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { user, isAuthenticated } = useAuth();
+  const { user } = useAuth();
+  const isAuthenticated = Boolean(user);
 
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);

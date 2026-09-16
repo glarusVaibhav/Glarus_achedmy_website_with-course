@@ -6,6 +6,7 @@ import {
   AlertCircle, XCircle, ArrowRight, ShieldAlert, FileCheck, Check,
   Calendar, Hash, Loader2, User, FileText, Video, ExternalLink
 } from "lucide-react";
+import { formatDate } from "@/lib/dateTime";
 
 export interface InstructorApprovalData {
   id: string;
@@ -112,7 +113,7 @@ export default function InstructorVerificationStatus({
               <div>
                 <span className="text-[10px] font-black text-subtext uppercase tracking-widest block">Approval Date</span>
                 <span className="font-bold text-text mt-0.5 block">
-                  {approvalData?.reviewedAt ? new Date(approvalData.reviewedAt).toLocaleDateString() : "Verified"}
+                  {approvalData?.reviewedAt ? formatDate(approvalData.reviewedAt) : "Verified"}
                 </span>
               </div>
               <div className="col-span-2 sm:col-span-1">

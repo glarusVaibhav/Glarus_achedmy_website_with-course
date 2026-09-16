@@ -4,10 +4,10 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  LayoutDashboard,
+  Activity,
   BookOpen,
   Calendar,
-  PlaySquare,
+  PlayCircle,
   FileCheck,
   Award,
   CreditCard,
@@ -15,10 +15,10 @@ import {
   ChevronLeft,
   ChevronRight,
   Sparkles,
-  ExternalLink,
   Flame,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useAuth } from "@/context/AuthContext";
 import { Logo } from "@/components/Logo";
 
 export interface StudentNavItem {
@@ -26,7 +26,10 @@ export interface StudentNavItem {
   name: string;
   href: string;
   icon: React.ElementType;
-  isSpecial?: boolean;
+  iconColor: string;
+  iconBox: string;
+  activeBg: string;
+  badgeColor: string;
 }
 
 export const STUDENT_NAV_ITEMS: StudentNavItem[] = [
@@ -34,56 +37,91 @@ export const STUDENT_NAV_ITEMS: StudentNavItem[] = [
     id: "dashboard",
     name: "Dashboard",
     href: "/dashboard",
-    icon: LayoutDashboard,
+    icon: Activity,
+    iconColor: "text-sky-400",
+    iconBox: "bg-sky-500/10 border-sky-500/20 group-hover:border-sky-500/40 group-hover:bg-sky-500/15",
+    activeBg: "bg-[#0d1829] border-white/80 text-white shadow-lg shadow-sky-950/40",
+    badgeColor: "bg-sky-500/20 text-sky-300 border-sky-500/30",
   },
   {
     id: "courses",
     name: "Self-Paced Courses",
     href: "/student/courses",
     icon: BookOpen,
+    iconColor: "text-purple-400",
+    iconBox: "bg-purple-500/10 border-purple-500/20 group-hover:border-purple-500/40 group-hover:bg-purple-500/15",
+    activeBg: "bg-[#18112e] border-white/80 text-white shadow-lg shadow-purple-950/40",
+    badgeColor: "bg-purple-500/20 text-purple-300 border-purple-500/30",
   },
   {
     id: "live-classes",
     name: "Live Training",
     href: "/calendar",
     icon: Calendar,
+    iconColor: "text-rose-400",
+    iconBox: "bg-rose-500/10 border-rose-500/20 group-hover:border-rose-500/40 group-hover:bg-rose-500/15",
+    activeBg: "bg-[#25101a] border-white/80 text-white shadow-lg shadow-rose-950/40",
+    badgeColor: "bg-rose-500/20 text-rose-300 border-rose-500/30",
   },
   {
     id: "recorded-sessions",
     name: "Class Recordings",
     href: "/student/recorded-sessions",
-    icon: PlaySquare,
-    isSpecial: true,
+    icon: PlayCircle,
+    iconColor: "text-emerald-400",
+    iconBox: "bg-emerald-500/10 border-emerald-500/20 group-hover:border-emerald-500/40 group-hover:bg-emerald-500/15",
+    activeBg: "bg-[#0b201a] border-white/80 text-white shadow-lg shadow-emerald-950/40",
+    badgeColor: "bg-emerald-500/20 text-emerald-300 border-emerald-500/30",
   },
   {
     id: "assignments",
     name: "Assignments",
     href: "/student/assignments",
     icon: FileCheck,
+    iconColor: "text-amber-400",
+    iconBox: "bg-amber-500/10 border-amber-500/20 group-hover:border-amber-500/40 group-hover:bg-amber-500/15",
+    activeBg: "bg-[#24190c] border-white/80 text-white shadow-lg shadow-amber-950/40",
+    badgeColor: "bg-amber-500/20 text-amber-300 border-amber-500/30",
   },
   {
     id: "certificates",
     name: "Certificates",
     href: "/student/certificates",
     icon: Award,
+    iconColor: "text-indigo-400",
+    iconBox: "bg-indigo-500/10 border-indigo-500/20 group-hover:border-indigo-500/40 group-hover:bg-indigo-500/15",
+    activeBg: "bg-[#14182e] border-white/80 text-white shadow-lg shadow-indigo-950/40",
+    badgeColor: "bg-indigo-500/20 text-indigo-300 border-indigo-500/30",
   },
   {
     id: "payments",
     name: "Payments",
     href: "/student/payments",
     icon: CreditCard,
+    iconColor: "text-cyan-400",
+    iconBox: "bg-cyan-500/10 border-cyan-500/20 group-hover:border-cyan-500/40 group-hover:bg-cyan-500/15",
+    activeBg: "bg-[#0d1d29] border-white/80 text-white shadow-lg shadow-cyan-950/40",
+    badgeColor: "bg-cyan-500/20 text-cyan-300 border-cyan-500/30",
   },
   {
     id: "settings",
     name: "Settings",
     href: "/settings",
     icon: Settings,
+    iconColor: "text-slate-400",
+    iconBox: "bg-slate-500/10 border-slate-500/20 group-hover:border-slate-500/40 group-hover:bg-slate-500/15",
+    activeBg: "bg-[#171c26] border-white/80 text-white shadow-lg shadow-slate-950/40",
+    badgeColor: "bg-slate-500/20 text-slate-300 border-slate-500/30",
   },
 ];
 
 interface StudentSidebarProps {
   collapsed?: boolean;
   onToggleCollapse?: () => void;
+  sidebarWidth?: number;
+  onWidthChange?: (width: number) => void;
+  isDragging?: boolean;
+  setIsDragging?: (dragging: boolean) => void;
   mobileOpen?: boolean;
   onCloseMobile?: () => void;
 }
@@ -91,10 +129,15 @@ interface StudentSidebarProps {
 export function StudentSidebar({
   collapsed = false,
   onToggleCollapse,
+  sidebarWidth = 288,
+  onWidthChange,
+  isDragging = false,
+  setIsDragging,
   mobileOpen = false,
   onCloseMobile,
 }: StudentSidebarProps) {
   const pathname = usePathname();
+  const { user } = useAuth();
 
   const [navBadges, setNavBadges] = useState<{
     selfPacedCount: number;
@@ -192,29 +235,58 @@ export function StudentSidebar({
   const getItemBadge = (itemId: string) => {
     switch (itemId) {
       case "courses":
-        return navBadges.selfPacedCount > 0
-          ? { label: `${navBadges.selfPacedCount} Active`, color: "bg-blue-500/15 text-blue-300 border-blue-500/30" }
-          : null;
+        return navBadges.selfPacedCount > 0 ? `${navBadges.selfPacedCount} Active` : null;
       case "live-classes":
-        return navBadges.hasLiveNow
-          ? { label: "LIVE", color: "bg-orange-500/15 text-orange-400 border-orange-500/30 animate-pulse" }
-          : null;
+        return navBadges.hasLiveNow ? "LIVE" : null;
       case "recorded-sessions":
-        return navBadges.recordingsCount > 0
-          ? { label: `${navBadges.recordingsCount} Ready`, color: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30" }
-          : null;
+        return navBadges.recordingsCount > 0 ? `${navBadges.recordingsCount} Ready` : null;
       case "assignments":
-        return navBadges.assignmentsCount > 0
-          ? { label: `${navBadges.assignmentsCount}`, color: "bg-amber-500/15 text-amber-300 border-amber-500/30" }
-          : null;
+        return navBadges.assignmentsCount > 0 ? `${navBadges.assignmentsCount}` : null;
       case "certificates":
-        return navBadges.certificatesCount > 0
-          ? { label: `${navBadges.certificatesCount}`, color: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30" }
-          : null;
+        return navBadges.certificatesCount > 0 ? `${navBadges.certificatesCount}` : null;
       default:
         return null;
     }
   };
+
+  /* ── Draggable Width Handlers ── */
+  const handleMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (collapsed) return;
+    setIsDragging?.(true);
+
+    const startX = e.clientX;
+    const startWidth = sidebarWidth;
+
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      const deltaX = moveEvent.clientX - startX;
+      let newWidth = startWidth + deltaX;
+      if (newWidth < 220) newWidth = 220;
+      if (newWidth > 480) newWidth = 480;
+      onWidthChange?.(newWidth);
+    };
+
+    const handleMouseUp = () => {
+      setIsDragging?.(false);
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+    };
+
+    document.body.style.cursor = "col-resize";
+    document.body.style.userSelect = "none";
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+  };
+
+  const handleDoubleClick = () => {
+    if (!collapsed) {
+      onWidthChange?.(288);
+    }
+  };
+
+  const userInitial = user?.name ? user.name.charAt(0).toUpperCase() : "S";
 
   return (
     <>
@@ -232,170 +304,179 @@ export function StudentSidebar({
       </AnimatePresence>
 
       <aside
-        className={`fixed left-0 top-0 z-50 h-screen bg-card/95 backdrop-blur-xl border-r border-border/70 flex flex-col justify-between transition-all duration-300 select-none ${
-          collapsed ? "w-20" : "w-64"
+        style={!collapsed ? { width: `${sidebarWidth}px` } : undefined}
+        className={`fixed left-0 bg-[#080C14] border-r border-card/60 flex flex-col justify-between pt-5 pb-6 select-none ${
+          isDragging ? "transition-none" : "transition-[width] duration-200 ease-out"
         } ${
-          mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+          collapsed ? "w-20" : ""
+        } ${
+          mobileOpen
+            ? "translate-x-0 top-0 z-50 h-screen w-72"
+            : "-translate-x-full lg:translate-x-0 top-16 z-30 h-[calc(100vh-4rem)]"
         }`}
       >
-        {/* ── Top Header Brand ── */}
-        <div className="h-16 px-4 border-b border-border/60 flex items-center justify-between shrink-0 bg-background/30">
-          {!collapsed ? (
-            <Link
-              href="/dashboard"
-              className="flex items-center gap-2.5 group cursor-pointer overflow-hidden hover:opacity-90 transition-opacity"
-              title="Glarus Academy Student Portal"
-            >
-              <Logo className="h-7 w-auto max-w-[125px]" />
-              <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-primary/15 text-primary border border-primary/25 shrink-0 flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                Student
-              </span>
-            </Link>
-          ) : (
-            <Link href="/dashboard" className="mx-auto hover:opacity-90 transition-opacity" title="Glarus Academy">
-              <div className="w-8 h-8 rounded-xl bg-primary/15 border border-primary/30 flex items-center justify-center text-primary font-black text-xs shadow-xs">
-                GA
-              </div>
-            </Link>
-          )}
-
-          {onToggleCollapse && (
-            <button
-              onClick={onToggleCollapse}
-              className={`p-1.5 rounded-lg text-subtext hover:text-text hover:bg-white/[0.06] transition-colors hidden lg:flex cursor-pointer ${
-                collapsed ? "mx-auto mt-0" : ""
+        {/* ── Draggable Resize Handle on Right Border ── */}
+        {!collapsed && (
+          <div
+            onMouseDown={handleMouseDown}
+            onDoubleClick={handleDoubleClick}
+            title="Drag to resize sidebar (Double click to reset)"
+            className={`hidden lg:flex absolute top-0 -right-1 bottom-0 w-2.5 cursor-col-resize z-40 group items-center justify-center transition-colors ${
+              isDragging ? "bg-primary/50" : "hover:bg-primary/30"
+            }`}
+          >
+            {/* Visual Grip Indicator on Hover / Drag */}
+            <div
+              className={`w-0.5 rounded-full transition-all duration-150 ${
+                isDragging
+                  ? "bg-primary h-12 shadow-[0_0_8px_rgba(124,58,237,0.8)]"
+                  : "bg-white/20 h-6 group-hover:bg-primary group-hover:h-10"
               }`}
-              title={collapsed ? "Expand Sidebar" : "Collapse Sidebar"}
-            >
-              {collapsed ? (
-                <ChevronRight className="w-4 h-4" />
-              ) : (
-                <ChevronLeft className="w-4 h-4" />
+            />
+          </div>
+        )}
+
+        {/* ── Top Minimal Header (Clean, unobtrusive to top logo) ── */}
+        <div className={`px-4 mb-2 flex items-center justify-between shrink-0 ${collapsed ? "px-2 justify-center" : ""}`}>
+          {!collapsed ? (
+            <div className="flex items-center justify-between w-full">
+              <span className="text-[10px] font-extrabold uppercase tracking-widest text-subtext/60">
+                Navigation
+              </span>
+
+              {onToggleCollapse && (
+                <button
+                  onClick={onToggleCollapse}
+                  className="p-1.5 rounded-lg text-subtext hover:text-text hover:bg-white/[0.06] transition-colors hidden lg:flex cursor-pointer"
+                  title="Collapse Sidebar"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
               )}
-            </button>
+            </div>
+          ) : (
+            onToggleCollapse && (
+              <button
+                onClick={onToggleCollapse}
+                className="p-1.5 rounded-lg text-subtext hover:text-text hover:bg-white/[0.06] transition-colors hidden lg:flex cursor-pointer mx-auto"
+                title="Expand Sidebar"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            )
           )}
         </div>
 
-        {/* ── Navigation Links ── */}
-        <div className="flex-1 overflow-y-auto py-4 px-3 space-y-1.5 scrollbar-thin">
-          {!collapsed && (
-            <div className="px-3 pb-2 text-[10px] font-extrabold uppercase tracking-widest text-subtext/70">
-              Student Navigation
-            </div>
-          )}
-
+        {/* ── Navigation List (Instructor Studio Style) ── */}
+        <nav className="flex-1 space-y-2 px-3.5 overflow-y-auto no-scrollbar">
           {STUDENT_NAV_ITEMS.map((item) => {
             const active = isItemActive(item);
             const Icon = item.icon;
-            const isRecorded = item.id === "recorded-sessions";
-            const badgeData = getItemBadge(item.id);
+            const badgeValue = getItemBadge(item.id);
 
             return (
               <Link
                 key={item.id}
                 href={item.href}
                 onClick={onCloseMobile}
-                className={`relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all duration-200 group ${
-                  active
-                    ? isRecorded
-                      ? "bg-gradient-to-r from-purple-600/20 via-purple-500/15 to-indigo-600/10 border border-purple-500/35 text-white font-bold shadow-xs shadow-purple-900/10"
-                      : "bg-primary/15 text-primary border border-primary/25 font-bold"
-                    : "text-subtext hover:text-text hover:bg-white/[0.04] border border-transparent"
-                }`}
                 title={collapsed ? item.name : undefined}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl transition-all font-semibold text-sm group cursor-pointer border ${
+                  active
+                    ? item.activeBg
+                    : "text-slate-300 hover:text-white hover:bg-white/[0.04] border-transparent"
+                } ${collapsed ? "justify-center px-0" : ""}`}
               >
-                {/* Active Indicator Accent Line on Left */}
-                {active && (
-                  <motion.div
-                    layoutId="studentSidebarActiveBar"
-                    className={`absolute left-0 top-1.5 bottom-1.5 w-1 rounded-r-full ${
-                      isRecorded
-                        ? "bg-gradient-to-b from-purple-400 to-indigo-400 shadow-[0_0_8px_rgba(168,85,247,0.8)]"
-                        : "bg-primary shadow-[0_0_6px_rgba(124,58,237,0.6)]"
-                    }`}
-                  />
-                )}
-
-                {/* Icon with glow when active */}
+                {/* Colorful Icon Box */}
                 <div
-                  className={`relative flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 ${
+                  className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 border transition-all ${
+                    item.iconBox
+                  } ${
                     active
-                      ? isRecorded
-                        ? "text-purple-300 drop-shadow-[0_0_8px_rgba(168,85,247,0.6)]"
-                        : "text-primary"
-                      : isRecorded
-                      ? "text-purple-400/80 group-hover:text-purple-300"
-                      : "text-subtext group-hover:text-text"
+                      ? "scale-105 shadow-sm"
+                      : "opacity-90 group-hover:opacity-100 group-hover:scale-105"
                   }`}
                 >
-                  <Icon className={`w-4 h-4 ${isRecorded && active ? "text-purple-300" : ""}`} />
+                  <Icon className={`w-4 h-4 ${item.iconColor}`} />
                 </div>
 
-                {/* Name & Badge */}
+                {/* Name */}
                 {!collapsed && (
-                  <div className="flex-1 flex items-center justify-between min-w-0">
-                    <span
-                      className={`truncate ${
-                        active
-                          ? isRecorded
-                            ? "text-white font-bold tracking-tight"
-                            : "text-text font-bold"
-                          : ""
-                      }`}
-                    >
-                      {item.name}
-                    </span>
+                  <span className="flex-1 text-left font-medium text-xs sm:text-sm truncate">
+                    {item.name}
+                  </span>
+                )}
 
-                    {badgeData && (
-                      <span
-                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full border shrink-0 ${
-                          badgeData.color || "bg-card text-subtext border-border"
-                        }`}
-                      >
-                        {badgeData.label}
-                      </span>
-                    )}
-                  </div>
+                {/* Colorful Pill Badge */}
+                {!collapsed && badgeValue !== null && (
+                  <span
+                    className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border shadow-xs shrink-0 ${
+                      active
+                        ? "bg-white/20 text-white border-white/30"
+                        : item.badgeColor
+                    }`}
+                  >
+                    {badgeValue}
+                  </span>
                 )}
               </Link>
             );
           })}
+        </nav>
+
+        {/* ── Bottom Section (Instructor Studio Style Avatar Pill) ── */}
+        <div className="px-4 pt-4 border-t border-card/40 shrink-0">
+          {!collapsed ? (
+            <div className="flex items-center justify-between">
+              {/* User Profile Avatar Pill */}
+              <Link
+                href="/settings"
+                className="flex items-center gap-3 group p-1.5 -ml-1 rounded-2xl hover:bg-white/[0.04] transition-colors overflow-hidden"
+                title="Account Settings"
+              >
+                <div className="w-9 h-9 rounded-full bg-[#111827] border border-white/20 flex items-center justify-center text-white font-bold text-xs shadow-md group-hover:border-primary/60 group-hover:scale-105 transition-all shrink-0">
+                  {userInitial}
+                </div>
+                <div className="text-left overflow-hidden">
+                  <div className="text-xs font-bold text-text group-hover:text-primary transition-colors truncate max-w-[120px]">
+                    {user?.name || "Student"}
+                  </div>
+                  <div className="text-[10px] font-semibold text-subtext flex items-center gap-1 truncate">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
+                    Active Learner
+                  </div>
+                </div>
+              </Link>
+
+              {/* Streak Badge */}
+              <div
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-orange-500/10 border border-orange-500/20 text-[11px] font-bold text-orange-400 shrink-0"
+                title={`${navBadges.streak}-Day Streak`}
+              >
+                <Flame className={`w-3.5 h-3.5 ${navBadges.streak > 0 ? "animate-bounce" : ""}`} />
+                <span>{navBadges.streak}d</span>
+              </div>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center gap-3">
+              <Link
+                href="/settings"
+                className="w-9 h-9 rounded-full bg-[#111827] border border-white/20 flex items-center justify-center text-white font-bold text-xs shadow-md hover:border-primary/60 transition-all"
+                title={user?.name || "Student Account"}
+              >
+                {userInitial}
+              </Link>
+              {onToggleCollapse && (
+                <button
+                  onClick={onToggleCollapse}
+                  className="p-1.5 rounded-xl text-subtext hover:text-text hover:bg-white/[0.06] transition-colors cursor-pointer"
+                  title="Expand Sidebar"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+          )}
         </div>
-
-        {/* ── Footer Streak Card / Quick Switcher ── */}
-        {!collapsed ? (
-          <div className="p-3 border-t border-border/60 bg-background/20 space-y-2">
-            <div className="p-2.5 rounded-xl bg-gradient-to-br from-purple-950/30 via-card to-indigo-950/20 border border-purple-500/20 text-xs flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-orange-500/15 border border-orange-500/30 flex items-center justify-center text-orange-400 shrink-0 shadow-xs">
-                <Flame className={`w-4 h-4 ${navBadges.streak > 0 ? "animate-bounce" : ""}`} />
-              </div>
-              <div className="min-w-0 flex-1 leading-tight">
-                <div className="font-bold text-text text-[11px] flex items-center gap-1">
-                  <span>{navBadges.streak > 0 ? `${navBadges.streak}-Day Streak` : "Start Your Streak"}</span>
-                  <Sparkles className="w-3 h-3 text-amber-400" />
-                </div>
-                <div className="text-[10px] text-subtext truncate mt-0.5">
-                  {navBadges.streak > 0 ? "Continuous active learner" : "Learn today to build momentum"}
-                </div>
-              </div>
-            </div>
-
-            <Link
-              href="/courses"
-              className="w-full py-1.5 px-3 rounded-lg text-[11px] font-medium text-subtext hover:text-text hover:bg-white/[0.04] transition-colors flex items-center justify-between"
-            >
-              <span>Explore Catalog</span>
-              <ExternalLink className="w-3 h-3" />
-            </Link>
-          </div>
-        ) : (
-          <div className="p-3 border-t border-border/60 flex justify-center">
-            <div className="w-8 h-8 rounded-xl bg-orange-500/15 border border-orange-500/30 flex items-center justify-center text-orange-400 shadow-xs" title={`${navBadges.streak}-Day Streak Active`}>
-              <Flame className="w-4 h-4" />
-            </div>
-          </div>
-        )}
       </aside>
     </>
   );

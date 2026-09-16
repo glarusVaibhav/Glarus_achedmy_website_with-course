@@ -305,7 +305,7 @@ export default function SelfPacedCoursesPage() {
                         </h3>
                         <p className="text-xs text-subtext flex items-center gap-1.5 mt-1">
                           <Users className="w-3.5 h-3.5 text-purple-400 shrink-0" />
-                          <span>Instructor: <strong className="text-text">{course.instructor}</strong></span>
+                          <span>Instructor: <strong className="text-text">{typeof course.instructor === 'object' && course.instructor ? (course.instructor as any).name : (course.instructor || 'Glarus Academy')}</strong></span>
                         </p>
                       </div>
 

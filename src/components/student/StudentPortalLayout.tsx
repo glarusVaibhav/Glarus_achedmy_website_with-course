@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { StudentSidebar } from "./StudentSidebar";
-import { Menu, Search, Bell, Sparkles } from "lucide-react";
+import { Menu, Sparkles } from "lucide-react";
 import Link from "next/link";
 
 interface StudentPortalLayoutProps {
@@ -11,22 +11,68 @@ interface StudentPortalLayoutProps {
 
 export function StudentPortalLayout({ children }: StudentPortalLayoutProps) {
   const [collapsed, setCollapsed] = useState(false);
+  const [sidebarWidth, setSidebarWidth] = useState(288);
+  const [isDragging, setIsDragging] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  useEffect(() => {
+    try {
+      const savedWidth = localStorage.getItem("glarus-student-sidebar-width");
+      if (savedWidth) {
+        const parsed = parseInt(savedWidth, 10);
+        if (!isNaN(parsed) && parsed >= 220 && parsed <= 500) {
+          setSidebarWidth(parsed);
+        }
+      }
+      const savedCollapsed = localStorage.getItem("glarus-student-sidebar-collapsed");
+      if (savedCollapsed) {
+        setCollapsed(savedCollapsed === "true");
+      }
+    } catch {
+      /* silent */
+    }
+  }, []);
+
+  const handleToggleCollapse = () => {
+    const next = !collapsed;
+    setCollapsed(next);
+    try {
+      localStorage.setItem("glarus-student-sidebar-collapsed", String(next));
+    } catch {
+      /* silent */
+    }
+  };
+
+  const handleWidthChange = (newWidth: number) => {
+    setSidebarWidth(newWidth);
+    try {
+      localStorage.setItem("glarus-student-sidebar-width", String(newWidth));
+    } catch {
+      /* silent */
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background text-text flex w-full relative">
-      {/* ── Fixed / Collapsible Sidebar ── */}
+      {/* ── Fixed / Collapsible & Draggable Sidebar ── */}
       <StudentSidebar
         collapsed={collapsed}
-        onToggleCollapse={() => setCollapsed(!collapsed)}
+        onToggleCollapse={handleToggleCollapse}
+        sidebarWidth={sidebarWidth}
+        onWidthChange={handleWidthChange}
+        isDragging={isDragging}
+        setIsDragging={setIsDragging}
         mobileOpen={mobileOpen}
         onCloseMobile={() => setMobileOpen(false)}
       />
 
-      {/* ── Main Scrollable Canvas ── */}
+      {/* ── Main Scrollable Canvas (Dynamically adapts to sidebar width) ── */}
       <div
-        className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ${
-          collapsed ? "lg:pl-20" : "lg:pl-64"
+        style={{
+          paddingLeft: collapsed ? "80px" : `${sidebarWidth}px`,
+        }}
+        className={`flex-1 flex flex-col min-w-0 ${
+          isDragging ? "transition-none select-none" : "transition-[padding] duration-200 ease-out"
         }`}
       >
         {/* Mobile Mini Top Bar (Only visible on small viewports) */}
