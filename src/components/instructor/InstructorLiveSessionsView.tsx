@@ -20,6 +20,9 @@ import {
   Download,
   Share2,
   Copy,
+  MoveUp,
+  MoveDown,
+  Trash2,
   SlidersHorizontal,
   Filter,
   Sparkles,
@@ -126,6 +129,9 @@ export interface AdminAssignedSession {
   // Agenda
   agenda: ClassAgendaStep[];
   topics: string[];
+  learningOutcomes?: string[];
+  resources?: { title: string; url: string; type?: string }[];
+  homework?: { title: string; description?: string; dueDate?: string; maxPoints?: number };
   
   // Post-Class Stats
   attendance?: {
@@ -144,6 +150,18 @@ export interface AdminAssignedSession {
   instructorId?: string;
   instructorName?: string;
   instructorAvatar?: string;
+  permissions?: {
+    canView?: boolean;
+    canEdit?: boolean;
+    canEditAgenda?: boolean;
+    canEditSchedule?: boolean;
+    canEditResources?: boolean;
+    canAddHomework?: boolean;
+    canReschedule?: boolean;
+    canCancel?: boolean;
+    canManageAttendance?: boolean;
+    canManageRecording?: boolean;
+  };
 }
 
 export interface InstructorCourseCohort {
@@ -1013,13 +1031,26 @@ export function InstructorLiveSessionsView({
     }
   }, [initialFilter]);
 
-  // Load real assigned live courses from backend API
+  // Load real assigned live courses & instructor permissions from backend API
   React.useEffect(() => {
     async function loadInstructorData() {
       try {
-        const res = await fetch("/api/instructor/live-sessions");
-        if (res.ok) {
-          const data = await res.json();
+        const [sessionsRes, permsRes] = await Promise.all([
+          fetch("/api/instructor/live-sessions"),
+          fetch("/api/instructor/course-creation-permission").catch(() => null)
+        ]);
+
+        let hasLiveClassEditPerm = false;
+        let isPermissionPending = false;
+
+        if (permsRes && permsRes.ok) {
+          const permsData = await permsRes.json();
+          hasLiveClassEditPerm = Boolean(permsData.canEditLiveClass || permsData.permissions?.LIVE_CLASS_EDIT || permsData.isAdmin);
+          isPermissionPending = permsData.status === "PENDING";
+        }
+
+        if (sessionsRes.ok) {
+          const data = await sessionsRes.json();
           if (data.courses && data.courses.length > 0) {
             const mappedCohorts: InstructorCourseCohort[] = data.courses.map((c: any) => ({
               id: c.id,
@@ -1077,6 +1108,13 @@ export function InstructorLiveSessionsView({
                   return "UPCOMING";
                 })();
 
+                const isSessionEditable = Boolean(hasLiveClassEditPerm || s.permissions?.canEdit || c.coursePermissions?.canEdit);
+                const editStatus = isSessionEditable
+                  ? "UNLOCKED"
+                  : isPermissionPending
+                  ? "REQUEST_PENDING"
+                  : "LOCKED";
+
                 return {
                   id: s.id,
                   sessionCode: `Session ${s.sessionNumber < 10 ? `0${s.sessionNumber}` : s.sessionNumber}`,
@@ -1098,8 +1136,8 @@ export function InstructorLiveSessionsView({
                   assignmentStatus: "ACCEPTED" as const,
                   isToday,
                   executionStatus: computedExecutionStatus as any,
-                  editPermissionStatus: s.permissions?.canEdit ? "UNLOCKED" : "LOCKED",
-                  editPermissionGrantedBy: s.permissions?.canEdit ? "Academic Administration" : undefined,
+                  editPermissionStatus: editStatus as any,
+                  editPermissionGrantedBy: isSessionEditable ? "Academic Administration" : undefined,
                   enrolledStudentsCount: 42,
                   compensationAmount: 6500,
                   paymentStatus: "Paid" as const,
@@ -1178,6 +1216,7 @@ export function InstructorLiveSessionsView({
   const [selectedSessionForReschedule, setSelectedSessionForReschedule] = useState<AdminAssignedSession | null>(null);
 
   // Session Edit & Admin Lock Modals
+  const [selectedCohortForSessionChoice, setSelectedCohortForSessionChoice] = useState<InstructorCourseCohort | null>(null);
   const [selectedSessionForEdit, setSelectedSessionForEdit] = useState<AdminAssignedSession | null>(null);
   const [selectedSessionForLockedNotice, setSelectedSessionForLockedNotice] = useState<AdminAssignedSession | null>(null);
   const [editReasonInput, setEditReasonInput] = useState("");
@@ -1191,6 +1230,21 @@ export function InstructorLiveSessionsView({
   const [newAgendaTitle, setNewAgendaTitle] = useState("");
   const [newAgendaTime, setNewAgendaTime] = useState("");
   const [newAgendaDesc, setNewAgendaDesc] = useState("");
+  const [editFormLearningOutcomes, setEditFormLearningOutcomes] = useState<string[]>([]);
+  const [newOutcome, setNewOutcome] = useState("");
+  const [editFormResources, setEditFormResources] = useState<{ title: string; url: string; type?: string }[]>([]);
+  const [newResTitle, setNewResTitle] = useState("");
+  const [newResUrl, setNewResUrl] = useState("");
+  const [newResType, setNewResType] = useState("URL");
+  const [editFormHomework, setEditFormHomework] = useState<{ title: string; description?: string; dueDate?: string; maxPoints?: number }>({
+    title: "",
+    description: "",
+    dueDate: "",
+    maxPoints: 100
+  });
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
+  const [isSubmittingEditRequest, setIsSubmittingEditRequest] = useState(false);
+  const [editActiveSubSection, setEditActiveSubSection] = useState<"AGENDA" | "OUTCOMES" | "RESOURCES" | "DELIVERABLES">("AGENDA");
 
   // Reschedule Form
   const [rescheduleDate, setRescheduleDate] = useState("");
@@ -1219,6 +1273,17 @@ export function InstructorLiveSessionsView({
   const allSessions: AdminAssignedSession[] = useMemo(() => {
     return visibleCohorts.flatMap((c) => c.sessions);
   }, [visibleCohorts]);
+
+  // Current Course Sessions for Modal Session Switching
+  const currentCourseSessions = useMemo(() => {
+    const activeSession = selectedSessionForEdit || selectedSessionForLockedNotice;
+    if (!activeSession) return [];
+    const cohort = cohorts.find((c) => c.id === activeSession.courseId);
+    if (cohort && cohort.sessions.length > 0) return cohort.sessions;
+    return allSessions.filter(
+      (s) => s.courseId === activeSession.courseId || s.courseName === activeSession.courseName
+    );
+  }, [cohorts, allSessions, selectedSessionForEdit, selectedSessionForLockedNotice]);
 
   // Group Sessions by Date String (YYYY-MM-DD)
   const sessionsByDate = useMemo(() => {
@@ -1468,8 +1533,8 @@ export function InstructorLiveSessionsView({
 
   // ── Session Edit Handlers (with Admin Lock Protection) ──
   const handleInitiateEdit = (session: AdminAssignedSession) => {
-    const perm = session.editPermissionStatus || "LOCKED";
-    if (perm === "UNLOCKED") {
+    const isUnlocked = session.editPermissionStatus === "UNLOCKED" || session.permissions?.canEdit;
+    if (isUnlocked) {
       setSelectedSessionForEdit(session);
       setEditFormTitle(session.title);
       setEditFormDate(session.date);
@@ -1478,65 +1543,63 @@ export function InstructorLiveSessionsView({
       setEditFormMeetingUrl(session.meetingUrl || "");
       setEditFormTopics(session.topics ? session.topics.join(", ") : "");
       setEditFormAgenda(session.agenda ? [...session.agenda] : []);
+      setEditFormLearningOutcomes(session.learningOutcomes ? [...session.learningOutcomes] : []);
+      setEditFormResources(session.resources ? [...session.resources] : []);
+      setEditFormHomework(session.homework || { title: "", description: "", dueDate: "", maxPoints: 100 });
+      setEditActiveSubSection("AGENDA");
     } else {
       setSelectedSessionForLockedNotice(session);
       setEditReasonInput("");
     }
   };
 
-  const handleRequestEditPermission = (sessionId: string) => {
-    setCohorts((prevCohorts) =>
-      prevCohorts.map((cohort) => ({
-        ...cohort,
-        sessions: cohort.sessions.map((s) =>
-          s.id === sessionId
-            ? { ...s, editPermissionStatus: "REQUEST_PENDING", editLockReason: editReasonInput || "Curriculum / Schedule refinement" }
-            : s
-        )
-      }))
-    );
-    setSelectedSessionForLockedNotice(null);
-    showToast("Edit permission request sent to Academic Administration for review.");
-  };
+  const handleRequestEditPermission = async (sessionId: string) => {
+    setIsSubmittingEditRequest(true);
+    const reasonText = editReasonInput.trim();
 
-  const handleAdminGrantPermission = (sessionId: string) => {
-    const targetSession = allSessions.find((s) => s.id === sessionId);
-    setCohorts((prevCohorts) =>
-      prevCohorts.map((cohort) => ({
-        ...cohort,
-        sessions: cohort.sessions.map((s) =>
-          s.id === sessionId
-            ? {
-                ...s,
-                editPermissionStatus: "UNLOCKED",
-                editPermissionGrantedBy: "Academic Operations Admin",
-                editPermissionGrantedAt: "Today at " + formatTime(new Date())
-              }
-            : s
-        )
-      }))
-    );
+    try {
+      const res = await fetch(`/api/instructor/live-sessions/${sessionId}/edit-request`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sessionId,
+          reason: reasonText,
+          notes: reasonText
+        })
+      });
 
-    setSelectedSessionForLockedNotice(null);
-    if (targetSession) {
-      const unlockedSession: AdminAssignedSession = {
-        ...targetSession,
-        editPermissionStatus: "UNLOCKED",
-        editPermissionGrantedBy: "Academic Operations Admin"
-      };
-      setSelectedSessionForEdit(unlockedSession);
-      setEditFormTitle(unlockedSession.title);
-      setEditFormDate(unlockedSession.date);
-      setEditFormStartTime(unlockedSession.startTime);
-      setEditFormEndTime(unlockedSession.endTime);
-      setEditFormMeetingUrl(unlockedSession.meetingUrl || "");
-      setEditFormTopics(unlockedSession.topics ? unlockedSession.topics.join(", ") : "");
-      setEditFormAgenda(unlockedSession.agenda ? [...unlockedSession.agenda] : []);
+      const data = await res.json();
+      if (!res.ok) {
+        showToast(data.error || "Failed to submit edit permission request.");
+        return;
+      }
+
+      setCohorts((prevCohorts) =>
+        prevCohorts.map((cohort) => ({
+          ...cohort,
+          sessions: cohort.sessions.map((s) =>
+            s.id === sessionId
+              ? {
+                  ...s,
+                  editPermissionStatus: "REQUEST_PENDING",
+                  editLockReason: reasonText || "Curriculum / Schedule refinement"
+                }
+              : s
+          )
+        }))
+      );
+      setSelectedSessionForLockedNotice(null);
+      setEditReasonInput("");
+      showToast(data.message || "Edit permission request sent to Academic Administration for review.");
+    } catch (err: any) {
+      console.error("Error submitting edit permission request:", err);
+      showToast("Network error submitting request.");
+    } finally {
+      setIsSubmittingEditRequest(false);
     }
-    showToast("Admin Permission Granted! You can now edit session details.");
   };
 
-  const handleSaveSessionEdits = (e: React.FormEvent) => {
+  const handleSaveSessionEdits = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedSessionForEdit) return;
 
@@ -1553,47 +1616,67 @@ export function InstructorLiveSessionsView({
       .map((t) => t.trim())
       .filter(Boolean);
 
-    setCohorts((prevCohorts) =>
-      prevCohorts.map((cohort) => ({
-        ...cohort,
-        sessions: cohort.sessions.map((s) =>
-          s.id === selectedSessionForEdit.id
-            ? {
-                ...s,
-                title: editFormTitle,
-                date: editFormDate,
-                startTime: editFormStartTime,
-                endTime: editFormEndTime,
-                meetingUrl: editFormMeetingUrl,
-                topics: parsedTopics.length > 0 ? parsedTopics : s.topics,
-                agenda: editFormAgenda
-              }
-            : s
-        )
-      }))
-    );
+    setIsSavingEdit(true);
+    try {
+      // Persist to backend API with RBAC enforcement
+      const res = await fetch(`/api/instructor/live-sessions/${selectedSessionForEdit.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: editFormTitle,
+          date: editFormDate,
+          startTime: editFormStartTime,
+          endTime: editFormEndTime,
+          meetingUrl: editFormMeetingUrl,
+          topics: parsedTopics.length > 0 ? parsedTopics : selectedSessionForEdit.topics,
+          agenda: editFormAgenda.map((ag) => ({
+            title: ag.title,
+            description: ag.description,
+            duration: "20 min"
+          })),
+          learningOutcomes: editFormLearningOutcomes,
+          resources: editFormResources,
+          homework: editFormHomework.title ? editFormHomework : undefined
+        })
+      });
 
-    // Persist to backend API with RBAC enforcement
-    fetch(`/api/instructor/live-sessions/${selectedSessionForEdit.id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        title: editFormTitle,
-        date: editFormDate,
-        startTime: editFormStartTime,
-        endTime: editFormEndTime,
-        meetingUrl: editFormMeetingUrl,
-        topics: parsedTopics.length > 0 ? parsedTopics : selectedSessionForEdit.topics,
-        agenda: editFormAgenda.map((ag) => ({
-          title: ag.title,
-          description: ag.description,
-          duration: "20 min"
+      const data = await res.json();
+      if (!res.ok) {
+        showToast(data.error || "Permission Denied: Failed to update session.");
+        return;
+      }
+
+      setCohorts((prevCohorts) =>
+        prevCohorts.map((cohort) => ({
+          ...cohort,
+          sessions: cohort.sessions.map((s) =>
+            s.id === selectedSessionForEdit.id
+              ? {
+                  ...s,
+                  title: editFormTitle,
+                  date: editFormDate,
+                  startTime: editFormStartTime,
+                  endTime: editFormEndTime,
+                  meetingUrl: editFormMeetingUrl,
+                  topics: parsedTopics.length > 0 ? parsedTopics : s.topics,
+                  agenda: editFormAgenda,
+                  learningOutcomes: editFormLearningOutcomes,
+                  resources: editFormResources,
+                  homework: editFormHomework.title ? editFormHomework : s.homework
+                }
+              : s
+          )
         }))
-      })
-    }).catch((err) => console.error("Error saving session to backend:", err));
+      );
 
-    showToast(`Session "${selectedSessionForEdit.sessionCode}" updated successfully!`);
-    setSelectedSessionForEdit(null);
+      showToast(`Session "${selectedSessionForEdit.sessionCode}" updated successfully!`);
+      setSelectedSessionForEdit(null);
+    } catch (err: any) {
+      console.error("Error saving session to backend:", err);
+      showToast(err.message || "Network error while saving session.");
+    } finally {
+      setIsSavingEdit(false);
+    }
   };
 
   const handleReLockSession = (sessionId: string) => {
@@ -1614,7 +1697,7 @@ export function InstructorLiveSessionsView({
     const stepNum = String(editFormAgenda.length + 1).padStart(2, "0");
     const newStep: ClassAgendaStep = {
       stepNumber: stepNum,
-      timeRange: newAgendaTime || "15 min",
+      timeRange: newAgendaTime.trim() || "15 min",
       title: newAgendaTitle.trim(),
       description: newAgendaDesc.trim() || "Cover core concepts and practical exercise."
     };
@@ -1624,8 +1707,50 @@ export function InstructorLiveSessionsView({
     setNewAgendaDesc("");
   };
 
+  const handleUpdateAgendaStep = (index: number, field: keyof ClassAgendaStep, value: string) => {
+    const updated = [...editFormAgenda];
+    updated[index] = { ...updated[index], [field]: value };
+    setEditFormAgenda(updated);
+  };
+
+  const handleMoveAgendaStep = (index: number, direction: "UP" | "DOWN") => {
+    const newIdx = direction === "UP" ? index - 1 : index + 1;
+    if (newIdx < 0 || newIdx >= editFormAgenda.length) return;
+    const updated = [...editFormAgenda];
+    const temp = updated[index];
+    updated[index] = updated[newIdx];
+    updated[newIdx] = temp;
+    const renumbered = updated.map((item, i) => ({
+      ...item,
+      stepNumber: String(i + 1).padStart(2, "0")
+    }));
+    setEditFormAgenda(renumbered);
+  };
+
+  const handleDuplicateAgendaStep = (index: number) => {
+    const item = editFormAgenda[index];
+    const copy: ClassAgendaStep = {
+      ...item,
+      title: `${item.title} (Copy)`,
+      stepNumber: String(editFormAgenda.length + 1).padStart(2, "0")
+    };
+    const updated = [...editFormAgenda];
+    updated.splice(index + 1, 0, copy);
+    const renumbered = updated.map((it, i) => ({
+      ...it,
+      stepNumber: String(i + 1).padStart(2, "0")
+    }));
+    setEditFormAgenda(renumbered);
+  };
+
   const handleRemoveAgendaStep = (index: number) => {
-    setEditFormAgenda(editFormAgenda.filter((_, idx) => idx !== index));
+    const updated = editFormAgenda
+      .filter((_, idx) => idx !== index)
+      .map((item, i) => ({
+        ...item,
+        stepNumber: String(i + 1).padStart(2, "0")
+      }));
+    setEditFormAgenda(updated);
   };
 
   // Navigate to student hub for that specific course
@@ -2370,6 +2495,15 @@ export function InstructorLiveSessionsView({
                           </button>
 
                           <button
+                            onClick={() => handleInitiateEdit(session)}
+                            className="flex-1 py-1.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 hover:text-amber-200 text-xs font-semibold rounded-xl border border-amber-500/25 flex items-center justify-center gap-1"
+                            title="Edit live session details"
+                          >
+                            <Unlock className="w-3 h-3 text-amber-400" />
+                            <span>Edit</span>
+                          </button>
+
+                          <button
                             onClick={() => handleNavigateToStudents(session)}
                             className="flex-1 py-1.5 bg-white/[0.04] hover:bg-white/[0.08] text-slate-300 hover:text-white text-xs font-medium rounded-xl border border-white/[0.06]"
                           >
@@ -2569,6 +2703,23 @@ export function InstructorLiveSessionsView({
                       </button>
 
                       <button
+                        onClick={() => handleInitiateEdit(session)}
+                        className={`px-3 py-1.5 text-xs font-semibold rounded-xl border flex items-center gap-1.5 transition-all cursor-pointer shadow-xs ${
+                          session.editPermissionStatus === "UNLOCKED" || session.permissions?.canEdit
+                            ? "bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border-amber-500/30"
+                            : "bg-white/[0.03] hover:bg-white/[0.08] text-slate-400 hover:text-white border-white/[0.08]"
+                        }`}
+                        title={session.editPermissionStatus === "UNLOCKED" || session.permissions?.canEdit ? "Edit live session details" : "Edit session (Permission lock active)"}
+                      >
+                        {session.editPermissionStatus === "UNLOCKED" || session.permissions?.canEdit ? (
+                          <Unlock className="w-3.5 h-3.5 text-amber-400" />
+                        ) : (
+                          <Lock className="w-3.5 h-3.5 text-slate-400" />
+                        )}
+                        <span>Edit Details</span>
+                      </button>
+
+                      <button
                         onClick={() => handleNavigateToStudents(session)}
                         className="px-3 py-1.5 text-slate-300 hover:text-white text-xs font-semibold rounded-xl bg-white/[0.03] hover:bg-white/[0.08] border border-white/[0.08] transition-all cursor-pointer shadow-xs"
                       >
@@ -2721,6 +2872,15 @@ export function InstructorLiveSessionsView({
                           className="px-3 py-1 text-slate-400 hover:text-white text-xs font-medium rounded-lg hover:bg-white/[0.04]"
                         >
                           Agenda
+                        </button>
+
+                        <button
+                          onClick={() => handleInitiateEdit(ts)}
+                          className="px-3 py-1 text-amber-300 hover:text-amber-200 text-xs font-semibold rounded-lg bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/25 flex items-center gap-1"
+                          title="Edit session details"
+                        >
+                          <Unlock className="w-3 h-3 text-amber-400" />
+                          <span>Edit</span>
                         </button>
                       </div>
                     </div>
@@ -2906,14 +3066,11 @@ export function InstructorLiveSessionsView({
                         </div>
                       ) : (
                         <button
-                          onClick={() => {
-                            const target = cohort.sessions.find(s => s.executionStatus === "UPCOMING" || s.executionStatus === "LIVE_NOW") || cohort.sessions[0];
-                            if (target) handleInitiateEdit(target);
-                          }}
-                          className="px-3 py-2 bg-white/[0.02] hover:bg-white/[0.06] border border-white/[0.06] text-slate-400 hover:text-white text-xs font-semibold rounded-xl flex items-center gap-1.5 transition-colors cursor-pointer"
-                          title="Edit Sessions (Admin Lock Active)"
+                          onClick={() => setSelectedCohortForSessionChoice(cohort)}
+                          className="px-3 py-2 bg-white/[0.02] hover:bg-white/[0.06] border border-white/[0.06] text-slate-300 hover:text-white text-xs font-semibold rounded-xl flex items-center gap-1.5 transition-colors cursor-pointer group/editbtn"
+                          title="Choose which session to edit from this course"
                         >
-                          <Lock className="w-3 h-3 text-slate-400" />
+                          <Lock className="w-3.5 h-3.5 text-slate-400 group-hover/editbtn:text-amber-400 transition-colors" />
                           <span>Edit</span>
                         </button>
                       )}
@@ -3202,6 +3359,51 @@ export function InstructorLiveSessionsView({
                 <p className="text-[11px] text-slate-400">{selectedSessionForLockedNotice.courseName} · {selectedSessionForLockedNotice.enrolledStudentsCount} Enrolled Students</p>
               </div>
 
+              {/* Session Switcher Pill Buttons */}
+              {currentCourseSessions.length > 1 && (
+                <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.06] space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                      Switch Session ({selectedSessionForLockedNotice.courseName})
+                    </span>
+                    <select
+                      value={selectedSessionForLockedNotice.id}
+                      onChange={(e) => {
+                        const next = currentCourseSessions.find((s) => s.id === e.target.value);
+                        if (next) handleInitiateEdit(next);
+                      }}
+                      className="bg-[#0B0F17] border border-white/[0.1] text-xs text-white rounded-lg px-2 py-0.5 focus:outline-none focus:border-amber-500/60"
+                    >
+                      {currentCourseSessions.map((s) => (
+                        <option key={s.id} value={s.id}>
+                          {s.sessionCode}: {s.title}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-thin">
+                    {currentCourseSessions.map((s) => {
+                      const isActive = s.id === selectedSessionForLockedNotice.id;
+                      return (
+                        <button
+                          key={s.id}
+                          type="button"
+                          onClick={() => handleInitiateEdit(s)}
+                          className={`px-2.5 py-1 rounded-lg text-xs font-semibold shrink-0 transition-all cursor-pointer flex items-center gap-1 ${
+                            isActive
+                              ? "bg-amber-500/20 text-amber-300 border border-amber-500/40"
+                              : "bg-white/[0.03] text-slate-400 hover:text-white hover:bg-white/[0.06] border border-white/[0.04]"
+                          }`}
+                        >
+                          <span>{s.sessionCode}</span>
+                          {isActive && <Check className="w-3 h-3 text-amber-400" />}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
               {/* Policy Explanation */}
               <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-slate-300 space-y-1.5 leading-relaxed">
                 <div className="flex items-center gap-1.5 font-bold text-amber-300">
@@ -3235,38 +3437,34 @@ export function InstructorLiveSessionsView({
               )}
 
               {/* Action Buttons */}
-              <div className="pt-3 border-t border-white/[0.08] flex flex-col sm:flex-row items-center justify-between gap-3">
-                {/* Admin Quick Override for Testing */}
+              <div className="pt-3 border-t border-white/[0.08] flex items-center justify-end gap-3">
                 <button
                   type="button"
-                  onClick={() => handleAdminGrantPermission(selectedSessionForLockedNotice.id)}
-                  className="w-full sm:w-auto px-3 py-1.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 text-[11px] font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
-                  title="Simulate Admin unlocking this session immediately"
+                  onClick={() => setSelectedSessionForLockedNotice(null)}
+                  className="px-3.5 py-2 text-slate-400 hover:text-white font-medium cursor-pointer"
                 >
-                  <KeyRound className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>[Admin] Grant Edit Permission</span>
+                  Cancel
                 </button>
 
-                <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                {selectedSessionForLockedNotice.editPermissionStatus !== "REQUEST_PENDING" ? (
                   <button
                     type="button"
-                    onClick={() => setSelectedSessionForLockedNotice(null)}
-                    className="px-3.5 py-2 text-slate-400 hover:text-white font-medium cursor-pointer"
+                    onClick={() => handleRequestEditPermission(selectedSessionForLockedNotice.id)}
+                    disabled={isSubmittingEditRequest}
+                    className="px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold rounded-xl shadow-md transition-all cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
                   >
-                    Cancel
-                  </button>
-
-                  {selectedSessionForLockedNotice.editPermissionStatus !== "REQUEST_PENDING" && (
-                    <button
-                      type="button"
-                      onClick={() => handleRequestEditPermission(selectedSessionForLockedNotice.id)}
-                      className="px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold rounded-xl shadow-md transition-all cursor-pointer flex items-center gap-1.5"
-                    >
+                    {isSubmittingEditRequest ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
                       <Lock className="w-3.5 h-3.5" />
-                      <span>Request Edit Access</span>
-                    </button>
-                  )}
-                </div>
+                    )}
+                    <span>{isSubmittingEditRequest ? "Submitting Request..." : "Request Edit Access"}</span>
+                  </button>
+                ) : (
+                  <span className="text-xs text-sky-400 font-semibold px-3 py-1.5 bg-sky-500/10 rounded-lg border border-sky-500/20">
+                    Request Under Review
+                  </span>
+                )}
               </div>
             </motion.div>
           </div>
@@ -3278,12 +3476,12 @@ export function InstructorLiveSessionsView({
           ═══════════════════════════════════════════════════════════ */}
       <AnimatePresence>
         {selectedSessionForEdit && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md">
             <motion.div
               initial={{ opacity: 0, scale: 0.96 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.96 }}
-              className="bg-[#121824] border border-amber-500/40 rounded-2xl p-6 sm:p-7 max-w-2xl w-full max-h-[90vh] overflow-y-auto space-y-5 shadow-2xl relative text-xs text-slate-200"
+              className="bg-[#101622] border border-amber-500/40 rounded-2xl sm:rounded-3xl p-6 sm:p-7 max-w-2xl w-full max-h-[90vh] overflow-y-auto space-y-5 shadow-2xl relative text-xs text-slate-200"
             >
               {/* Header */}
               <div className="flex items-start justify-between border-b border-white/[0.08] pb-4">
@@ -3306,8 +3504,9 @@ export function InstructorLiveSessionsView({
                   </div>
                 </div>
                 <button
+                  type="button"
                   onClick={() => setSelectedSessionForEdit(null)}
-                  className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/[0.05]"
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/[0.05] cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -3318,7 +3517,7 @@ export function InstructorLiveSessionsView({
                 <div className="flex items-center gap-2">
                   <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
                   <span>
-                    Permission active: <strong>{selectedSessionForEdit.editPermissionGrantedBy || "Academic Administration"}</strong>
+                    Permission active: <strong>{selectedSessionForEdit.editPermissionGrantedBy || "Academic Operations Admin"}</strong>
                   </span>
                 </div>
                 <button
@@ -3326,16 +3525,69 @@ export function InstructorLiveSessionsView({
                   onClick={() => handleReLockSession(selectedSessionForEdit.id)}
                   className="text-[11px] font-bold text-amber-300 hover:underline flex items-center gap-1 cursor-pointer"
                 >
-                  <Lock className="w-3 h-3" />
+                  <Lock className="w-3 h-3 text-amber-400" />
                   <span>Re-Lock</span>
                 </button>
               </div>
 
+              {/* Session Switcher Pill Buttons */}
+              {currentCourseSessions.length > 1 && (
+                <div className="p-3.5 rounded-2xl bg-[#141B2A] border border-amber-500/25 space-y-2.5">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
+                        Course Sessions ({currentCourseSessions.length})
+                      </span>
+                      <span className="text-xs text-slate-300 font-medium truncate max-w-[200px] sm:max-w-xs">
+                        {selectedSessionForEdit.courseName}
+                      </span>
+                    </div>
+
+                    <select
+                      value={selectedSessionForEdit.id}
+                      onChange={(e) => {
+                        const next = currentCourseSessions.find((s) => s.id === e.target.value);
+                        if (next) handleInitiateEdit(next);
+                      }}
+                      className="bg-[#0D121F] border border-white/[0.12] text-xs text-white rounded-lg px-2.5 py-1 focus:outline-none focus:border-amber-500/60 cursor-pointer"
+                    >
+                      {currentCourseSessions.map((s) => (
+                        <option key={s.id} value={s.id}>
+                          {s.sessionCode}: {s.title} ({s.displayDate})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Horizontal Scrollable Session Pill Buttons */}
+                  <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-thin">
+                    {currentCourseSessions.map((s) => {
+                      const isActive = s.id === selectedSessionForEdit.id;
+                      return (
+                        <button
+                          key={s.id}
+                          type="button"
+                          onClick={() => handleInitiateEdit(s)}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-bold shrink-0 transition-all cursor-pointer flex items-center gap-1.5 ${
+                            isActive
+                              ? "bg-amber-500 text-slate-950 shadow-md shadow-amber-500/25 scale-105"
+                              : "bg-white/[0.04] text-slate-300 hover:text-white hover:bg-white/[0.08] border border-white/[0.06]"
+                          }`}
+                        >
+                          <span>{s.sessionCode}</span>
+                          {isActive && <Check className="w-3 h-3 text-slate-950 stroke-[3]" />}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
               {/* Form */}
               <form onSubmit={handleSaveSessionEdits} className="space-y-4">
                 {/* Session Title / Topic */}
-                <div className="space-y-1">
-                  <label className="block text-slate-300 font-semibold">
+                <div className="space-y-1.5">
+                  <label className="block text-slate-300 font-semibold text-xs">
                     Session Topic & Title *
                   </label>
                   <input
@@ -3344,137 +3596,484 @@ export function InstructorLiveSessionsView({
                     value={editFormTitle}
                     onChange={(e) => setEditFormTitle(e.target.value)}
                     placeholder="e.g. Session 04: Production RAG & Vector Databases"
-                    className="w-full px-3.5 py-2.5 bg-white/[0.04] border border-white/[0.1] rounded-xl text-white font-medium focus:outline-none focus:border-amber-500/50"
+                    className="w-full px-3.5 py-2.5 bg-[#141B2A] border border-white/[0.1] rounded-xl text-white font-medium text-xs focus:outline-none focus:border-amber-500/60"
                   />
                 </div>
 
                 {/* Date & Time Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div className="space-y-1">
-                    <label className="block text-slate-300 font-semibold">Date *</label>
-                    <DatePicker
-                      value={editFormDate}
-                      onChange={(val) => setEditFormDate(val)}
-                      required
-                    />
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-slate-300 font-semibold text-xs">Schedule (Date & Time)</label>
+                    {selectedSessionForEdit.permissions && !selectedSessionForEdit.permissions.canReschedule && (
+                      <span className="text-[10px] text-amber-400 font-bold flex items-center gap-1 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
+                        <Lock className="w-3 h-3" /> Rescheduling Disabled (Admin Permission Required)
+                      </span>
+                    )}
                   </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div className="space-y-1">
+                      <label className="block text-slate-400 text-[11px]">Date *</label>
+                      <DatePicker
+                        value={editFormDate}
+                        onChange={(val) => {
+                          if (selectedSessionForEdit.permissions && !selectedSessionForEdit.permissions.canReschedule) {
+                            showToast("Live Class Rescheduling authority is disabled by Administrator.");
+                            return;
+                          }
+                          setEditFormDate(val);
+                        }}
+                        required
+                        disabled={selectedSessionForEdit.permissions && !selectedSessionForEdit.permissions.canReschedule}
+                      />
+                    </div>
 
-                  <div className="space-y-1">
-                    <label className="block text-slate-300 font-semibold">Start Time *</label>
-                    <TimePicker
-                      value={editFormStartTime}
-                      onChange={(val) => setEditFormStartTime(val)}
-                    />
-                  </div>
+                    <div className="space-y-1">
+                      <label className="block text-slate-400 text-[11px]">Start Time *</label>
+                      <TimePicker
+                        value={editFormStartTime}
+                        onChange={(val) => {
+                          if (selectedSessionForEdit.permissions && !selectedSessionForEdit.permissions.canReschedule) {
+                            showToast("Live Class Rescheduling authority is disabled by Administrator.");
+                            return;
+                          }
+                          setEditFormStartTime(val);
+                        }}
+                        disabled={selectedSessionForEdit.permissions && !selectedSessionForEdit.permissions.canReschedule}
+                      />
+                    </div>
 
-                  <div className="space-y-1">
-                    <label className="block text-slate-300 font-semibold">End Time *</label>
-                    <TimePicker
-                      value={editFormEndTime}
-                      onChange={(val) => setEditFormEndTime(val)}
-                    />
+                    <div className="space-y-1">
+                      <label className="block text-slate-400 text-[11px]">End Time *</label>
+                      <TimePicker
+                        value={editFormEndTime}
+                        onChange={(val) => {
+                          if (selectedSessionForEdit.permissions && !selectedSessionForEdit.permissions.canReschedule) {
+                            showToast("Live Class Rescheduling authority is disabled by Administrator.");
+                            return;
+                          }
+                          setEditFormEndTime(val);
+                        }}
+                        disabled={selectedSessionForEdit.permissions && !selectedSessionForEdit.permissions.canReschedule}
+                      />
+                    </div>
                   </div>
                 </div>
 
                 {/* Meeting / Classroom URL */}
-                <div className="space-y-1">
-                  <label className="block text-slate-300 font-semibold flex items-center gap-1.5">
-                    <Video className="w-3.5 h-3.5 text-red-400" />
-                    Live Classroom Meeting URL (Zoom / LiveKit / Meet) *
+                <div className="space-y-1.5">
+                  <label className="block text-slate-300 font-semibold text-xs flex items-center gap-1.5">
+                    <Video className="w-3.5 h-3.5 text-rose-400" />
+                    <span>Live Classroom Meeting URL (Zoom / LiveKit / Meet) *</span>
                   </label>
                   <input
                     type="url"
                     required
                     value={editFormMeetingUrl}
                     onChange={(e) => setEditFormMeetingUrl(e.target.value)}
-                    placeholder="https://zoom.us/j/your-meeting-id"
-                    className="w-full px-3.5 py-2.5 bg-white/[0.04] border border-white/[0.1] rounded-xl text-white font-mono text-xs focus:outline-none focus:border-amber-500/50"
+                    placeholder="https://zoom.us/j/glarus-live-cohort"
+                    className="w-full px-3.5 py-2.5 bg-[#141B2A] border border-white/[0.1] rounded-xl text-white font-mono text-xs focus:outline-none focus:border-amber-500/60"
                   />
                 </div>
 
                 {/* Core Topics (Comma-separated) */}
-                <div className="space-y-1">
-                  <label className="block text-slate-300 font-semibold">
+                <div className="space-y-1.5">
+                  <label className="block text-slate-300 font-semibold text-xs">
                     Core Topics (Comma-separated tags)
                   </label>
                   <input
                     type="text"
                     value={editFormTopics}
                     onChange={(e) => setEditFormTopics(e.target.value)}
-                    placeholder="RAG Architecture, Vector DBs, Hybrid Search, Cohere Rerank"
-                    className="w-full px-3.5 py-2 bg-white/[0.04] border border-white/[0.1] rounded-xl text-white focus:outline-none focus:border-amber-500/50"
+                    placeholder="Diffusion-Based Video Generation, AI Video Editing"
+                    className="w-full px-3.5 py-2.5 bg-[#141B2A] border border-white/[0.1] rounded-xl text-white text-xs focus:outline-none focus:border-amber-500/60"
                   />
                 </div>
 
-                {/* Interactive Agenda Steps */}
-                <div className="space-y-2 pt-2 border-t border-white/[0.06]">
-                  <div className="flex items-center justify-between">
-                    <span className="font-semibold text-slate-200 uppercase tracking-wider text-[11px]">
-                      Session Agenda Breakdown ({editFormAgenda.length} steps)
-                    </span>
+                {/* Curriculum Sub-sections Navigation */}
+                <div className="space-y-3 pt-2 border-t border-white/[0.08]">
+                  <div className="flex items-center gap-1.5 bg-white/[0.02] border border-white/[0.06] p-1 rounded-xl">
+                    <button
+                      type="button"
+                      onClick={() => setEditActiveSubSection("AGENDA")}
+                      className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                        editActiveSubSection === "AGENDA"
+                          ? "bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-xs"
+                          : "text-slate-400 hover:text-white"
+                      }`}
+                    >
+                      Agenda Breakdown ({editFormAgenda.length})
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setEditActiveSubSection("OUTCOMES")}
+                      className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                        editActiveSubSection === "OUTCOMES"
+                          ? "bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-xs"
+                          : "text-slate-400 hover:text-white"
+                      }`}
+                    >
+                      Learning Outcomes ({editFormLearningOutcomes.length})
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setEditActiveSubSection("RESOURCES")}
+                      className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                        editActiveSubSection === "RESOURCES"
+                          ? "bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-xs"
+                          : "text-slate-400 hover:text-white"
+                      }`}
+                    >
+                      Resources ({editFormResources.length})
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setEditActiveSubSection("DELIVERABLES")}
+                      className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                        editActiveSubSection === "DELIVERABLES"
+                          ? "bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-xs"
+                          : "text-slate-400 hover:text-white"
+                      }`}
+                    >
+                      Homework / Task
+                    </button>
                   </div>
 
-                  {/* Agenda List */}
-                  <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
-                    {editFormAgenda.map((ag, idx) => (
-                      <div key={idx} className="p-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06] flex items-start gap-2.5">
-                        <span className="font-mono font-bold text-amber-400 w-6 pt-0.5">{ag.stepNumber}</span>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between gap-2">
-                            <span className="font-semibold text-white truncate">{ag.title}</span>
-                            <span className="font-mono text-[10px] text-slate-400 shrink-0">{ag.timeRange}</span>
+                  {/* 1. AGENDA BREAKDOWN */}
+                  {editActiveSubSection === "AGENDA" && (
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-slate-200 uppercase tracking-wider text-[11px]">
+                          SESSION AGENDA BREAKDOWN ({editFormAgenda.length} STEPS)
+                        </span>
+                      </div>
+
+                      {/* Agenda List with Direct Inline Editing */}
+                      <div className="space-y-3 max-h-72 overflow-y-auto pr-1">
+                        {editFormAgenda.map((ag, idx) => (
+                          <div
+                            key={idx}
+                            className="p-3.5 rounded-2xl bg-[#141B2A] border border-white/[0.08] hover:border-amber-500/40 transition-all space-y-2.5 group"
+                          >
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                              {/* Step Number Badge + Direct Title Input */}
+                              <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                                <span className="font-mono font-black text-amber-400 text-xs w-7 h-7 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center shrink-0">
+                                  {ag.stepNumber || String(idx + 1).padStart(2, "0")}
+                                </span>
+                                <input
+                                  type="text"
+                                  value={ag.title}
+                                  onChange={(e) => handleUpdateAgendaStep(idx, "title", e.target.value)}
+                                  placeholder="Step Title (e.g. Scaled Dot-Product Attention)"
+                                  className="flex-1 px-3 py-1.5 bg-[#0D131F] border border-white/[0.08] rounded-xl text-white font-bold text-xs focus:outline-none focus:border-amber-500/50"
+                                />
+                              </div>
+
+                              {/* Direct Time Range Input + Quick Actions */}
+                              <div className="flex items-center gap-1.5 shrink-0 self-end sm:self-auto">
+                                <input
+                                  type="text"
+                                  value={ag.timeRange}
+                                  onChange={(e) => handleUpdateAgendaStep(idx, "timeRange", e.target.value)}
+                                  placeholder="12:45 PM - 1:00 PM"
+                                  className="w-36 px-2.5 py-1.5 bg-[#0D131F] border border-white/[0.08] rounded-xl text-amber-300 font-mono text-[11px] font-semibold text-center focus:outline-none focus:border-amber-500/50"
+                                />
+
+                                <button
+                                  type="button"
+                                  onClick={() => handleMoveAgendaStep(idx, "UP")}
+                                  disabled={idx === 0}
+                                  className="p-1.5 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] text-slate-400 hover:text-white disabled:opacity-20 cursor-pointer disabled:cursor-not-allowed transition-colors"
+                                  title="Move Up"
+                                >
+                                  <MoveUp className="w-3.5 h-3.5" />
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={() => handleMoveAgendaStep(idx, "DOWN")}
+                                  disabled={idx === editFormAgenda.length - 1}
+                                  className="p-1.5 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] text-slate-400 hover:text-white disabled:opacity-20 cursor-pointer disabled:cursor-not-allowed transition-colors"
+                                  title="Move Down"
+                                >
+                                  <MoveDown className="w-3.5 h-3.5" />
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={() => handleDuplicateAgendaStep(idx)}
+                                  className="p-1.5 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] text-slate-400 hover:text-amber-300 cursor-pointer transition-colors"
+                                  title="Duplicate Step"
+                                >
+                                  <Copy className="w-3.5 h-3.5" />
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveAgendaStep(idx)}
+                                  className="p-1.5 rounded-lg bg-white/[0.04] hover:bg-rose-500/20 text-slate-500 hover:text-rose-400 cursor-pointer transition-colors"
+                                  title="Delete Step"
+                                >
+                                  <X className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            </div>
+
+                            {/* Direct Description Input / Textarea */}
+                            <div className="pl-9">
+                              <textarea
+                                rows={2}
+                                value={ag.description}
+                                onChange={(e) => handleUpdateAgendaStep(idx, "description", e.target.value)}
+                                placeholder="Brief description of topics, demos, or hands-on tasks in this step..."
+                                className="w-full px-3 py-2 bg-[#0D131F] border border-white/[0.06] rounded-xl text-slate-300 text-xs focus:outline-none focus:border-amber-500/50 leading-relaxed resize-none"
+                              />
+                            </div>
                           </div>
-                          <p className="text-[11px] text-slate-400 mt-0.5 truncate">{ag.description}</p>
+                        ))}
+                      </div>
+
+                      {/* Add New Step Inline Box */}
+                      <div className="p-3.5 rounded-xl bg-[#141B2A]/70 border border-dashed border-white/[0.12] space-y-2.5">
+                        <div className="text-xs font-semibold text-slate-300">Add Agenda Step:</div>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                          <input
+                            type="text"
+                            placeholder="Step Title (e.g. Vector Indexing)"
+                            value={newAgendaTitle}
+                            onChange={(e) => setNewAgendaTitle(e.target.value)}
+                            className="sm:col-span-2 px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-xl text-white text-xs placeholder:text-slate-500 focus:outline-none focus:border-amber-500/50"
+                          />
+                          <input
+                            type="text"
+                            placeholder="Time (e.g. 10:15 – 10:35)"
+                            value={newAgendaTime}
+                            onChange={(e) => setNewAgendaTime(e.target.value)}
+                            className="px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-xl text-white text-xs font-mono placeholder:text-slate-500 focus:outline-none focus:border-amber-500/50"
+                          />
                         </div>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="text"
+                            placeholder="Brief summary of topic covered..."
+                            value={newAgendaDesc}
+                            onChange={(e) => setNewAgendaDesc(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                e.preventDefault();
+                                handleAddAgendaStep();
+                              }
+                            }}
+                            className="flex-1 px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-xl text-white text-xs placeholder:text-slate-500 focus:outline-none focus:border-amber-500/50"
+                          />
+                          <button
+                            type="button"
+                            onClick={handleAddAgendaStep}
+                            className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black rounded-xl text-xs transition-colors shrink-0 cursor-pointer flex items-center gap-1 shadow-md shadow-amber-500/20"
+                          >
+                            <Plus className="w-3.5 h-3.5" />
+                            <span>Add</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 2. LEARNING OUTCOMES */}
+                  {editActiveSubSection === "OUTCOMES" && (
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-slate-200 uppercase tracking-wider text-[11px]">
+                          Target Learning Outcomes ({editFormLearningOutcomes.length})
+                        </span>
+                      </div>
+
+                      <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
+                        {editFormLearningOutcomes.map((outcome, idx) => (
+                          <div
+                            key={idx}
+                            className="p-3 rounded-xl bg-[#141B2A] border border-white/[0.08] flex items-center justify-between gap-3"
+                          >
+                            <div className="flex items-center gap-2.5">
+                              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                              <span className="text-xs text-white font-medium">{outcome}</span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => setEditFormLearningOutcomes(prev => prev.filter((_, i) => i !== idx))}
+                              className="text-slate-500 hover:text-rose-400 p-1 cursor-pointer"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="flex items-center gap-2 pt-1">
+                        <input
+                          type="text"
+                          placeholder="e.g. Build end-to-end multi-agent DSPy pipeline..."
+                          value={newOutcome}
+                          onChange={(e) => setNewOutcome(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              if (newOutcome.trim()) {
+                                setEditFormLearningOutcomes(prev => [...prev, newOutcome.trim()]);
+                                setNewOutcome("");
+                              }
+                            }
+                          }}
+                          className="flex-1 px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-xl text-white text-xs focus:outline-none focus:border-amber-500/50"
+                        />
                         <button
                           type="button"
-                          onClick={() => handleRemoveAgendaStep(idx)}
-                          className="text-slate-500 hover:text-rose-400 p-1"
-                          title="Remove step"
+                          onClick={() => {
+                            if (newOutcome.trim()) {
+                              setEditFormLearningOutcomes(prev => [...prev, newOutcome.trim()]);
+                              setNewOutcome("");
+                            }
+                          }}
+                          className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl text-xs shrink-0 cursor-pointer flex items-center gap-1"
                         >
-                          <X className="w-3.5 h-3.5" />
+                          <Plus className="w-3.5 h-3.5" />
+                          <span>Add</span>
                         </button>
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  )}
 
-                  {/* Add New Step Inline */}
-                  <div className="p-3 rounded-xl bg-white/[0.02] border border-dashed border-white/[0.1] space-y-2">
-                    <div className="text-[11px] font-semibold text-slate-400">Add Agenda Step:</div>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                      <input
-                        type="text"
-                        placeholder="Step Title (e.g. Vector Indexing)"
-                        value={newAgendaTitle}
-                        onChange={(e) => setNewAgendaTitle(e.target.value)}
-                        className="sm:col-span-2 px-2.5 py-1.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-white text-xs"
-                      />
-                      <input
-                        type="text"
-                        placeholder="Time (e.g. 10:15 – 10:35)"
-                        value={newAgendaTime}
-                        onChange={(e) => setNewAgendaTime(e.target.value)}
-                        className="px-2.5 py-1.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-white text-xs font-mono"
-                      />
+                  {/* 3. RESOURCES & HANDOUTS */}
+                  {editActiveSubSection === "RESOURCES" && (
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-slate-200 uppercase tracking-wider text-[11px]">
+                          Session Handouts & Code Repos ({editFormResources.length})
+                        </span>
+                      </div>
+
+                      <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
+                        {editFormResources.map((res, idx) => (
+                          <div
+                            key={idx}
+                            className="p-3 rounded-xl bg-[#141B2A] border border-white/[0.08] flex items-center justify-between gap-3"
+                          >
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <BookOpen className="w-4 h-4 text-purple-400 shrink-0" />
+                              <div className="min-w-0">
+                                <p className="text-xs text-white font-bold truncate">{res.title}</p>
+                                <a
+                                  href={res.url}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="text-[11px] text-amber-400 hover:underline truncate block"
+                                >
+                                  {res.url}
+                                </a>
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => setEditFormResources(prev => prev.filter((_, i) => i !== idx))}
+                              className="text-slate-500 hover:text-rose-400 p-1 cursor-pointer"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <input
+                          type="text"
+                          placeholder="Resource Title (e.g. Starter Notebook)"
+                          value={newResTitle}
+                          onChange={(e) => setNewResTitle(e.target.value)}
+                          className="px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-xl text-white text-xs"
+                        />
+                        <input
+                          type="url"
+                          placeholder="URL (https://github.com/...)"
+                          value={newResUrl}
+                          onChange={(e) => setNewResUrl(e.target.value)}
+                          className="px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-xl text-white text-xs"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (newResTitle.trim() && newResUrl.trim()) {
+                              setEditFormResources(prev => [...prev, { title: newResTitle.trim(), url: newResUrl.trim(), type: newResType }]);
+                              setNewResTitle("");
+                              setNewResUrl("");
+                            }
+                          }}
+                          className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl text-xs cursor-pointer flex items-center justify-center gap-1"
+                        >
+                          <Plus className="w-3.5 h-3.5" />
+                          <span>Add Resource</span>
+                        </button>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="text"
-                        placeholder="Brief summary of topic covered..."
-                        value={newAgendaDesc}
-                        onChange={(e) => setNewAgendaDesc(e.target.value)}
-                        className="flex-1 px-2.5 py-1.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-white text-xs"
-                      />
-                      <button
-                        type="button"
-                        onClick={handleAddAgendaStep}
-                        className="px-3 py-1.5 bg-amber-500/20 hover:bg-amber-500 text-amber-300 hover:text-slate-950 font-bold rounded-lg text-xs transition-colors shrink-0 cursor-pointer flex items-center gap-1"
-                      >
-                        <Plus className="w-3.5 h-3.5" />
-                        <span>Add</span>
-                      </button>
+                  )}
+
+                  {/* 4. HOMEWORK & DELIVERABLES */}
+                  {editActiveSubSection === "DELIVERABLES" && (
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-slate-200 uppercase tracking-wider text-[11px]">
+                          Session Assignment & Deliverable
+                        </span>
+                        <span className="text-[10px] text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+                          ⚡ Auto-assigned when session is completed
+                        </span>
+                      </div>
+
+                      <div className="space-y-2.5 p-3.5 rounded-xl bg-[#141B2A] border border-white/[0.08]">
+                        <div className="space-y-1">
+                          <label className="block text-slate-400 text-[11px] font-medium">Assignment Title</label>
+                          <input
+                            type="text"
+                            placeholder="e.g. Build & Deploy RAG Pipeline with Hybrid Search"
+                            value={editFormHomework.title}
+                            onChange={(e) => setEditFormHomework(prev => ({ ...prev, title: e.target.value }))}
+                            className="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-xl text-white text-xs"
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="block text-slate-400 text-[11px] font-medium">Instructions / Problem Statement</label>
+                          <textarea
+                            rows={2}
+                            placeholder="Submit your Colab notebook URL or GitHub repository demonstrating MRR > 0.85..."
+                            value={editFormHomework.description}
+                            onChange={(e) => setEditFormHomework(prev => ({ ...prev, description: e.target.value }))}
+                            className="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-xl text-white text-xs"
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-slate-400 text-[11px] font-medium">Due Date</label>
+                            <input
+                              type="date"
+                              value={editFormHomework.dueDate || ""}
+                              onChange={(e) => setEditFormHomework(prev => ({ ...prev, dueDate: e.target.value }))}
+                              className="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-xl text-white text-xs"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-slate-400 text-[11px] font-medium">Max Points</label>
+                            <input
+                              type="number"
+                              value={editFormHomework.maxPoints || 100}
+                              onChange={(e) => setEditFormHomework(prev => ({ ...prev, maxPoints: parseInt(e.target.value, 10) || 100 }))}
+                              className="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-xl text-white text-xs font-mono"
+                            />
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
 
                 {/* Footer Actions */}
@@ -3498,9 +4097,14 @@ export function InstructorLiveSessionsView({
                     </button>
                     <button
                       type="submit"
-                      className="px-5 py-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black rounded-xl shadow-lg shadow-amber-500/20 transition-all cursor-pointer flex items-center gap-1.5"
+                      disabled={isSavingEdit}
+                      className="px-5 py-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black rounded-xl shadow-lg shadow-amber-500/20 transition-all cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
                     >
-                      <Check className="w-4 h-4" />
+                      {isSavingEdit ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Check className="w-4 h-4" />
+                      )}
                       <span>Save & Update Session</span>
                     </button>
                   </div>
@@ -3840,6 +4444,146 @@ export function InstructorLiveSessionsView({
                     </button>
                   </div>
                 </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* ═══════════════════════════════════════════════════════════
+          MODAL 6: CHOOSE SESSION TO EDIT MODAL
+          ═══════════════════════════════════════════════════════════ */}
+      <AnimatePresence>
+        {selectedCohortForSessionChoice && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.96 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.96 }}
+              className="bg-[#101622] border border-amber-500/30 rounded-2xl sm:rounded-3xl p-6 sm:p-7 max-w-2xl w-full max-h-[88vh] overflow-y-auto space-y-5 shadow-2xl relative text-xs text-slate-200"
+            >
+              {/* Header */}
+              <div className="flex items-start justify-between border-b border-white/[0.08] pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 rounded-xl bg-amber-500/15 text-amber-400 border border-amber-500/30">
+                    <Edit3 className="w-5 h-5 text-amber-400" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-[10px] font-black text-amber-400 bg-amber-500/10 border border-amber-500/25 px-2 py-0.5 rounded-md uppercase tracking-wider">
+                        SELECT SESSION TO EDIT
+                      </span>
+                      <span className="text-xs text-slate-400 font-mono">
+                        {selectedCohortForSessionChoice.cohortBadge}
+                      </span>
+                    </div>
+                    <h3 className="text-lg sm:text-xl font-black text-white mt-0.5">
+                      {selectedCohortForSessionChoice.courseName}
+                    </h3>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setSelectedCohortForSessionChoice(null)}
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/[0.05] cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Sub-header instruction */}
+              <p className="text-xs text-slate-300">
+                Choose which session you would like to edit or reschedule. You can also switch sessions at any time directly inside the live session editor.
+              </p>
+
+              {/* Sessions List */}
+              <div className="space-y-2.5 max-h-96 overflow-y-auto pr-1">
+                {selectedCohortForSessionChoice.sessions.map((session: AdminAssignedSession) => {
+                  const isUnlocked = session.editPermissionStatus === "UNLOCKED" || session.permissions?.canEdit;
+                  const isLive = session.executionStatus === "LIVE_NOW";
+                  const isCompleted = session.executionStatus === "COMPLETED";
+
+                  return (
+                    <div
+                      key={session.id}
+                      className="p-4 rounded-xl bg-[#141B2A] border border-white/[0.06] hover:border-amber-500/30 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 group"
+                    >
+                      <div className="space-y-1 min-w-0 flex-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-mono font-bold text-amber-400 text-xs px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/20">
+                            {session.sessionCode}
+                          </span>
+                          <span className="font-bold text-white text-xs sm:text-sm truncate">
+                            {session.title}
+                          </span>
+                          {isLive && (
+                            <span className="text-[10px] font-bold text-red-400 bg-red-500/15 border border-red-500/30 px-1.5 py-0.2 rounded">
+                              🔴 LIVE NOW
+                            </span>
+                          )}
+                          {isCompleted && (
+                            <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 px-1.5 py-0.2 rounded">
+                              ✓ COMPLETED
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="flex items-center gap-3 text-[11px] text-slate-400">
+                          <span className="flex items-center gap-1">
+                            <Calendar className="w-3 h-3 text-slate-500" />
+                            {session.displayDate}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Clock className="w-3 h-3 text-slate-500" />
+                            {session.startTime} – {session.endTime}
+                          </span>
+                          <span>({session.duration})</span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedCohortForSessionChoice(null);
+                            handleInitiateEdit(session);
+                          }}
+                          className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm cursor-pointer ${
+                            isUnlocked
+                              ? "bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 hover:scale-105"
+                              : "bg-white/[0.04] hover:bg-white/[0.08] text-slate-300 hover:text-white border border-white/[0.08]"
+                          }`}
+                        >
+                          {isUnlocked ? (
+                            <>
+                              <Unlock className="w-3.5 h-3.5 text-amber-400" />
+                              <span>Edit Details →</span>
+                            </>
+                          ) : (
+                            <>
+                              <Lock className="w-3.5 h-3.5 text-slate-400" />
+                              <span>Edit (Admin Lock) →</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Bottom Footer */}
+              <div className="pt-3 border-t border-white/[0.08] flex items-center justify-between">
+                <span className="text-[11px] text-slate-400">
+                  Total {selectedCohortForSessionChoice.sessions.length} sessions in this cohort
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setSelectedCohortForSessionChoice(null)}
+                  className="px-4 py-2 bg-white/[0.06] hover:bg-white/[0.1] text-white font-semibold text-xs rounded-xl cursor-pointer"
+                >
+                  Close
+                </button>
               </div>
             </motion.div>
           </div>

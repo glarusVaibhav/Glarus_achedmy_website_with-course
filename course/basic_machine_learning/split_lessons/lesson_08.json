@@ -1,0 +1,57 @@
+{
+    "id": "lesson_06_5_modern_ai",
+    "title": "Modern AI & LLMs",
+    "stages": [
+        {
+            "type": "concept",
+            "content": {
+                "title": "The Transformer Revolution",
+                "explanation": "\u2022 1.\n\u2022 Beginner-friendly explanation: The Transformer is the specific type of neural network that made ChatGPT possible.\n\u2022 It processes language incredibly well because it looks at entire sentences simultaneously.\n\u2022 2.\n\u2022 Transformers use 'Self-Attention' to instantly make that same connection."
+            }
+        },
+        {
+            "type": "visual",
+            "content": {
+                "title": "Transformer Self-Attention",
+                "explanation": "Unlike older models that read word-by-word, see how the Self-Attention mechanism allows every word to instantly connect with every other word to gain full context.",
+                "image": "images/transformer_intro_1779772693935.png"
+            }
+        },
+        {
+            "type": "concept",
+            "content": {
+                "title": "Large Language Models (LLMs)",
+                "explanation": "\u2022 An LLM (like GPT, Gemini,\n\u2022 or Claude) is essentially a\n\u2022 massive Transformer model trained on\n\u2022 a vast portion of the\n\u2022 internet."
+            }
+        },
+        {
+            "type": "recall",
+            "content": {
+                "question": "At their very core, despite their massive size and complexity, what is the single simple task that LLMs (like GPT) are fundamentally doing?",
+                "correctAnswer": "Predicting the next word based on context.",
+                "hints": [
+                    "Think about auto-complete on your phone.",
+                    "It starts with 'Predicting...'",
+                    "It predicts the next..."
+                ]
+            }
+        },
+        {
+            "type": "scenario",
+            "title": "Choosing the Right Tool",
+            "description": "You need to predict if a bank transaction is fraudulent based on 50 numeric columns (amount, time, distance from home). Should you use a Random Forest or fine-tune an LLM?",
+            "choices": [
+                {
+                    "text": "Fine-tune an LLM. It's the most advanced technology.",
+                    "score": 0,
+                    "outcome": "Wrong! LLMs are terrible at structured numerical tabular data and are vastly overkill for this."
+                },
+                {
+                    "text": "Use a Random Forest or XGBoost model.",
+                    "score": 100,
+                    "outcome": "Correct! Classic ML algorithms still heavily dominate structured tabular data tasks in speed, cost, and accuracy."
+                }
+            ]
+        }
+    ]
+}

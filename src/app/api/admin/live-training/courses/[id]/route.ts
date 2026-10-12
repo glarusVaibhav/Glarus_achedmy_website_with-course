@@ -246,9 +246,28 @@ export async function PUT(
     } = body;
 
     const updateData: any = {};
-    if (title !== undefined) updateData.title = title;
-    if (shortDescription !== undefined) updateData.shortDescription = shortDescription;
-    if (description !== undefined) updateData.description = description;
+    if (title !== undefined) updateData.title = typeof title === "string" ? title : String(title);
+    if (shortDescription !== undefined) {
+      updateData.shortDescription = Array.isArray(shortDescription)
+        ? shortDescription.join(" ")
+        : typeof shortDescription === "object" && shortDescription !== null
+        ? JSON.stringify(shortDescription)
+        : (shortDescription || null);
+    }
+    if (body.subtitle !== undefined) {
+      updateData.subtitle = Array.isArray(body.subtitle)
+        ? body.subtitle.join(" ")
+        : typeof body.subtitle === "object" && body.subtitle !== null
+        ? JSON.stringify(body.subtitle)
+        : (body.subtitle || null);
+    }
+    if (description !== undefined) {
+      updateData.description = Array.isArray(description)
+        ? description.join("\n\n")
+        : typeof description === "object" && description !== null
+        ? JSON.stringify(description)
+        : String(description || "");
+    }
     if (category !== undefined) updateData.category = category;
     if (level !== undefined) updateData.level = level;
     if (duration !== undefined) updateData.duration = duration;

@@ -24,6 +24,7 @@ interface InstructorPermissionModalProps {
   isOpen: boolean;
   onClose: () => void;
   status: CourseCreationPermissionStatus;
+  canCreateCourse?: boolean;
   requestedAt?: string | Date | null;
   reviewedAt?: string | Date | null;
   rejectionReason?: string | null;
@@ -36,6 +37,7 @@ export function InstructorPermissionModal({
   isOpen,
   onClose,
   status,
+  canCreateCourse,
   requestedAt,
   reviewedAt,
   rejectionReason,
@@ -47,6 +49,14 @@ export function InstructorPermissionModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [showReapplyForm, setShowReapplyForm] = useState(false);
+
+  // If canCreateCourse is false, never show APPROVED state (map to REVOKED or current status)
+  const effectiveStatus: CourseCreationPermissionStatus =
+    canCreateCourse === false
+      ? (status === "APPROVED" ? "REVOKED" : status)
+      : canCreateCourse === true
+      ? "APPROVED"
+      : status;
 
   if (!isOpen) return null;
 
@@ -103,7 +113,7 @@ export function InstructorPermissionModal({
           {/* ═══════════════════════════════════════════════════════
               STATE 1: NOT_REQUESTED
               ═══════════════════════════════════════════════════════ */}
-          {status === "NOT_REQUESTED" && (
+          {effectiveStatus === "NOT_REQUESTED" && (
             <div className="space-y-6">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-2xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center shrink-0 shadow-lg shadow-purple-500/10">
@@ -182,7 +192,7 @@ export function InstructorPermissionModal({
           {/* ═══════════════════════════════════════════════════════
               STATE 2: PENDING
               ═══════════════════════════════════════════════════════ */}
-          {status === "PENDING" && (
+          {effectiveStatus === "PENDING" && (
             <div className="space-y-6 text-center py-2">
               <div className="w-16 h-16 rounded-3xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center mx-auto shadow-xl shadow-amber-500/10">
                 <Clock className="w-8 h-8 text-amber-400 animate-pulse" />
@@ -234,7 +244,7 @@ export function InstructorPermissionModal({
           {/* ═══════════════════════════════════════════════════════
               STATE 3: APPROVED
               ═══════════════════════════════════════════════════════ */}
-          {status === "APPROVED" && (
+          {effectiveStatus === "APPROVED" && (
             <div className="space-y-6 text-center py-2">
               <div className="w-16 h-16 rounded-3xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center mx-auto shadow-xl shadow-emerald-500/10">
                 <Sparkles className="w-8 h-8 text-emerald-400" />
@@ -284,7 +294,7 @@ export function InstructorPermissionModal({
           {/* ═══════════════════════════════════════════════════════
               STATE 4: REJECTED
               ═══════════════════════════════════════════════════════ */}
-          {status === "REJECTED" && !showReapplyForm && (
+          {effectiveStatus === "REJECTED" && !showReapplyForm && (
             <div className="space-y-6">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-2xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-center shrink-0 shadow-lg shadow-rose-500/10">
@@ -339,8 +349,8 @@ export function InstructorPermissionModal({
             </div>
           )}
 
-          {/* RE-APPLY FORM AFTER REJECTION */}
-          {status === "REJECTED" && showReapplyForm && (
+          {/* RE-APPLY / REINSTATEMENT FORM (FOR REJECTED OR REVOKED) */}
+          {(effectiveStatus === "REJECTED" || effectiveStatus === "REVOKED") && showReapplyForm && (
             <div className="space-y-6">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-2xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center shrink-0">
@@ -348,10 +358,10 @@ export function InstructorPermissionModal({
                 </div>
                 <div>
                   <span className="text-[10px] font-black uppercase tracking-widest text-purple-400">
-                    Re-Application
+                    {effectiveStatus === "REVOKED" ? "Reinstatement Request" : "Re-Application"}
                   </span>
                   <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">
-                    Submit New Request
+                    {effectiveStatus === "REVOKED" ? "Request Reinstatement" : "Submit New Request"}
                   </h2>
                 </div>
               </div>
@@ -366,14 +376,20 @@ export function InstructorPermissionModal({
               <form onSubmit={handleSubmitRequest} className="space-y-4">
                 <div className="space-y-1.5">
                   <label className="block text-xs font-bold text-slate-300">
-                    Updated Proposal / Action Taken on Feedback
+                    {effectiveStatus === "REVOKED"
+                      ? "Reason for Reinstatement / Updated Plan"
+                      : "Updated Proposal / Action Taken on Feedback"}
                   </label>
                   <textarea
                     rows={4}
                     required
                     value={requestNotes}
                     onChange={(e) => setRequestNotes(e.target.value)}
-                    placeholder="Describe how you have addressed the feedback (e.g. Added full curriculum outline and GitHub code samples)..."
+                    placeholder={
+                      effectiveStatus === "REVOKED"
+                        ? "Briefly describe why your course creation privileges should be restored (e.g. Updated syllabus, refined curriculum, compliance with platform standards)..."
+                        : "Describe how you have addressed the feedback (e.g. Added full curriculum outline and GitHub code samples)..."
+                    }
                     className="w-full bg-[#080B11] border border-white/[0.1] rounded-xl px-3.5 py-2.5 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500/30 transition-all resize-none"
                   />
                 </div>
@@ -399,7 +415,7 @@ export function InstructorPermissionModal({
                     ) : (
                       <>
                         <Send className="w-3.5 h-3.5" />
-                        <span>Send New Request</span>
+                        <span>{effectiveStatus === "REVOKED" ? "Send Reinstatement Request" : "Send New Request"}</span>
                       </>
                     )}
                   </button>
@@ -409,9 +425,9 @@ export function InstructorPermissionModal({
           )}
 
           {/* ═══════════════════════════════════════════════════════
-              STATE 5: REVOKED
+              STATE 5: REVOKED / LOCKED
               ═══════════════════════════════════════════════════════ */}
-          {status === "REVOKED" && (
+          {effectiveStatus === "REVOKED" && !showReapplyForm && (
             <div className="space-y-6">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center shrink-0 shadow-lg shadow-amber-500/10">
@@ -422,21 +438,21 @@ export function InstructorPermissionModal({
                     Privilege Status
                   </span>
                   <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">
-                    Permission Revoked
+                    Course Creation Locked
                   </h2>
                 </div>
               </div>
 
               <div className="p-4 rounded-2xl bg-amber-500/5 border border-amber-500/20 space-y-2 text-xs text-slate-300 leading-relaxed">
                 <p>
-                  Course creation access has been revoked by Platform Administration.
+                  Course creation access is currently restricted or revoked by Platform Administration.
                 </p>
                 <div className="p-2.5 rounded-lg bg-black/20 border border-white/[0.04] text-[11px] text-slate-400">
                   💡 <b>Note:</b> Your existing published courses, modules, and enrolled learners remain active and untouched.
                 </div>
                 {reviewedAt && (
                   <p className="text-[11px] text-slate-500 pt-1 font-mono">
-                    Revoked on {formatDate(reviewedAt)}
+                    Status updated on {formatDate(reviewedAt)}
                   </p>
                 )}
               </div>

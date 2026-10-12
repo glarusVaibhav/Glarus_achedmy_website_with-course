@@ -5,13 +5,22 @@ import nodemailer from 'nodemailer';
  * All credentials come from environment variables — never hardcoded.
  */
 function createTransporter() {
+  const host = process.env.SMTP_HOST || 'smtp.gmail.com';
+  const port = parseInt(process.env.SMTP_PORT || '587');
+  const isSecure = process.env.SMTP_SECURE === 'true' || port === 465;
+  const user = process.env.SMTP_USER?.trim();
+  const pass = process.env.SMTP_PASS?.replace(/\s+/g, '');
+
   return nodemailer.createTransport({
-    host: process.env.SMTP_HOST || 'smtp.gmail.com',
-    port: parseInt(process.env.SMTP_PORT || '587'),
-    secure: process.env.SMTP_SECURE === 'true', // true for 465, false for other ports
+    host,
+    port,
+    secure: isSecure,
     auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
+      user,
+      pass,
+    },
+    tls: {
+      rejectUnauthorized: false,
     },
   });
 }
@@ -41,10 +50,11 @@ export async function sendSignupOTP(email: string, otp: string): Promise<void> {
     const transporter = createTransporter();
     const fromAddress = process.env.SMTP_FROM || `"GlarusAcademy" <${process.env.SMTP_USER}>`;
 
-    await transporter.sendMail({
+    const info = await transporter.sendMail({
       from: fromAddress,
       to: email,
       subject: `${otp} is your GlarusAcademy verification code`,
+      text: `Your GlarusAcademy email verification code is: ${otp}\n\nThis code will expire in 5 minutes.\nIf you did not request this code, please ignore this email.`,
       html: `
         <!DOCTYPE html>
         <html lang="en">

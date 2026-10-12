@@ -1,0 +1,214 @@
+{
+    "modules": [
+        {
+            "module_id": "M1",
+            "module_title": "AI Foundations",
+            "description": "Start from scratch: what AI is, how it evolved, and how language models work.",
+            "order": 1,
+            "topic_ids": [
+                "T0",
+                "T1",
+                "T2"
+            ]
+        },
+        {
+            "module_id": "M2",
+            "module_title": "Advanced AI Mechanics",
+            "description": "Deep dive into advanced concepts, mechanics, and multimodal AI.",
+            "order": 2,
+            "topic_ids": [
+                "T3",
+                "T4"
+            ]
+        },
+        {
+            "module_id": "M3",
+            "module_title": "Core Machine Learning",
+            "description": "Understand data, ML paradigms, and how neural networks operate.",
+            "order": 3,
+            "topic_ids": [
+                "T4b",
+                "T5",
+                "T6"
+            ]
+        },
+        {
+            "module_id": "M4",
+            "module_title": "How Models Learn",
+            "description": "Learn backpropagation, training pipelines, and ethical implications.",
+            "order": 4,
+            "topic_ids": [
+                "T6b",
+                "T7",
+                "T8"
+            ]
+        },
+        {
+            "module_id": "M5",
+            "module_title": "Real-World AI",
+            "description": "See AI in action: healthcare, RAG, open source models, and creative tools.",
+            "order": 5,
+            "topic_ids": [
+                "T8b",
+                "T9",
+                "T10"
+            ]
+        },
+        {
+            "module_id": "M6",
+            "module_title": "The Frontier",
+            "description": "Explore AI agents, automation, and the future of artificial intelligence.",
+            "order": 6,
+            "topic_ids": [
+                "T11",
+                "T12"
+            ]
+        }
+    ],
+    "topics": [
+        {
+            "topic_id": "T0",
+            "topic_title": "What is Artificial Intelligence?",
+            "module_id": "M1",
+            "description": "Start your AI journey: what AI is, where it's used, and how we got here.",
+            "lesson_ids": [
+                "lesson_00_what_is_ai"
+            ]
+        },
+        {
+            "topic_id": "T1",
+            "topic_title": "Introduction to Language Models",
+            "module_id": "M1",
+            "description": "Learn the difference between LLMs and SLMs, and how corpus limits affect AI.",
+            "lesson_ids": [
+                "lesson_01_language_models"
+            ]
+        },
+        {
+            "topic_id": "T2",
+            "topic_title": "How Language Models Behave",
+            "module_id": "M1",
+            "description": "Explore hallucinations, prompt engineering, and chain of thought.",
+            "lesson_ids": [
+                "lesson_02_llm_behavior"
+            ]
+        },
+        {
+            "topic_id": "T3",
+            "topic_title": "Advanced Language Model Concepts",
+            "module_id": "M2",
+            "description": "Understand fine-tuning, context windows, and embeddings.",
+            "lesson_ids": [
+                "lesson_03_advanced_llm"
+            ]
+        },
+        {
+            "topic_id": "T4",
+            "topic_title": "The Mechanics of AI",
+            "module_id": "M2",
+            "description": "Learn about tokens, temperature settings, and multimodal capabilities.",
+            "lesson_ids": [
+                "lesson_04_ai_mechanics"
+            ]
+        },
+        {
+            "topic_id": "T4b",
+            "topic_title": "Understanding Data & Datasets",
+            "module_id": "M3",
+            "description": "Learn why data is the fuel of AI and how to split datasets properly.",
+            "lesson_ids": [
+                "lesson_04b_data_datasets"
+            ]
+        },
+        {
+            "topic_id": "T5",
+            "topic_title": "Introduction to Core Machine Learning",
+            "module_id": "M3",
+            "description": "Understand supervised, unsupervised, and reinforcement learning.",
+            "lesson_ids": [
+                "lesson_05_intro_ml"
+            ]
+        },
+        {
+            "topic_id": "T6",
+            "topic_title": "Inside Neural Networks",
+            "module_id": "M3",
+            "description": "Dive into biological vs artificial networks and their layer structure.",
+            "lesson_ids": [
+                "lesson_06_neural_networks"
+            ]
+        },
+        {
+            "topic_id": "T6b",
+            "topic_title": "How AI Learns (Backpropagation)",
+            "module_id": "M4",
+            "description": "Understand the learning loop, loss functions, overfitting, and underfitting.",
+            "lesson_ids": [
+                "lesson_06b_how_ai_learns"
+            ]
+        },
+        {
+            "topic_id": "T7",
+            "topic_title": "Training and Fine-Tuning",
+            "module_id": "M4",
+            "description": "Understand the difference between pre-training and fine-tuning an AI model.",
+            "lesson_ids": [
+                "lesson_07_model_training"
+            ]
+        },
+        {
+            "topic_id": "T8",
+            "topic_title": "Ethics and Bias in AI",
+            "module_id": "M4",
+            "description": "Explore the ethical challenges of AI, including bias, fairness, and hallucination.",
+            "lesson_ids": [
+                "lesson_08_ai_ethics"
+            ]
+        },
+        {
+            "topic_id": "T8b",
+            "topic_title": "Real-World AI Applications",
+            "module_id": "M5",
+            "description": "See how AI is deployed in healthcare, finance, education, and creative fields.",
+            "lesson_ids": [
+                "lesson_08b_real_world_ai"
+            ]
+        },
+        {
+            "topic_id": "T9",
+            "topic_title": "RAG & Knowledge Retrieval",
+            "module_id": "M5",
+            "description": "Learn how AI looks up real-time information using vector databases.",
+            "lesson_ids": [
+                "lesson_09_rag_knowledge"
+            ]
+        },
+        {
+            "topic_id": "T10",
+            "topic_title": "Transfer Learning & Open Source AI",
+            "module_id": "M5",
+            "description": "Discover how pre-trained models are adapted and the open-source ecosystem.",
+            "lesson_ids": [
+                "lesson_10_transfer_learning"
+            ]
+        },
+        {
+            "topic_id": "T11",
+            "topic_title": "AI Agents & Automation",
+            "module_id": "M6",
+            "description": "Explore autonomous AI that plans, decides, and executes tasks.",
+            "lesson_ids": [
+                "lesson_11_ai_agents"
+            ]
+        },
+        {
+            "topic_id": "T12",
+            "topic_title": "The Future of AI",
+            "module_id": "M6",
+            "description": "Understand AGI, ASI, and how humans and AI will collaborate.",
+            "lesson_ids": [
+                "lesson_12_future_of_ai"
+            ]
+        }
+    ]
+}

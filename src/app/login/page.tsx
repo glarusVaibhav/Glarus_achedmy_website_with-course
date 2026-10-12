@@ -92,7 +92,7 @@ function LoginContent() {
       <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-primary/20 blur-[100px] rounded-full pointer-events-none" />
       <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-accent/20 blur-[100px] rounded-full pointer-events-none" />
 
-      <div className="w-full max-w-md bg-card border border-card p-10 rounded-3xl shadow-2xl relative z-10">
+      <div className="w-full max-w-md bg-card border border-border p-10 rounded-3xl shadow-xl relative z-10">
         <div className="flex flex-col items-center mb-8">
           <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center mb-4 text-white shadow-lg shadow-primary/20">
             <Bot className="w-8 h-8" />
@@ -100,7 +100,7 @@ function LoginContent() {
           <h1 className="text-3xl font-bold text-text tracking-tight">Welcome Back</h1>
           <p className="text-subtext mt-1 text-sm">Sign in to your GlarusAcademy account</p>
           
-          <div className="text-subtext mt-4 text-center text-xs space-y-1.5 bg-background/80 border border-card p-3 rounded-xl w-full">
+          <div className="text-subtext mt-4 text-center text-xs space-y-1.5 bg-muted/60 border border-border p-3 rounded-xl w-full">
              <div className="flex items-center justify-between font-semibold text-text mb-2">
                <span>Test Accounts</span>
                <span className="text-[10px] text-primary font-normal">Click to auto-fill</span>
@@ -129,12 +129,12 @@ function LoginContent() {
                <span className="text-subtext font-medium">Student:</span>
                <span className="text-primary font-mono text-xs">arun.sharma@gmail.com</span>
              </button>
-             <div className="text-[10px] text-subtext/70 mt-1 pt-1 border-t border-card">Passwords: Admin/Instructor: Piyush@11 · Student: Arun@123</div>
+             <div className="text-[10px] text-subtext mt-1 pt-1 border-t border-border">Passwords: Admin/Instructor: Piyush@11 · Student: Arun@123</div>
           </div>
         </div>
 
         {error && (
-          <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 text-red-400 text-sm rounded-xl text-center">
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 dark:bg-red-500/10 dark:border-red-500/30 dark:text-red-400 text-sm rounded-xl text-center">
             {error}
           </div>
         )}
@@ -147,7 +147,7 @@ function LoginContent() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-background border border-card text-text rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:outline-none transition-all placeholder:text-subtext/50 text-sm"
+              className="w-full bg-background border border-border text-text rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition-all placeholder:text-subtext/50 text-sm"
               placeholder="student@glarusacademy.com"
             />
           </div>
@@ -168,7 +168,7 @@ function LoginContent() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-background border border-card text-text rounded-xl px-4 py-3 pr-11 focus:ring-2 focus:ring-primary focus:outline-none transition-all placeholder:text-subtext/50 text-sm"
+                className="w-full bg-background border border-border text-text rounded-xl px-4 py-3 pr-11 focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition-all placeholder:text-subtext/50 text-sm"
                 placeholder="••••••••"
               />
               <button
@@ -198,7 +198,7 @@ function LoginContent() {
         {/* OR Divider */}
         <div className="relative my-6">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-card" />
+            <div className="w-full border-t border-border" />
           </div>
           <div className="relative flex justify-center text-xs uppercase">
             <span className="bg-card px-3 text-subtext font-medium">OR</span>
@@ -209,7 +209,7 @@ function LoginContent() {
         <button
           type="button"
           onClick={handleGoogleLogin}
-          className="w-full py-3 px-4 bg-background hover:bg-background/80 border border-card hover:border-primary/40 text-text rounded-xl font-medium text-sm transition-all flex items-center justify-center gap-3 cursor-pointer shadow-sm"
+          className="w-full py-3 px-4 bg-background hover:bg-muted border border-border hover:border-primary/40 text-text rounded-xl font-medium text-sm transition-all flex items-center justify-center gap-3 cursor-pointer shadow-xs"
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24">
             <path

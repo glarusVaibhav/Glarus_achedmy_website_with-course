@@ -36,9 +36,34 @@ export async function POST(
     const oldScheduleStr = `${liveSession.date ? new Date(liveSession.date).toISOString().split('T')[0] : "Unscheduled"} (${liveSession.startTime} - ${liveSession.endTime})`;
     const newScheduleStr = `${newDate} (${newStartTime || liveSession.startTime} - ${newEndTime || liveSession.endTime})`;
 
-    // Check if user has direct reschedule authority (Admin or Super Instructor with canReschedule)
-    const assignment = liveSession.assignments.find((a) => a.instructorId === session.id);
-    const canDirectReschedule = session.role === "ADMIN" || (assignment && assignment.canReschedule);
+    // Permission check for LIVE_CLASS_RESCHEDULE
+    let canDirectReschedule = session.role === "ADMIN";
+    if (session.role === "INSTRUCTOR") {
+      const { hasPermission } = await import("@/lib/permissions/instructorPermissions");
+      const canReschedule = await hasPermission(session, "LIVE_CLASS_RESCHEDULE");
+      const isLead = liveSession.liveCourse?.leadInstructorId === session.id;
+      const assignment = liveSession.assignments.find((a) => a.instructorId === session.id);
+      const isAssigned = Boolean(assignment);
+
+      if (!isLead && !isAssigned) {
+        return NextResponse.json(
+          { error: "Forbidden: You are not authorized for this session." },
+          { status: 403 }
+        );
+      }
+
+      if (!canReschedule) {
+        return NextResponse.json(
+          {
+            error: "LIVE_CLASS_RESCHEDULE_PERMISSION_REQUIRED",
+            message: "Administrative permission for session rescheduling is required."
+          },
+          { status: 403 }
+        );
+      }
+
+      canDirectReschedule = true;
+    }
 
     // If standard instructor without canReschedule, treat as a Reschedule Request to Admin
     if (!canDirectReschedule) {

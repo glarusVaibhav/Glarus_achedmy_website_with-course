@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { getSession } from "@/lib/auth";
-
+import { parseYouTubeVideoId } from "@/lib/video/youtubeService";
 import { checkInstructorCourseCreationPermission } from "@/lib/permissions/courseCreationPermission";
 
 export async function GET() {
@@ -18,7 +18,10 @@ export async function GET() {
           orderBy: { order: "asc" }
         }
       },
-      orderBy: { createdAt: "desc" }
+      orderBy: [
+        { displayOrder: "asc" },
+        { createdAt: "desc" }
+      ]
     });
     return NextResponse.json({ courses });
   } catch (err) {
@@ -70,12 +73,9 @@ export async function POST(req: Request) {
       isPublished
     } = body;
 
-    const courseStatus =
-      session.role === "ADMIN" && status
-        ? status
-        : session.role === "ADMIN"
-        ? "APPROVED"
-        : "PENDING";
+    // Newly created courses are always created as unpublished.
+    // Admins publish them explicitly from Course Management (/admin/courses) to assign display order.
+    const initialStatus = status === "DRAFT" ? "DRAFT" : session.role === "ADMIN" ? "APPROVED" : "PENDING";
 
     let targetInstructorId = session.id;
     if (session.role === "ADMIN" && instructorId && instructorId !== "admin-official") {
@@ -87,7 +87,6 @@ export async function POST(req: Request) {
       }
     }
 
-    // Verify targetInstructorId exists in DB to prevent foreign key errors
     const verifiedInstructor = await prisma.user.findUnique({
       where: { id: targetInstructorId }
     });
@@ -102,8 +101,6 @@ export async function POST(req: Request) {
       }
       targetInstructorId = fallbackUser.id;
     }
-
-    const shouldPublish = session.role === "ADMIN" && Boolean(isPublished);
 
     // Helper to stringify JSON fields if passed as objects/arrays
     const serializeJson = (val: any) => {
@@ -121,7 +118,7 @@ export async function POST(req: Request) {
         originalPrice: originalPrice ? parseFloat(originalPrice) : 0,
         category: category || "AI Engineering",
         level: level || "All Levels",
-        duration: duration || "30 Hours VOD",
+        duration: duration || "30 Hours",
         previewVideoUrl: previewVideoUrl || null,
         learningOutcomes: serializeJson(learningOutcomes),
         projects: serializeJson(projects),
@@ -129,9 +126,10 @@ export async function POST(req: Request) {
         features: serializeJson(features),
         learningJourney: serializeJson(learningJourney),
         instructorId: targetInstructorId,
-        status: shouldPublish ? "PUBLISHED" : courseStatus,
-        isPublished: shouldPublish,
-        publishedAt: shouldPublish ? new Date() : null,
+        status: initialStatus,
+        isPublished: false,
+        publishedAt: null,
+        displayOrder: null,
         modules: modules && Array.isArray(modules) && modules.length > 0 ? {
           create: modules.map((m: any, mIdx: number) => ({
             title: m.title || `Module ${mIdx + 1}`,
@@ -166,7 +164,7 @@ export async function POST(req: Request) {
         } : undefined,
         courseApproval: {
           create: {
-            status: shouldPublish ? "APPROVED" : courseStatus === "APPROVED" ? "APPROVED" : "PENDING",
+            status: initialStatus === "APPROVED" ? "APPROVED" : "PENDING",
             contentPreview: serializeJson({ modules })
           }
         }
@@ -179,6 +177,46 @@ export async function POST(req: Request) {
         courseApproval: true
       }
     });
+
+    // Link any newly uploaded VideoAssets to their created lecture IDs and course ID
+    if (modules && Array.isArray(modules) && course.modules) {
+      for (const m of course.modules) {
+        for (const createdLec of m.lectures) {
+          const sourceModule = modules.find((sm: any) => sm.title === m.title || sm.order === m.order);
+          const sourceLesson = sourceModule?.lessons?.find(
+            (sl: any) => (typeof sl === "object" ? sl.title === createdLec.title : sl === createdLec.title)
+          );
+          if (sourceLesson && typeof sourceLesson === "object" && sourceLesson.videoAssetId) {
+            await prisma.videoAsset.update({
+              where: { id: sourceLesson.videoAssetId },
+              data: {
+                lectureId: createdLec.id,
+                courseId: course.id
+              }
+            }).catch((err) => {
+              console.warn(`[Course Creator] Notice linking videoAsset ${sourceLesson.videoAssetId}:`, err?.message);
+            });
+          } else if (createdLec.videoUrl) {
+            // Auto-create YouTube VideoAsset if lecture URL is a YouTube link
+            const ytId = parseYouTubeVideoId(createdLec.videoUrl);
+            if (ytId) {
+              await prisma.videoAsset.create({
+                data: {
+                  provider: "YOUTUBE",
+                  providerVideoId: ytId,
+                  status: "READY",
+                  lectureId: createdLec.id,
+                  courseId: course.id,
+                  thumbnailKey: `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`,
+                }
+              }).catch((err) => {
+                console.warn(`[Course Creator] Notice auto-creating YouTube videoAsset:`, err?.message);
+              });
+            }
+          }
+        }
+      }
+    }
 
     return NextResponse.json({ success: true, course });
   } catch (err: any) {

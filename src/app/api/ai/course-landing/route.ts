@@ -16,7 +16,7 @@ Based on the course title and category, generate rich landing page marketing and
 Return a STRICT JSON object with no markdown wrapping and exact structure:
 {
   "subtitle": "A compelling 1-2 sentence tagline explaining what learners will build and master",
-  "duration": "e.g. 36 Hours VOD",
+  "duration": "e.g. 36 Hours",
   "originalPrice": 4999,
   "learningOutcomes": [
     { "title": "Outcome 1 Title", "description": "Concise 1-2 sentence description of this competency" },
@@ -82,7 +82,7 @@ Return a STRICT JSON object with no markdown wrapping and exact structure:
     // Intelligent Fallback Template if Groq is unavailable
     const fallbackData = {
       subtitle: `Master production-grade ${courseTitle} with hands-on architecture, real-world case studies, and deployment pipelines.`,
-      duration: "35 Hours VOD",
+      duration: "35 Hours",
       originalPrice: 4999,
       learningOutcomes: [
         {

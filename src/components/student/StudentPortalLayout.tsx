@@ -86,7 +86,7 @@ export function StudentPortalLayout({ children }: StudentPortalLayoutProps) {
           </button>
 
           <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-text">Student Portal</span>
+            <span className="text-xs font-bold text-text">Student Dashboard</span>
             <span className="px-2 py-0.5 rounded-full bg-primary/15 text-primary text-[10px] font-bold">
               Glarus
             </span>
@@ -94,7 +94,7 @@ export function StudentPortalLayout({ children }: StudentPortalLayoutProps) {
 
           <Link
             href="/student/recorded-sessions"
-            className="p-2 rounded-xl bg-purple-500/15 text-purple-400 text-xs font-bold flex items-center gap-1 border border-purple-500/30"
+            className="p-2 rounded-xl bg-purple-50 text-purple-700 dark:bg-purple-500/15 dark:text-purple-400 text-xs font-bold flex items-center gap-1 border border-purple-200 dark:border-purple-500/30"
           >
             <Sparkles className="w-3.5 h-3.5" />
             <span>Recordings</span>

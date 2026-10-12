@@ -246,6 +246,7 @@ interface InstructorSelfPacedCoursesViewProps {
   isDemoUser?: boolean;
   permissionStatus?: string;
   canCreateCourse?: boolean;
+  canEditCourse?: boolean;
   onRequestPermission?: () => void;
   onCreateCourse: () => void;
   onOpenCourseBuilder?: (courseId: string) => void;
@@ -257,6 +258,7 @@ export function InstructorSelfPacedCoursesView({
   isDemoUser = false,
   permissionStatus = "NOT_REQUESTED",
   canCreateCourse = false,
+  canEditCourse = true,
   onRequestPermission,
   onCreateCourse,
   onOpenCourseBuilder,
@@ -547,6 +549,10 @@ export function InstructorSelfPacedCoursesView({
 
   // Open Edit Modal
   const handleOpenEdit = (course: { id: string }) => {
+    if (!canEditCourse) {
+      showToast("Course editing privilege is currently locked by administrator.");
+      return;
+    }
     const fullCourse = courses.find(c => c.id === course.id);
     if (!fullCourse) return;
     setEditModalCourse(fullCourse);

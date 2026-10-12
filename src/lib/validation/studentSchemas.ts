@@ -23,6 +23,8 @@ export const VideoProgressSchema = z.object({
   progressSeconds: z.number().min(0, 'progressSeconds cannot be negative'),
   durationSeconds: z.number().min(0).optional(),
   isCompleted: z.boolean().optional(),
+  courseId: z.string().optional(),
+  lectureTitle: z.string().optional(),
 });
 
 export const RecordingProgressSchema = z.object({

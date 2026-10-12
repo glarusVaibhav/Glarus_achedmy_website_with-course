@@ -4,11 +4,12 @@ import { useState, useEffect } from "react";
 import { 
   Sparkles, CheckCircle2, Circle, Edit3, RefreshCw, Check, 
   ChevronRight, Layout, FileText, Video, PlayCircle, Loader2, Save,
-  Lock, Clock, AlertCircle
+  Lock, Clock, AlertCircle, ArrowLeft, Radio, BookOpen
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { InstructorPermissionModal } from "@/components/instructor/courses/InstructorPermissionModal";
+import { InstructorLiveCourseCreator } from "@/components/instructor/courses/InstructorLiveCourseCreator";
 import { CourseCreationPermissionStatus } from "@/lib/permissions/courseCreationPermission";
 
 interface AIModule {
@@ -20,19 +21,31 @@ interface AIModule {
 
 export default function CourseCreatorWizard() {
   const router = useRouter();
+  const [courseFormat, setCourseFormat] = useState<"self_paced" | "live_class">("self_paced");
   const [checkingPermission, setCheckingPermission] = useState(true);
   const [permissionStatus, setPermissionStatus] = useState<CourseCreationPermissionStatus>("NOT_REQUESTED");
   const [canCreateCourse, setCanCreateCourse] = useState(false);
+  const [canCreateLiveClass, setCanCreateLiveClass] = useState(false);
   const [permissionData, setPermissionData] = useState<any>({});
   const [isPermissionModalOpen, setIsPermissionModalOpen] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const fetchPermission = async () => {
     try {
       const res = await fetch("/api/instructor/course-creation-permission");
       if (res.ok) {
         const data = await res.json();
-        setPermissionStatus(data.status || "NOT_REQUESTED");
-        setCanCreateCourse(Boolean(data.canCreateCourse || data.allowed || data.isAdmin));
+        const canCourse = Boolean(data.canCreateCourse || data.allowed || data.isAdmin);
+        const canLive = Boolean(data.canCreateLiveClass ?? false);
+        const effectiveStatus = canCourse
+          ? "APPROVED"
+          : (data.status === "APPROVED" ? "REVOKED" : (data.status || "NOT_REQUESTED"));
+        setPermissionStatus(effectiveStatus);
+        setCanCreateCourse(canCourse);
+        setCanCreateLiveClass(canLive);
+        if (!canCourse && canLive) {
+          setCourseFormat("live_class");
+        }
         setPermissionData({
           requestedAt: data.requestedAt,
           reviewedAt: data.reviewedAt,
@@ -181,7 +194,8 @@ export default function CourseCreatorWizard() {
     );
   }
 
-  if (!canCreateCourse) {
+  // Global Lock: Neither Self-Paced nor Live Class permission granted
+  if (!canCreateCourse && !canCreateLiveClass) {
     return (
       <div className="w-full min-h-screen bg-background text-text flex items-center justify-center p-6">
         <div className="p-8 md:p-12 rounded-3xl bg-[#0E131F] border border-purple-500/30 text-center max-w-xl mx-auto space-y-6 shadow-2xl">
@@ -218,6 +232,7 @@ export default function CourseCreatorWizard() {
           isOpen={isPermissionModalOpen}
           onClose={() => setIsPermissionModalOpen(false)}
           status={permissionStatus}
+          canCreateCourse={canCreateCourse}
           requestedAt={permissionData.requestedAt}
           reviewedAt={permissionData.reviewedAt}
           rejectionReason={permissionData.rejectionReason}
@@ -234,191 +249,387 @@ export default function CourseCreatorWizard() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex text-text font-sans selection:bg-purple-500/30">
-      
-      {/* LEFT STEPPER SIDEBAR */}
-      <aside className="w-80 border-r border-card bg-card/10 p-8 hidden lg:flex flex-col shrink-0 sticky top-0 h-screen">
-         <div className="mb-12">
-            <h2 className="text-2xl font-black flex items-center gap-2">
-              <Sparkles className="w-6 h-6 text-purple-500" />
-              <span>Create Course</span>
-            </h2>
-            <p className="text-subtext text-xs tracking-wider uppercase font-bold mt-2">Course Creator</p>
-         </div>
+    <div className="min-h-screen bg-background flex flex-col text-text font-sans selection:bg-purple-500/30">
+      {/* TOP BAR / FORMAT SWITCHER */}
+      <div className="border-b border-white/10 bg-card/40 backdrop-blur-md sticky top-0 z-40 px-6 py-3.5 flex flex-wrap items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => router.push("/instructor")}
+            className="p-2 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] text-subtext hover:text-text transition-colors border border-white/5 cursor-pointer"
+            title="Back to Instructor Dashboard"
+          >
+            <ArrowLeft className="w-4 h-4" />
+          </button>
+          <div>
+            <h1 className="text-sm font-black text-text">Instructor Creation Studio</h1>
+            <p className="text-[11px] text-subtext">Choose course format and architect curriculum</p>
+          </div>
+        </div>
 
-         <div className="flex-1 relative">
-            <div className="absolute left-[19px] top-4 bottom-20 w-0.5 bg-card" />
-            
-            <div className="space-y-12 relative z-10">
-              {steps.map((step) => {
-                 const isActive = currentStep === step.num;
-                 const isCompleted = step.num < currentStep;
-                 
-                 return (
-                   <div key={step.num} className={`flex items-start gap-4 transition-all duration-300 ${isActive ? 'opacity-100' : isCompleted ? 'opacity-60' : 'opacity-40'}`}>
+        {/* Course Format Switcher Tabs */}
+        <div className="flex items-center p-1 rounded-2xl bg-black/40 border border-white/10">
+          <button
+            type="button"
+            onClick={() => {
+              if (!canCreateCourse) {
+                setToastMessage("Self-Paced Course Creation is locked. Admin permission required.");
+                return;
+              }
+              setCourseFormat("self_paced");
+            }}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
+              courseFormat === "self_paced"
+                ? "bg-purple-600 text-white shadow-lg shadow-purple-600/30"
+                : canCreateCourse
+                ? "text-subtext hover:text-text"
+                : "text-slate-500 opacity-60 hover:text-slate-400"
+            }`}
+          >
+            {canCreateCourse ? (
+              <BookOpen className="w-3.5 h-3.5" />
+            ) : (
+              <Lock className="w-3.5 h-3.5 text-amber-400" />
+            )}
+            <span>Self-Paced Course</span>
+            {!canCreateCourse && (
+              <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20 font-bold uppercase">
+                Locked
+              </span>
+            )}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              if (!canCreateLiveClass) {
+                setToastMessage("Live Class & Cohort Creation is locked. Admin permission required.");
+                return;
+              }
+              setCourseFormat("live_class");
+            }}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
+              courseFormat === "live_class"
+                ? "bg-gradient-to-r from-red-600 to-purple-600 text-white shadow-lg shadow-red-600/30"
+                : canCreateLiveClass
+                ? "text-subtext hover:text-text"
+                : "text-slate-500 opacity-60 hover:text-slate-400"
+            }`}
+          >
+            {canCreateLiveClass ? (
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+              </span>
+            ) : (
+              <Lock className="w-3.5 h-3.5 text-amber-400" />
+            )}
+            <span>Live Class & Cohort</span>
+            {!canCreateLiveClass && (
+              <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20 font-bold uppercase">
+                Locked
+              </span>
+            )}
+          </button>
+        </div>
+      </div>
+
+      {toastMessage && (
+        <div className="fixed bottom-6 right-6 p-4 rounded-2xl bg-emerald-500 text-white shadow-2xl font-bold flex items-center gap-3 z-[100] animate-in slide-in-from-bottom-5">
+          <CheckCircle2 className="w-5 h-5" />
+          <span>{toastMessage}</span>
+        </div>
+      )}
+
+      {/* RENDER LIVE CLASS CREATOR OR LOCKED STATE */}
+      {courseFormat === "live_class" ? (
+        !canCreateLiveClass ? (
+          <div className="flex-1 w-full max-w-2xl mx-auto px-4 sm:px-6 py-16 flex items-center justify-center">
+            <div className="w-full p-8 md:p-12 rounded-3xl bg-[#0E131F] border border-amber-500/30 text-center space-y-6 shadow-2xl">
+              <div className="w-16 h-16 rounded-3xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center mx-auto shadow-xl shadow-amber-500/10">
+                <Lock className="w-8 h-8 text-amber-400" />
+              </div>
+              <div className="space-y-2">
+                <span className="text-[10px] font-black uppercase tracking-widest text-amber-400">
+                  Live Cohort Authority Locked
+                </span>
+                <h2 className="text-2xl font-black text-white">Live Class Creation Permission Required</h2>
+                <p className="text-xs sm:text-sm text-slate-400 max-w-md mx-auto leading-relaxed">
+                  Your instructor account is authorized for platform access, but Live Class Creation (<code className="text-amber-400 font-mono text-xs">LIVE_CLASS_CREATE</code>) authority has not been enabled or was deselected by the Administrator in the Role & Permissions dashboard.
+                </p>
+              </div>
+
+              {/* Status Breakdown Box */}
+              <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/[0.06] text-left grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <div className="flex items-center justify-between p-3 rounded-xl bg-white/[0.02] border border-white/[0.04]">
+                  <span className="text-slate-400 font-bold">Self-Paced Courses</span>
+                  <span className={`px-2 py-0.5 rounded text-[10px] font-black ${canCreateCourse ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30" : "bg-rose-500/20 text-rose-400 border border-rose-500/30"}`}>
+                    {canCreateCourse ? "Authorized" : "Locked"}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between p-3 rounded-xl bg-white/[0.02] border border-white/[0.04]">
+                  <span className="text-slate-400 font-bold">Live Classes & Cohorts</span>
+                  <span className="px-2 py-0.5 rounded text-[10px] font-black bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                    Locked
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+                {canCreateCourse && (
+                  <button
+                    onClick={() => setCourseFormat("self_paced")}
+                    className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-bold transition-all shadow-lg shadow-purple-600/25 flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <BookOpen className="w-4 h-4" />
+                    <span>Switch to Self-Paced Studio</span>
+                  </button>
+                )}
+                <button
+                  onClick={() => setIsPermissionModalOpen(true)}
+                  className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-white/[0.05] hover:bg-white/[0.08] text-slate-300 text-xs font-bold transition-colors cursor-pointer border border-white/[0.06] flex items-center justify-center gap-2"
+                >
+                  <Lock className="w-4 h-4" />
+                  <span>Request Live Class Permission</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 py-8">
+            <InstructorLiveCourseCreator
+              onSuccess={(course) => {
+                setToastMessage(`Live Class "${course?.title || "Cohort"}" submitted to Admin for approval!`);
+                setTimeout(() => {
+                  router.push("/instructor");
+                }, 2000);
+              }}
+              onCancel={() => setCourseFormat("self_paced")}
+            />
+          </div>
+        )
+      ) : (
+        /* RENDER SELF-PACED AI SYLLABUS ARCHITECT */
+        !canCreateCourse ? (
+          <div className="flex-1 w-full max-w-2xl mx-auto px-4 sm:px-6 py-16 flex items-center justify-center">
+            <div className="w-full p-8 md:p-12 rounded-3xl bg-[#0E131F] border border-purple-500/30 text-center space-y-6 shadow-2xl">
+              <div className="w-16 h-16 rounded-3xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center mx-auto shadow-xl shadow-purple-500/10">
+                <Lock className="w-8 h-8 text-purple-400" />
+              </div>
+              <div className="space-y-2">
+                <span className="text-[10px] font-black uppercase tracking-widest text-purple-400">
+                  Self-Paced Creation Locked
+                </span>
+                <h2 className="text-2xl font-black text-white">Self-Paced Course Creation Requires Approval</h2>
+                <p className="text-xs sm:text-sm text-slate-400 max-w-md mx-auto leading-relaxed">
+                  Your account does not have active Self-Paced course creation authority.
+                </p>
+              </div>
+              <div className="flex items-center justify-center gap-3 pt-2">
+                {canCreateLiveClass && (
+                  <button
+                    onClick={() => setCourseFormat("live_class")}
+                    className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-red-600 to-purple-600 text-white text-xs font-bold transition-all"
+                  >
+                    Switch to Live Class Studio
+                  </button>
+                )}
+                <button
+                  onClick={() => setIsPermissionModalOpen(true)}
+                  className="px-5 py-2.5 rounded-xl bg-white/[0.05] text-slate-300 text-xs font-bold"
+                >
+                  Request Permission
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : (
+        <div className="flex-1 flex text-text font-sans">
+          {/* LEFT STEPPER SIDEBAR */}
+          <aside className="w-80 border-r border-card bg-card/10 p-8 hidden lg:flex flex-col shrink-0 sticky top-[65px] h-[calc(100vh-65px)]">
+            <div className="mb-12">
+              <h2 className="text-2xl font-black flex items-center gap-2">
+                <Sparkles className="w-6 h-6 text-purple-500" />
+                <span>Create Course</span>
+              </h2>
+              <p className="text-subtext text-xs tracking-wider uppercase font-bold mt-2">Course Creator</p>
+            </div>
+
+            <div className="flex-1 relative">
+              <div className="absolute left-[19px] top-4 bottom-20 w-0.5 bg-card" />
+              
+              <div className="space-y-12 relative z-10">
+                {steps.map((step) => {
+                  const isActive = currentStep === step.num;
+                  const isCompleted = step.num < currentStep;
+                  
+                  return (
+                    <div key={step.num} className={`flex items-start gap-4 transition-all duration-300 ${isActive ? 'opacity-100' : isCompleted ? 'opacity-60' : 'opacity-40'}`}>
                       <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 border-2 bg-background z-10 shadow-sm
-                         ${isActive ? 'border-purple-500 text-purple-500 scale-110 shadow-purple-500/20' : 
-                           isCompleted ? 'border-emerald-500 text-emerald-500' : 'border-card text-subtext'}`}>
-                         {isCompleted ? <Check className="w-5 h-5" /> : <step.icon className={`w-4 h-4 ${isActive ? 'animate-pulse' : ''}`} />}
+                        ${isActive ? 'border-purple-500 text-purple-500 scale-110 shadow-purple-500/20' : 
+                          isCompleted ? 'border-emerald-500 text-emerald-500' : 'border-card text-subtext'}`}>
+                        {isCompleted ? <Check className="w-5 h-5" /> : <step.icon className={`w-4 h-4 ${isActive ? 'animate-pulse' : ''}`} />}
                       </div>
                       <div className="pt-2">
-                         <p className={`text-xs font-black tracking-widest uppercase mb-1 ${isActive ? "text-purple-500" : "text-subtext"}`}>Step {step.num}</p>
-                         <h3 className={`font-bold ${isActive ? 'text-lg text-text' : 'text-base text-subtext'}`}>{step.title}</h3>
+                        <p className={`text-xs font-black tracking-widest uppercase mb-1 ${isActive ? "text-purple-500" : "text-subtext"}`}>Step {step.num}</p>
+                        <h3 className={`font-bold ${isActive ? 'text-lg text-text' : 'text-base text-subtext'}`}>{step.title}</h3>
                       </div>
-                   </div>
-                 );
-              })}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
-         </div>
 
-         <div className="mt-auto p-4 bg-purple-500/10 rounded-2xl border border-purple-500/20 text-xs text-purple-400 font-medium">
-           💡 <b>Tip:</b> AI Generation works best when you provide highly specific prompts focusing on the target audience.
-         </div>
-      </aside>
+            <div className="mt-auto p-4 bg-purple-500/10 rounded-2xl border border-purple-500/20 text-xs text-purple-400 font-medium">
+              💡 <b>Tip:</b> AI Generation works best when you provide highly specific prompts focusing on the target audience.
+            </div>
+          </aside>
 
-      {/* MAIN SCREEN (STEP 2) */}
-      <main className="flex-1 flex flex-col h-screen overflow-y-auto w-full max-w-5xl px-6 py-12 md:px-12 relative no-scrollbar">
-         
-         {/* HEADER */}
-         <header className="mb-10">
-           <h1 className="text-4xl font-extrabold tracking-tight mb-2">Architect Your Curriculum</h1>
-           <p className="text-subtext">Use our advanced AI copilot to instantly draft a comprehensive, structured syllabus.</p>
-         </header>
+          {/* MAIN SCREEN (STEP 2) */}
+          <main className="flex-1 flex flex-col h-[calc(100vh-65px)] overflow-y-auto w-full max-w-5xl px-6 py-12 md:px-12 relative no-scrollbar">
+            
+            {/* HEADER */}
+            <header className="mb-10">
+              <h1 className="text-4xl font-extrabold tracking-tight mb-2">Architect Your Curriculum</h1>
+              <p className="text-subtext">Use our advanced AI copilot to instantly draft a comprehensive, structured syllabus.</p>
+            </header>
 
-         {/* AI COPILOT INPUT BAR */}
-         <div className="bg-card/40 border-2 border-purple-500/30 rounded-3xl p-2 pl-6 flex items-center gap-4 focus-within:border-purple-500 focus-within:shadow-[0_0_30px_-5px_rgba(168,85,247,0.3)] transition-all mb-10 group relative z-20">
-           <Sparkles className="w-6 h-6 text-purple-500 shrink-0 group-focus-within:animate-pulse" />
-           <input 
-             value={topic}
-             onChange={e => setTopic(e.target.value)}
-             placeholder="e.g. A comprehensive guide to building AI Agents with Next.js..."
-             className="w-full bg-transparent outline-none text-text text-lg font-medium placeholder:text-subtext/50"
-             onKeyDown={e => e.key === 'Enter' && generateSyllabus()}
-           />
-           <button 
-             onClick={generateSyllabus}
-             disabled={isGeneratingAll || !topic}
-             className="bg-purple-600 hover:bg-purple-500 disabled:bg-purple-600/40 text-white px-8 py-4 rounded-2xl font-bold transition-all shadow-lg shadow-purple-500/20 flex items-center gap-2 whitespace-nowrap shrink-0"
-           >
-             {isGeneratingAll ? <Loader2 className="w-5 h-5 animate-spin" /> : "Generate Outline"}
-           </button>
-         </div>
-
-         {/* AI OUTPUT MODULE CARDS */}
-         <div className="flex-1 space-y-6 pb-24">
-           {modules.map((module) => (
-              <div 
-                key={module.id} 
-                className={`rounded-3xl border-2 transition-all p-6 relative overflow-hidden bg-background shadow-sm hover:shadow-xl
-                  ${module.status === 'accepted' ? 'border-emerald-500/30 bg-emerald-500/5' : 
-                    module.status === 'editing' ? 'border-primary shadow-primary/10 ring-4 ring-primary/10' : 
-                    module.status === 'regenerating' ? 'border-purple-500/50 opacity-70 cursor-wait' :
-                    'border-card hover:border-purple-500/30'}
-                `}
+            {/* AI COPILOT INPUT BAR */}
+            <div className="bg-card/40 border-2 border-purple-500/30 rounded-3xl p-2 pl-6 flex items-center gap-4 focus-within:border-purple-500 focus-within:shadow-[0_0_30px_-5px_rgba(168,85,247,0.3)] transition-all mb-10 group relative z-20">
+              <Sparkles className="w-6 h-6 text-purple-500 shrink-0 group-focus-within:animate-pulse" />
+              <input 
+                value={topic}
+                onChange={e => setTopic(e.target.value)}
+                placeholder="e.g. A comprehensive guide to building AI Agents with Next.js..."
+                className="w-full bg-transparent outline-none text-text text-lg font-medium placeholder:text-subtext/50"
+                onKeyDown={e => e.key === 'Enter' && generateSyllabus()}
+              />
+              <button 
+                onClick={generateSyllabus}
+                disabled={isGeneratingAll || !topic}
+                className="bg-purple-600 hover:bg-purple-500 disabled:bg-purple-600/40 text-white px-8 py-4 rounded-2xl font-bold transition-all shadow-lg shadow-purple-500/20 flex items-center gap-2 whitespace-nowrap shrink-0"
               >
-                 {module.status === 'regenerating' && (
-                    <div className="absolute inset-0 bg-background/50 backdrop-blur-sm flex items-center justify-center z-20">
-                       <div className="flex flex-col items-center text-purple-500">
-                          <RefreshCw className="w-8 h-8 animate-spin mb-2" />
-                          <span className="font-bold">Regenerating with specialized focus...</span>
-                       </div>
-                    </div>
-                 )}
+                {isGeneratingAll ? <Loader2 className="w-5 h-5 animate-spin" /> : "Generate Outline"}
+              </button>
+            </div>
 
-                 {/* Editing Mode UI */}
-                 {module.status === 'editing' ? (
-                    <div className="animate-in fade-in zoom-in-95 duration-200">
-                       <div className="mb-4 flex items-center justify-between">
-                          <span className="text-xs font-black uppercase text-primary tracking-widest flex items-center gap-2">
-                             <Edit3 className="w-4 h-4"/> Edit Mode
-                          </span>
-                       </div>
-                       <input 
-                         value={editBuffer.title}
-                         onChange={e => setEditBuffer({...editBuffer, title: e.target.value})}
-                         className="w-full text-xl font-bold bg-card border border-card rounded-xl px-4 py-3 mb-4 text-text outline-none focus:border-primary focus:ring-1 focus:ring-primary/50"
-                       />
-                       <textarea 
-                         value={editBuffer.lessons}
-                         onChange={e => setEditBuffer({...editBuffer, lessons: e.target.value})}
-                         rows={5}
-                         className="w-full bg-card border border-card rounded-xl px-4 py-3 text-text text-sm outline-none font-mono focus:border-primary focus:ring-1 focus:ring-primary/50 leading-relaxed mb-4"
-                         placeholder="List lessons here, one per line..."
-                       />
-                       <div className="flex justify-end gap-3 pt-2 border-t border-card">
-                          <button 
-                             onClick={() => setModules(prev => prev.map(m => m.id === module.id ? { ...m, status: "pending" } : m))}
-                             className="px-6 py-2 rounded-xl text-sm font-bold text-subtext hover:bg-card transition-colors"
-                          >
-                             Cancel
-                          </button>
-                          <button 
-                             onClick={() => saveEditing(module.id)}
-                             className="px-6 py-2 rounded-xl text-sm font-bold bg-primary text-white hover:bg-primary/90 flex items-center gap-2 shadow-lg shadow-primary/20"
-                          >
-                             <Save className="w-4 h-4" /> Save Changes
-                          </button>
-                       </div>
+            {/* AI OUTPUT MODULE CARDS */}
+            <div className="flex-1 space-y-6 pb-24">
+              {modules.map((module) => (
+                <div 
+                  key={module.id} 
+                  className={`rounded-3xl border-2 transition-all p-6 relative overflow-hidden bg-background shadow-sm hover:shadow-xl
+                    ${module.status === 'accepted' ? 'border-emerald-500/30 bg-emerald-500/5' : 
+                      module.status === 'editing' ? 'border-primary shadow-primary/10 ring-4 ring-primary/10' : 
+                      module.status === 'regenerating' ? 'border-purple-500/50 opacity-70 cursor-wait' :
+                      'border-card hover:border-purple-500/30'}
+                  `}
+                >
+                  {module.status === 'regenerating' && (
+                    <div className="absolute inset-0 bg-background/50 backdrop-blur-sm flex items-center justify-center z-20">
+                      <div className="flex flex-col items-center text-purple-500">
+                        <RefreshCw className="w-8 h-8 animate-spin mb-2" />
+                        <span className="font-bold">Regenerating with specialized focus...</span>
+                      </div>
                     </div>
-                 ) : (
+                  )}
+
+                  {/* Editing Mode UI */}
+                  {module.status === 'editing' ? (
+                    <div className="animate-in fade-in zoom-in-95 duration-200">
+                      <div className="mb-4 flex items-center justify-between">
+                        <span className="text-xs font-black uppercase text-primary tracking-widest flex items-center gap-2">
+                          <Edit3 className="w-4 h-4"/> Edit Mode
+                        </span>
+                      </div>
+                      <input 
+                        value={editBuffer.title}
+                        onChange={e => setEditBuffer({...editBuffer, title: e.target.value})}
+                        className="w-full text-xl font-bold bg-card border border-card rounded-xl px-4 py-3 mb-4 text-text outline-none focus:border-primary focus:ring-1 focus:ring-primary/50"
+                      />
+                      <textarea 
+                        value={editBuffer.lessons}
+                        onChange={e => setEditBuffer({...editBuffer, lessons: e.target.value})}
+                        rows={5}
+                        className="w-full bg-card border border-card rounded-xl px-4 py-3 text-text text-sm outline-none font-mono focus:border-primary focus:ring-1 focus:ring-primary/50 leading-relaxed mb-4"
+                        placeholder="List lessons here, one per line..."
+                      />
+                      <div className="flex justify-end gap-3 pt-2 border-t border-card">
+                        <button 
+                          onClick={() => setModules(prev => prev.map(m => m.id === module.id ? { ...m, status: "pending" } : m))}
+                          className="px-6 py-2 rounded-xl text-sm font-bold text-subtext hover:bg-card transition-colors"
+                        >
+                          Cancel
+                        </button>
+                        <button 
+                          onClick={() => saveEditing(module.id)}
+                          className="px-6 py-2 rounded-xl text-sm font-bold bg-primary text-white hover:bg-primary/90 flex items-center gap-2 shadow-lg shadow-primary/20"
+                        >
+                          <Save className="w-4 h-4" /> Save Changes
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
                     /* Display Mode UI - Rich Text Container */
                     <div className="flex flex-col md:flex-row gap-6">
-                       <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-3">
-                             {module.status === 'accepted' ? <CheckCircle2 className="w-6 h-6 text-emerald-500" /> : <Layout className="w-6 h-6 text-purple-500/80" />}
-                             <h3 className="text-xl font-bold text-text">{module.title}</h3>
-                          </div>
-                          
-                          <div className="pl-9 space-y-2">
-                             {module.lessons.map((lesson, idx) => (
-                               <div key={idx} className="flex items-start gap-2.5 group/lesson">
-                                 <PlayCircle className="w-4 h-4 text-subtext/40 mt-0.5 group-hover/lesson:text-purple-500 transition-colors" />
-                                 <span className="text-sm font-medium text-text/90 leading-snug">{lesson}</span>
-                               </div>
-                             ))}
-                          </div>
-                       </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-3">
+                          {module.status === 'accepted' ? <CheckCircle2 className="w-6 h-6 text-emerald-500" /> : <Layout className="w-6 h-6 text-purple-500/80" />}
+                          <h3 className="text-xl font-bold text-text">{module.title}</h3>
+                        </div>
+                        
+                        <div className="pl-9 space-y-2">
+                          {module.lessons.map((lesson, idx) => (
+                            <div key={idx} className="flex items-start gap-2.5 group/lesson">
+                              <PlayCircle className="w-4 h-4 text-subtext/40 mt-0.5 group-hover/lesson:text-purple-500 transition-colors" />
+                              <span className="text-sm font-medium text-text/90 leading-snug">{lesson}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
 
-                       {/* Action Buttons */}
-                       <div className="md:w-32 flex flex-col gap-2 shrink-0 border-t md:border-t-0 md:border-l border-card pt-4 md:pt-0 md:pl-6 justify-center">
-                          <button 
-                            onClick={() => setModules(prev => prev.map(m => m.id === module.id ? { ...m, status: "accepted" } : m))}
-                            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all border 
-                              ${module.status === 'accepted' 
-                                 ? 'bg-emerald-500 text-white border-emerald-500 shadow-md shadow-emerald-500/20' 
-                                 : 'bg-background hover:bg-emerald-500/10 text-subtext hover:text-emerald-500 hover:border-emerald-500/30 border-card'}`}
-                          >
-                            <Check className="w-4 h-4" /> Accept
-                          </button>
-                          
-                          <button 
-                            onClick={() => startEditing(module)}
-                            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all bg-background border border-card hover:bg-primary/10 text-subtext hover:text-primary hover:border-primary/30"
-                          >
-                            <Edit3 className="w-4 h-4" /> Edit
-                          </button>
+                      {/* Action Buttons */}
+                      <div className="md:w-32 flex flex-col gap-2 shrink-0 border-t md:border-t-0 md:border-l border-card pt-4 md:pt-0 md:pl-6 justify-center">
+                        <button 
+                          onClick={() => setModules(prev => prev.map(m => m.id === module.id ? { ...m, status: "accepted" } : m))}
+                          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all border 
+                            ${module.status === 'accepted' 
+                              ? 'bg-emerald-500 text-white border-emerald-500 shadow-md shadow-emerald-500/20' 
+                              : 'bg-background hover:bg-emerald-500/10 text-subtext hover:text-emerald-500 hover:border-emerald-500/30 border-card'}`}
+                        >
+                          <Check className="w-4 h-4" /> Accept
+                        </button>
+                        
+                        <button 
+                          onClick={() => startEditing(module)}
+                          className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all bg-background border border-card hover:bg-primary/10 text-subtext hover:text-primary hover:border-primary/30"
+                        >
+                          <Edit3 className="w-4 h-4" /> Edit
+                        </button>
 
-                          <button 
-                            onClick={() => regenerateModule(module.id, module.title)}
-                            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all bg-background border border-card hover:bg-amber-500/10 text-subtext hover:text-amber-500 hover:border-amber-500/30"
-                          >
-                            <RefreshCw className="w-4 h-4" /> Re-roll
-                          </button>
-                       </div>
+                        <button 
+                          onClick={() => regenerateModule(module.id, module.title)}
+                          className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all bg-background border border-card hover:bg-amber-500/10 text-subtext hover:text-amber-500 hover:border-amber-500/30"
+                        >
+                          <RefreshCw className="w-4 h-4" /> Re-roll
+                        </button>
+                      </div>
                     </div>
-                 )}
-              </div>
-           ))}
-         </div>
+                  )}
+                </div>
+              ))}
+            </div>
 
-         {/* BOTTOM PRIMARY APPROVE ACTION */}
-         <div className="sticky bottom-0 bg-gradient-to-t from-background via-background to-transparent pt-12 pb-6 flex justify-end z-30">
-            <button className="bg-text hover:bg-black dark:bg-white dark:text-black dark:hover:bg-gray-200 text-background px-10 py-5 rounded-2xl font-black text-lg shadow-2xl transition-transform active:scale-95 flex items-center gap-3">
-               Approve Syllabus & Continue <ChevronRight className="w-6 h-6" />
-            </button>
-         </div>
+            {/* BOTTOM PRIMARY APPROVE ACTION */}
+            <div className="sticky bottom-0 bg-gradient-to-t from-background via-background to-transparent pt-12 pb-6 flex justify-end z-30">
+              <button className="bg-text hover:bg-black dark:bg-white dark:text-black dark:hover:bg-gray-200 text-background px-10 py-5 rounded-2xl font-black text-lg shadow-2xl transition-transform active:scale-95 flex items-center gap-3">
+                Approve Syllabus & Continue <ChevronRight className="w-6 h-6" />
+              </button>
+            </div>
 
-      </main>
+          </main>
+        </div>
+        )
+      )}
 
       <style dangerouslySetInnerHTML={{__html: `
         .no-scrollbar::-webkit-scrollbar { display: none; }

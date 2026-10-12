@@ -1,0 +1,20 @@
+{
+    "id": "lesson_08_responsible_ai",
+    "title": "Responsible AI & Ethics",
+    "stages": [
+        {
+            "type": "concept",
+            "content": {
+                "title": "The Danger of Bias",
+                "explanation": "\u2022 Machine Learning models have no morals; they only reflect the data they are fed.\n\u2022 Building ML systems requires ethical vigilance."
+            }
+        },
+        {
+            "type": "concept",
+            "content": {
+                "title": "Explainable AI (XAI)",
+                "explanation": "\u2022 Explainability is the field of trying to peer inside these black boxes."
+            }
+        }
+    ]
+}

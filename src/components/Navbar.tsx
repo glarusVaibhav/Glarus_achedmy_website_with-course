@@ -42,11 +42,13 @@ export function Navbar() {
   // The admin portal renders its own unified AdminHeader — hide the global navbar there
   if (isAdmin) return null;
   if (isLiveRoom) return null;
+  if (pathname?.startsWith("/education-landing")) return null;
+  if (isLearningMode) return null;
 
   // Minimal distraction-free navbar for Self-Paced Learning Mode (only Logo on left, Login/Avatar on right)
   if (isLearningMode) {
     return (
-      <nav className="sticky top-0 z-40 w-full border-b border-white/5 bg-background/95 backdrop-blur-md">
+      <nav className="sticky top-0 z-40 w-full border-b border-border bg-background/95 backdrop-blur-md">
         <div className="w-full px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between transition-all">
           {/* Left: Logo (Clicking redirects to Main Home with full UI) */}
           <Link href="/" className="flex items-center cursor-pointer select-none group py-1" title="Back to Main Home">
@@ -83,7 +85,7 @@ export function Navbar() {
   }
 
   return (
-    <nav className="sticky top-0 z-40 w-full border-b border-border/30 bg-background/80 backdrop-blur-md">
+    <nav className="sticky top-0 z-40 w-full border-b border-border bg-background/80 backdrop-blur-md">
       <div className="w-full px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between transition-all">
         {/* Left: Logo & Navigation Links */}
         <div className="flex items-center gap-8">

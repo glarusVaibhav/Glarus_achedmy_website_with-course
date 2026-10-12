@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { getSession } from "@/lib/auth";
+import { hasPermission } from "@/lib/permissions/instructorPermissions";
 
 export async function PUT(
   req: Request,
@@ -30,11 +31,20 @@ export async function PUT(
     // Admin override check
     const isAdmin = session.role === "ADMIN";
 
-    // Instructor permission verification
+    // Check system-level permissions granted by Admin
+    const canEditLiveClass = isAdmin || (await hasPermission(session, "LIVE_CLASS_EDIT"));
+    const canRescheduleLiveClass = isAdmin || (await hasPermission(session, "LIVE_CLASS_RESCHEDULE"));
+
+    // Instructor authorization check
+    const isLeadOrCreator =
+      liveSession.liveCourse?.leadInstructorId === session.id ||
+      liveSession.liveCourse?.createdById === session.id;
     const assignment = liveSession.assignments[0];
-    if (!isAdmin && (!assignment || !assignment.canEdit)) {
+    const isAssigned = Boolean(assignment);
+
+    if (!isAdmin && !isLeadOrCreator && !isAssigned) {
       return NextResponse.json(
-        { error: "Access Denied: You do not have permission to edit this session. Please contact Admin." },
+        { error: "Access Denied: You are not assigned to this live course session." },
         { status: 403 }
       );
     }
@@ -47,6 +57,7 @@ export async function PUT(
       endTime,
       meetingUrl,
       recordingUrl,
+      status,
       agenda,
       topics,
       learningOutcomes,
@@ -55,42 +66,51 @@ export async function PUT(
       homework
     } = body;
 
-    // Enforce granular permissions for instructors
-    if (!isAdmin) {
-      if ((date !== undefined || startTime !== undefined || endTime !== undefined) && !assignment.canEditSchedule) {
-        return NextResponse.json(
-          { error: "Access Denied: You do not have permission to modify the session schedule directly." },
-          { status: 403 }
-        );
-      }
-      if (agenda !== undefined && !assignment.canEditAgenda) {
-        return NextResponse.json(
-          { error: "Access Denied: You do not have permission to edit the session agenda." },
-          { status: 403 }
-        );
-      }
-      if (resources !== undefined && !assignment.canEditResources) {
-        return NextResponse.json(
-          { error: "Access Denied: You do not have permission to edit session resources." },
-          { status: 403 }
-        );
-      }
-      if (homework !== undefined && !assignment.canAddHomework) {
-        return NextResponse.json(
-          { error: "Access Denied: You do not have permission to modify homework assignments." },
-          { status: 403 }
-        );
-      }
+    const isModifyingContent =
+      title !== undefined ||
+      description !== undefined ||
+      meetingUrl !== undefined ||
+      recordingUrl !== undefined ||
+      status !== undefined ||
+      agenda !== undefined ||
+      topics !== undefined ||
+      learningOutcomes !== undefined ||
+      activities !== undefined ||
+      resources !== undefined ||
+      homework !== undefined;
+
+    const isModifyingSchedule =
+      date !== undefined || startTime !== undefined || endTime !== undefined;
+
+    // Enforce LIVE_CLASS_EDIT authority
+    if (!isAdmin && isModifyingContent && !canEditLiveClass) {
+      return NextResponse.json(
+        {
+          error: "Permission Denied: 'Live Class Editing' authority is disabled by Administrator for your instructor profile."
+        },
+        { status: 403 }
+      );
+    }
+
+    // Enforce LIVE_CLASS_RESCHEDULE authority
+    if (!isAdmin && isModifyingSchedule && !canRescheduleLiveClass) {
+      return NextResponse.json(
+        {
+          error: "Permission Denied: 'Live Class Rescheduling' authority is disabled by Administrator for your instructor profile."
+        },
+        { status: 403 }
+      );
     }
 
     const updateData: any = {};
     if (title !== undefined) updateData.title = title;
     if (description !== undefined) updateData.description = description;
-    if (date !== undefined && (isAdmin || assignment?.canEditSchedule)) updateData.date = date ? new Date(date) : null;
-    if (startTime !== undefined && (isAdmin || assignment?.canEditSchedule)) updateData.startTime = startTime;
-    if (endTime !== undefined && (isAdmin || assignment?.canEditSchedule)) updateData.endTime = endTime;
+    if (status !== undefined) updateData.status = status;
+    if (date !== undefined && (isAdmin || canRescheduleLiveClass)) updateData.date = date ? new Date(date) : null;
+    if (startTime !== undefined && (isAdmin || canRescheduleLiveClass)) updateData.startTime = startTime;
+    if (endTime !== undefined && (isAdmin || canRescheduleLiveClass)) updateData.endTime = endTime;
     if (meetingUrl !== undefined) updateData.meetingUrl = meetingUrl;
-    if (recordingUrl !== undefined && (isAdmin || assignment?.canManageRecording)) updateData.recordingUrl = recordingUrl;
+    if (recordingUrl !== undefined) updateData.recordingUrl = recordingUrl;
 
     await prisma.$transaction(async (tx) => {
       await tx.liveSession.update({
@@ -98,7 +118,7 @@ export async function PUT(
         data: updateData
       });
 
-      if (agenda !== undefined && (isAdmin || assignment?.canEditAgenda)) {
+      if (agenda !== undefined && (isAdmin || isLeadOrCreator || canEditLiveClass || assignment?.canEditAgenda)) {
         await tx.sessionAgendaItem.deleteMany({ where: { sessionId: id } });
         if (agenda.length > 0) {
           await tx.sessionAgendaItem.createMany({
@@ -157,7 +177,7 @@ export async function PUT(
         }
       }
 
-      if (resources !== undefined && (isAdmin || assignment?.canEditResources)) {
+      if (resources !== undefined && (isAdmin || isLeadOrCreator || canEditLiveClass || assignment?.canEditResources)) {
         await tx.sessionResource.deleteMany({ where: { sessionId: id } });
         if (resources.length > 0) {
           await tx.sessionResource.createMany({
@@ -171,7 +191,7 @@ export async function PUT(
         }
       }
 
-      if (homework !== undefined && (isAdmin || assignment?.canAddHomework)) {
+      if (homework !== undefined && (isAdmin || isLeadOrCreator || canEditLiveClass || assignment?.canAddHomework)) {
         await tx.sessionHomework.deleteMany({ where: { sessionId: id } });
         if (homework && homework.title) {
           await tx.sessionHomework.create({
@@ -205,9 +225,49 @@ export async function PUT(
         learningOutcomes: { orderBy: { order: "asc" } },
         activities: { orderBy: { order: "asc" } },
         resources: true,
-        homework: true
+        homework: true,
+        sessionAssignmentsList: true,
+        liveCourse: {
+          select: { id: true, title: true }
+        }
       }
     });
+
+    // If session was completed, notify enrolled students about unlocked session assignment
+    if (status === "COMPLETED" || (updateData.status === "COMPLETED" && liveSession.status !== "COMPLETED")) {
+      try {
+        const enrollments = await prisma.liveCourseEnrollment.findMany({
+          where: { liveCourseId: liveSession.liveCourseId, status: "ACTIVE" },
+          select: { userId: true }
+        });
+
+        const assignments = refreshed?.sessionAssignmentsList || [];
+        const assignmentTitle = assignments[0]?.title || `Session ${liveSession.sessionNumber} Practice Assignment`;
+
+        if (enrollments.length > 0) {
+          await prisma.notification.createMany({
+            data: enrollments.map((enr) => ({
+              recipientId: enr.userId,
+              actorId: session.id,
+              type: "ASSIGNMENT_REVIEW_REQUIRED",
+              category: "ASSIGNMENT",
+              priority: "HIGH",
+              title: `New Assignment Available: ${assignmentTitle}`,
+              message: `Live session "${liveSession.title}" has concluded! Your practical assignment is now unlocked and ready for submission.`,
+              actionUrl: `/student/live-training/${liveSession.liveCourseId}`,
+              metadata: JSON.stringify({
+                sessionId: id,
+                liveCourseId: liveSession.liveCourseId,
+                courseTitle: refreshed?.liveCourse?.title,
+                sessionTitle: liveSession.title
+              })
+            }))
+          });
+        }
+      } catch (notifyErr) {
+        console.warn("Auto-assignment completion notification notice:", notifyErr);
+      }
+    }
 
     return NextResponse.json({ success: true, session: refreshed });
   } catch (error: any) {

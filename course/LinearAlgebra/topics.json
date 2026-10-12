@@ -1,0 +1,167 @@
+{
+  "modules": [
+    {
+      "module_id": "M1",
+      "module_title": "Introduction to Vector Spaces",
+      "description": "",
+      "order": 1,
+      "topic_ids": [
+        "T1",
+        "T2",
+        "T3"
+      ]
+    },
+    {
+      "module_id": "M2",
+      "module_title": "Systems of Linear Equations",
+      "description": "",
+      "order": 2,
+      "topic_ids": [
+        "T4",
+        "T5",
+        "T6"
+      ]
+    },
+    {
+      "module_id": "M3",
+      "module_title": "Linear Transformations",
+      "description": "",
+      "order": 3,
+      "topic_ids": [
+        "T7",
+        "T8"
+      ]
+    },
+    {
+      "module_id": "M4",
+      "module_title": "Eigenvalues and Eigenvectors",
+      "description": "",
+      "order": 4,
+      "topic_ids": [
+        "T9",
+        "T10"
+      ]
+    },
+    {
+      "module_id": "M5",
+      "module_title": "Applications in Data Analysis",
+      "description": "",
+      "order": 5,
+      "topic_ids": [
+        "T11",
+        "T12"
+      ]
+    }
+  ],
+  "topics": [
+    {
+      "topic_id": "T1",
+      "topic_title": "Vectors in 2D and 3D",
+      "module_id": "M1",
+      "description": "Basics of vector representation and operations",
+      "lesson_ids": [
+        "lesson_01_01_01"
+      ]
+    },
+    {
+      "topic_id": "T2",
+      "topic_title": "Vector Operations",
+      "module_id": "M1",
+      "description": "Addition, scalar multiplication, dot product",
+      "lesson_ids": [
+        "lesson_01_02_01"
+      ]
+    },
+    {
+      "topic_id": "T3",
+      "topic_title": "Linear Combinations",
+      "module_id": "M1",
+      "description": "Span and linear independence",
+      "lesson_ids": [
+        "lesson_01_03_01"
+      ]
+    },
+    {
+      "topic_id": "T4",
+      "topic_title": "Matrix Representation",
+      "module_id": "M2",
+      "description": "Matrices as systems of equations",
+      "lesson_ids": [
+        "lesson_02_04_01"
+      ]
+    },
+    {
+      "topic_id": "T5",
+      "topic_title": "Gaussian Elimination",
+      "module_id": "M2",
+      "description": "Row reduction techniques",
+      "lesson_ids": [
+        "lesson_02_05_01"
+      ]
+    },
+    {
+      "topic_id": "T6",
+      "topic_title": "Matrix Inverses",
+      "module_id": "M2",
+      "description": "Invertible matrix theorem",
+      "lesson_ids": [
+        "lesson_02_06_01"
+      ]
+    },
+    {
+      "topic_id": "T7",
+      "topic_title": "Matrix Transformations",
+      "module_id": "M3",
+      "description": "Linear transformations via matrices",
+      "lesson_ids": [
+        "lesson_03_07"
+      ]
+    },
+    {
+      "topic_id": "T8",
+      "topic_title": "Kernel and Image",
+      "module_id": "M3",
+      "description": "Null space and column space",
+      "lesson_ids": [
+        "lesson_03_08"
+      ]
+    },
+    {
+      "topic_id": "T9",
+      "topic_title": "Eigenvalue Computation",
+      "module_id": "M4",
+      "description": "Characteristic equations",
+      "lesson_ids": [
+        "lesson_04_09_01"
+      ]
+    },
+    {
+      "topic_id": "T10",
+      "topic_title": "Diagonalization",
+      "module_id": "M4",
+      "description": "Eigenbasis applications",
+      "lesson_ids": [
+        "lesson_04_10_01"
+      ]
+    },
+    {
+      "topic_id": "T11",
+      "topic_title": "PCA Fundamentals",
+      "module_id": "M5",
+      "description": "Principal component analysis",
+      "lesson_ids": [
+        "lesson_05_11_01",
+        "lesson_05_11_02"
+      ]
+    },
+    {
+      "topic_id": "T12",
+      "topic_title": "Data Compression",
+      "module_id": "M5",
+      "description": "Dimensionality reduction techniques",
+      "lesson_ids": [
+        "lesson_05_12_01"
+      ]
+    }
+  ]
+}

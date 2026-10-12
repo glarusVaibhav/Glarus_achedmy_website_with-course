@@ -51,6 +51,7 @@ import {
   RefreshCw
 } from "lucide-react";
 import { formatDate } from "@/lib/dateTime";
+import { createTusUpload } from "@/lib/video/tusUploader";
 import {
   MOCK_DETAILED_COURSES,
   DetailedCoursePreview,
@@ -98,6 +99,8 @@ export default function CourseDetailPage({ params }: PageProps) {
   const [editStudioTab, setEditStudioTab] = useState<"general" | "curriculum" | "outcomes">("curriculum");
   const [savingChanges, setSavingChanges] = useState(false);
   const [uploadingFile, setUploadingFile] = useState(false);
+  const [videoUploadProgress, setVideoUploadProgress] = useState(0);
+  const [videoUploadStatusText, setVideoUploadStatusText] = useState("");
 
   // Editable Form & Curriculum Buffers
   const [editForm, setEditForm] = useState({
@@ -448,7 +451,55 @@ export default function CourseDetailPage({ params }: PageProps) {
   // File Upload Helper for Admin Editor
   const handleAdminFileUpload = async (file: File, category: "video" | "image" | "resource") => {
     setUploadingFile(true);
+    setVideoUploadProgress(0);
+    setVideoUploadStatusText("");
     try {
+      if (category === "video") {
+        setVideoUploadStatusText("Connecting to Bunny Stream...");
+        try {
+          const sessionRes = await fetch("/api/videos/upload-session", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              filename: file.name,
+              contentType: file.type || "video/mp4",
+              size: file.size,
+              title: editingLessonModal?.lesson?.title || file.name,
+              courseId: course?.id,
+            }),
+          });
+
+          if (sessionRes.ok) {
+            const sessionData = await sessionRes.json();
+            if (sessionData.provider === "BUNNY_STREAM" && (sessionData.uploadEndpoint || sessionData.tusEndpoint)) {
+              setVideoUploadStatusText("Uploading to Bunny Stream CDN...");
+              await new Promise<void>((resolve, reject) => {
+                const tusUpload = createTusUpload(file, {
+                  endpoint: sessionData.uploadEndpoint || sessionData.tusEndpoint,
+                  headers: sessionData.tusHeaders || {},
+                  metadata: {
+                    filetype: file.type || "video/mp4",
+                    title: editingLessonModal?.lesson?.title || file.name,
+                  },
+                  onProgress: (percent) => {
+                    setVideoUploadProgress(percent);
+                  },
+                  onSuccess: () => resolve(),
+                  onError: (err) => reject(err),
+                });
+                tusUpload.start();
+              });
+
+              setVideoUploadStatusText("Bunny Stream encoding multi-resolution HLS...");
+              return `/api/videos/${sessionData.videoAssetId}/status`;
+            }
+          }
+        } catch (videoErr: any) {
+          console.warn("Direct Bunny upload fallback to /api/upload:", videoErr?.message);
+        }
+      }
+
+      // Standard fallback to /api/upload
       const formData = new FormData();
       formData.append("file", file);
       formData.append("category", category);
@@ -474,6 +525,8 @@ export default function CourseDetailPage({ params }: PageProps) {
       return null;
     } finally {
       setUploadingFile(false);
+      setVideoUploadProgress(0);
+      setVideoUploadStatusText("");
     }
   };
 
@@ -2011,15 +2064,16 @@ export default function CourseDetailPage({ params }: PageProps) {
                 <div className="flex items-center justify-between">
                   <label className="text-xs font-black text-purple-300 uppercase flex items-center gap-1.5">
                     <Video className="w-4 h-4" />
-                    Video Content URL / Upload
+                    Video Content URL / Bunny Stream
                   </label>
                   <label className="px-3 py-1 rounded-lg bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 text-[11px] font-bold cursor-pointer transition-all flex items-center gap-1">
                     <UploadCloud className="w-3.5 h-3.5" />
-                    <span>Upload MP4 Video</span>
+                    <span>Upload to Bunny Stream</span>
                     <input
                       type="file"
-                      accept="video/*"
+                      accept="video/mp4,video/webm,video/quicktime,video/x-m4v,video/mkv,.mp4,.mov,.webm,.m4v,.mkv"
                       className="hidden"
+                      disabled={uploadingFile}
                       onChange={async (e) => {
                         const file = e.target.files?.[0];
                         if (file) {
@@ -2036,9 +2090,27 @@ export default function CourseDetailPage({ params }: PageProps) {
                   </label>
                 </div>
 
+                {uploadingFile && videoUploadStatusText && (
+                  <div className="p-3 bg-purple-500/10 border border-purple-500/20 rounded-xl space-y-2">
+                    <div className="flex items-center justify-between text-xs font-bold text-purple-300">
+                      <span className="flex items-center gap-2">
+                        <Loader2 className="w-3.5 h-3.5 animate-spin text-purple-400" />
+                        {videoUploadStatusText}
+                      </span>
+                      <span>{videoUploadProgress}%</span>
+                    </div>
+                    <div className="w-full h-1.5 bg-background rounded-full overflow-hidden border border-white/10">
+                      <div
+                        className="h-full bg-gradient-to-r from-purple-500 to-indigo-500 transition-all duration-300 rounded-full"
+                        style={{ width: `${videoUploadProgress}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
+
                 <input
                   type="text"
-                  placeholder="https://example.com/lecture.mp4"
+                  placeholder="Bunny Stream Video Endpoint or URL (e.g. /api/videos/.../status or https://...)"
                   value={editingLessonModal.lesson.videoUrl || ""}
                   onChange={(e) =>
                     setEditingLessonModal({
@@ -2048,6 +2120,9 @@ export default function CourseDetailPage({ params }: PageProps) {
                   }
                   className="w-full bg-background border border-white/10 rounded-xl px-4 py-2.5 text-xs text-text font-medium focus:outline-none focus:border-purple-500"
                 />
+                <p className="text-[10px] text-subtext">
+                  Direct Bunny Stream TUS upload with automatic HLS adaptive multi-bitrate encoding & global CDN delivery.
+                </p>
               </div>
 
               {/* 2. PHOTOS & DIAGRAMS CONFIGURATION */}

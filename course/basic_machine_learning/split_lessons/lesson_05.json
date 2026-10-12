@@ -1,0 +1,181 @@
+{
+    "id": "lesson_04_unsupervised",
+    "title": "Unsupervised Learning",
+    "stages": [
+        {
+            "type": "concept",
+            "content": {
+                "title": "K-Means Clustering: Finding Tribes",
+                "explanation": "\u2022 Beginner-friendly explanation.\n\u2022 In unsupervised learning, we have data completely without labels\u2014just raw points.\n\u2022 Real-world intuition.\n\u2022 Imagine you walk into a massive cafeteria where hundreds of people are sitting randomly.\n\u2022 You randomly pick 3 people to be 'team captains'."
+            }
+        },
+        {
+            "type": "code",
+            "challenge": {
+                "language": "python",
+                "question": "Implement K-Means clustering to group unlabelled data into 3 distinct clusters.",
+                "starterCode": "from sklearn.cluster import KMeans\nimport numpy as np\n\n# Unlabeled 2D data coordinates\nX = np.array([[1, 2], [1, 4], [1, 0], [10, 2], [10, 4], [10, 0]])\n\n# TODO: Initialize KMeans with 3 clusters and fit the data\nkmeans = \n\n# Get the cluster labels for each point\nlabels = ",
+                "solution": "from sklearn.cluster import KMeans\nimport numpy as np\n\nX = np.array([[1, 2], [1, 4], [1, 0], [10, 2], [10, 4], [10, 0]])\n\nkmeans = KMeans(n_clusters=3, random_state=42)\nkmeans.fit(X)\nlabels = kmeans.labels_\nprint(labels)",
+                "hint": "Pass n_clusters=3 to the KMeans constructor, then call .fit(X).",
+                "explanation": "KMeans will mathematically group the points based on their Euclidean distance, automatically assigning a cluster ID (0, 1, or 2) to each coordinate."
+            }
+        },
+        {
+            "type": "concept",
+            "content": {
+                "title": "Dimensionality Reduction: PCA",
+                "explanation": "\u2022 Beginner-friendly explanation.\n\u2022 It finds the underlying 'principal' patterns and discards the noisy, redundant data.\n\u2022 Real-world intuition.\n\u2022 Imagine looking at a complex 3D object like a bicycle.\n\u2022 Why the concept matters."
+            }
+        },
+        {
+            "type": "visual",
+            "content": {
+                "title": "PCA (Principal Component Analysis)",
+                "explanation": "Just like our 3D mug shadow analogy, PCA finds the perfect angle to compress these complex data points into a simple 2D view.",
+                "image": "images/pca_reduction_1779772627550.png"
+            }
+        },
+        {
+            "type": "mcq",
+            "questions": [
+                {
+                    "question": "Why is standardizing data a strict prerequisite for PCA?",
+                    "options": [
+                        "PCA only accepts integers.",
+                        "PCA is variance-based; features with larger scales will completely dominate the principal components.",
+                        "It increases the number of dimensions automatically.",
+                        "It prevents the need for train/test splitting."
+                    ],
+                    "answer": 1,
+                    "explanation": "Since PCA seeks to maximize variance, a feature measured in millions (like volume) will mathematically overshadow a feature measured in decimals (like percentages) if not scaled."
+                }
+            ]
+        },
+        {
+            "type": "concept",
+            "content": {
+                "title": "Understanding t-SNE",
+                "explanation": "\u2022 Beginner-friendly explanation.\n\u2022 Real-world intuition.\n\u2022 PCA just squashes the bowl flat.\n\u2022 Why the concept matters.\n\u2022 Human brains cannot comprehend data in 50 dimensions."
+            }
+        },
+        {
+            "type": "visual",
+            "content": {
+                "title": "t-SNE Visualization",
+                "explanation": "See how beautifully t-SNE untangles the messy high-dimensional data into distinct, colorful clusters that our human eyes can instantly recognize.",
+                "image": "images/tsne_visualization_1779772646752.png"
+            }
+        },
+        {
+            "type": "code",
+            "challenge": {
+                "explanation": "This code demonstrates the full t-SNE workflow: data scaling, model fitting, and visualization. The resulting plot shows how similar digits cluster together in 2D space.",
+                "hint": "Remember to scale your data first! Use StandardScaler from sklearn.preprocessing.",
+                "language": "python",
+                "question": "Implement t-SNE on the digits dataset",
+                "solution": "from sklearn.preprocessing import StandardScaler\nimport matplotlib.pyplot as plt\nscaler = StandardScaler()\nX_scaled = scaler.fit_transform(X)\nt_sne = TSNE(n_components=2, perplexity=30, random_state=42)\nX_embedded = t_sne.fit_transform(X_scaled)\nplt.scatter(X_embedded[:, 0], X_embedded[:, 1], c=digits.target, cmap='Spectral', alpha=0.6)\nplt.show()",
+                "starterCode": "from sklearn.manifold import TSNE\nfrom sklearn.datasets import load_digits\ndigits = load_digits()\nX = digits.data\n# TODO: Scale data and apply t-SNE with perplexity=30\n# TODO: Plot the 2D embedding using matplotlib"
+            }
+        },
+        {
+            "type": "mcq",
+            "questions": [
+                {
+                    "answer": 1,
+                    "explanation": "t-SNE excels at revealing local structure and nonlinear patterns in data, making it ideal for visualization tasks where PCA might obscure important relationships.",
+                    "options": [
+                        "For preserving global distances",
+                        "For visualizing nonlinear clusters",
+                        "For reducing to more than 3 dimensions",
+                        "For real-time applications"
+                    ],
+                    "question": "When should you prefer t-SNE over PCA?"
+                },
+                {
+                    "answer": 2,
+                    "explanation": "Perplexity acts as a smooth measure of the effective number of neighbors. Lower values focus on local structure, higher values consider more global structure.",
+                    "options": [
+                        "Learning rate",
+                        "Number of dimensions",
+                        "Balance between local/global structure",
+                        "Color intensity in plots"
+                    ],
+                    "question": "What does the perplexity parameter control?"
+                }
+            ]
+        },
+        {
+            "type": "scenario",
+            "title": "Parameter Selection Challenge",
+            "description": "You're analyzing a dataset with complex nonlinear structures. Choose the best t-SNE parameters:",
+            "choices": [
+                {
+                    "outcome": "Shows very local clusters but misses global patterns",
+                    "score": 70,
+                    "text": "Perplexity=5, early_exaggeration=1.0"
+                },
+                {
+                    "outcome": "Balanced visualization with clear clusters",
+                    "score": 95,
+                    "text": "Perplexity=50, learning_rate=1000"
+                },
+                {
+                    "outcome": "Overly generalized clusters",
+                    "score": 60,
+                    "text": "Perplexity=100, n_iter=250"
+                }
+            ]
+        },
+        {
+            "type": "reflection",
+            "prompt": "How would you explain the trade-off between t-SNE and PCA to a colleague?"
+        },
+        {
+            "type": "speed_quiz",
+            "questions": [
+                {
+                    "answer": 0,
+                    "options": [
+                        "perplexity",
+                        "n_components",
+                        "random_state",
+                        "angle"
+                    ],
+                    "question": "Which parameter affects the number of neighbors considered?"
+                },
+                {
+                    "answer": 1,
+                    "options": [
+                        "Overfitting",
+                        "Local minima",
+                        "Underfitting",
+                        "Collinearity"
+                    ],
+                    "question": "What's a common issue with t-SNE optimization?"
+                }
+            ]
+        },
+        {
+            "type": "concept",
+            "content": {
+                "title": "DBSCAN: Density-Based Clustering",
+                "explanation": "\u2022 Beginner-friendly explanation.\n\u2022 Real-world intuition.\n\u2022 Imagine looking at a satellite map of a country at night.\n\u2022 The brightly lit, densely packed areas are cities (clusters).\n\u2022 The dark, empty spaces are rural areas (low density)."
+            }
+        },
+        {
+            "type": "concept",
+            "content": {
+                "title": "Anomaly Detection: Spotting the Outliers",
+                "explanation": "\u2022 Beginner-friendly explanation.\n\u2022 It learns what 'normal' looks like, so it can flag anything abnormal.\n\u2022 Real-world intuition.\n\u2022 Imagine you have a loyal dog who barks every time the mail carrier arrives.\n\u2022 You're used to this."
+            }
+        },
+        {
+            "type": "visual",
+            "content": {
+                "title": "Anomaly Detection: Spotting the Outliers",
+                "explanation": "Most unsupervised learning groups data (clustering). Anomaly Detection focuses on the data points that DO NOT belong to any group. Algorithms like Isolation Forest act as a high-tech security system, learning the shape of 'normal' data and instantly flagging bizarre occurrences.",
+                "image": "images/anomaly_detection.png"
+            }
+        }
+    ]
+}

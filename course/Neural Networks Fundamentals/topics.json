@@ -1,0 +1,164 @@
+[
+  {
+    "id": "module-1",
+    "title": "Module 1: The Blueprint",
+    "topics": [
+      {
+        "title": "Initialization & Blueprint"
+      },
+      {
+        "title": "Why A.L.I.C.E.?"
+      },
+      {
+        "title": "Earth Archives"
+      },
+      {
+        "title": "The AI Winters"
+      },
+      {
+        "title": "Biomimetic Core"
+      },
+      {
+        "title": "Sensor Arrays (Dendrites)"
+      },
+      {
+        "title": "Transmitters (Axons)"
+      },
+      {
+        "title": "Data Junctions (Synapses)"
+      }
+    ]
+  },
+  {
+    "id": "module-2",
+    "title": "Module 2: The Spark of Life",
+    "topics": [
+      {
+        "title": "The Spark of Life"
+      },
+      {
+        "title": "Sensor Calibration (Inputs)"
+      },
+      {
+        "title": "Trust Factors (Weights)"
+      },
+      {
+        "title": "Baseline Sensitivity (Bias)"
+      },
+      {
+        "title": "Core Processing (Weighted Sum)"
+      },
+      {
+        "title": "The Decision Gate (Activation)"
+      },
+      {
+        "title": "The Neuron Equation"
+      },
+      {
+        "title": "Vector Upgrades"
+      },
+      {
+        "title": "Drawing the Line"
+      }
+    ]
+  },
+  {
+    "id": "module-3",
+    "title": "Module 3: The First Test",
+    "topics": [
+      {
+        "title": "The First Test"
+      },
+      {
+        "title": "Error Correction"
+      },
+      {
+        "title": "Training Simulations"
+      },
+      {
+        "title": "Code the Learning Rule"
+      },
+      {
+        "title": "Success and Limitations"
+      },
+      {
+        "title": "The XOR Anomaly"
+      }
+    ]
+  },
+  {
+    "id": "module-4",
+    "title": "Module 4: The Deep Upgrade",
+    "topics": [
+      {
+        "title": "The XOR Solution"
+      },
+      {
+        "title": "Sensor Array Recalibration"
+      },
+      {
+        "title": "The Subconscious Core"
+      },
+      {
+        "title": "The Action Translators"
+      },
+      {
+        "title": "Dense Neural Links"
+      },
+      {
+        "title": "Engineering the Brain"
+      },
+      {
+        "title": "Sizing the Nodes"
+      },
+      {
+        "title": "Depth vs Performance"
+      }
+    ]
+  },
+  {
+    "id": "module-5",
+    "title": "Module 5: Activation Functions",
+    "topics": [
+      {
+        "title": "Why Activation Functions?"
+      },
+      {
+        "title": "Step Function"
+      },
+      {
+        "title": "Linear Activation"
+      },
+      {
+        "title": "Sigmoid Activation"
+      },
+      {
+        "title": "Tanh Activation"
+      },
+      {
+        "title": "ReLU Activation"
+      },
+      {
+        "title": "Leaky ReLU"
+      },
+      {
+        "title": "ELU Activation"
+      },
+      {
+        "title": "GELU Activation"
+      },
+      {
+        "title": "Softmax Activation"
+      },
+      {
+        "title": "Activation Function Selection"
+      },
+      {
+        "title": "Vanishing Gradient Problem"
+      },
+      {
+        "title": "Dying ReLU Problem"
+      }
+    ]
+  }
+]

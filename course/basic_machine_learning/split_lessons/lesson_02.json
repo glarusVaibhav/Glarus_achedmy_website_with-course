@@ -1,0 +1,184 @@
+{
+    "id": "lesson_01_5_feature_engineering",
+    "title": "Feature Engineering",
+    "stages": [
+        {
+            "type": "concept",
+            "content": {
+                "title": "What is Feature Engineering?",
+                "explanation": "• Transforming raw, messy data.\n• Creating mathematical signals.\n• Helps algorithms learn easily.\n• Better features beat better algorithms.\n• Example: Extracting 'Age' from 'DOB'."
+            }
+        },
+        {
+            "type": "mcq",
+            "questions": [
+                {
+                    "question": "Example of Feature Engineering for predicting house prices?",
+                    "options": [
+                        "Feeding raw 'Year Built'",
+                        "Creating a 'House Age' feature",
+                        "Deleting the dataset"
+                    ],
+                    "answer": 1,
+                    "explanation": "Creates explicit patterns."
+                }
+            ]
+        },
+        {
+            "type": "concept",
+            "content": {
+                "title": "Data Cleaning Workflow",
+                "explanation": "• Clean before engineering.\n• Fix missing values.\n• Remove duplicates.\n• Standardize formats.\n• Prevents broken models."
+            }
+        },
+        {
+            "type": "reorder",
+            "challenge": {
+                "instruction": "Order the Data Cleaning Pipeline.",
+                "correctOrder": [
+                    "1. Remove duplicate rows",
+                    "2. Standardize text casing",
+                    "3. Handle missing values",
+                    "4. Remove outliers",
+                    "5. Begin Feature Engineering"
+                ]
+            }
+        },
+        {
+            "type": "visual",
+            "content": {
+                "title": "Handling Missing Data: Imputation Strategies",
+                "explanation": "Different strategies for handling missing data, from mean imputation to complex predictive models.",
+                "image": "images/imputation_strategies_infographic.jpg"
+            }
+        },
+        {
+            "type": "concept",
+            "content": {
+                "title": "Feature Scaling",
+                "explanation": "• Puts numbers on similar scale.\n• Prevents large numbers dominating.\n• Crucial for distance algorithms.\n• Scale features, not labels.\n• Use MinMaxScaler or StandardScaler."
+            }
+        },
+        {
+            "type": "drag_drop",
+            "content": {
+                "question": "Match the scaling technique.",
+                "buckets": [
+                    {
+                        "name": "Min-Max Scaling",
+                        "accepts": ["Compresses data strictly between 0 and 1."]
+                    },
+                    {
+                        "name": "Standardization",
+                        "accepts": ["Centers data at a mean of 0."]
+                    },
+                    {
+                        "name": "Robust Scaler",
+                        "accepts": ["Uses IQR to ignore extreme outliers."]
+                    }
+                ]
+            }
+        },
+        {
+            "type": "concept",
+            "content": {
+                "title": "Min-Max vs Standardization",
+                "explanation": "• Min-Max: Bounds between 0 and 1.\n• Min-Max: Sensitive to outliers.\n• Standardization: Centers at mean 0.\n• Standardization: Good for Gaussian data.\n• Pick based on distribution."
+            }
+        },
+        {
+            "type": "concept",
+            "content": {
+                "title": "Robust vs MaxAbs Scaler",
+                "explanation": "• Robust: Uses Median and IQR.\n• Robust: Ignores extreme outliers.\n• MaxAbs: Divides by absolute max.\n• MaxAbs: Preserves zeros.\n• Use Robust for billionaires' salaries."
+            }
+        },
+        {
+            "type": "concept",
+            "content": {
+                "title": "Log vs Power Transform",
+                "explanation": "• Log: Compresses highly skewed data.\n• Log: Only works on positive numbers.\n• Power: Automatically finds best power.\n• Power: Can handle negative numbers.\n• Turns skews into bell curves."
+            }
+        },
+        {
+            "type": "speed_quiz",
+            "timePerQuestion": 6,
+            "questions": [
+                {
+                    "question": "Which scaler compresses data between 0 and 1?",
+                    "options": ["StandardScaler", "MinMaxScaler"],
+                    "answer": 1
+                },
+                {
+                    "question": "Best scaler for extreme outliers?",
+                    "options": ["StandardScaler", "RobustScaler"],
+                    "answer": 1
+                },
+                {
+                    "question": "Do Random Forests need scaling?",
+                    "options": ["Yes", "No"],
+                    "answer": 1
+                }
+            ]
+        },
+        {
+            "type": "scenario",
+            "content": {
+                "title": "Scaling Strategy",
+                "description": "KNN model with VIP extreme outliers. Which scaler?",
+                "choices": [
+                    {
+                        "text": "MinMaxScaler",
+                        "score": 20,
+                        "outcome": "Too sensitive to VIP outliers."
+                    },
+                    {
+                        "text": "RobustScaler",
+                        "score": 100,
+                        "outcome": "Perfect! Ignores extreme outliers."
+                    },
+                    {
+                        "text": "No scaling",
+                        "score": 0,
+                        "outcome": "KNN fails without scaling."
+                    }
+                ]
+            }
+        },
+        {
+            "type": "concept",
+            "content": {
+                "title": "Outlier Detection",
+                "explanation": "• Outliers pull models off track.\n• Visualized with Boxplots.\n• Can be typos or fraud.\n• Use Z-Scores or IQR.\n• Cap them or drop them."
+            }
+        },
+        {
+            "type": "concept",
+            "content": {
+                "title": "Encoding Categorical Variables",
+                "explanation": "• One-Hot: Binary columns per category.\n• One-Hot: Best for non-ordered (Colors).\n• Target: Replaces with average target.\n• Target: Best for Zip Codes.\n• Avoid 10,000 column explosions."
+            }
+        },
+        {
+            "type": "concept",
+            "content": {
+                "title": "Date & Time Features",
+                "explanation": "• Extract numerical features from dates.\n• Month, Day, Hour, Is_Weekend.\n• Time holds cyclical patterns.\n• Converts calendars into habits.\n• Watch out for timezones."
+            }
+        },
+        {
+            "type": "concept",
+            "content": {
+                "title": "Text Data: TF-IDF",
+                "explanation": "• Bag of Words: Just counts.\n• Dominates common words ('the').\n• TF-IDF: Penalizes common words.\n• Highlights rare, meaningful words.\n• Baseline for NLP tasks."
+            }
+        },
+        {
+            "type": "concept",
+            "content": {
+                "title": "Lesson Summary",
+                "explanation": "• Clean data first.\n• Handle missing values.\n• Scale features (except for trees).\n• Encode text and categories.\n• Great features beat great algorithms."
+            }
+        }
+    ]
+}

@@ -52,6 +52,26 @@ export async function PATCH(
       }
     });
 
+    // Update display order safely based on publish status
+    if (shouldPublish) {
+      const { assignNextPublishedCourseOrder } = await import("@/lib/courseOrdering");
+      await assignNextPublishedCourseOrder(existing.id);
+    } else {
+      const { removeCourseFromPublishedOrder } = await import("@/lib/courseOrdering");
+      await removeCourseFromPublishedOrder(existing.id);
+    }
+
+    // Refresh course data with updated displayOrder
+    const finalCourse = await prisma.course.findUnique({
+      where: { id: existing.id },
+      include: {
+        instructor: { select: { id: true, name: true, email: true } },
+        modules: true,
+        purchases: true,
+        enrollments: true
+      }
+    });
+
     // Record AuditLog
     try {
       await prisma.auditLog.create({
@@ -76,9 +96,10 @@ export async function PATCH(
       message: shouldPublish
         ? `"${existing.title}" is now published and live on the landing page!`
         : `"${existing.title}" has been unpublished and hidden from the landing page.`,
-      course: updated,
-      isPublished: updated.isPublished,
-      status: updated.status
+      course: finalCourse || updated,
+      isPublished: (finalCourse || updated).isPublished,
+      status: (finalCourse || updated).status,
+      displayOrder: (finalCourse || updated).displayOrder
     });
   } catch (err: any) {
     console.error("Failed to toggle course publish status:", err);

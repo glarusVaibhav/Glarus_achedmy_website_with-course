@@ -1,0 +1,188 @@
+{
+    "id": "lesson_00_ai_ml_foundations",
+    "title": "AI & ML Foundations",
+    "stages": [
+        {
+            "type": "concept",
+            "content": {
+                "title": "What is Machine Learning?",
+                "explanation": "• Computers learn patterns from data.\n• No fixed rules required.\n• Learns by example.\n• Finds hidden structures.\n• Used for predictions."
+            }
+        },
+        {
+            "type": "visual",
+            "content": {
+                "title": "AI vs ML vs Deep Learning",
+                "explanation": "• AI is the massive umbrella.\n• ML is a subset of AI.\n• Deep Learning is a subset of ML.",
+                "image": "images/ai_ml_dl_1779772488256.png"
+            }
+        },
+        {
+            "type": "visual",
+            "content": {
+                "title": "Types of Machine Learning",
+                "explanation": "• Supervised: Learns from labeled data.\n• Unsupervised: Finds patterns in unlabeled data.\n• Reinforcement: Learns by trial and error.",
+                "image": "images/types_of_ml_infographic.jpg"
+            }
+        },
+        {
+            "type": "concept",
+            "content": {
+                "title": "Supervised Learning",
+                "explanation": "• Uses historical labeled data.\n• Learns the exact relationship.\n• Needs an answer key.\n• Predicts known outcomes.\n• Example: House price prediction."
+            }
+        },
+        {
+            "type": "concept",
+            "content": {
+                "title": "Unsupervised Learning",
+                "explanation": "• Uses raw, messy data.\n• No answers provided.\n• Finds hidden clusters.\n• Explores the unknown automatically.\n• Example: Customer grouping."
+            }
+        },
+        {
+            "type": "concept",
+            "content": {
+                "title": "Reinforcement Learning",
+                "explanation": "• Agent in live environment.\n• Makes random decisions.\n• Gets reward or penalty.\n• Learns optimal behavior.\n• Example: Self-driving cars."
+            }
+        },
+        {
+            "type": "concept",
+            "content": {
+                "title": "Why We Need All Three",
+                "explanation": "• Clear answers? Use Supervised.\n• No labels? Use Unsupervised.\n• Dynamic environment? Use Reinforcement.\n• Pick the right tool."
+            }
+        },
+        {
+            "type": "visual",
+            "content": {
+                "title": "Training vs Inference",
+                "explanation": "• Training: Heavy learning phase.\n• Inference: Fast prediction phase.\n• Train once.\n• Run inference millions of times.",
+                "image": "images/model_training_inference.png"
+            }
+        },
+        {
+            "type": "scenario",
+            "content": {
+                "title": "Data Classification Scenario",
+                "description": "You have 10 years of purchase data. No labels exist. Group customers into 5 segments. What approach?",
+                "choices": [
+                    {
+                        "text": "Supervised Learning",
+                        "score": 0,
+                        "outcome": "Error! Supervised requires labels."
+                    },
+                    {
+                        "text": "Unsupervised Learning",
+                        "score": 100,
+                        "outcome": "Exactly! Perfect for grouping data."
+                    },
+                    {
+                        "text": "Reinforcement Learning",
+                        "score": 0,
+                        "outcome": "Overkill! Not teaching an agent."
+                    }
+                ]
+            }
+        },
+        {
+            "type": "mcq",
+            "questions": [
+                {
+                    "question": "Which algorithm to group thousands of unlabeled customers?",
+                    "options": [
+                        "Supervised Learning",
+                        "Unsupervised Learning",
+                        "Reinforcement Learning"
+                    ],
+                    "answer": 1,
+                    "explanation": "No predefined labels means use Unsupervised Learning."
+                }
+            ]
+        },
+        {
+            "type": "drag_drop",
+            "content": {
+                "question": "Match the scenarios.",
+                "buckets": [
+                    {
+                        "name": "Supervised",
+                        "accepts": ["Predicting house prices", "Classifying spam emails"]
+                    },
+                    {
+                        "name": "Unsupervised",
+                        "accepts": ["Grouping customers by behavior", "Finding anomalies in logs"]
+                    },
+                    {
+                        "name": "Reinforcement",
+                        "accepts": ["Self-driving car in lane", "AI playing chess"]
+                    }
+                ]
+            }
+        },
+        {
+            "type": "fill_blank",
+            "challenge": {
+                "title": "Training vs Inference",
+                "question": "Complete the ML lifecycle sentence.",
+                "template": [
+                    "Finding patterns in historical data is called ",
+                    "____",
+                    ". Deploying the model to make predictions is called ",
+                    "____",
+                    "."
+                ],
+                "options": ["Training", "Inference", "Hyperparameters"],
+                "answers": {
+                    "0": "Training",
+                    "1": "Inference"
+                }
+            }
+        },
+        {
+            "type": "reorder",
+            "challenge": {
+                "instruction": "Order the Machine Learning Lifecycle.",
+                "correctOrder": [
+                    "1. Collect data",
+                    "2. Train model",
+                    "3. Deploy model",
+                    "4. Run Inference"
+                ]
+            }
+        },
+        {
+            "type": "speed_quiz",
+            "questions": [
+                {
+                    "question": "Which uses an Answer Key?",
+                    "options": ["Supervised", "Unsupervised"],
+                    "answer": 0
+                },
+                {
+                    "question": "Which uses an Agent?",
+                    "options": ["Supervised", "Reinforcement"],
+                    "answer": 1
+                },
+                {
+                    "question": "Which groups unlabeled data?",
+                    "options": ["Supervised", "Unsupervised"],
+                    "answer": 1
+                },
+                {
+                    "question": "Spam Filters use...",
+                    "options": ["Supervised", "Unsupervised"],
+                    "answer": 0
+                }
+            ],
+            "timePerQuestion": 5
+        },
+        {
+            "type": "concept",
+            "content": {
+                "title": "Lesson Summary",
+                "explanation": "• ML finds patterns from data.\n• Supervised uses labels.\n• Unsupervised groups unknown data.\n• Reinforcement learns by interaction.\n• Training learns, Inference predicts."
+            }
+        }
+    ]
+}

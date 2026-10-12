@@ -68,7 +68,7 @@ export async function PUT(
 ) {
   try {
     const session = await getSession();
-    if (!session || session.role !== "ADMIN") {
+    if (!session || (session.role !== "ADMIN" && session.role !== "INSTRUCTOR")) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
@@ -77,11 +77,40 @@ export async function PUT(
 
     const existingSession = await prisma.liveSession.findUnique({
       where: { id },
-      include: { liveCourse: true }
+      include: {
+        liveCourse: true,
+        assignments: {
+          where: { instructorId: session.id }
+        }
+      }
     });
 
     if (!existingSession) {
       return NextResponse.json({ error: "Session not found" }, { status: 404 });
+    }
+
+    if (session.role === "INSTRUCTOR") {
+      const { hasPermission } = await import("@/lib/permissions/instructorPermissions");
+      const canEditLive = await hasPermission(session, "LIVE_CLASS_EDIT");
+      if (!canEditLive) {
+        return NextResponse.json(
+          {
+            error: "LIVE_CLASS_EDIT_PERMISSION_REQUIRED",
+            message: "Administrative permission for live class editing is required."
+          },
+          { status: 403 }
+        );
+      }
+
+      // Verify instructor is lead instructor or assigned to this session
+      const isLead = existingSession.liveCourse?.leadInstructorId === session.id;
+      const isAssigned = existingSession.assignments.length > 0;
+      if (!isLead && !isAssigned) {
+        return NextResponse.json(
+          { error: "Forbidden: You are not authorized to edit this live session." },
+          { status: 403 }
+        );
+      }
     }
 
     const {

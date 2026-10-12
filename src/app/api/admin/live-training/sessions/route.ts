@@ -113,8 +113,22 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   try {
     const session = await getSession();
-    if (!session || session.role !== "ADMIN") {
+    if (!session || (session.role !== "ADMIN" && session.role !== "INSTRUCTOR")) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+    }
+
+    if (session.role === "INSTRUCTOR") {
+      const { hasPermission } = await import("@/lib/permissions/instructorPermissions");
+      const canCreateLive = await hasPermission(session, "LIVE_CLASS_CREATE");
+      if (!canCreateLive) {
+        return NextResponse.json(
+          {
+            error: "LIVE_CLASS_CREATE_PERMISSION_REQUIRED",
+            message: "Administrative permission for live class creation is required."
+          },
+          { status: 403 }
+        );
+      }
     }
 
     const body = await req.json();
@@ -150,6 +164,13 @@ export async function POST(req: Request) {
     const course = await prisma.liveCourse.findUnique({ where: { id: liveCourseId } });
     if (!course) {
       return NextResponse.json({ error: "Live course not found" }, { status: 404 });
+    }
+
+    if (session.role === "INSTRUCTOR" && course.leadInstructorId !== session.id && course.createdById !== session.id) {
+      return NextResponse.json(
+        { error: "Forbidden: You are not authorized to create sessions for this course." },
+        { status: 403 }
+      );
     }
 
     const count = await prisma.liveSession.count({ where: { liveCourseId } });
@@ -222,17 +243,27 @@ export async function POST(req: Request) {
               }))
             }
           : undefined,
-        homework: homework?.title
-          ? {
-              create: [
-                {
-                  title: homework.title,
-                  description: homework.description || "",
-                  dueDate: homework.dueDate || null
-                }
-              ]
-            }
-          : undefined
+        homework: (() => {
+          const hwList: any[] = Array.isArray(homework)
+            ? homework
+            : homework && typeof homework === "object"
+            ? [homework]
+            : [];
+
+          const records = hwList
+            .filter((h) => h && (h.title || h.description))
+            .map((h) => ({
+              title: typeof h.title === "string" ? h.title : (h.title?.title || "Homework"),
+              description: Array.isArray(h.description)
+                ? h.description.join("\n")
+                : typeof h.description === "object" && h.description !== null
+                ? JSON.stringify(h.description)
+                : String(h.description || ""),
+              dueDate: typeof h.dueDate === "string" ? h.dueDate : null
+            }));
+
+          return records.length ? { create: records } : undefined;
+        })()
       },
       include: {
         agenda: true,

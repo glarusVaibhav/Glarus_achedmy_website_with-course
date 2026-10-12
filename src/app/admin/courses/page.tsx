@@ -43,7 +43,12 @@ import {
   LayoutGrid,
   List,
   PieChart as PieChartIcon,
-  Globe
+  Globe,
+  GripVertical,
+  ChevronUp,
+  ChevronDown,
+  ArrowUpDown,
+  HelpCircle
 } from "lucide-react";
 import { formatDate } from "@/lib/dateTime";
 import {
@@ -62,6 +67,7 @@ import {
   Pie
 } from "recharts";
 import CourseReviewModal from "@/components/admin/CourseReviewModal";
+import { CreateCourseTypeModal } from "@/components/admin/CreateCourseTypeModal";
 
 export type CourseTab = "all" | "approvals" | "published" | "drafts" | "rejected";
 export type CourseDeliveryMode = "SELF_PACED" | "LIVE_TRAINING" | "ALL";
@@ -81,6 +87,7 @@ export interface CourseItem {
   refundRate: number;
   status: "PUBLISHED" | "PENDING_APPROVAL" | "DRAFT" | "REJECTED" | "ACTIVE" | "COMPLETED";
   isPublished?: boolean;
+  displayOrder?: number | null;
   type: "SELF_PACED" | "LIVE_TRAINING";
   submittedAt?: string;
   updatedAt: string;
@@ -398,6 +405,7 @@ function CourseManagementContent() {
   const [activeTab, setActiveTab] = useState<CourseTab>(initialTab);
   const [searchQuery, setSearchQuery] = useState(searchParams.get("search") || "");
   const [selectedCategory, setSelectedCategory] = useState("ALL");
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [courses, setCourses] = useState<CourseItem[]>(MOCK_COURSES);
 
   // Sync tab from URL if changed
@@ -408,132 +416,149 @@ function CourseManagementContent() {
     }
   }, [searchParams]);
 
+  // Reorder State for published courses
+  const [isSavingOrder, setIsSavingOrder] = useState(false);
+  const [draggedCourseId, setDraggedCourseId] = useState<string | null>(null);
+  const [dragOverCourseId, setDragOverCourseId] = useState<string | null>(null);
+  const [dropPosition, setDropPosition] = useState<"above" | "below" | null>(null);
+
   // Load real courses from database & live training API
-  useEffect(() => {
-    async function loadCatalog() {
-      try {
-        const [coursesRes, liveRes] = await Promise.all([
-          fetch("/api/admin/courses"),
-          fetch("/api/admin/live-training/courses")
-        ]);
+  const loadCatalog = async () => {
+    try {
+      const [coursesRes, liveRes] = await Promise.all([
+        fetch("/api/admin/courses"),
+        fetch("/api/admin/live-training/courses")
+      ]);
 
-        const dbCourseList: CourseItem[] = [];
+      const dbCourseList: CourseItem[] = [];
 
-        // 1. Process Self-Paced Courses from DB
-        if (coursesRes.ok) {
-          const data = await coursesRes.json();
-          if (data.courses && Array.isArray(data.courses)) {
-            data.courses.forEach((c: any) => {
-              const isPub = c.isPublished ?? (c.status === "PUBLISHED");
-              const computedStatus: CourseItem["status"] = isPub
-                ? "PUBLISHED"
-                : c.status === "PENDING"
-                ? "PENDING_APPROVAL"
-                : c.status === "REJECTED"
-                ? "REJECTED"
-                : "DRAFT";
+      // 1. Process Self-Paced Courses from DB
+      if (coursesRes.ok) {
+        const data = await coursesRes.json();
+        if (data.courses && Array.isArray(data.courses)) {
+          data.courses.forEach((c: any) => {
+            const isPub = c.isPublished ?? (c.status === "PUBLISHED");
+            const computedStatus: CourseItem["status"] = isPub
+              ? "PUBLISHED"
+              : c.status === "PENDING"
+              ? "PENDING_APPROVAL"
+              : c.status === "REJECTED"
+              ? "REJECTED"
+              : "DRAFT";
 
-              dbCourseList.push({
-                id: c.id,
-                title: c.title,
-                shortTitle: c.title.length > 22 ? `${c.title.substring(0, 20)}...` : c.title,
-                instructor: c.instructor?.name || "Faculty Member",
-                instructorEmail: c.instructor?.email,
-                category: c.category || "AI & Technology",
-                price: c.price || 999,
-                enrolledStudents: c.enrollments?.length || 0,
-                revenue: (c.purchases?.length || 0) * (c.price || 999),
-                refundRate: 0,
-                status: computedStatus,
-                isPublished: isPub,
-                type: "SELF_PACED",
-                updatedAt: c.publishedAt
-                  ? formatDate(c.publishedAt)
-                  : c.updatedAt
-                  ? formatDate(c.updatedAt)
-                  : "Recent",
-                duration: c.duration || `${c.modules?.length || 4} Modules`,
-                sectionsCount: c.modules?.length || 4,
-                lessonsCount: (c.modules?.length || 4) * 5,
-                description: c.description || "",
-                thumbnailGradient: "from-purple-900 to-indigo-950",
-                rating: c.rating || 5.0,
-                reviewsCount: c.reviewsCount || 8,
-                trendingVelocity: "+15% this month",
-                completionRate: 78.5
-              });
+            dbCourseList.push({
+              id: c.id,
+              title: c.title,
+              shortTitle: c.title.length > 22 ? `${c.title.substring(0, 20)}...` : c.title,
+              instructor: c.instructor?.name || "Faculty Member",
+              instructorEmail: c.instructor?.email,
+              category: c.category || "AI & Technology",
+              price: c.price || 999,
+              enrolledStudents: c.enrollments?.length || 0,
+              revenue: (c.purchases?.length || 0) * (c.price || 999),
+              refundRate: 0,
+              status: computedStatus,
+              isPublished: isPub,
+              displayOrder: typeof c.displayOrder === "number" ? c.displayOrder : null,
+              type: "SELF_PACED",
+              updatedAt: c.publishedAt
+                ? formatDate(c.publishedAt)
+                : c.updatedAt
+                ? formatDate(c.updatedAt)
+                : "Recent",
+              duration: c.duration || `${c.modules?.length || 4} Modules`,
+              sectionsCount: c.modules?.length || 4,
+              lessonsCount: (c.modules?.length || 4) * 5,
+              description: c.description || "",
+              thumbnailGradient: "from-purple-900 to-indigo-950",
+              rating: c.rating || 5.0,
+              reviewsCount: c.reviewsCount || 8,
+              trendingVelocity: "+15% this month",
+              completionRate: 78.5
             });
-          }
-        }
-
-        // 2. Process Live Training Courses from DB
-        if (liveRes.ok) {
-          const lData = await liveRes.json();
-          if (lData.courses && Array.isArray(lData.courses)) {
-            lData.courses.forEach((lc: any) => {
-              const statusMap: Record<string, CourseItem["status"]> = {
-                PUBLISHED: "PUBLISHED",
-                ACTIVE: "ACTIVE",
-                DRAFT: "DRAFT",
-                COMPLETED: "COMPLETED"
-              };
-
-              const enrolled = lc.enrolledCount || 0;
-              const maxS = lc.maxStudents || 50;
-
-              dbCourseList.push({
-                id: lc.id,
-                title: lc.title,
-                shortTitle: lc.title.length > 22 ? `${lc.title.substring(0, 20)}...` : lc.title,
-                instructor: lc.leadInstructor?.name || "Lead Faculty",
-                instructorEmail: lc.leadInstructor?.email,
-                category: lc.category || "Generative AI",
-                price: 9999,
-                enrolledStudents: enrolled,
-                maxSeats: maxS,
-                seatFillRate: Math.round((enrolled / maxS) * 100),
-                revenue: enrolled * 9999,
-                refundRate: 0,
-                status: statusMap[lc.status] || "ACTIVE",
-                type: "LIVE_TRAINING",
-                updatedAt: lc.startDate ? `Starts ${formatDate(lc.startDate)}` : "Active Cohort",
-                duration: lc.duration || "6 Weeks",
-                sectionsCount: lc.totalSessions || 8,
-                lessonsCount: lc.totalSessions || 8,
-                totalSessions: lc.totalSessions || 8,
-                liveCohortBatch: lc.level ? `${lc.level} Live Cohort` : "Active Live Cohort",
-                liveStartDate: lc.startDate ? `Starts ${formatDate(lc.startDate)}` : "Live Schedule",
-                liveLink: `/admin/live-training/courses/${lc.id}`,
-                description: lc.description || "",
-                thumbnailGradient: lc.thumbnailGradient || "from-emerald-950 to-slate-950",
-                rating: 4.9,
-                reviewsCount: 16,
-                attendanceRate: 95.0,
-                trendingVelocity: "⚡ Active live cohort"
-              });
-            });
-          }
-        }
-
-        // Merge non-conflicting mock courses
-        if (dbCourseList.length > 0) {
-          setCourses((prev) => {
-            const dbIds = new Set(dbCourseList.map((c) => c.id));
-            const remainingMock = prev.filter((m) => !dbIds.has(m.id));
-            return [...dbCourseList, ...remainingMock];
           });
         }
-      } catch {
-        /* ignore */
       }
-    }
 
+      // 2. Process Live Training Courses from DB
+      if (liveRes.ok) {
+        const lData = await liveRes.json();
+        if (lData.courses && Array.isArray(lData.courses)) {
+          lData.courses.forEach((lc: any) => {
+            const statusMap: Record<string, CourseItem["status"]> = {
+              PUBLISHED: "PUBLISHED",
+              ACTIVE: "ACTIVE",
+              DRAFT: "DRAFT",
+              COMPLETED: "COMPLETED"
+            };
+
+            const enrolled = lc.enrolledCount || 0;
+            const maxS = lc.maxStudents || 50;
+
+            dbCourseList.push({
+              id: lc.id,
+              title: lc.title,
+              shortTitle: lc.title.length > 22 ? `${lc.title.substring(0, 20)}...` : lc.title,
+              instructor: lc.leadInstructor?.name || "Lead Faculty",
+              instructorEmail: lc.leadInstructor?.email,
+              category: lc.category || "Generative AI",
+              price: 9999,
+              enrolledStudents: enrolled,
+              maxSeats: maxS,
+              seatFillRate: Math.round((enrolled / maxS) * 100),
+              revenue: enrolled * 9999,
+              refundRate: 0,
+              status: statusMap[lc.status] || "ACTIVE",
+              displayOrder: null,
+              type: "LIVE_TRAINING",
+              updatedAt: lc.startDate ? `Starts ${formatDate(lc.startDate)}` : "Active Cohort",
+              duration: lc.duration || "6 Weeks",
+              sectionsCount: lc.totalSessions || 8,
+              lessonsCount: lc.totalSessions || 8,
+              totalSessions: lc.totalSessions || 8,
+              liveCohortBatch: lc.level ? `${lc.level} Live Cohort` : "Active Live Cohort",
+              liveStartDate: lc.startDate ? `Starts ${formatDate(lc.startDate)}` : "Live Schedule",
+              liveLink: `/admin/live-training/courses/${lc.id}`,
+              description: lc.description || "",
+              thumbnailGradient: lc.thumbnailGradient || "from-emerald-950 to-slate-950",
+              rating: 4.9,
+              reviewsCount: 16,
+              attendanceRate: 95.0,
+              trendingVelocity: "⚡ Active live cohort"
+            });
+          });
+        }
+      }
+
+      if (dbCourseList.length > 0) {
+        setCourses(dbCourseList);
+      }
+    } catch {
+      /* ignore */
+    }
+  };
+
+  useEffect(() => {
     loadCatalog();
   }, []);
 
   // Counts & Filtered data
   const selfPacedCourses = useMemo(() => courses.filter((c) => c.type === "SELF_PACED"), [courses]);
   const liveCourses = useMemo(() => courses.filter((c) => c.type === "LIVE_TRAINING"), [courses]);
+
+  // Global list of published self-paced courses, sorted by displayOrder
+  const globalPublishedSelfPaced = useMemo(() => {
+    return courses
+      .filter((c) => c.type === "SELF_PACED" && (c.status === "PUBLISHED" || c.isPublished))
+      .sort((a, b) => {
+        if (typeof a.displayOrder === "number" && typeof b.displayOrder === "number") {
+          return a.displayOrder - b.displayOrder;
+        }
+        if (typeof a.displayOrder === "number") return -1;
+        if (typeof b.displayOrder === "number") return 1;
+        return 0;
+      });
+  }, [courses]);
 
   const pendingCount = courses.filter((c) => c.status === "PENDING_APPROVAL").length;
   const publishedCount = courses.filter((c) => c.status === "PUBLISHED" || c.status === "ACTIVE").length;
@@ -549,9 +574,9 @@ function CourseManagementContent() {
     return Array.from(set);
   }, [courses]);
 
-  // Filtered Courses based on mode + tab + search
+  // Filtered Courses based on mode + tab + search, preserving exact global displayOrder
   const filteredCourses = useMemo(() => {
-    return courses.filter((c) => {
+    const list = courses.filter((c) => {
       if (deliveryMode === "SELF_PACED" && c.type !== "SELF_PACED") return false;
       if (deliveryMode === "LIVE_TRAINING" && c.type !== "LIVE_TRAINING") return false;
 
@@ -571,6 +596,24 @@ function CourseManagementContent() {
       }
 
       return true;
+    });
+
+    // Deterministic sort: published courses by displayOrder ASC, then other courses
+    return list.sort((a, b) => {
+      const aPub = a.status === "PUBLISHED" || a.status === "ACTIVE" || a.isPublished;
+      const bPub = b.status === "PUBLISHED" || b.status === "ACTIVE" || b.isPublished;
+
+      if (aPub && bPub) {
+        if (typeof a.displayOrder === "number" && typeof b.displayOrder === "number") {
+          return a.displayOrder - b.displayOrder;
+        }
+        if (typeof a.displayOrder === "number") return -1;
+        if (typeof b.displayOrder === "number") return 1;
+        return 0;
+      }
+      if (aPub && !bPub) return -1;
+      if (!aPub && bPub) return 1;
+      return 0;
     });
   }, [courses, deliveryMode, activeTab, selectedCategory, searchQuery]);
 
@@ -605,6 +648,176 @@ function CourseManagementContent() {
   }, [courses]);
 
   const [toastMessage, setToastMessage] = useState<{ text: string; type: "success" | "info" } | null>(null);
+
+  // Reorder published courses via API
+  const handleReorder = async (newOrderedPublishedCourses: CourseItem[]) => {
+    if (isSavingOrder) return;
+    setIsSavingOrder(true);
+
+    const prevCourses = [...courses];
+    const newOrderedIds = newOrderedPublishedCourses.map((c) => c.id);
+
+    // Optimistically update displayOrder on courses
+    const orderMap = new Map<string, number>();
+    newOrderedPublishedCourses.forEach((c, idx) => {
+      orderMap.set(c.id, idx + 1);
+    });
+
+    setCourses((prev) =>
+      prev.map((c) => {
+        if (orderMap.has(c.id)) {
+          return { ...c, displayOrder: orderMap.get(c.id)! };
+        }
+        return c;
+      })
+    );
+
+    setToastMessage({
+      text: "Saving course order...",
+      type: "info"
+    });
+
+    try {
+      const res = await fetch("/api/admin/courses/reorder", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ courseIds: newOrderedIds }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Failed to save order");
+      }
+
+      // Update with server confirmed normalized orders
+      if (Array.isArray(data.courses)) {
+        const serverOrderMap = new Map<string, number>(
+          data.courses.map((item: any) => [item.id, item.displayOrder])
+        );
+        setCourses((prev) =>
+          prev.map((c) => {
+            if (serverOrderMap.has(c.id)) {
+              return { ...c, displayOrder: serverOrderMap.get(c.id)! };
+            }
+            return c;
+          })
+        );
+      }
+
+      setToastMessage({
+        text: "Course order updated successfully!",
+        type: "success"
+      });
+      setTimeout(() => setToastMessage(null), 3500);
+    } catch (err: any) {
+      console.error("Reorder failed:", err);
+      // Revert to previous state
+      setCourses(prevCourses);
+      setToastMessage({
+        text: err?.message || "Failed to update course order.",
+        type: "info"
+      });
+      setTimeout(() => setToastMessage(null), 4000);
+    } finally {
+      setIsSavingOrder(false);
+      setDraggedCourseId(null);
+      setDragOverCourseId(null);
+      setDropPosition(null);
+    }
+  };
+
+  const handleMoveUp = (courseId: string) => {
+    const list = [...globalPublishedSelfPaced];
+    const index = list.findIndex((c) => c.id === courseId);
+    if (index <= 0) return;
+
+    // Move course up by 1 position (true list shift)
+    const [item] = list.splice(index, 1);
+    list.splice(index - 1, 0, item);
+    handleReorder(list);
+  };
+
+  const handleMoveDown = (courseId: string) => {
+    const list = [...globalPublishedSelfPaced];
+    const index = list.findIndex((c) => c.id === courseId);
+    if (index < 0 || index >= list.length - 1) return;
+
+    // Move course down by 1 position (true list shift)
+    const [item] = list.splice(index, 1);
+    list.splice(index + 1, 0, item);
+    handleReorder(list);
+  };
+
+  // Drag & drop handlers
+  const handleDragStart = (e: React.DragEvent, course: CourseItem) => {
+    if (course.type !== "SELF_PACED" || (course.status !== "PUBLISHED" && !course.isPublished)) {
+      e.preventDefault();
+      return;
+    }
+    setDraggedCourseId(course.id);
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", course.id);
+  };
+
+  const handleDragOver = (e: React.DragEvent, targetCourse: CourseItem) => {
+    if (!draggedCourseId || draggedCourseId === targetCourse.id) return;
+    if (targetCourse.type !== "SELF_PACED" || (targetCourse.status !== "PUBLISHED" && !targetCourse.isPublished)) {
+      return;
+    }
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+
+    const rect = e.currentTarget.getBoundingClientRect();
+    const midY = rect.top + rect.height / 2;
+    const pos = e.clientY < midY ? "above" : "below";
+
+    setDragOverCourseId(targetCourse.id);
+    setDropPosition(pos);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+      setDragOverCourseId(null);
+      setDropPosition(null);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent, targetCourse: CourseItem) => {
+    e.preventDefault();
+    if (!draggedCourseId || draggedCourseId === targetCourse.id) {
+      setDraggedCourseId(null);
+      setDragOverCourseId(null);
+      setDropPosition(null);
+      return;
+    }
+
+    const list = [...globalPublishedSelfPaced];
+    const fromIndex = list.findIndex((c) => c.id === draggedCourseId);
+    const toIndex = list.findIndex((c) => c.id === targetCourse.id);
+
+    if (fromIndex < 0 || toIndex < 0) {
+      setDraggedCourseId(null);
+      setDragOverCourseId(null);
+      setDropPosition(null);
+      return;
+    }
+
+    // Remove dragged item
+    const [movedCourse] = list.splice(fromIndex, 1);
+
+    // Calculate insertion index
+    let insertIndex = toIndex;
+    if (fromIndex < toIndex) {
+      insertIndex = dropPosition === "below" ? toIndex : toIndex - 1;
+    } else {
+      insertIndex = dropPosition === "below" ? toIndex + 1 : toIndex;
+    }
+
+    insertIndex = Math.max(0, Math.min(insertIndex, list.length));
+    list.splice(insertIndex, 0, movedCourse);
+
+    handleReorder(list);
+  };
 
   // Toggle publish status for self-paced courses
   const handleTogglePublish = async (courseId: string, currentPublished: boolean) => {
@@ -643,20 +856,13 @@ function CourseManagementContent() {
       if (!res.ok) {
         throw new Error("Server returned non-ok status");
       }
+
+      // Reload catalog to sync all normalized orders from database
+      await loadCatalog();
     } catch (err) {
       console.error("Failed to toggle publish status:", err);
       // Revert on error
-      setCourses((prev) =>
-        prev.map((c) =>
-          c.id === courseId
-            ? {
-                ...c,
-                isPublished: currentPublished,
-                status: currentPublished ? "PUBLISHED" : "DRAFT"
-              }
-            : c
-        )
-      );
+      await loadCatalog();
       setToastMessage({
         text: "Failed to update publish status on server.",
         type: "info"
@@ -1474,24 +1680,14 @@ function CourseManagementContent() {
 
             {/* Action Buttons */}
             <div className="flex items-center gap-2.5 self-end lg:self-auto">
-              {deliveryMode === "LIVE_TRAINING" ? (
-                <Link
-                  href="/admin/live-training"
-                  className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md transition-all inline-flex items-center gap-1.5 cursor-pointer"
-                >
-                  <Radio className="w-3.5 h-3.5 animate-pulse" />
-                  <span>Go to Live Training Hub</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </Link>
-              ) : (
-                <Link
-                  href="/admin/create"
-                  className="px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs shadow-md transition-all inline-flex items-center gap-1.5 cursor-pointer"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>Create Course</span>
-                </Link>
-              )}
+              <button
+                type="button"
+                onClick={() => setIsCreateModalOpen(true)}
+                className="px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs shadow-md transition-all inline-flex items-center gap-1.5 cursor-pointer"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Create Course</span>
+              </button>
             </div>
           </div>
 
@@ -1536,14 +1732,54 @@ function CourseManagementContent() {
             </div>
           </div>
 
+          {/* LANDING PAGE POSITIONING NOTICE & SUMMARY BANNER */}
+          <div className="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-purple-950/40 via-card to-indigo-950/30 border border-purple-500/20 shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-xl bg-purple-500/20 border border-purple-500/30 text-purple-300 flex items-center justify-center shrink-0">
+                <Sparkles className="w-4 h-4 text-purple-400 animate-pulse" />
+              </div>
+              <div>
+                <h4 className="font-black text-text flex items-center gap-2">
+                  <span>Landing Page Course Ordering System</span>
+                  {isSavingOrder && (
+                    <span className="inline-flex items-center gap-1 text-[10px] text-amber-400 font-bold bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20 animate-pulse">
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                      Saving Order...
+                    </span>
+                  )}
+                </h4>
+                <p className="text-subtext text-[11px] mt-0.5">
+                  Top 6 published courses appear on the landing page. Published courses with order 7+ appear in the full course directory.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
+              <span className="px-2.5 py-1 rounded-lg bg-purple-500/15 text-purple-300 border border-purple-500/30 font-bold text-[11px]">
+                1–6 = Landing Page
+              </span>
+              <span className="px-2.5 py-1 rounded-lg bg-white/5 text-subtext border border-white/10 font-bold text-[11px]">
+                7+ = View All Only
+              </span>
+            </div>
+          </div>
+
           {/* COURSES TABLE */}
           <div className="bg-card border border-white/10 rounded-2xl shadow-xl overflow-hidden">
             <div className="overflow-x-auto custom-scrollbar">
-              <table className="w-full text-left border-collapse min-w-[1000px]">
+              <table className="w-full text-left border-collapse min-w-[1050px]">
                 <thead>
                   <tr className="border-b border-white/10 bg-background/50 text-[10px] font-black text-subtext uppercase tracking-wider">
-                    <th className="py-4 px-6 w-[34%]">Course Title & Format</th>
-                    <th className="py-4 px-4 w-[18%]">Instructor</th>
+                    <th className="py-4 px-3 w-28 text-center">
+                      <div className="flex items-center justify-center gap-1">
+                        <span>ORDER</span>
+                        <span title="Top 6 published courses appear on the landing page. Drag handle or use arrows to reorder." className="cursor-help text-subtext/70 hover:text-purple-400">
+                          <HelpCircle className="w-3 h-3" />
+                        </span>
+                      </div>
+                    </th>
+                    <th className="py-4 px-6 w-[32%]">Course Title & Format</th>
+                    <th className="py-4 px-4 w-[16%]">Instructor</th>
                     <th className="py-4 px-4 text-center">Students</th>
                     <th className="py-4 px-4 text-right">Price</th>
                     <th className="py-4 px-4 text-right">Revenue</th>
@@ -1555,7 +1791,7 @@ function CourseManagementContent() {
                 <tbody className="divide-y divide-white/5 text-xs font-medium">
                   {filteredCourses.length === 0 ? (
                     <tr>
-                      <td colSpan={8} className="py-16 text-center text-subtext space-y-2">
+                      <td colSpan={9} className="py-16 text-center text-subtext space-y-2">
                         <BookOpen className="w-10 h-10 mx-auto opacity-30 text-purple-400" />
                         <p className="text-sm font-bold text-text">No courses match your filter</p>
                         <p className="text-xs">Try switching between Self-Paced & Live Training formats above.</p>
@@ -1565,13 +1801,97 @@ function CourseManagementContent() {
                     filteredCourses.map((course) => {
                       const isLive = course.type === "LIVE_TRAINING";
                       const isPublished = course.status === "PUBLISHED" || course.status === "ACTIVE";
+                      const isSelfPacedPublished = !isLive && isPublished && typeof course.displayOrder === "number";
 
                       return (
                         <tr
                           key={course.id}
-                          className="hover:bg-white/5 transition-colors group cursor-pointer"
+                          onDragOver={(e) => isSelfPacedPublished && handleDragOver(e, course)}
+                          onDragLeave={handleDragLeave}
+                          onDrop={(e) => isSelfPacedPublished && handleDrop(e, course)}
+                          className={`transition-all group cursor-pointer ${
+                            draggedCourseId === course.id
+                              ? "opacity-40 bg-purple-950/40 border-dashed border-purple-500"
+                              : dragOverCourseId === course.id
+                              ? dropPosition === "above"
+                                ? "border-t-2 border-t-purple-400 bg-purple-500/10"
+                                : "border-b-2 border-b-purple-400 bg-purple-500/10"
+                              : "hover:bg-white/5"
+                          }`}
                           onClick={() => handleCourseClick(course)}
                         >
+                          {/* 0. ORDER Column */}
+                          <td className="py-4 px-3 text-center" onClick={(e) => e.stopPropagation()}>
+                            {isSelfPacedPublished ? (
+                              <div className="flex items-center justify-center gap-1">
+                                {/* Dedicated Drag Handle */}
+                                <div
+                                  draggable
+                                  onDragStart={(e) => handleDragStart(e, course)}
+                                  title="Drag to reposition (Top 6 appear on Landing Page)"
+                                  className="p-1 rounded-md text-subtext hover:text-purple-300 hover:bg-white/10 cursor-grab active:cursor-grabbing transition-colors"
+                                >
+                                  <GripVertical className="w-4 h-4" />
+                                </div>
+
+                                {/* Global Order Number Badge */}
+                                <div className="relative group/ord flex flex-col items-center">
+                                  <span
+                                    className={`w-7 h-7 rounded-xl flex items-center justify-center font-black text-xs shadow-sm transition-all ${
+                                      course.displayOrder! <= 6
+                                        ? "bg-gradient-to-br from-purple-600 to-indigo-600 text-white shadow-purple-500/30 ring-1 ring-purple-400/40"
+                                        : "bg-white/5 text-subtext border border-white/10"
+                                    }`}
+                                  >
+                                    {course.displayOrder}
+                                  </span>
+                                  {course.displayOrder! <= 6 && (
+                                    <span className="text-[8px] font-black uppercase tracking-tighter text-purple-400 mt-0.5 whitespace-nowrap">
+                                      Top 6
+                                    </span>
+                                  )}
+                                </div>
+
+                                {/* Fallback Move Controls */}
+                                <div className="flex flex-col opacity-0 group-hover:opacity-100 transition-opacity ml-0.5">
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleMoveUp(course.id);
+                                    }}
+                                    disabled={
+                                      isSavingOrder ||
+                                      globalPublishedSelfPaced.findIndex((c) => c.id === course.id) <= 0
+                                    }
+                                    title="Move Up in Landing Order"
+                                    className="p-0.5 text-subtext hover:text-purple-300 disabled:opacity-20 disabled:hover:text-subtext cursor-pointer"
+                                  >
+                                    <ChevronUp className="w-3 h-3" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleMoveDown(course.id);
+                                    }}
+                                    disabled={
+                                      isSavingOrder ||
+                                      globalPublishedSelfPaced.findIndex((c) => c.id === course.id) >=
+                                        globalPublishedSelfPaced.length - 1
+                                    }
+                                    title="Move Down in Landing Order"
+                                    className="p-0.5 text-subtext hover:text-purple-300 disabled:opacity-20 disabled:hover:text-subtext cursor-pointer"
+                                  >
+                                    <ChevronDown className="w-3 h-3" />
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              <span className="text-subtext/40 font-semibold select-none">—</span>
+                            )}
+                          </td>
+
                           {/* 1. Title & Details with Delivery Format Badges */}
                           <td className="py-4 px-6">
                             <div className="flex items-center gap-3.5">
@@ -1756,23 +2076,30 @@ function CourseManagementContent() {
 
       {/* Floating Toast Notification */}
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 animate-in fade-in slide-in-from-bottom-5">
+        <div className="fixed bottom-6 right-6 z-50 animate-in slide-in-from-bottom-3 duration-300">
           <div
-            className={`px-4 py-3 rounded-2xl shadow-2xl border flex items-center gap-2.5 backdrop-blur-xl text-xs font-bold ${
+            className={`px-4 py-3 rounded-2xl border shadow-2xl flex items-center gap-3 backdrop-blur-xl ${
               toastMessage.type === "success"
-                ? "bg-emerald-950/90 border-emerald-500/50 text-emerald-200"
-                : "bg-purple-950/90 border-purple-500/50 text-purple-200"
+                ? "bg-emerald-950/90 border-emerald-500/40 text-emerald-200"
+                : "bg-purple-950/90 border-purple-500/40 text-purple-200"
             }`}
           >
             {toastMessage.type === "success" ? (
-              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+              <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
             ) : (
-              <Sparkles className="w-4 h-4 text-purple-400 shrink-0" />
+              <Sparkles className="w-5 h-5 text-purple-400 shrink-0" />
             )}
-            <span>{toastMessage.text}</span>
+            <span className="text-xs font-bold">{toastMessage.text}</span>
           </div>
         </div>
       )}
+
+      {/* Course Type Selector Modal (Self-Paced vs Live Bootcamp) */}
+      <CreateCourseTypeModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        baseRole="admin"
+      />
     </div>
   );
 }

@@ -41,7 +41,12 @@ import {
   Lock,
   Unlock,
   KeyRound,
-  ShieldAlert
+  ShieldAlert,
+  Plus,
+  Edit3,
+  Settings,
+  AlertTriangle,
+  Loader2
 } from "lucide-react";
 import { formatDate, formatTime } from "@/lib/dateTime";
 import {
@@ -53,6 +58,10 @@ import {
 interface CoursePermissionState {
   status: "NOT_REQUESTED" | "PENDING" | "APPROVED" | "REJECTED" | "REVOKED";
   canCreateCourse: boolean;
+  canEditCourse: boolean;
+  canCreateLiveClass: boolean;
+  canEditLiveClass: boolean;
+  canRescheduleLiveClass: boolean;
   requestedAt?: string | null;
   reviewedAt?: string | null;
   rejectionReason?: string | null;
@@ -62,6 +71,34 @@ interface CoursePermissionState {
     name: string | null;
     email: string | null;
   } | null;
+}
+
+export interface InstructorLiveSessionItem {
+  id: string;
+  sessionNumber: number;
+  title: string;
+  description: string;
+  date: string | null;
+  startTime: string;
+  endTime: string;
+  timezone: string;
+  duration: string;
+  status: string;
+  meetingId?: string | null;
+  meetingPasscode?: string | null;
+  meetingUrl?: string | null;
+  courseId: string;
+  courseTitle: string;
+  cohortName: string;
+  instructorName: string;
+}
+
+export interface AvailableLiveCourse {
+  id: string;
+  title: string;
+  category?: string;
+  status?: string;
+  meetingUrl?: string;
 }
 
 function getEmbeddableVideoUrl(url?: string): { isDirectVideo: boolean; embedUrl: string } {
@@ -121,7 +158,7 @@ export default function InstructorDetailPage({ params }: PageProps) {
   const instructorId = resolvedParams.id;
 
   const [instructor, setInstructor] = useState<DetailedInstructorItem | null>(null);
-  const [activeTab, setActiveTab] = useState<"application" | "created_courses" | "assigned_cohorts" | "audit">("application");
+  const [activeTab, setActiveTab] = useState<"application" | "created_courses" | "assigned_cohorts" | "audit" | "role_permissions">("application");
   const [feedbackNote, setFeedbackNote] = useState("");
   const [processingDecision, setProcessingDecision] = useState(false);
   const [decisionBanner, setDecisionBanner] = useState<{ text: string; type: "success" | "warning" | "error" } | null>(null);
@@ -131,11 +168,61 @@ export default function InstructorDetailPage({ params }: PageProps) {
   // Course Creation Permission State
   const [coursePermission, setCoursePermission] = useState<CoursePermissionState>({
     status: "NOT_REQUESTED",
-    canCreateCourse: false
+    canCreateCourse: false,
+    canEditCourse: false,
+    canCreateLiveClass: false,
+    canEditLiveClass: false,
+    canRescheduleLiveClass: false
   });
   const [permissionProcessing, setPermissionProcessing] = useState(false);
+  const [togglingPermissionKey, setTogglingPermissionKey] = useState<string | null>(null);
   const [showPermissionRejectModal, setShowPermissionRejectModal] = useState(false);
   const [permissionFeedback, setPermissionFeedback] = useState("");
+
+  // Live Class Management State
+  const [instructorLiveSessions, setInstructorLiveSessions] = useState<InstructorLiveSessionItem[]>([]);
+  const [availableLiveCourses, setAvailableLiveCourses] = useState<AvailableLiveCourse[]>([]);
+
+  // Modals for Live Class Management
+  const [isCreateLiveModalOpen, setIsCreateLiveModalOpen] = useState(false);
+  const [createFormState, setCreateFormState] = useState({
+    liveCourseId: "",
+    title: "",
+    description: "",
+    date: "",
+    startTime: "07:00 PM",
+    endTime: "09:00 PM",
+    timezone: "Asia/Kolkata (IST)",
+    duration: "120 min",
+    meetingUrl: "",
+    passcode: "",
+    status: "SCHEDULED"
+  });
+
+  const [editingSession, setEditingSession] = useState<InstructorLiveSessionItem | null>(null);
+  const [editFormState, setEditFormState] = useState({
+    title: "",
+    description: "",
+    date: "",
+    startTime: "07:00 PM",
+    endTime: "09:00 PM",
+    timezone: "Asia/Kolkata (IST)",
+    duration: "120 min",
+    status: "SCHEDULED",
+    meetingUrl: "",
+    meetingPasscode: ""
+  });
+
+  const [reschedulingSession, setReschedulingSession] = useState<InstructorLiveSessionItem | null>(null);
+  const [rescheduleFormState, setRescheduleFormState] = useState({
+    newDate: "",
+    newStartTime: "07:00 PM",
+    newEndTime: "09:00 PM",
+    reason: ""
+  });
+
+  const [isSavingLiveAction, setIsSavingLiveAction] = useState(false);
+  const [liveActionFeedback, setLiveActionFeedback] = useState<{ text: string; type: "success" | "error" } | null>(null);
 
   useEffect(() => {
     async function loadInstructorData() {
@@ -154,7 +241,11 @@ export default function InstructorDetailPage({ params }: PageProps) {
           if (perm) {
             setCoursePermission({
               status: perm.status,
-              canCreateCourse: perm.canCreateCourse,
+              canCreateCourse: Boolean(perm.canCreateCourse),
+              canEditCourse: Boolean(perm.canEditCourse),
+              canCreateLiveClass: Boolean(perm.canCreateLiveClass),
+              canEditLiveClass: Boolean(perm.canEditLiveClass),
+              canRescheduleLiveClass: Boolean(perm.canRescheduleLiveClass),
               requestedAt: perm.requestedAt,
               reviewedAt: perm.reviewedAt,
               rejectionReason: perm.rejectionReason,
@@ -164,7 +255,11 @@ export default function InstructorDetailPage({ params }: PageProps) {
           } else {
             setCoursePermission({
               status: "NOT_REQUESTED",
-              canCreateCourse: false
+              canCreateCourse: false,
+              canEditCourse: false,
+              canCreateLiveClass: false,
+              canEditLiveClass: false,
+              canRescheduleLiveClass: false
             });
           }
 
@@ -253,6 +348,86 @@ export default function InstructorDetailPage({ params }: PageProps) {
               }
             })) || mockFound?.assignedLiveCohorts || [];
 
+            // Map live sessions from leadLiveCourses and sessionAssignments
+            const liveSessionsMap = new Map<string, InstructorLiveSessionItem>();
+
+            user?.leadLiveCourses?.forEach((lc: any) => {
+              lc.sessions?.forEach((s: any) => {
+                liveSessionsMap.set(s.id, {
+                  id: s.id,
+                  sessionNumber: s.sessionNumber || 1,
+                  title: s.title,
+                  description: s.description || "",
+                  date: s.date ? (typeof s.date === "string" ? s.date : new Date(s.date).toISOString()) : null,
+                  startTime: s.startTime || "07:00 PM",
+                  endTime: s.endTime || "09:00 PM",
+                  timezone: s.timezone || "Asia/Kolkata (IST)",
+                  duration: s.duration || "120 min",
+                  status: s.status || "SCHEDULED",
+                  meetingId: s.meetingId,
+                  meetingPasscode: s.meetingPasscode,
+                  meetingUrl: s.meetingUrl || lc.meetingUrl,
+                  courseId: lc.id,
+                  courseTitle: lc.title || "Live Cohort",
+                  cohortName: lc.category || "Live Batch",
+                  instructorName: fullName
+                });
+              });
+            });
+
+            user?.sessionAssignments?.forEach((sa: any) => {
+              if (sa.session && !liveSessionsMap.has(sa.session.id)) {
+                const s = sa.session;
+                liveSessionsMap.set(s.id, {
+                  id: s.id,
+                  sessionNumber: s.sessionNumber || 1,
+                  title: s.title,
+                  description: s.description || "",
+                  date: s.date ? (typeof s.date === "string" ? s.date : new Date(s.date).toISOString()) : null,
+                  startTime: s.startTime || "07:00 PM",
+                  endTime: s.endTime || "09:00 PM",
+                  timezone: s.timezone || "Asia/Kolkata (IST)",
+                  duration: s.duration || "120 min",
+                  status: s.status || "SCHEDULED",
+                  meetingId: s.meetingId,
+                  meetingPasscode: s.meetingPasscode,
+                  meetingUrl: s.meetingUrl || sa.liveCourse?.meetingUrl,
+                  courseId: sa.liveCourse?.id || s.liveCourseId,
+                  courseTitle: sa.liveCourse?.title || "Live Cohort",
+                  cohortName: sa.liveCourse?.category || "Live Batch",
+                  instructorName: fullName
+                });
+              }
+            });
+
+            const parsedLiveSessions = Array.from(liveSessionsMap.values());
+            setInstructorLiveSessions(parsedLiveSessions);
+
+            if (data.allLiveCourses && Array.isArray(data.allLiveCourses)) {
+              setAvailableLiveCourses(data.allLiveCourses);
+              if (data.allLiveCourses.length > 0) {
+                setCreateFormState((prev) => ({
+                  ...prev,
+                  liveCourseId: prev.liveCourseId || data.allLiveCourses[0].id
+                }));
+              }
+            } else if (user?.leadLiveCourses) {
+              const liveList = user.leadLiveCourses.map((lc: any) => ({
+                id: lc.id,
+                title: lc.title,
+                category: lc.category,
+                status: lc.status,
+                meetingUrl: lc.meetingUrl
+              }));
+              setAvailableLiveCourses(liveList);
+              if (liveList.length > 0) {
+                setCreateFormState((prev) => ({
+                  ...prev,
+                  liveCourseId: prev.liveCourseId || liveList[0].id
+                }));
+              }
+            }
+
             setInstructor({
               id: user?.id || approval?.userId || instructorId,
               name: fullName,
@@ -290,7 +465,7 @@ export default function InstructorDetailPage({ params }: PageProps) {
               createdCourses: createdCourses,
               assignedLiveCohorts: assignedLiveCohorts,
               assignedTasksCount: mockFound?.assignedTasksCount || assignedLiveCohorts.length,
-              liveSessionsCount: mockFound?.liveSessionsCount || assignedLiveCohorts.length
+              liveSessionsCount: mockFound?.liveSessionsCount || parsedLiveSessions.length || assignedLiveCohorts.length
             });
             return;
           }
@@ -400,7 +575,11 @@ export default function InstructorDetailPage({ params }: PageProps) {
 
       setCoursePermission({
         status: data.status,
-        canCreateCourse: data.permission?.canCreateCourse ?? (data.status === "APPROVED"),
+        canCreateCourse: Boolean(data.permission?.canCreateCourse ?? (data.status === "APPROVED")),
+        canEditCourse: Boolean(data.permission?.canEditCourse ?? (data.status === "APPROVED")),
+        canCreateLiveClass: Boolean(data.permission?.canCreateLiveClass ?? false),
+        canEditLiveClass: Boolean(data.permission?.canEditLiveClass ?? false),
+        canRescheduleLiveClass: Boolean(data.permission?.canRescheduleLiveClass ?? false),
         requestedAt: data.permission?.requestedAt,
         reviewedAt: data.permission?.reviewedAt,
         rejectionReason: data.permission?.rejectionReason,
@@ -420,6 +599,353 @@ export default function InstructorDetailPage({ params }: PageProps) {
       alert("Network error updating course creation permission.");
     } finally {
       setPermissionProcessing(false);
+    }
+  };
+
+  // Handle Toggle Individual System Privileges
+  const handleToggleIndividualPermission = async (
+    key: "COURSE_CREATE" | "COURSE_EDIT" | "LIVE_CLASS_CREATE" | "LIVE_CLASS_EDIT" | "LIVE_CLASS_RESCHEDULE",
+    currentVal: boolean
+  ) => {
+    if (!instructor) return;
+    const targetVal = !currentVal;
+    setTogglingPermissionKey(key);
+
+    const stateKey =
+      key === "COURSE_CREATE"
+        ? "canCreateCourse"
+        : key === "COURSE_EDIT"
+        ? "canEditCourse"
+        : key === "LIVE_CLASS_CREATE"
+        ? "canCreateLiveClass"
+        : key === "LIVE_CLASS_EDIT"
+        ? "canEditLiveClass"
+        : "canRescheduleLiveClass";
+
+    // Optimistic UI state update
+    setCoursePermission((prev) => ({
+      ...prev,
+      [stateKey]: targetVal
+    }));
+
+    try {
+      const res = await fetch("/api/admin/instructors/permissions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          instructorId: instructor.id,
+          action: "TOGGLE_PERMISSION",
+          permissionKey: key,
+          enabled: targetVal
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        // Rollback
+        setCoursePermission((prev) => ({
+          ...prev,
+          [stateKey]: currentVal
+        }));
+        setDecisionBanner({
+          text: data.error || `Failed to update ${key} permission.`,
+          type: "error"
+        });
+        return;
+      }
+
+      if (data.permission) {
+        setCoursePermission({
+          status: data.permission.status || data.status,
+          canCreateCourse: Boolean(data.permission.canCreateCourse),
+          canEditCourse: Boolean(data.permission.canEditCourse),
+          canCreateLiveClass: Boolean(data.permission.canCreateLiveClass),
+          canEditLiveClass: Boolean(data.permission.canEditLiveClass),
+          canRescheduleLiveClass: Boolean(data.permission.canRescheduleLiveClass),
+          requestedAt: data.permission.requestedAt,
+          reviewedAt: data.permission.reviewedAt,
+          rejectionReason: data.permission.rejectionReason,
+          notes: data.permission.notes,
+          reviewedBy: data.permission.reviewedBy
+        });
+      }
+
+      setDecisionBanner({
+        text: data.message || `Permission updated successfully.`,
+        type: "success"
+      });
+    } catch (err) {
+      // Rollback on network error
+      setCoursePermission((prev) => ({
+        ...prev,
+        [stateKey]: currentVal
+      }));
+      setDecisionBanner({
+        text: "Network error updating permission. Reverted to previous state.",
+        type: "error"
+      });
+    } finally {
+      setTogglingPermissionKey(null);
+    }
+  };
+
+  // Open Edit Session Modal
+  const openEditModal = (session: InstructorLiveSessionItem) => {
+    setEditingSession(session);
+    setEditFormState({
+      title: session.title,
+      description: session.description || "",
+      date: session.date ? session.date.split("T")[0] : "",
+      startTime: session.startTime || "07:00 PM",
+      endTime: session.endTime || "09:00 PM",
+      timezone: session.timezone || "Asia/Kolkata (IST)",
+      duration: session.duration || "120 min",
+      status: session.status || "SCHEDULED",
+      meetingUrl: session.meetingUrl || "",
+      meetingPasscode: session.meetingPasscode || ""
+    });
+  };
+
+  // Open Reschedule Session Modal
+  const openRescheduleModal = (session: InstructorLiveSessionItem) => {
+    setReschedulingSession(session);
+    setRescheduleFormState({
+      newDate: session.date ? session.date.split("T")[0] : "",
+      newStartTime: session.startTime || "07:00 PM",
+      newEndTime: session.endTime || "09:00 PM",
+      reason: ""
+    });
+  };
+
+  // Handle Create Live Class Submission
+  const handleCreateLiveClass = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!createFormState.liveCourseId) {
+      alert("Please select a Live Course cohort.");
+      return;
+    }
+    if (!createFormState.title.trim()) {
+      alert("Please provide a session title.");
+      return;
+    }
+
+    setIsSavingLiveAction(true);
+    try {
+      const res = await fetch("/api/admin/live-training/sessions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          liveCourseId: createFormState.liveCourseId,
+          title: createFormState.title.trim(),
+          description: createFormState.description.trim(),
+          date: createFormState.date ? new Date(createFormState.date).toISOString() : null,
+          startTime: createFormState.startTime,
+          endTime: createFormState.endTime,
+          timezone: createFormState.timezone,
+          duration: createFormState.duration,
+          status: createFormState.status,
+          meetingUrl: createFormState.meetingUrl.trim() || undefined,
+          meetingPasscode: createFormState.passcode.trim() || undefined,
+          instructorId: instructor.id,
+          instructorPermissions: {
+            canView: true,
+            canEdit: true,
+            canEditAgenda: true,
+            canEditSchedule: true,
+            canEditResources: true,
+            canAddHomework: true,
+            canReschedule: true,
+            canCancel: false,
+            canManageAttendance: true,
+            canManageRecording: true
+          }
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.error || "Failed to create live class session.");
+        return;
+      }
+
+      const created = data.session || data;
+      const matchedCourse = availableLiveCourses.find((c) => c.id === createFormState.liveCourseId);
+      const newSessionItem: InstructorLiveSessionItem = {
+        id: created.id || `sess_${Date.now()}`,
+        sessionNumber: created.sessionNumber || instructorLiveSessions.length + 1,
+        title: created.title || createFormState.title.trim(),
+        description: created.description || createFormState.description.trim(),
+        date: created.date ? (typeof created.date === "string" ? created.date : new Date(created.date).toISOString()) : createFormState.date || null,
+        startTime: created.startTime || createFormState.startTime,
+        endTime: created.endTime || createFormState.endTime,
+        timezone: created.timezone || createFormState.timezone,
+        duration: created.duration || createFormState.duration,
+        status: created.status || createFormState.status,
+        meetingId: created.meetingId,
+        meetingPasscode: created.meetingPasscode || createFormState.passcode.trim(),
+        meetingUrl: created.meetingUrl || createFormState.meetingUrl.trim() || matchedCourse?.meetingUrl,
+        courseId: createFormState.liveCourseId,
+        courseTitle: matchedCourse?.title || "Live Cohort",
+        cohortName: matchedCourse?.category || "Live Batch",
+        instructorName: instructor.name
+      };
+
+      setInstructorLiveSessions((prev) => [newSessionItem, ...prev]);
+      setIsCreateLiveModalOpen(false);
+      setCreateFormState({
+        liveCourseId: availableLiveCourses[0]?.id || "",
+        title: "",
+        description: "",
+        date: "",
+        startTime: "07:00 PM",
+        endTime: "09:00 PM",
+        timezone: "Asia/Kolkata (IST)",
+        duration: "120 min",
+        meetingUrl: "",
+        passcode: "",
+        status: "SCHEDULED"
+      });
+      setLiveActionFeedback({
+        text: `Live class "${newSessionItem.title}" created successfully!`,
+        type: "success"
+      });
+    } catch (err) {
+      console.error("Error creating live session:", err);
+      alert("Network error creating live class session.");
+    } finally {
+      setIsSavingLiveAction(false);
+    }
+  };
+
+  // Handle Edit Live Class Submission
+  const handleEditLiveClass = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingSession) return;
+    if (!editFormState.title.trim()) {
+      alert("Please provide a session title.");
+      return;
+    }
+
+    setIsSavingLiveAction(true);
+    try {
+      const res = await fetch(`/api/admin/live-training/sessions/${editingSession.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: editFormState.title.trim(),
+          description: editFormState.description.trim(),
+          date: editFormState.date ? new Date(editFormState.date).toISOString() : null,
+          startTime: editFormState.startTime,
+          endTime: editFormState.endTime,
+          timezone: editFormState.timezone,
+          duration: editFormState.duration,
+          status: editFormState.status,
+          meetingUrl: editFormState.meetingUrl.trim() || undefined,
+          meetingPasscode: editFormState.meetingPasscode.trim() || undefined
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.error || "Failed to update live class session.");
+        return;
+      }
+
+      setInstructorLiveSessions((prev) =>
+        prev.map((s) =>
+          s.id === editingSession.id
+            ? {
+                ...s,
+                title: editFormState.title.trim(),
+                description: editFormState.description.trim(),
+                date: editFormState.date ? editFormState.date : null,
+                startTime: editFormState.startTime,
+                endTime: editFormState.endTime,
+                timezone: editFormState.timezone,
+                duration: editFormState.duration,
+                status: editFormState.status,
+                meetingUrl: editFormState.meetingUrl.trim() || s.meetingUrl,
+                meetingPasscode: editFormState.meetingPasscode.trim() || s.meetingPasscode
+              }
+            : s
+        )
+      );
+
+      setEditingSession(null);
+      setLiveActionFeedback({
+        text: `Live class session "${editFormState.title}" updated successfully!`,
+        type: "success"
+      });
+    } catch (err) {
+      console.error("Error updating live session:", err);
+      alert("Network error updating live class session.");
+    } finally {
+      setIsSavingLiveAction(false);
+    }
+  };
+
+  // Handle Reschedule Live Class Submission
+  const handleRescheduleLiveClass = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!reschedulingSession) return;
+    if (!rescheduleFormState.newDate) {
+      alert("Please select a new date.");
+      return;
+    }
+    if (!rescheduleFormState.reason.trim()) {
+      alert("Please provide a reason for rescheduling.");
+      return;
+    }
+
+    setIsSavingLiveAction(true);
+    try {
+      const res = await fetch(`/api/admin/live-training/sessions/${reschedulingSession.id}/reschedule`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          newDate: rescheduleFormState.newDate,
+          newStartTime: rescheduleFormState.newStartTime,
+          newEndTime: rescheduleFormState.newEndTime,
+          reason: rescheduleFormState.reason.trim()
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.error || "Failed to reschedule live class session.");
+        return;
+      }
+
+      setInstructorLiveSessions((prev) =>
+        prev.map((s) =>
+          s.id === reschedulingSession.id
+            ? {
+                ...s,
+                date: rescheduleFormState.newDate,
+                startTime: rescheduleFormState.newStartTime,
+                endTime: rescheduleFormState.newEndTime,
+                status: "RESCHEDULED"
+              }
+            : s
+        )
+      );
+
+      setReschedulingSession(null);
+      setRescheduleFormState({
+        newDate: "",
+        newStartTime: "07:00 PM",
+        newEndTime: "09:00 PM",
+        reason: ""
+      });
+      setLiveActionFeedback({
+        text: data.message || `Session rescheduled successfully to ${rescheduleFormState.newDate}!`,
+        type: "success"
+      });
+    } catch (err) {
+      console.error("Error rescheduling live session:", err);
+      alert("Network error rescheduling live session.");
+    } finally {
+      setIsSavingLiveAction(false);
     }
   };
 
@@ -709,6 +1235,18 @@ export default function InstructorDetailPage({ params }: PageProps) {
         >
           <ShieldCheck className="w-3.5 h-3.5" />
           <span>Admin Review & Decision</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab("role_permissions")}
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
+            activeTab === "role_permissions"
+              ? "bg-purple-600 text-white shadow-sm"
+              : "text-subtext hover:text-text hover:bg-white/5"
+          }`}
+        >
+          <KeyRound className="w-3.5 h-3.5" />
+          <span>Role & Permissions</span>
         </button>
       </div>
 
@@ -1511,6 +2049,493 @@ export default function InstructorDetailPage({ params }: PageProps) {
         </div>
       )}
 
+      {/* ── TAB 5: ROLE & PERMISSIONS ── */}
+      {activeTab === "role_permissions" && (
+        <div className="space-y-6">
+          {/* If Course Creation is NOT approved, display locked state */}
+          {coursePermission.status !== "APPROVED" ? (
+            <div className="bg-card border border-white/10 rounded-3xl p-8 shadow-xl text-center space-y-6">
+              <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center mx-auto shadow-inner">
+                <Lock className="w-8 h-8" />
+              </div>
+
+              <div className="max-w-md mx-auto space-y-2">
+                <h3 className="text-xl font-black text-text">Course Creation Capability Locked</h3>
+                <p className="text-xs text-subtext leading-relaxed font-medium">
+                  This instructor has permission status:{" "}
+                  <span className="font-bold text-amber-400">{coursePermission.status.replace("_", " ")}</span>.
+                  Administrative privileges for course authoring, live class creation, and session management are only active for approved course creators.
+                </p>
+              </div>
+
+              <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
+                <button
+                  onClick={() => setActiveTab("audit")}
+                  className="px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold transition-all shadow-md shadow-purple-600/25 flex items-center gap-2 cursor-pointer"
+                >
+                  <ShieldCheck className="w-4 h-4" />
+                  <span>Review & Approve in Admin Decision Tab</span>
+                </button>
+              </div>
+            </div>
+          ) : (
+            <>
+              {/* ── SECTION 1: ROLE & SYSTEM PRIVILEGES ── */}
+              <div className="bg-card border border-white/10 rounded-3xl p-6 sm:p-8 shadow-xl space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-5">
+                  <div className="flex items-center gap-3">
+                    <div className="w-11 h-11 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 shadow-inner shrink-0">
+                      <KeyRound className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-black text-text uppercase tracking-wider">
+                        Instructor Role & Authority
+                      </h3>
+                      <p className="text-xs text-subtext mt-0.5">
+                        System permissions and authorized operational capabilities
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 self-start sm:self-auto">
+                    <span className="px-3 py-1 rounded-xl text-xs font-black bg-purple-500/10 text-purple-300 border border-purple-500/20 uppercase tracking-wider">
+                      Role: Course Creator / Senior Instructor
+                    </span>
+                    <span className="px-3 py-1 rounded-xl text-xs font-black bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5 uppercase tracking-wider">
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      Approved
+                    </span>
+                  </div>
+                </div>
+
+                {/* Granted Capabilities Checklist / Interactive Toggles */}
+                <div>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
+                    <span className="text-[11px] text-subtext font-black uppercase tracking-widest block">
+                      Active System Privileges
+                    </span>
+                    <span className="text-[10px] text-subtext/70 font-medium">
+                      Toggle specific operational capabilities on/off for this instructor
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {[
+                      {
+                        key: "COURSE_CREATE" as const,
+                        title: "Course Creation",
+                        desc: "Author self-paced & live curriculums",
+                        icon: BookOpen,
+                        enabled: Boolean(coursePermission.canCreateCourse)
+                      },
+                      {
+                        key: "COURSE_EDIT" as const,
+                        title: "Course Editing",
+                        desc: "Update lessons, syllabus, and video assets",
+                        icon: Edit3,
+                        enabled: Boolean(coursePermission.canEditCourse)
+                      },
+                      {
+                        key: "LIVE_CLASS_CREATE" as const,
+                        title: "Live Class Creation",
+                        desc: "Schedule interactive batch live sessions",
+                        icon: Video,
+                        enabled: Boolean(coursePermission.canCreateLiveClass)
+                      },
+                      {
+                        key: "LIVE_CLASS_EDIT" as const,
+                        title: "Live Class Editing",
+                        desc: "Modify agenda, topics, timing, and Zoom credentials",
+                        icon: Settings,
+                        enabled: Boolean(coursePermission.canEditLiveClass)
+                      },
+                      {
+                        key: "LIVE_CLASS_RESCHEDULE" as const,
+                        title: "Live Class Rescheduling",
+                        desc: "Adjust cohort dates and session time slots",
+                        icon: Clock,
+                        enabled: Boolean(coursePermission.canRescheduleLiveClass)
+                      }
+                    ].map((item) => {
+                      const isToggling = togglingPermissionKey === item.key;
+                      const Icon = item.icon;
+                      return (
+                        <div
+                          key={item.key}
+                          id={`privilege-card-${item.key.toLowerCase()}`}
+                          className={`p-4 rounded-2xl border transition-all duration-200 flex flex-col justify-between gap-3 shadow-sm ${
+                            item.enabled
+                              ? "bg-emerald-500/[0.04] border-emerald-500/25 shadow-emerald-500/5 hover:border-emerald-500/40"
+                              : "bg-white/[0.02] border-white/10 opacity-75 hover:opacity-100 hover:border-white/20"
+                          }`}
+                        >
+                          <div className="flex items-start justify-between gap-2.5">
+                            <div className="flex items-start gap-3 min-w-0">
+                              <div
+                                className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 mt-0.5 border transition-colors ${
+                                  item.enabled
+                                    ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/30"
+                                    : "bg-white/5 text-subtext/70 border-white/10"
+                                }`}
+                              >
+                                <Icon className="w-4 h-4" />
+                              </div>
+                              <div className="space-y-0.5 min-w-0">
+                                <h4 className="text-xs font-black text-text flex items-center gap-1.5">
+                                  <span>{item.title}</span>
+                                </h4>
+                                <p className="text-[11px] text-subtext leading-relaxed font-medium">
+                                  {item.desc}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="pt-2 border-t border-white/5 flex items-center justify-between">
+                            <span
+                              className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md border flex items-center gap-1 transition-colors ${
+                                item.enabled
+                                  ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
+                                  : "bg-white/5 text-subtext/60 border-white/10"
+                              }`}
+                            >
+                              {item.enabled ? (
+                                <>
+                                  <Check className="w-3 h-3 stroke-[3]" />
+                                  <span>Active</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Lock className="w-3 h-3" />
+                                  <span>Disabled</span>
+                                </>
+                              )}
+                            </span>
+
+                            <button
+                              id={`toggle-${item.key.toLowerCase()}`}
+                              type="button"
+                              onClick={() => handleToggleIndividualPermission(item.key, item.enabled)}
+                              disabled={isToggling || permissionProcessing}
+                              aria-label={`Toggle ${item.title}`}
+                              className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+                                item.enabled ? "bg-emerald-500" : "bg-white/15"
+                              }`}
+                            >
+                              <span className="sr-only">Toggle {item.title}</span>
+                              <span
+                                className={`pointer-events-none inline-flex h-5 w-5 items-center justify-center rounded-full bg-white shadow-lg ring-0 transition-transform duration-200 ease-in-out transform ${
+                                  item.enabled ? "translate-x-5" : "translate-x-0"
+                                }`}
+                              >
+                                {isToggling ? (
+                                  <Loader2 className="w-3 h-3 text-purple-600 animate-spin shrink-0" />
+                                ) : item.enabled ? (
+                                  <Check className="w-3 h-3 text-emerald-600 stroke-[3] shrink-0" />
+                                ) : (
+                                  <Lock className="w-2.5 h-2.5 text-zinc-600 shrink-0" />
+                                )}
+                              </span>
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+
+              {/* ── SECTION 2: COURSE CREATION AUTHORITY ── */}
+              <div className="bg-card border border-white/10 rounded-3xl p-6 sm:p-8 shadow-xl space-y-5">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-5">
+                  <div className="flex items-center gap-3">
+                    <div className="w-11 h-11 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shadow-inner shrink-0">
+                      <Unlock className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-black text-text uppercase tracking-wider flex items-center gap-2">
+                        <span>Course Creation:</span>
+                        <span className="text-emerald-400 font-extrabold">APPROVED</span>
+                      </h3>
+                      <p className="text-xs text-subtext mt-0.5">
+                        Authorizing full curriculum development, module construction, and cohort assignment
+                      </p>
+                    </div>
+                  </div>
+
+                  <span className="px-3.5 py-1.5 rounded-xl bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-xs font-black flex items-center gap-1.5 uppercase tracking-wider self-start sm:self-auto shadow-sm shadow-emerald-500/10">
+                    <CheckCircle2 className="w-4 h-4" />
+                    Granted & Active
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="p-4 rounded-2xl bg-background/50 border border-white/5 space-y-1">
+                    <span className="text-[10px] text-subtext font-black uppercase tracking-wider block">
+                      Permission Scope
+                    </span>
+                    <div className="flex flex-wrap gap-1.5 pt-1">
+                      {coursePermission.canCreateCourse && (
+                        <span className="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 text-[11px] font-bold">
+                          Create Course
+                        </span>
+                      )}
+                      {coursePermission.canEditCourse && (
+                        <span className="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 text-[11px] font-bold">
+                          Edit Own Courses
+                        </span>
+                      )}
+                      {coursePermission.canCreateLiveClass && (
+                        <span className="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 text-[11px] font-bold">
+                          Create Live Classes
+                        </span>
+                      )}
+                      {coursePermission.canEditLiveClass && (
+                        <span className="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 text-[11px] font-bold">
+                          Edit Live Sessions
+                        </span>
+                      )}
+                      {coursePermission.canRescheduleLiveClass && (
+                        <span className="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 text-[11px] font-bold">
+                          Reschedule Sessions
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="p-4 rounded-2xl bg-background/50 border border-white/5 space-y-1">
+                    <span className="text-[10px] text-subtext font-black uppercase tracking-wider block">
+                      Approved Date
+                    </span>
+                    <p className="text-xs font-bold text-text pt-0.5">
+                      {coursePermission.reviewedAt ? formatDate(coursePermission.reviewedAt) : "Active Record"}
+                    </p>
+                  </div>
+
+                  <div className="p-4 rounded-2xl bg-background/50 border border-white/5 space-y-1">
+                    <span className="text-[10px] text-subtext font-black uppercase tracking-wider block">
+                      Authorized By
+                    </span>
+                    <p className="text-xs font-bold text-purple-300 pt-0.5 truncate">
+                      {coursePermission.reviewedBy?.name || coursePermission.reviewedBy?.email || "Platform Super Administrator"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* ── SECTION 3: LIVE CLASS MANAGEMENT AREA ── */}
+              <div className="bg-card border border-white/10 rounded-3xl p-6 sm:p-8 shadow-xl space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-5">
+                  <div className="flex items-center gap-3">
+                    <div className="w-11 h-11 rounded-2xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400 shadow-inner shrink-0">
+                      <Video className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-sm font-black text-text uppercase tracking-wider">
+                          Live Class Management & Scheduling
+                        </h3>
+                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-sky-500/10 text-sky-300 border border-sky-500/20">
+                          {instructorLiveSessions.length} Sessions
+                        </span>
+                      </div>
+                      <p className="text-xs text-subtext mt-0.5">
+                        Schedule new interactive batch sessions, update Zoom links, edit topics, or reschedule class timings.
+                      </p>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      if (availableLiveCourses.length > 0 && !createFormState.liveCourseId) {
+                        setCreateFormState((prev) => ({ ...prev, liveCourseId: availableLiveCourses[0].id }));
+                      }
+                      setIsCreateLiveModalOpen(true);
+                    }}
+                    className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-bold transition-all shadow-md shadow-purple-600/25 flex items-center gap-2 cursor-pointer self-start sm:self-auto shrink-0 group hover:scale-[1.02]"
+                  >
+                    <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform duration-200" />
+                    <span>Create Live Class</span>
+                  </button>
+                </div>
+
+                {/* Live Action Feedback Toast */}
+                {liveActionFeedback && (
+                  <div
+                    className={`p-4 rounded-2xl border text-xs font-bold flex items-center justify-between shadow-md animate-in fade-in ${
+                      liveActionFeedback.type === "success"
+                        ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
+                        : "bg-red-500/10 text-red-400 border-red-500/30"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      {liveActionFeedback.type === "success" ? (
+                        <Check className="w-4 h-4" />
+                      ) : (
+                        <AlertCircle className="w-4 h-4" />
+                      )}
+                      <span>{liveActionFeedback.text}</span>
+                    </div>
+                    <button
+                      onClick={() => setLiveActionFeedback(null)}
+                      className="text-subtext hover:text-text p-1 cursor-pointer"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
+
+                {/* Live Class Sessions List / Table */}
+                {instructorLiveSessions.length === 0 ? (
+                  <div className="p-12 text-center border border-dashed border-white/10 rounded-2xl space-y-4 bg-background/30">
+                    <div className="w-12 h-12 rounded-2xl bg-sky-500/10 text-sky-400 flex items-center justify-center mx-auto">
+                      <Video className="w-6 h-6" />
+                    </div>
+                    <div className="max-w-xs mx-auto space-y-1">
+                      <p className="font-bold text-text text-sm">No Live Classes Scheduled</p>
+                      <p className="text-xs text-subtext">
+                        Create the first live class session for this instructor using the button above.
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => {
+                        if (availableLiveCourses.length > 0 && !createFormState.liveCourseId) {
+                          setCreateFormState((prev) => ({ ...prev, liveCourseId: availableLiveCourses[0].id }));
+                        }
+                        setIsCreateLiveModalOpen(true);
+                      }}
+                      className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold transition-all inline-flex items-center gap-1.5 cursor-pointer shadow-sm"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Create Live Class</span>
+                    </button>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto custom-scrollbar border border-white/10 rounded-2xl">
+                    <table className="w-full text-left text-xs border-collapse">
+                      <thead>
+                        <tr className="bg-background/80 border-b border-white/10 text-subtext font-black text-[10px] uppercase tracking-wider">
+                          <th className="py-3.5 px-4">Session & Topic</th>
+                          <th className="py-3.5 px-4">Course / Cohort</th>
+                          <th className="py-3.5 px-4">Date & Time</th>
+                          <th className="py-3.5 px-4">Duration</th>
+                          <th className="py-3.5 px-4">Instructor</th>
+                          <th className="py-3.5 px-4">Status</th>
+                          <th className="py-3.5 px-4 text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-white/5">
+                        {instructorLiveSessions.map((s) => (
+                          <tr key={s.id} className="hover:bg-white/[0.02] transition-colors group">
+                            <td className="py-3.5 px-4">
+                              <div className="space-y-0.5">
+                                <div className="flex items-center gap-1.5">
+                                  <span className="font-mono text-[10px] font-bold px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-purple-300">
+                                    #{s.sessionNumber}
+                                  </span>
+                                  <span className="font-bold text-text group-hover:text-purple-300 transition-colors">
+                                    {s.title}
+                                  </span>
+                                </div>
+                                {s.description && (
+                                  <p className="text-[11px] text-subtext truncate max-w-xs">{s.description}</p>
+                                )}
+                              </div>
+                            </td>
+
+                            <td className="py-3.5 px-4">
+                              <div className="space-y-0.5">
+                                <span className="font-bold text-text block truncate max-w-[180px]">
+                                  {s.courseTitle}
+                                </span>
+                                <span className="text-[10px] text-sky-400 font-semibold block">
+                                  {s.cohortName}
+                                </span>
+                              </div>
+                            </td>
+
+                            <td className="py-3.5 px-4 whitespace-nowrap">
+                              <div className="space-y-0.5">
+                                <div className="flex items-center gap-1 text-text font-bold">
+                                  <Calendar className="w-3.5 h-3.5 text-purple-400" />
+                                  <span>{s.date ? formatDate(s.date) : "Unscheduled"}</span>
+                                </div>
+                                <div className="flex items-center gap-1 text-[11px] text-subtext font-medium">
+                                  <Clock className="w-3 h-3 text-subtext" />
+                                  <span>{s.startTime} - {s.endTime}</span>
+                                </div>
+                              </div>
+                            </td>
+
+                            <td className="py-3.5 px-4 whitespace-nowrap">
+                              <span className="text-subtext font-semibold">{s.duration}</span>
+                              <span className="block text-[10px] text-subtext/70">{s.timezone}</span>
+                            </td>
+
+                            <td className="py-3.5 px-4 whitespace-nowrap">
+                              <span className="font-bold text-text">{s.instructorName || instructor.name}</span>
+                            </td>
+
+                            <td className="py-3.5 px-4 whitespace-nowrap">
+                              <span
+                                className={`px-2.5 py-0.5 rounded-full text-[10px] font-black border uppercase tracking-wider ${
+                                  s.status === "SCHEDULED"
+                                    ? "bg-sky-500/10 text-sky-400 border-sky-500/20"
+                                    : s.status === "LIVE"
+                                    ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/30 animate-pulse"
+                                    : s.status === "COMPLETED"
+                                    ? "bg-zinc-500/15 text-zinc-400 border-zinc-500/20"
+                                    : s.status === "RESCHEDULED"
+                                    ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                                    : "bg-red-500/10 text-red-400 border-red-500/20"
+                                }`}
+                              >
+                                {s.status}
+                              </span>
+                            </td>
+
+                            <td className="py-3.5 px-4 text-right whitespace-nowrap">
+                              <div className="flex items-center justify-end gap-1.5">
+                                {s.meetingUrl && (
+                                  <a
+                                    href={s.meetingUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    title="Open Meeting Link"
+                                    className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-subtext hover:text-text border border-white/5 transition-colors"
+                                  >
+                                    <ExternalLink className="w-3.5 h-3.5 text-sky-400" />
+                                  </a>
+                                )}
+
+                                <button
+                                  onClick={() => openEditModal(s)}
+                                  className="px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-purple-500/15 text-text hover:text-purple-300 border border-white/10 hover:border-purple-500/30 font-bold text-xs transition-all flex items-center gap-1 cursor-pointer"
+                                >
+                                  <Edit3 className="w-3 h-3 text-purple-400" />
+                                  <span>Edit</span>
+                                </button>
+
+                                <button
+                                  onClick={() => openRescheduleModal(s)}
+                                  className="px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-amber-500/15 text-text hover:text-amber-300 border border-white/10 hover:border-amber-500/30 font-bold text-xs transition-all flex items-center gap-1 cursor-pointer"
+                                >
+                                  <Clock className="w-3 h-3 text-amber-400" />
+                                  <span>Reschedule</span>
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
       {/* ── REJECT PERMISSION REASON MODAL ── */}
       {showPermissionRejectModal && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
@@ -1552,6 +2577,506 @@ export default function InstructorDetailPage({ params }: PageProps) {
                 {permissionProcessing ? "Rejecting..." : "Confirm Rejection"}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── CREATE LIVE CLASS MODAL ── */}
+      {isCreateLiveModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-card border border-white/10 rounded-3xl max-w-xl w-full p-6 sm:p-7 space-y-5 shadow-2xl animate-in zoom-in-95 my-8">
+            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400">
+                  <Video className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-black text-text text-sm">Create Live Class Session</h3>
+                  <p className="text-[11px] text-subtext">Assigning to Instructor: {instructor.name}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsCreateLiveModalOpen(false)}
+                className="text-subtext hover:text-text p-1.5 rounded-lg hover:bg-white/5 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateLiveClass} className="space-y-4 text-xs">
+              {/* Live Course Cohort Select */}
+              <div className="space-y-1">
+                <label className="font-bold text-subtext uppercase tracking-wider block text-[10px]">
+                  Select Live Course Cohort *
+                </label>
+                <select
+                  value={createFormState.liveCourseId}
+                  onChange={(e) => setCreateFormState({ ...createFormState, liveCourseId: e.target.value })}
+                  required
+                  className="w-full bg-background border border-white/10 rounded-xl px-3.5 py-2.5 text-text focus:outline-none focus:border-purple-500 font-medium cursor-pointer"
+                >
+                  <option value="" disabled>-- Select Live Cohort --</option>
+                  {availableLiveCourses.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.title} {c.category ? `(${c.category})` : ""}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Session Title */}
+              <div className="space-y-1">
+                <label className="font-bold text-subtext uppercase tracking-wider block text-[10px]">
+                  Session Title *
+                </label>
+                <input
+                  type="text"
+                  value={createFormState.title}
+                  onChange={(e) => setCreateFormState({ ...createFormState, title: e.target.value })}
+                  placeholder="e.g. Masterclass: Fine-Tuning LLMs with LoRA"
+                  required
+                  className="w-full bg-background border border-white/10 rounded-xl px-3.5 py-2.5 text-text focus:outline-none focus:border-purple-500 font-medium placeholder:text-subtext/50"
+                />
+              </div>
+
+              {/* Description */}
+              <div className="space-y-1">
+                <label className="font-bold text-subtext uppercase tracking-wider block text-[10px]">
+                  Session Description / Agenda
+                </label>
+                <textarea
+                  value={createFormState.description}
+                  onChange={(e) => setCreateFormState({ ...createFormState, description: e.target.value })}
+                  placeholder="Brief overview of what will be taught in this session..."
+                  rows={3}
+                  className="w-full bg-background border border-white/10 rounded-xl p-3 text-text focus:outline-none focus:border-purple-500 font-medium placeholder:text-subtext/50 resize-none"
+                />
+              </div>
+
+              {/* Date & Time Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="space-y-1">
+                  <label className="font-bold text-subtext uppercase tracking-wider block text-[10px]">
+                    Date
+                  </label>
+                  <input
+                    type="date"
+                    value={createFormState.date}
+                    onChange={(e) => setCreateFormState({ ...createFormState, date: e.target.value })}
+                    className="w-full bg-background border border-white/10 rounded-xl px-3 py-2 text-text focus:outline-none focus:border-purple-500 font-medium"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="font-bold text-subtext uppercase tracking-wider block text-[10px]">
+                    Start Time
+                  </label>
+                  <input
+                    type="text"
+                    value={createFormState.startTime}
+                    onChange={(e) => setCreateFormState({ ...createFormState, startTime: e.target.value })}
+                    placeholder="07:00 PM"
+                    className="w-full bg-background border border-white/10 rounded-xl px-3 py-2 text-text focus:outline-none focus:border-purple-500 font-medium"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="font-bold text-subtext uppercase tracking-wider block text-[10px]">
+                    End Time
+                  </label>
+                  <input
+                    type="text"
+                    value={createFormState.endTime}
+                    onChange={(e) => setCreateFormState({ ...createFormState, endTime: e.target.value })}
+                    placeholder="09:00 PM"
+                    className="w-full bg-background border border-white/10 rounded-xl px-3 py-2 text-text focus:outline-none focus:border-purple-500 font-medium"
+                  />
+                </div>
+              </div>
+
+              {/* Duration & Timezone */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="font-bold text-subtext uppercase tracking-wider block text-[10px]">
+                    Duration
+                  </label>
+                  <input
+                    type="text"
+                    value={createFormState.duration}
+                    onChange={(e) => setCreateFormState({ ...createFormState, duration: e.target.value })}
+                    placeholder="120 min"
+                    className="w-full bg-background border border-white/10 rounded-xl px-3 py-2 text-text focus:outline-none focus:border-purple-500 font-medium"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="font-bold text-subtext uppercase tracking-wider block text-[10px]">
+                    Timezone
+                  </label>
+                  <input
+                    type="text"
+                    value={createFormState.timezone}
+                    onChange={(e) => setCreateFormState({ ...createFormState, timezone: e.target.value })}
+                    placeholder="Asia/Kolkata (IST)"
+                    className="w-full bg-background border border-white/10 rounded-xl px-3 py-2 text-text focus:outline-none focus:border-purple-500 font-medium"
+                  />
+                </div>
+              </div>
+
+              {/* Meeting URL & Passcode */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="font-bold text-subtext uppercase tracking-wider block text-[10px]">
+                    Meeting URL (Zoom / Google Meet)
+                  </label>
+                  <input
+                    type="url"
+                    value={createFormState.meetingUrl}
+                    onChange={(e) => setCreateFormState({ ...createFormState, meetingUrl: e.target.value })}
+                    placeholder="https://zoom.us/j/..."
+                    className="w-full bg-background border border-white/10 rounded-xl px-3 py-2 text-text focus:outline-none focus:border-purple-500 font-medium"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="font-bold text-subtext uppercase tracking-wider block text-[10px]">
+                    Meeting Passcode
+                  </label>
+                  <input
+                    type="text"
+                    value={createFormState.passcode}
+                    onChange={(e) => setCreateFormState({ ...createFormState, passcode: e.target.value })}
+                    placeholder="GLARUS2026"
+                    className="w-full bg-background border border-white/10 rounded-xl px-3 py-2 text-text focus:outline-none focus:border-purple-500 font-medium"
+                  />
+                </div>
+              </div>
+
+              {/* Status */}
+              <div className="space-y-1">
+                <label className="font-bold text-subtext uppercase tracking-wider block text-[10px]">
+                  Session Status
+                </label>
+                <select
+                  value={createFormState.status}
+                  onChange={(e) => setCreateFormState({ ...createFormState, status: e.target.value })}
+                  className="w-full bg-background border border-white/10 rounded-xl px-3.5 py-2 text-text focus:outline-none focus:border-purple-500 font-medium cursor-pointer"
+                >
+                  <option value="SCHEDULED">SCHEDULED</option>
+                  <option value="LIVE">LIVE</option>
+                  <option value="COMPLETED">COMPLETED</option>
+                  <option value="CANCELLED">CANCELLED</option>
+                </select>
+              </div>
+
+              {/* Actions */}
+              <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-white/10">
+                <button
+                  type="button"
+                  onClick={() => setIsCreateLiveModalOpen(false)}
+                  className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-subtext hover:text-text font-bold cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSavingLiveAction}
+                  className="px-5 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold transition-all shadow-md shadow-purple-600/20 disabled:opacity-50 cursor-pointer flex items-center gap-1.5"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>{isSavingLiveAction ? "Creating Session..." : "Create Live Session"}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── EDIT LIVE CLASS MODAL ── */}
+      {editingSession && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-card border border-white/10 rounded-3xl max-w-xl w-full p-6 sm:p-7 space-y-5 shadow-2xl animate-in zoom-in-95 my-8">
+            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400">
+                  <Edit3 className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-black text-text text-sm">
+                    Edit Live Session #{editingSession.sessionNumber}
+                  </h3>
+                  <p className="text-[11px] text-subtext">{editingSession.courseTitle}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setEditingSession(null)}
+                className="text-subtext hover:text-text p-1.5 rounded-lg hover:bg-white/5 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleEditLiveClass} className="space-y-4 text-xs">
+              <div className="space-y-1">
+                <label className="font-bold text-subtext uppercase tracking-wider block text-[10px]">
+                  Session Title *
+                </label>
+                <input
+                  type="text"
+                  value={editFormState.title}
+                  onChange={(e) => setEditFormState({ ...editFormState, title: e.target.value })}
+                  required
+                  className="w-full bg-background border border-white/10 rounded-xl px-3.5 py-2.5 text-text focus:outline-none focus:border-purple-500 font-medium"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="font-bold text-subtext uppercase tracking-wider block text-[10px]">
+                  Session Description
+                </label>
+                <textarea
+                  value={editFormState.description}
+                  onChange={(e) => setEditFormState({ ...editFormState, description: e.target.value })}
+                  rows={3}
+                  className="w-full bg-background border border-white/10 rounded-xl p-3 text-text focus:outline-none focus:border-purple-500 font-medium resize-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="space-y-1">
+                  <label className="font-bold text-subtext uppercase tracking-wider block text-[10px]">
+                    Date
+                  </label>
+                  <input
+                    type="date"
+                    value={editFormState.date}
+                    onChange={(e) => setEditFormState({ ...editFormState, date: e.target.value })}
+                    className="w-full bg-background border border-white/10 rounded-xl px-3 py-2 text-text focus:outline-none focus:border-purple-500 font-medium"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="font-bold text-subtext uppercase tracking-wider block text-[10px]">
+                    Start Time
+                  </label>
+                  <input
+                    type="text"
+                    value={editFormState.startTime}
+                    onChange={(e) => setEditFormState({ ...editFormState, startTime: e.target.value })}
+                    className="w-full bg-background border border-white/10 rounded-xl px-3 py-2 text-text focus:outline-none focus:border-purple-500 font-medium"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="font-bold text-subtext uppercase tracking-wider block text-[10px]">
+                    End Time
+                  </label>
+                  <input
+                    type="text"
+                    value={editFormState.endTime}
+                    onChange={(e) => setEditFormState({ ...editFormState, endTime: e.target.value })}
+                    className="w-full bg-background border border-white/10 rounded-xl px-3 py-2 text-text focus:outline-none focus:border-purple-500 font-medium"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="font-bold text-subtext uppercase tracking-wider block text-[10px]">
+                    Duration
+                  </label>
+                  <input
+                    type="text"
+                    value={editFormState.duration}
+                    onChange={(e) => setEditFormState({ ...editFormState, duration: e.target.value })}
+                    className="w-full bg-background border border-white/10 rounded-xl px-3 py-2 text-text focus:outline-none focus:border-purple-500 font-medium"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="font-bold text-subtext uppercase tracking-wider block text-[10px]">
+                    Status
+                  </label>
+                  <select
+                    value={editFormState.status}
+                    onChange={(e) => setEditFormState({ ...editFormState, status: e.target.value })}
+                    className="w-full bg-background border border-white/10 rounded-xl px-3.5 py-2 text-text focus:outline-none focus:border-purple-500 font-medium cursor-pointer"
+                  >
+                    <option value="SCHEDULED">SCHEDULED</option>
+                    <option value="LIVE">LIVE</option>
+                    <option value="COMPLETED">COMPLETED</option>
+                    <option value="RESCHEDULED">RESCHEDULED</option>
+                    <option value="CANCELLED">CANCELLED</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="font-bold text-subtext uppercase tracking-wider block text-[10px]">
+                    Meeting URL
+                  </label>
+                  <input
+                    type="url"
+                    value={editFormState.meetingUrl}
+                    onChange={(e) => setEditFormState({ ...editFormState, meetingUrl: e.target.value })}
+                    placeholder="https://zoom.us/..."
+                    className="w-full bg-background border border-white/10 rounded-xl px-3 py-2 text-text focus:outline-none focus:border-purple-500 font-medium"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="font-bold text-subtext uppercase tracking-wider block text-[10px]">
+                    Meeting Passcode
+                  </label>
+                  <input
+                    type="text"
+                    value={editFormState.meetingPasscode}
+                    onChange={(e) => setEditFormState({ ...editFormState, meetingPasscode: e.target.value })}
+                    className="w-full bg-background border border-white/10 rounded-xl px-3 py-2 text-text focus:outline-none focus:border-purple-500 font-medium"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-white/10">
+                <button
+                  type="button"
+                  onClick={() => setEditingSession(null)}
+                  className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-subtext hover:text-text font-bold cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSavingLiveAction}
+                  className="px-5 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold transition-all shadow-md shadow-purple-600/20 disabled:opacity-50 cursor-pointer flex items-center gap-1.5"
+                >
+                  <Check className="w-3.5 h-3.5" />
+                  <span>{isSavingLiveAction ? "Saving..." : "Save Changes"}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── RESCHEDULE LIVE CLASS MODAL ── */}
+      {reschedulingSession && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-card border border-white/10 rounded-3xl max-w-lg w-full p-6 sm:p-7 space-y-5 shadow-2xl animate-in zoom-in-95 my-8">
+            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+                  <Clock className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-black text-text text-sm">Reschedule Live Session</h3>
+                  <p className="text-[11px] text-subtext">Session #{reschedulingSession.sessionNumber}: {reschedulingSession.title}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setReschedulingSession(null)}
+                className="text-subtext hover:text-text p-1.5 rounded-lg hover:bg-white/5 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Current Schedule Summary Box */}
+            <div className="p-4 rounded-2xl bg-background/70 border border-white/5 space-y-2">
+              <span className="text-[10px] text-subtext font-black uppercase tracking-widest block">
+                Current Schedule
+              </span>
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div>
+                  <span className="text-subtext text-[11px] block">Course Cohort:</span>
+                  <span className="font-bold text-text truncate block">{reschedulingSession.courseTitle}</span>
+                </div>
+                <div>
+                  <span className="text-subtext text-[11px] block">Current Slot:</span>
+                  <span className="font-bold text-amber-300">
+                    {reschedulingSession.date ? formatDate(reschedulingSession.date) : "Unscheduled"} ({reschedulingSession.startTime})
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <form onSubmit={handleRescheduleLiveClass} className="space-y-4 text-xs">
+              <div className="space-y-1">
+                <label className="font-bold text-subtext uppercase tracking-wider block text-[10px]">
+                  New Session Date *
+                </label>
+                <input
+                  type="date"
+                  value={rescheduleFormState.newDate}
+                  onChange={(e) => setRescheduleFormState({ ...rescheduleFormState, newDate: e.target.value })}
+                  required
+                  className="w-full bg-background border border-white/10 rounded-xl px-3.5 py-2.5 text-text focus:outline-none focus:border-amber-500 font-medium"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="font-bold text-subtext uppercase tracking-wider block text-[10px]">
+                    New Start Time
+                  </label>
+                  <input
+                    type="text"
+                    value={rescheduleFormState.newStartTime}
+                    onChange={(e) => setRescheduleFormState({ ...rescheduleFormState, newStartTime: e.target.value })}
+                    placeholder="07:00 PM"
+                    required
+                    className="w-full bg-background border border-white/10 rounded-xl px-3 py-2 text-text focus:outline-none focus:border-amber-500 font-medium"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="font-bold text-subtext uppercase tracking-wider block text-[10px]">
+                    New End Time
+                  </label>
+                  <input
+                    type="text"
+                    value={rescheduleFormState.newEndTime}
+                    onChange={(e) => setRescheduleFormState({ ...rescheduleFormState, newEndTime: e.target.value })}
+                    placeholder="09:00 PM"
+                    required
+                    className="w-full bg-background border border-white/10 rounded-xl px-3 py-2 text-text focus:outline-none focus:border-amber-500 font-medium"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="font-bold text-subtext uppercase tracking-wider block text-[10px]">
+                  Reason for Rescheduling *
+                </label>
+                <textarea
+                  value={rescheduleFormState.reason}
+                  onChange={(e) => setRescheduleFormState({ ...rescheduleFormState, reason: e.target.value })}
+                  placeholder="e.g. Instructor travel schedule conflict, moved by admin request..."
+                  required
+                  rows={3}
+                  className="w-full bg-background border border-white/10 rounded-xl p-3 text-text focus:outline-none focus:border-amber-500 font-medium resize-none placeholder:text-subtext/50"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-white/10">
+                <button
+                  type="button"
+                  onClick={() => setReschedulingSession(null)}
+                  className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-subtext hover:text-text font-bold cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSavingLiveAction}
+                  className="px-5 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold transition-all shadow-md shadow-amber-600/20 disabled:opacity-50 cursor-pointer flex items-center gap-1.5"
+                >
+                  <Clock className="w-3.5 h-3.5" />
+                  <span>{isSavingLiveAction ? "Rescheduling..." : "Confirm Reschedule"}</span>
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

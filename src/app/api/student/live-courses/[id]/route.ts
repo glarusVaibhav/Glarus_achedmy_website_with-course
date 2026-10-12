@@ -526,6 +526,8 @@ export async function GET(
       }
 
       const recStatus = isCompleted ? (recProg?.status === 'WATCHED' ? 'COMPLETED' : recProg ? 'IN_PROGRESS' : 'AVAILABLE') : 'UNAVAILABLE';
+      const dbAssignment = dbCourse?.assignmentsList?.find((a: any) => a.sessionId === s.id) ||
+        (s.sessionAssignmentsList && s.sessionAssignmentsList.length > 0 ? s.sessionAssignmentsList[0] : null);
 
       return {
         ...s,
@@ -539,10 +541,22 @@ export async function GET(
           resumeSeconds: recProg?.resumeTimestampSeconds || 0,
           durationFormatted: s.duration
         },
-        assignment: s.project ? {
+        assignment: dbAssignment ? {
+          id: dbAssignment.id,
+          title: dbAssignment.title,
+          description: dbAssignment.description,
+          instructions: dbAssignment.instructions,
+          totalMarks: dbAssignment.totalMarks,
+          pointsLabel: dbAssignment.pointsLabel,
+          dueDate: dbAssignment.dueDate ? new Date(dbAssignment.dueDate).toISOString() : new Date(new Date(s.date).getTime() + 7 * 24 * 3600 * 1000).toISOString(),
+          status: submissionMap.get(dbAssignment.id) || submissionMap.get(s.id) || 'NOT_STARTED',
+          isAutoReleased: isCompleted,
+          releasedAt: isCompleted ? (s.date || new Date().toISOString()) : null
+        } : s.project ? {
           title: `${s.title} — Capstone Deliverable`,
           dueDate: new Date(new Date(s.date).getTime() + 7 * 24 * 3600 * 1000).toISOString(),
-          status: submissionMap.get(s.id) || 'NOT_STARTED'
+          status: submissionMap.get(s.id) || 'NOT_STARTED',
+          isAutoReleased: isCompleted
         } : null
       };
     });

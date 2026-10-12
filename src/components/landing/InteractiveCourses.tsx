@@ -110,7 +110,7 @@ export function formatRegistrationWindow(
       label: "Registration Open",
       countdownText: "Seats filling fast",
       fullWindowFormatted: "Open for Enrollment",
-      badgeColor: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30"
+      badgeColor: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:border-emerald-500/30"
     };
   }
 
@@ -138,7 +138,7 @@ export function formatRegistrationWindow(
       label: `Opens in ${diffDays}d`,
       countdownText: `Starts ${formatDate(startDate)} at ${formatTime(startDate.toISOString())}`,
       fullWindowFormatted: fullWindow,
-      badgeColor: "bg-amber-500/15 text-amber-300 border-amber-500/30"
+      badgeColor: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/30"
     };
   }
 
@@ -151,7 +151,7 @@ export function formatRegistrationWindow(
       label: "Registration Closed",
       countdownText: `Closed on ${formatDate(endDate)}`,
       fullWindowFormatted: fullWindow,
-      badgeColor: "bg-rose-500/15 text-rose-400 border-rose-500/30"
+      badgeColor: "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-500/15 dark:text-rose-400 dark:border-rose-500/30"
     };
   }
 
@@ -178,7 +178,7 @@ export function formatRegistrationWindow(
     label: "Registration Open",
     countdownText,
     fullWindowFormatted: fullWindow,
-    badgeColor: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30"
+    badgeColor: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:border-emerald-500/30"
   };
 }
 
@@ -712,7 +712,7 @@ export default function InteractiveCourses() {
 
           <Link
             href={activeMode === "self-paced" ? "/courses?type=self-paced" : "/courses?type=live"}
-            className="flex items-center gap-2 text-purple-400 font-bold hover:text-purple-300 transition-colors w-fit border border-purple-500/30 px-6 py-3 rounded-full hover:bg-purple-500/10 shadow-sm"
+            className="flex items-center gap-2 text-purple-700 dark:text-purple-400 font-bold hover:text-purple-800 dark:hover:text-purple-300 transition-colors w-fit border border-purple-300 dark:border-purple-500/30 px-6 py-3 rounded-full hover:bg-purple-50 dark:hover:bg-purple-500/10 shadow-sm"
           >
             {activeMode === "self-paced" ? "View All Self-Paced Courses" : "View All Live Classes"}{" "}
             <ArrowRight className="w-5 h-5" />
@@ -725,7 +725,7 @@ export default function InteractiveCourses() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="mt-8 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 p-1.5 rounded-2xl md:rounded-full bg-card/80 border border-card/60 backdrop-blur-md"
+          className="mt-8 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 p-1.5 rounded-2xl md:rounded-full bg-card/80 border border-border backdrop-blur-md"
         >
           <div className="flex items-center gap-1.5 w-full sm:w-auto">
             <button
@@ -733,7 +733,7 @@ export default function InteractiveCourses() {
               className={`relative flex-1 sm:flex-initial flex items-center justify-center gap-2.5 px-6 py-3 rounded-xl md:rounded-full text-sm font-bold transition-all select-none ${
                 activeMode === "self-paced"
                   ? "bg-text text-background shadow-lg shadow-text/20 scale-[1.02]"
-                  : "text-subtext hover:text-text hover:bg-card/60"
+                  : "text-subtext hover:text-text hover:bg-card-hover"
               }`}
             >
               <Video className="w-4 h-4" />
@@ -741,7 +741,7 @@ export default function InteractiveCourses() {
               <span className={`ml-1 px-2 py-0.5 text-xs rounded-full font-black ${
                 activeMode === "self-paced"
                   ? "bg-background/20 text-background"
-                  : "bg-card border border-card/60 text-subtext"
+                  : "bg-muted border border-border text-subtext"
               }`}>
                 {selfPacedCourses.length}
               </span>
@@ -752,7 +752,7 @@ export default function InteractiveCourses() {
               className={`relative flex-1 sm:flex-initial flex items-center justify-center gap-2.5 px-6 py-3 rounded-xl md:rounded-full text-sm font-bold transition-all select-none ${
                 activeMode === "live"
                   ? "bg-gradient-to-r from-primary to-accent text-white shadow-lg shadow-primary/25 scale-[1.02]"
-                  : "text-subtext hover:text-text hover:bg-card/60"
+                  : "text-subtext hover:text-text hover:bg-card-hover"
               }`}
             >
               <span className="relative flex h-2 w-2">
@@ -764,7 +764,7 @@ export default function InteractiveCourses() {
               <span className={`ml-1 px-2 py-0.5 text-xs rounded-full font-black ${
                 activeMode === "live"
                   ? "bg-white/20 text-white"
-                  : "bg-card border border-card/60 text-subtext"
+                  : "bg-muted border border-border text-subtext"
               }`}>
                 {liveCoursesList.length}
               </span>
@@ -787,7 +787,7 @@ export default function InteractiveCourses() {
               className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all select-none ${
                 currentCategory === tab
                   ? "bg-text text-background shadow-lg shadow-text/20 scale-105"
-                  : "bg-card border border-card/40 text-subtext hover:text-text hover:bg-card/80"
+                  : "bg-card border border-border text-subtext hover:text-text hover:bg-card-hover"
               }`}
             >
               {tab}
@@ -821,11 +821,11 @@ export default function InteractiveCourses() {
                       transition={{ duration: 0.4, delay: idx * 0.05 }}
                       whileHover={{ y: -6 }}
                       onClick={(e) => handleCardClick(e, course.linkUrl)}
-                      className="w-full bg-card rounded-3xl border border-card/60 overflow-hidden shadow-xl flex flex-col group relative select-none cursor-pointer hover:border-purple-500/40 transition-all duration-300"
+                      className="w-full bg-card rounded-3xl border border-border overflow-hidden shadow-sm dark:shadow-xl flex flex-col group relative select-none cursor-pointer hover:border-purple-400 dark:hover:border-purple-500/40 transition-all duration-300"
                     >
                       <div
                         draggable={false}
-                        className="h-48 sm:h-52 w-full relative overflow-hidden flex items-center justify-center border-b border-card/60 select-none bg-background"
+                        className="h-48 sm:h-52 w-full relative overflow-hidden flex items-center justify-center border-b border-border select-none bg-background"
                       >
                         {course.image ? (
                           <Image
@@ -842,7 +842,7 @@ export default function InteractiveCourses() {
                         )}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
                         <div className="absolute top-4 left-4 flex gap-2 pointer-events-none z-10">
-                          <span className="px-3 py-1 bg-background/70 backdrop-blur-md rounded-full text-[10px] font-black text-text uppercase tracking-widest border border-white/10 shadow-lg">
+                          <span className="px-3 py-1 bg-white/80 dark:bg-background/70 backdrop-blur-md rounded-full text-[10px] font-black text-text uppercase tracking-widest border border-border/80 dark:border-white/10 shadow-lg">
                             {course.difficulty}
                           </span>
                         </div>
@@ -867,8 +867,8 @@ export default function InteractiveCourses() {
                         </div>
 
                         {/* Price & Access Row */}
-                        <div className="pt-3 border-t border-card/60 flex items-center justify-between mb-3.5">
-                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-purple-500/15 text-purple-300 border border-purple-500/30">
+                        <div className="pt-3 border-t border-border flex items-center justify-between mb-3.5">
+                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-500/15 dark:text-purple-300 dark:border-purple-500/30">
                             Full Access
                           </span>
                           <div className="flex items-baseline gap-1.5 shrink-0">
@@ -877,7 +877,7 @@ export default function InteractiveCourses() {
                                 ₹{course.originalPrice.toLocaleString()}
                               </span>
                             )}
-                            <span className="text-sm font-black text-emerald-400">
+                            <span className="text-sm font-black text-emerald-700 dark:text-emerald-400">
                               ₹{(course.price || 15999).toLocaleString()}
                             </span>
                           </div>
@@ -888,7 +888,7 @@ export default function InteractiveCourses() {
                           <button
                             type="button"
                             onClick={(e) => handleCardClick(e, course.linkUrl)}
-                            className="py-2.5 px-2 rounded-xl bg-card hover:bg-card/80 border border-card/80 text-text font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-xs active:scale-[0.97]"
+                            className="py-2.5 px-2 rounded-xl bg-card hover:bg-zinc-100 dark:hover:bg-card/80 border border-border text-text font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-xs active:scale-[0.97]"
                           >
                             <Eye className="w-3.5 h-3.5 text-primary" />
                             <span>View Details</span>
@@ -915,10 +915,10 @@ export default function InteractiveCourses() {
                   initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, delay: 0.15 }}
-                  className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 p-5 sm:p-6 rounded-3xl bg-card/70 border border-purple-500/25 backdrop-blur-md shadow-xl"
+                  className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 p-5 sm:p-6 rounded-3xl bg-card/70 border border-purple-200 dark:border-purple-500/25 backdrop-blur-md shadow-xl"
                 >
                   <div className="flex items-center gap-3.5 text-center sm:text-left">
-                    <div className="w-11 h-11 rounded-2xl bg-purple-500/15 border border-purple-500/30 flex items-center justify-center text-purple-400 shrink-0 shadow-sm">
+                    <div className="w-11 h-11 rounded-2xl bg-purple-50 dark:bg-purple-500/15 border border-purple-200 dark:border-purple-500/30 flex items-center justify-center text-purple-700 dark:text-purple-400 shrink-0 shadow-sm">
                       <Sparkles className="w-5 h-5" />
                     </div>
                     <div>
@@ -1074,9 +1074,9 @@ export default function InteractiveCourses() {
       {activeMode === "live" && (
         <div className="max-w-[1650px] mx-auto px-6 sm:px-10 mt-2">
           {/* Section Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-card/60">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-border">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-purple-500/15 border border-purple-500/30 flex items-center justify-center text-purple-400 shadow-md">
+              <div className="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-500/15 border border-purple-200 dark:border-purple-500/30 flex items-center justify-center text-purple-700 dark:text-purple-400 shadow-sm">
                 <Radio className="w-5 h-5 animate-pulse" />
               </div>
               <div>
@@ -1090,7 +1090,7 @@ export default function InteractiveCourses() {
             </div>
 
             {/* Upcoming vs Past Pill Toggle */}
-            <div className="flex items-center gap-1.5 p-1 bg-card/90 rounded-full border border-card/80 self-start sm:self-auto">
+            <div className="flex items-center gap-1.5 p-1 bg-card/90 rounded-full border border-border self-start sm:self-auto">
               <button className="px-4 py-1.5 rounded-full text-xs font-bold bg-purple-600 text-white shadow-md shadow-purple-600/20">
                 Upcoming
               </button>
@@ -1103,10 +1103,10 @@ export default function InteractiveCourses() {
           {/* Main 2-Column Grid (Left Filters + Right Cohort Cards) */}
           <div className="flex flex-col lg:flex-row gap-8 items-start">
             {/* LEFT FILTER SIDEBAR */}
-            <div className="w-full lg:w-64 bg-card/80 backdrop-blur-xl border border-card/80 rounded-3xl p-5 shadow-xl shrink-0">
-              <div className="flex items-center justify-between pb-3 mb-4 border-b border-card/60">
+            <div className="w-full lg:w-64 bg-card/80 backdrop-blur-xl border border-border rounded-3xl p-5 shadow-sm dark:shadow-xl shrink-0">
+              <div className="flex items-center justify-between pb-3 mb-4 border-b border-border">
                 <span className="text-xs font-black text-text uppercase tracking-wider flex items-center gap-1.5">
-                  <Filter className="w-3.5 h-3.5 text-purple-400" /> Filters
+                  <Filter className="w-3.5 h-3.5 text-purple-700 dark:text-purple-400" /> Filters
                 </span>
                 {(selectedTimeframe !== null || selectedClassTypes.length > 0 || selectedInstructor !== null || liveCategory !== "All") && (
                   <button
@@ -1116,7 +1116,7 @@ export default function InteractiveCourses() {
                       setSelectedInstructor(null);
                       setLiveCategory("All");
                     }}
-                    className="text-[11px] font-bold text-purple-400 hover:underline cursor-pointer"
+                    className="text-[11px] font-bold text-purple-700 dark:text-purple-400 hover:underline cursor-pointer"
                   >
                     Clear All
                   </button>
@@ -1134,18 +1134,18 @@ export default function InteractiveCourses() {
                   ].map((tf) => (
                     <label
                       key={tf.days}
-                      className="flex items-center justify-between text-xs font-semibold text-text cursor-pointer hover:text-purple-400 transition-colors"
+                      className="flex items-center justify-between text-xs font-semibold text-text cursor-pointer hover:text-purple-700 dark:hover:text-purple-400 transition-colors"
                     >
                       <div className="flex items-center gap-2">
                         <input
                           type="checkbox"
                           checked={selectedTimeframe === tf.days}
                           onChange={() => setSelectedTimeframe(selectedTimeframe === tf.days ? null : tf.days)}
-                          className="w-4 h-4 rounded border-card bg-background text-purple-600 focus:ring-purple-500 accent-purple-600 cursor-pointer"
+                          className="w-4 h-4 rounded border-border bg-background text-purple-600 focus:ring-purple-500 accent-purple-600 cursor-pointer"
                         />
                         <span>{tf.label}</span>
                       </div>
-                      <span className="text-[10px] font-bold text-subtext bg-background px-2 py-0.5 rounded-full border border-card">
+                      <span className="text-[10px] font-bold text-subtext bg-background px-2 py-0.5 rounded-full border border-border">
                         {tf.count}
                       </span>
                     </label>
@@ -1166,18 +1166,18 @@ export default function InteractiveCourses() {
                     return (
                       <label
                         key={ct.type}
-                        className="flex items-center justify-between text-xs font-semibold text-text cursor-pointer hover:text-purple-400 transition-colors"
+                        className="flex items-center justify-between text-xs font-semibold text-text cursor-pointer hover:text-purple-700 dark:hover:text-purple-400 transition-colors"
                       >
                         <div className="flex items-center gap-2">
                           <input
                             type="checkbox"
                             checked={isChecked}
                             onChange={() => toggleClassType(ct.type)}
-                            className="w-4 h-4 rounded border-card bg-background text-purple-600 focus:ring-purple-500 accent-purple-600 cursor-pointer"
+                            className="w-4 h-4 rounded border-border bg-background text-purple-600 focus:ring-purple-500 accent-purple-600 cursor-pointer"
                           />
                           <span>{ct.label}</span>
                         </div>
-                        <span className="text-[10px] font-bold text-subtext bg-background px-2 py-0.5 rounded-full border border-card">
+                        <span className="text-[10px] font-bold text-subtext bg-background px-2 py-0.5 rounded-full border border-border">
                           {ct.count}
                         </span>
                       </label>
@@ -1187,7 +1187,7 @@ export default function InteractiveCourses() {
               </div>
 
               {/* Request Batch CTA */}
-              <div className="p-4 rounded-2xl bg-gradient-to-br from-purple-950/40 via-card to-background border border-purple-500/30 text-center">
+              <div className="p-4 rounded-2xl bg-gradient-to-br from-purple-50 via-card to-background dark:from-purple-950/40 border border-purple-200 dark:border-purple-500/30 text-center">
                 <h5 className="text-xs font-bold text-text mb-1">Can't find the right batch?</h5>
                 <p className="text-[11px] text-subtext mb-3">Request a batch for your preferred timezone or schedule.</p>
                 <button
@@ -1202,8 +1202,8 @@ export default function InteractiveCourses() {
             {/* RIGHT MAIN CARDS CONTAINER */}
             <div className="flex-1 w-full space-y-5">
               {filteredLive.length === 0 ? (
-                <div className="w-full py-16 px-8 rounded-3xl border border-card/60 bg-card/40 backdrop-blur-md flex flex-col items-center justify-center text-center">
-                  <Calendar className="w-10 h-10 text-purple-400 mb-3" />
+                <div className="w-full py-16 px-8 rounded-3xl border border-border bg-card/40 backdrop-blur-md flex flex-col items-center justify-center text-center">
+                  <Calendar className="w-10 h-10 text-purple-700 dark:text-purple-400 mb-3" />
                   <h4 className="text-xl font-black text-text mb-1">No matching live batches</h4>
                   <p className="text-xs text-subtext mb-4">Try clearing your active filters to see all available classes.</p>
                   <button
@@ -1232,10 +1232,10 @@ export default function InteractiveCourses() {
                       transition={{ duration: 0.4 }}
                       whileHover={{ y: -4 }}
                       onClick={(e) => handleCardClick(e, item.linkUrl)}
-                      className="bg-card/90 backdrop-blur-xl border border-card/80 hover:border-purple-500/40 rounded-3xl p-5 md:p-6 shadow-xl transition-all group relative cursor-pointer overflow-hidden flex flex-col md:flex-row gap-6 items-stretch"
+                      className="bg-card/90 backdrop-blur-xl border border-border hover:border-purple-400 dark:hover:border-purple-500/40 rounded-3xl p-5 md:p-6 shadow-sm dark:shadow-xl transition-all group relative cursor-pointer overflow-hidden flex flex-col md:flex-row gap-6 items-stretch"
                     >
                       {/* Left: Course Image Thumbnail */}
-                      <div className="w-full md:w-64 h-48 md:h-auto rounded-2xl overflow-hidden relative shrink-0 border border-card/80 bg-background min-h-[160px]">
+                      <div className="w-full md:w-64 h-48 md:h-auto rounded-2xl overflow-hidden relative shrink-0 border border-border bg-background min-h-[160px]">
                         <Image
                           src={item.image}
                           alt={item.title}
@@ -1249,7 +1249,7 @@ export default function InteractiveCourses() {
                       <div className="flex-1 flex flex-col justify-between">
                         <div>
                           <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-                            <span className="text-xs font-black text-purple-400 uppercase tracking-widest">
+                            <span className="text-xs font-black text-purple-700 dark:text-purple-400 uppercase tracking-widest">
                               {item.category}
                             </span>
                             {item.registrationWindow && (
@@ -1260,7 +1260,7 @@ export default function InteractiveCourses() {
                             )}
                           </div>
 
-                          <h3 className="text-xl md:text-2xl font-black text-text mb-2 group-hover:text-purple-400 transition-colors leading-snug">
+                          <h3 className="text-xl md:text-2xl font-black text-text mb-2 group-hover:text-primary transition-colors leading-snug">
                             {item.title}
                           </h3>
 
@@ -1270,13 +1270,13 @@ export default function InteractiveCourses() {
 
                           {/* Live Registration Window Bar */}
                           {item.registrationWindow && (
-                            <div className="p-2.5 rounded-2xl bg-purple-950/20 border border-purple-500/20 mb-3.5 flex flex-wrap items-center justify-between gap-2 text-xs">
+                            <div className="p-2.5 rounded-2xl bg-purple-50/70 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-500/20 mb-3.5 flex flex-wrap items-center justify-between gap-2 text-xs">
                               <div className="flex items-center gap-2">
-                                <Clock className="w-3.5 h-3.5 text-purple-400 shrink-0" />
+                                <Clock className="w-3.5 h-3.5 text-purple-700 dark:text-purple-400 shrink-0" />
                                 <span className="text-subtext font-semibold">Registration:</span>
                                 <span className="font-bold text-text">{item.registrationWindow.fullWindowFormatted}</span>
                               </div>
-                              <span className="text-[10px] font-black uppercase tracking-wider text-purple-300 bg-purple-500/15 px-2 py-0.5 rounded-md border border-purple-500/25">
+                              <span className="text-[10px] font-black uppercase tracking-wider text-purple-700 dark:text-purple-300 bg-purple-100/70 dark:bg-purple-500/15 px-2 py-0.5 rounded-md border border-purple-200 dark:border-purple-500/25">
                                 {item.registrationWindow.countdownText}
                               </span>
                             </div>
@@ -1285,7 +1285,7 @@ export default function InteractiveCourses() {
 
                         {/* Metadata Chips */}
                         <div className="flex flex-wrap items-center gap-2 mt-auto">
-                          <span className="px-3 py-1 rounded-md bg-purple-500/10 text-purple-300 border border-purple-500/20 text-xs font-bold">
+                          <span className="px-3 py-1 rounded-md bg-purple-50 text-purple-700 border border-purple-200 dark:bg-purple-500/10 dark:text-purple-300 dark:border-purple-500/20 text-xs font-bold">
                             {item.level}
                           </span>
                           {item.tags.map((tag, tIdx) => (
@@ -1293,8 +1293,8 @@ export default function InteractiveCourses() {
                               key={tIdx}
                               className={`px-3 py-1 rounded-md text-xs font-bold border ${
                                 tIdx % 2 === 0
-                                  ? "bg-indigo-500/10 text-indigo-300 border-indigo-500/20"
-                                  : "bg-emerald-500/10 text-emerald-300 border-emerald-500/20"
+                                  ? "bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-500/10 dark:text-indigo-300 dark:border-indigo-500/20"
+                                  : "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/20"
                               }`}
                             >
                               {tag}
@@ -1304,11 +1304,11 @@ export default function InteractiveCourses() {
                       </div>
 
                       {/* Right: Schedule, Seats & CTA */}
-                      <div className="w-full md:w-64 border-t md:border-t-0 md:border-l border-card/80 pt-4 md:pt-0 md:pl-6 flex flex-col justify-between shrink-0">
+                      <div className="w-full md:w-64 border-t md:border-t-0 md:border-l border-border pt-4 md:pt-0 md:pl-6 flex flex-col justify-between shrink-0">
                         {/* Schedule details */}
                         <div className="space-y-2 mb-4">
                           <div className="flex items-start gap-2.5 text-xs font-bold text-text">
-                            <Calendar className="w-4 h-4 text-purple-400 shrink-0 mt-0.5" />
+                            <Calendar className="w-4 h-4 text-purple-700 dark:text-purple-400 shrink-0 mt-0.5" />
                             <div>
                               <div>{item.schedule.dateFormatted}</div>
                               <div className="text-subtext text-[11px] font-normal mt-0.5">{item.schedule.daysPattern}</div>
@@ -1316,7 +1316,7 @@ export default function InteractiveCourses() {
                           </div>
 
                           <div className="flex items-start gap-2.5 text-xs font-bold text-text">
-                            <Clock className="w-4 h-4 text-purple-400 shrink-0 mt-0.5" />
+                            <Clock className="w-4 h-4 text-purple-700 dark:text-purple-400 shrink-0 mt-0.5" />
                             <div>
                               <div>{item.schedule.timeFormatted}</div>
                               <div className="text-subtext text-[11px] font-normal mt-0.5">Duration: {item.schedule.duration}</div>
@@ -1328,13 +1328,13 @@ export default function InteractiveCourses() {
                         <div className="mb-4">
                           <div className="flex justify-between text-xs font-bold text-subtext mb-1.5">
                             <span className="flex items-center gap-1.5 text-text">
-                              <Users className="w-3.5 h-3.5 text-purple-400" />
+                              <Users className="w-3.5 h-3.5 text-purple-700 dark:text-purple-400" />
                               <span>{item.seats.enrolled} / {item.seats.total} Enrolled</span>
                             </span>
-                            <span className="text-purple-400 font-black">{percent}%</span>
+                            <span className="text-purple-700 dark:text-purple-400 font-black">{percent}%</span>
                           </div>
 
-                          <div className="w-full h-2 bg-background rounded-full overflow-hidden border border-card">
+                          <div className="w-full h-2 bg-background rounded-full overflow-hidden border border-border">
                             <div
                               className="h-full bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full transition-all duration-700"
                               style={{ width: `${percent}%` }}
@@ -1358,12 +1358,12 @@ export default function InteractiveCourses() {
                             onClick={(e) => toggleBookmark(e, item.id)}
                             className={`p-3 rounded-xl border transition-all ${
                               isBooked
-                                ? "bg-purple-600/20 text-purple-400 border-purple-500/40"
-                                : "bg-card border-card/80 text-subtext hover:text-text hover:bg-card/90"
+                                ? "bg-purple-50 text-purple-700 border-purple-300 dark:bg-purple-600/20 dark:text-purple-400 dark:border-purple-500/40"
+                                : "bg-card border-border text-subtext hover:text-text hover:bg-card-hover"
                             }`}
                             title="Bookmark class"
                           >
-                            <Bookmark className={`w-4 h-4 ${isBooked ? "fill-purple-400" : ""}`} />
+                            <Bookmark className={`w-4 h-4 ${isBooked ? "fill-purple-700 dark:fill-purple-400 text-purple-700 dark:text-purple-400" : ""}`} />
                           </button>
                         </div>
                       </div>
@@ -1375,9 +1375,9 @@ export default function InteractiveCourses() {
           </div>
 
           {/* Bottom Live Training Highlights Bar */}
-          <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-5 rounded-3xl bg-card/60 border border-card/80 backdrop-blur-md">
+          <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-5 rounded-3xl bg-card/60 border border-border backdrop-blur-md">
             <div className="flex items-center gap-3 p-2">
-              <div className="w-10 h-10 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 shrink-0">
+              <div className="w-10 h-10 rounded-2xl bg-purple-50 dark:bg-purple-500/10 border border-purple-200 dark:border-purple-500/20 flex items-center justify-center text-purple-700 dark:text-purple-400 shrink-0">
                 <MessageSquare className="w-5 h-5" />
               </div>
               <div>
@@ -1387,7 +1387,7 @@ export default function InteractiveCourses() {
             </div>
 
             <div className="flex items-center gap-3 p-2">
-              <div className="w-10 h-10 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 shrink-0">
+              <div className="w-10 h-10 rounded-2xl bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/20 flex items-center justify-center text-indigo-700 dark:text-indigo-400 shrink-0">
                 <Code2 className="w-5 h-5" />
               </div>
               <div>
@@ -1397,7 +1397,7 @@ export default function InteractiveCourses() {
             </div>
 
             <div className="flex items-center gap-3 p-2">
-              <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0">
+              <div className="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 flex items-center justify-center text-emerald-700 dark:text-emerald-400 shrink-0">
                 <Users className="w-5 h-5" />
               </div>
               <div>
@@ -1407,7 +1407,7 @@ export default function InteractiveCourses() {
             </div>
 
             <div className="flex items-center gap-3 p-2">
-              <div className="w-10 h-10 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 shrink-0">
+              <div className="w-10 h-10 rounded-2xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 flex items-center justify-center text-amber-700 dark:text-amber-400 shrink-0">
                 <Tv className="w-5 h-5" />
               </div>
               <div>

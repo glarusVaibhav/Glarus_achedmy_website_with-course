@@ -1,0 +1,1816 @@
+[
+    {
+        "id": "lesson_00_ai_ml_foundations",
+        "title": "AI & ML Foundations",
+        "stages": [
+            {
+                "type": "concept",
+                "content": {
+                    "title": "What is Machine Learning?",
+                    "explanation": "\u2022 Computers learn patterns from data.\n\u2022 No fixed rules required.\n\u2022 Learns by example.\n\u2022 Finds hidden structures.\n\u2022 Used for predictions."
+                }
+            },
+            {
+                "type": "visual",
+                "content": {
+                    "title": "AI vs ML vs Deep Learning",
+                    "explanation": "\u2022 AI is the massive umbrella.\n\u2022 ML is a subset of AI.\n\u2022 Deep Learning is a subset of ML.",
+                    "image": "images/ai_ml_dl_1779772488256.png"
+                }
+            },
+            {
+                "type": "visual",
+                "content": {
+                    "title": "Types of Machine Learning",
+                    "explanation": "\u2022 Supervised: Learns from labeled data.\n\u2022 Unsupervised: Finds patterns in unlabeled data.\n\u2022 Reinforcement: Learns by trial and error.",
+                    "image": "images/types_of_ml_infographic.jpg"
+                }
+            },
+            {
+                "type": "concept",
+                "content": {
+                    "title": "Supervised Learning",
+                    "explanation": "\u2022 Uses historical labeled data.\n\u2022 Learns the exact relationship.\n\u2022 Needs an answer key.\n\u2022 Predicts known outcomes.\n\u2022 Example: House price prediction."
+                }
+            },
+            {
+                "type": "concept",
+                "content": {
+                    "title": "Unsupervised Learning",
+                    "explanation": "\u2022 Uses raw, messy data.\n\u2022 No answers provided.\n\u2022 Finds hidden clusters.\n\u2022 Explores the unknown automatically.\n\u2022 Example: Customer grouping."
+                }
+            },
+            {
+                "type": "concept",
+                "content": {
+                    "title": "Reinforcement Learning",
+                    "explanation": "\u2022 Agent in live environment.\n\u2022 Makes random decisions.\n\u2022 Gets reward or penalty.\n\u2022 Learns optimal behavior.\n\u2022 Example: Self-driving cars."
+                }
+            },
+            {
+                "type": "concept",
+                "content": {
+                    "title": "Why We Need All Three",
+                    "explanation": "\u2022 Clear answers? Use Supervised.\n\u2022 No labels? Use Unsupervised.\n\u2022 Dynamic environment? Use Reinforcement.\n\u2022 Pick the right tool."
+                }
+            },
+            {
+                "type": "visual",
+                "content": {
+                    "title": "Training vs Inference",
+                    "explanation": "\u2022 Training: Heavy learning phase.\n\u2022 Inference: Fast prediction phase.\n\u2022 Train once.\n\u2022 Run inference millions of times.",
+                    "image": "images/model_training_inference.png"
+                }
+            },
+            {
+                "type": "scenario",
+                "content": {
+                    "title": "Data Classification Scenario",
+                    "description": "You have 10 years of purchase data. No labels exist. Group customers into 5 segments. What approach?",
+                    "choices": [
+                        {
+                            "text": "Supervised Learning",
+                            "score": 0,
+                            "outcome": "Error! Supervised requires labels."
+                        },
+                        {
+                            "text": "Unsupervised Learning",
+                            "score": 100,
+                            "outcome": "Exactly! Perfect for grouping data."
+                        },
+                        {
+                            "text": "Reinforcement Learning",
+                            "score": 0,
+                            "outcome": "Overkill! Not teaching an agent."
+                        }
+                    ]
+                }
+            },
+            {
+                "type": "mcq",
+                "questions": [
+                    {
+                        "question": "Which algorithm to group thousands of unlabeled customers?",
+                        "options": [
+                            "Supervised Learning",
+                            "Unsupervised Learning",
+                            "Reinforcement Learning"
+                        ],
+                        "answer": 1,
+                        "explanation": "No predefined labels means use Unsupervised Learning."
+                    }
+                ]
+            },
+            {
+                "type": "drag_drop",
+                "content": {
+                    "question": "Match the scenarios.",
+                    "buckets": [
+                        {
+                            "name": "Supervised",
+                            "accepts": [
+                                "Predicting house prices",
+                                "Classifying spam emails"
+                            ]
+                        },
+                        {
+                            "name": "Unsupervised",
+                            "accepts": [
+                                "Grouping customers by behavior",
+                                "Finding anomalies in logs"
+                            ]
+                        },
+                        {
+                            "name": "Reinforcement",
+                            "accepts": [
+                                "Self-driving car in lane",
+                                "AI playing chess"
+                            ]
+                        }
+                    ]
+                }
+            },
+            {
+                "type": "fill_blank",
+                "challenge": {
+                    "title": "Training vs Inference",
+                    "question": "Complete the ML lifecycle sentence.",
+                    "template": [
+                        "Finding patterns in historical data is called ",
+                        "____",
+                        ". Deploying the model to make predictions is called ",
+                        "____",
+                        "."
+                    ],
+                    "options": [
+                        "Training",
+                        "Inference",
+                        "Hyperparameters"
+                    ],
+                    "answers": {
+                        "0": "Training",
+                        "1": "Inference"
+                    }
+                }
+            },
+            {
+                "type": "reorder",
+                "challenge": {
+                    "instruction": "Order the Machine Learning Lifecycle.",
+                    "correctOrder": [
+                        "1. Collect data",
+                        "2. Train model",
+                        "3. Deploy model",
+                        "4. Run Inference"
+                    ]
+                }
+            },
+            {
+                "type": "speed_quiz",
+                "questions": [
+                    {
+                        "question": "Which uses an Answer Key?",
+                        "options": [
+                            "Supervised",
+                            "Unsupervised"
+                        ],
+                        "answer": 0
+                    },
+                    {
+                        "question": "Which uses an Agent?",
+                        "options": [
+                            "Supervised",
+                            "Reinforcement"
+                        ],
+                        "answer": 1
+                    },
+                    {
+                        "question": "Which groups unlabeled data?",
+                        "options": [
+                            "Supervised",
+                            "Unsupervised"
+                        ],
+                        "answer": 1
+                    },
+                    {
+                        "question": "Spam Filters use...",
+                        "options": [
+                            "Supervised",
+                            "Unsupervised"
+                        ],
+                        "answer": 0
+                    }
+                ],
+                "timePerQuestion": 5
+            },
+            {
+                "type": "concept",
+                "content": {
+                    "title": "Lesson Summary",
+                    "explanation": "\u2022 ML finds patterns from data.\n\u2022 Supervised uses labels.\n\u2022 Unsupervised groups unknown data.\n\u2022 Reinforcement learns by interaction.\n\u2022 Training learns, Inference predicts."
+                }
+            }
+        ]
+    },
+    {
+        "id": "lesson_01_intro_data",
+        "title": "ML & Data Foundations",
+        "stages": [
+            {
+                "type": "concept",
+                "content": {
+                    "title": "Features vs Labels",
+                    "explanation": "\u2022 Features: The inputs (X).\n\u2022 Characteristics of the data.\n\u2022 Labels: The outputs (Y).\n\u2022 The answer to predict.\n\u2022 Example: Square footage (Feature), Price (Label)."
+                }
+            },
+            {
+                "type": "visual",
+                "content": {
+                    "title": "Features vs Labels",
+                    "explanation": "Features are the raw ingredients. The Label is the specific final outcome you are trying to predict.",
+                    "image": "images/features_labels.png"
+                }
+            },
+            {
+                "type": "mcq",
+                "questions": [
+                    {
+                        "question": "If predicting house price based on size, what is the Label?",
+                        "options": [
+                            "House location",
+                            "House size",
+                            "House price"
+                        ],
+                        "answer": 2,
+                        "explanation": "The Label is the final answer you want to predict."
+                    }
+                ]
+            },
+            {
+                "type": "concept",
+                "content": {
+                    "title": "Structured vs Unstructured",
+                    "explanation": "\u2022 Structured: Fits in spreadsheets.\n\u2022 Rows and columns.\n\u2022 Unstructured: Messy, no grid.\n\u2022 Images, audio, text.\n\u2022 Deep Learning handles unstructured."
+                }
+            },
+            {
+                "type": "visual",
+                "content": {
+                    "title": "Structured vs Unstructured Data",
+                    "explanation": "Structured data fits cleanly into a grid. Unstructured data is a chaotic pile of media.",
+                    "image": "images/structured_unstructured.png"
+                }
+            },
+            {
+                "type": "speed_quiz",
+                "timePerQuestion": 5,
+                "questions": [
+                    {
+                        "question": "An Excel Spreadsheet?",
+                        "options": [
+                            "Structured",
+                            "Unstructured"
+                        ],
+                        "answer": 0
+                    },
+                    {
+                        "question": "A raw MP3 Audio file?",
+                        "options": [
+                            "Structured",
+                            "Unstructured"
+                        ],
+                        "answer": 1
+                    },
+                    {
+                        "question": "A bank transaction log?",
+                        "options": [
+                            "Structured",
+                            "Unstructured"
+                        ],
+                        "answer": 0
+                    },
+                    {
+                        "question": "A JPEG photo?",
+                        "options": [
+                            "Structured",
+                            "Unstructured"
+                        ],
+                        "answer": 1
+                    }
+                ]
+            },
+            {
+                "type": "concept",
+                "content": {
+                    "title": "Exploratory Data Analysis",
+                    "explanation": "\u2022 Inspect data before modeling.\n\u2022 Find hidden patterns.\n\u2022 Spot anomalies and outliers.\n\u2022 Garbage in, garbage out.\n\u2022 Never skip this step."
+                }
+            },
+            {
+                "type": "visual",
+                "content": {
+                    "title": "EDA Overview",
+                    "explanation": "Find patterns and outliers before starting to model.",
+                    "image": "images/eda_infographic.jpg"
+                }
+            },
+            {
+                "type": "mcq",
+                "questions": [
+                    {
+                        "question": "Why perform EDA before training?",
+                        "options": [
+                            "To generate labels",
+                            "To find missing values and understand data",
+                            "To deploy the model"
+                        ],
+                        "answer": 1,
+                        "explanation": "EDA is your chance to check if data is clean."
+                    }
+                ]
+            },
+            {
+                "type": "concept",
+                "content": {
+                    "title": "Why Split Data?",
+                    "explanation": "\u2022 Never evaluate on training data.\n\u2022 Training (80%): Practice homework.\n\u2022 Testing (20%): Final exam.\n\u2022 Prevents memorization (Overfitting).\n\u2022 Proves real-world readiness."
+                }
+            },
+            {
+                "type": "visual",
+                "content": {
+                    "title": "Train/Test Split Strategy",
+                    "explanation": "By splitting data, we ensure our model learns patterns, not just memorizing the past.",
+                    "image": "images/why_split_data_infographic.jpg"
+                }
+            },
+            {
+                "type": "fill_blank",
+                "challenge": {
+                    "title": "Splitting Strategy",
+                    "question": "Complete the logic.",
+                    "template": [
+                        "Train using the ",
+                        "____",
+                        " set. Evaluate it on the hidden ",
+                        "____",
+                        " set."
+                    ],
+                    "options": [
+                        "Training",
+                        "Testing",
+                        "Validation"
+                    ],
+                    "answers": {
+                        "0": "Training",
+                        "1": "Testing"
+                    }
+                }
+            },
+            {
+                "type": "concept",
+                "content": {
+                    "title": "Splitting in Python",
+                    "explanation": "\u2022 Use train_test_split from scikit-learn.\n\u2022 Takes Features (X) and Labels (y).\n\u2022 Returns X_train, X_test, y_train, y_test.\n\u2022 test_size=0.2 means 20% test.\n\u2022 random_state ensures reproducibility."
+                }
+            },
+            {
+                "type": "code",
+                "challenge": {
+                    "language": "python",
+                    "question": "Split the dataset into 80% training data and 20% testing data.",
+                    "starterCode": "import pandas as pd\nfrom sklearn.model_selection import train_test_split\n\ndf = pd.DataFrame({'volume': [100, 200, 300, 400], 'price': [50, 55, 60, 65]})\nX = df[['volume']]\ny = df['price']\n\n# TODO: Split data\nX_train, X_test, y_train, y_test = ",
+                    "solution": "import pandas as pd\nfrom sklearn.model_selection import train_test_split\n\ndf = pd.DataFrame({'volume': [100, 200, 300, 400], 'price': [50, 55, 60, 65]})\nX = df[['volume']]\ny = df['price']\n\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)",
+                    "hint": "Use train_test_split(X, y, test_size=0.2, random_state=42)",
+                    "explanation": "Prevents data leakage."
+                }
+            },
+            {
+                "type": "reorder",
+                "challenge": {
+                    "instruction": "Order the Splitting workflow.",
+                    "correctOrder": [
+                        "1. Import train_test_split",
+                        "2. Load dataset into X and Y",
+                        "3. Run train_test_split(X, Y)",
+                        "4. Receive X_train, X_test, y_train, y_test"
+                    ]
+                }
+            },
+            {
+                "type": "concept",
+                "content": {
+                    "title": "ML Toolbelt",
+                    "explanation": "\u2022 NumPy: Math operations.\n\u2022 Pandas: Data manipulation.\n\u2022 Scikit-learn: ML algorithms.\n\u2022 Matplotlib: Visualization.\n\u2022 They work together seamlessly."
+                }
+            },
+            {
+                "type": "code",
+                "challenge": {
+                    "explanation": "Basic NumPy operations.",
+                    "hint": "Use np.random.rand() and .reshape()",
+                    "language": "python",
+                    "question": "Create an array of 10 random numbers (0-1), shape 2x5.",
+                    "solution": "import numpy as np\nrandom_array = np.random.rand(10).reshape(2,5)",
+                    "starterCode": "import numpy as np\n# Your code here\nrandom_array = ",
+                    "validation": {
+                        "type": "array_shape",
+                        "variable": "random_array",
+                        "shape": [
+                            2,
+                            5
+                        ]
+                    }
+                }
+            },
+            {
+                "type": "fill_blank",
+                "sentences": [
+                    {
+                        "answer": "train_test_split",
+                        "text": "To split data in scikit-learn, use ________"
+                    }
+                ]
+            },
+            {
+                "type": "scenario",
+                "title": "Data Prep Dilemma",
+                "description": "You have a CSV with missing values. Which tools?",
+                "choices": [
+                    {
+                        "outcome": "Best choice: Pandas handles CSVs, NumPy for math.",
+                        "score": 100,
+                        "text": "NumPy + Pandas"
+                    },
+                    {
+                        "outcome": "Incomplete: Poor data handling capabilities.",
+                        "score": 30,
+                        "text": "Matplotlib + scikit-learn"
+                    }
+                ]
+            },
+            {
+                "type": "drag_drop",
+                "content": {
+                    "question": "Match the Python libraries.",
+                    "buckets": [
+                        {
+                            "name": "Data Handling",
+                            "accepts": [
+                                "Pandas",
+                                "NumPy"
+                            ]
+                        },
+                        {
+                            "name": "Visualization",
+                            "accepts": [
+                                "Matplotlib",
+                                "Seaborn"
+                            ]
+                        },
+                        {
+                            "name": "ML Algorithms",
+                            "accepts": [
+                                "Scikit-Learn"
+                            ]
+                        }
+                    ]
+                }
+            },
+            {
+                "type": "flashcard",
+                "content": {
+                    "cards": [
+                        {
+                            "front": "What does EDA stand for?",
+                            "back": "Exploratory Data Analysis! Visualizing data before modeling."
+                        }
+                    ]
+                }
+            },
+            {
+                "type": "scenario",
+                "content": {
+                    "title": "House Price Predictor",
+                    "description": "You have a massive CSV of house prices. First step?",
+                    "choices": [
+                        {
+                            "text": "Train a Random Forest.",
+                            "score": 0,
+                            "outcome": "Terrible idea! Check data first."
+                        },
+                        {
+                            "text": "Perform EDA.",
+                            "score": 100,
+                            "outcome": "Perfect! Understand and clean data."
+                        },
+                        {
+                            "text": "Deploy it.",
+                            "score": 0,
+                            "outcome": "Model not built yet!"
+                        }
+                    ]
+                }
+            },
+            {
+                "type": "concept",
+                "content": {
+                    "title": "Lesson Summary",
+                    "explanation": "\u2022 Features = Inputs, Labels = Outputs.\n\u2022 Always do EDA first.\n\u2022 Never test on training data.\n\u2022 Split 80/20 train/test.\n\u2022 Pandas + Scikit-learn = Magic."
+                }
+            }
+        ]
+    },
+    {
+        "id": "lesson_01_5_feature_engineering",
+        "title": "Feature Engineering",
+        "stages": [
+            {
+                "type": "concept",
+                "content": {
+                    "title": "What is Feature Engineering?",
+                    "explanation": "\u2022 Transforming raw, messy data.\n\u2022 Creating mathematical signals.\n\u2022 Helps algorithms learn easily.\n\u2022 Better features beat better algorithms.\n\u2022 Example: Extracting 'Age' from 'DOB'."
+                }
+            },
+            {
+                "type": "mcq",
+                "questions": [
+                    {
+                        "question": "Example of Feature Engineering for predicting house prices?",
+                        "options": [
+                            "Feeding raw 'Year Built'",
+                            "Creating a 'House Age' feature",
+                            "Deleting the dataset"
+                        ],
+                        "answer": 1,
+                        "explanation": "Creates explicit patterns."
+                    }
+                ]
+            },
+            {
+                "type": "concept",
+                "content": {
+                    "title": "Data Cleaning Workflow",
+                    "explanation": "\u2022 Clean before engineering.\n\u2022 Fix missing values.\n\u2022 Remove duplicates.\n\u2022 Standardize formats.\n\u2022 Prevents broken models."
+                }
+            },
+            {
+                "type": "reorder",
+                "challenge": {
+                    "instruction": "Order the Data Cleaning Pipeline.",
+                    "correctOrder": [
+                        "1. Remove duplicate rows",
+                        "2. Standardize text casing",
+                        "3. Handle missing values",
+                        "4. Remove outliers",
+                        "5. Begin Feature Engineering"
+                    ]
+                }
+            },
+            {
+                "type": "visual",
+                "content": {
+                    "title": "Handling Missing Data: Imputation Strategies",
+                    "explanation": "Different strategies for handling missing data, from mean imputation to complex predictive models.",
+                    "image": "images/imputation_strategies_infographic.jpg"
+                }
+            },
+            {
+                "type": "concept",
+                "content": {
+                    "title": "Feature Scaling",
+                    "explanation": "\u2022 Puts numbers on similar scale.\n\u2022 Prevents large numbers dominating.\n\u2022 Crucial for distance algorithms.\n\u2022 Scale features, not labels.\n\u2022 Use MinMaxScaler or StandardScaler."
+                }
+            },
+            {
+                "type": "drag_drop",
+                "content": {
+                    "question": "Match the scaling technique.",
+                    "buckets": [
+                        {
+                            "name": "Min-Max Scaling",
+                            "accepts": [
+                                "Compresses data strictly between 0 and 1."
+                            ]
+                        },
+                        {
+                            "name": "Standardization",
+                            "accepts": [
+                                "Centers data at a mean of 0."
+                            ]
+                        },
+                        {
+                            "name": "Robust Scaler",
+                            "accepts": [
+                                "Uses IQR to ignore extreme outliers."
+                            ]
+                        }
+                    ]
+                }
+            },
+            {
+                "type": "concept",
+                "content": {
+                    "title": "Min-Max vs Standardization",
+                    "explanation": "\u2022 Min-Max: Bounds between 0 and 1.\n\u2022 Min-Max: Sensitive to outliers.\n\u2022 Standardization: Centers at mean 0.\n\u2022 Standardization: Good for Gaussian data.\n\u2022 Pick based on distribution."
+                }
+            },
+            {
+                "type": "concept",
+                "content": {
+                    "title": "Robust vs MaxAbs Scaler",
+                    "explanation": "\u2022 Robust: Uses Median and IQR.\n\u2022 Robust: Ignores extreme outliers.\n\u2022 MaxAbs: Divides by absolute max.\n\u2022 MaxAbs: Preserves zeros.\n\u2022 Use Robust for billionaires' salaries."
+                }
+            },
+            {
+                "type": "concept",
+                "content": {
+                    "title": "Log vs Power Transform",
+                    "explanation": "\u2022 Log: Compresses highly skewed data.\n\u2022 Log: Only works on positive numbers.\n\u2022 Power: Automatically finds best power.\n\u2022 Power: Can handle negative numbers.\n\u2022 Turns skews into bell curves."
+                }
+            },
+            {
+                "type": "speed_quiz",
+                "timePerQuestion": 6,
+                "questions": [
+                    {
+                        "question": "Which scaler compresses data between 0 and 1?",
+                        "options": [
+                            "StandardScaler",
+                            "MinMaxScaler"
+                        ],
+                        "answer": 1
+                    },
+                    {
+                        "question": "Best scaler for extreme outliers?",
+                        "options": [
+                            "StandardScaler",
+                            "RobustScaler"
+                        ],
+                        "answer": 1
+                    },
+                    {
+                        "question": "Do Random Forests need scaling?",
+                        "options": [
+                            "Yes",
+                            "No"
+                        ],
+                        "answer": 1
+                    }
+                ]
+            },
+            {
+                "type": "scenario",
+                "content": {
+                    "title": "Scaling Strategy",
+                    "description": "KNN model with VIP extreme outliers. Which scaler?",
+                    "choices": [
+                        {
+                            "text": "MinMaxScaler",
+                            "score": 20,
+                            "outcome": "Too sensitive to VIP outliers."
+                        },
+                        {
+                            "text": "RobustScaler",
+                            "score": 100,
+                            "outcome": "Perfect! Ignores extreme outliers."
+                        },
+                        {
+                            "text": "No scaling",
+                            "score": 0,
+                            "outcome": "KNN fails without scaling."
+                        }
+                    ]
+                }
+            },
+            {
+                "type": "concept",
+                "content": {
+                    "title": "Outlier Detection",
+                    "explanation": "\u2022 Outliers pull models off track.\n\u2022 Visualized with Boxplots.\n\u2022 Can be typos or fraud.\n\u2022 Use Z-Scores or IQR.\n\u2022 Cap them or drop them."
+                }
+            },
+            {
+                "type": "concept",
+                "content": {
+                    "title": "Encoding Categorical Variables",
+                    "explanation": "\u2022 One-Hot: Binary columns per category.\n\u2022 One-Hot: Best for non-ordered (Colors).\n\u2022 Target: Replaces with average target.\n\u2022 Target: Best for Zip Codes.\n\u2022 Avoid 10,000 column explosions."
+                }
+            },
+            {
+                "type": "concept",
+                "content": {
+                    "title": "Date & Time Features",
+                    "explanation": "\u2022 Extract numerical features from dates.\n\u2022 Month, Day, Hour, Is_Weekend.\n\u2022 Time holds cyclical patterns.\n\u2022 Converts calendars into habits.\n\u2022 Watch out for timezones."
+                }
+            },
+            {
+                "type": "concept",
+                "content": {
+                    "title": "Text Data: TF-IDF",
+                    "explanation": "\u2022 Bag of Words: Just counts.\n\u2022 Dominates common words ('the').\n\u2022 TF-IDF: Penalizes common words.\n\u2022 Highlights rare, meaningful words.\n\u2022 Baseline for NLP tasks."
+                }
+            },
+            {
+                "type": "concept",
+                "content": {
+                    "title": "Lesson Summary",
+                    "explanation": "\u2022 Clean data first.\n\u2022 Handle missing values.\n\u2022 Scale features (except for trees).\n\u2022 Encode text and categories.\n\u2022 Great features beat great algorithms."
+                }
+            }
+        ]
+    },
+    {
+        "id": "lesson_02_regression",
+        "title": "Linear Regression",
+        "stages": [
+            {
+                "type": "concept",
+                "content": {
+                    "title": "Mechanics of Linear Regression",
+                    "explanation": "\u2022 Foundational supervised algorithm.\n\u2022 Predicts continuous numerical values.\n\u2022 Finds best fitting line.\n\u2022 Learns math relationship (X to Y).\n\u2022 Example: Predicting house prices."
+                }
+            },
+            {
+                "type": "flashcard",
+                "cards": [
+                    {
+                        "front": "What calculates the total error of our model's predictions?",
+                        "back": "The Cost Function"
+                    },
+                    {
+                        "front": "What is the optimization engine that updates weights to minimize error?",
+                        "back": "Gradient Descent"
+                    },
+                    {
+                        "front": "What do we call the 'intercept' or starting value in our equation?",
+                        "back": "Bias"
+                    }
+                ]
+            },
+            {
+                "type": "visual",
+                "content": {
+                    "title": "Line of Best Fit",
+                    "explanation": "Minimizes the total distance between the line and all data points.",
+                    "image": "images/linear_regression.png"
+                }
+            },
+            {
+                "type": "concept",
+                "content": {
+                    "title": "What is Loss?",
+                    "explanation": "\u2022 Loss measures prediction error.\n\u2022 High Loss = bad predictions.\n\u2022 Zero Loss = perfect predictions.\n\u2022 Guides model improvement.\n\u2022 Like the 'Hot or Cold' game."
+                }
+            },
+            {
+                "type": "visual",
+                "content": {
+                    "title": "The Loss Function",
+                    "explanation": "The algorithm uses Loss to steer itself toward the target.",
+                    "image": "images/loss_function.png"
+                }
+            },
+            {
+                "type": "concept",
+                "content": {
+                    "title": "Hyperparameters vs Parameters",
+                    "explanation": "\u2022 Hyperparameters: Set by humans.\n\u2022 Parameters: Learned by machines.\n\u2022 Hyperparameters control learning.\n\u2022 Parameters hold the knowledge.\n\u2022 Example: Learning Rate vs Weights."
+                }
+            },
+            {
+                "type": "visual",
+                "content": {
+                    "title": "Hyperparameters vs Parameters",
+                    "explanation": "You turn the dial (Hyperparameter). Internal reactions happen automatically (Parameters).",
+                    "image": "images/hyperparameters_parameters.png"
+                }
+            },
+            {
+                "type": "concept",
+                "content": {
+                    "title": "Gradient Descent",
+                    "explanation": "\u2022 Mathematical optimization algorithm.\n\u2022 Finds the absolute best answer.\n\u2022 Takes small steps downhill.\n\u2022 Stops at zero errors.\n\u2022 Requires correct Learning Rate."
+                }
+            },
+            {
+                "type": "visual",
+                "content": {
+                    "title": "Gradient Descent Optimization",
+                    "explanation": "Steps start large when steep, and get smaller near zero loss.",
+                    "diagram": [
+                        "Start with random weights (high error)",
+                        "Calculate gradient (slope of the error curve)",
+                        "Update weights in opposite direction",
+                        "Reach convergence (minimum error)"
+                    ],
+                    "image": "images/gradient_descent.png"
+                }
+            },
+            {
+                "type": "code",
+                "challenge": {
+                    "language": "python",
+                    "question": "Implement a Linear Regression model to predict a target variable.",
+                    "starterCode": "from sklearn.linear_model import LinearRegression\nimport numpy as np\n\nX_train = np.array([[500], [1000], [1500], [2000]])\ny_train = np.array([50, 100, 150, 200])\nX_test = np.array([[1200]])\n\n# TODO: Initialize, train, and predict\nmodel = \nprediction = ",
+                    "solution": "from sklearn.linear_model import LinearRegression\nimport numpy as np\n\nX_train = np.array([[500], [1000], [1500], [2000]])\ny_train = np.array([50, 100, 150, 200])\nX_test = np.array([[1200]])\n\nmodel = LinearRegression()\nmodel.fit(X_train, y_train)\nprediction = model.predict(X_test)\nprint(f'Predicted value: {prediction[0]}')",
+                    "hint": "Instantiate LinearRegression(), call .fit(), and .predict().",
+                    "explanation": ".fit() calculates the optimal weights."
+                }
+            },
+            {
+                "type": "scenario",
+                "title": "The Non-Linear Trap",
+                "description": "Data shows an accelerating spike forming a curve. Linear model underfits. Fix?",
+                "choices": [
+                    {
+                        "text": "Continue using Linear Regression.",
+                        "score": 0,
+                        "outcome": "Cannot map to a curve."
+                    },
+                    {
+                        "text": "Apply Polynomial Features.",
+                        "score": 100,
+                        "outcome": "Perfect. Bends to fit curved data."
+                    },
+                    {
+                        "text": "Switch to K-Means Clustering.",
+                        "score": 0,
+                        "outcome": "K-Means is unsupervised clustering."
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "lesson_03_classification",
+        "title": "Classification Models",
+        "stages": [
+            {
+                "type": "concept",
+                "content": {
+                    "title": "Logistic Regression & The Sigmoid Function",
+                    "explanation": "\u2022 Beginner-friendly explanation.\n\u2022 Despite its misleading name, Logistic Regression is actually a classification algorithm, not a regression one.\n\u2022 It answers Yes/No questions: Is this email spam?\n\u2022 Will this customer churn?\n\u2022 Does this patient have diabetes?"
+                }
+            },
+            {
+                "type": "visual",
+                "content": {
+                    "title": "The Sigmoid Curve",
+                    "explanation": "This is the 'giant squasher' we talked about. Notice how it takes any extreme value and gracefully bends it so it never crosses 0% or 100%.",
+                    "image": "images/sigmoid_curve_1779772566725.png"
+                }
+            },
+            {
+                "type": "fill_blank",
+                "sentences": [
+                    {
+                        "text": "The mathematical function that maps any real value into a probability between 0 and 1 is called the ______ function.",
+                        "answer": "sigmoid"
+                    },
+                    {
+                        "text": "The dividing line that separates different classes in the feature space is known as the decision ______.",
+                        "answer": "boundary"
+                    }
+                ]
+            },
+            {
+                "type": "concept",
+                "content": {
+                    "title": "Decision Trees: The Architecture of Logic",
+                    "explanation": "\u2022 Beginner-friendly explanation.\n\u2022 A Decision Tree is simply an automated flowchart.\n\u2022 Real-world intuition.\n\u2022 Think of playing '20 Questions' with a friend.\n\u2022 A Decision Tree does the exact same thing with data."
+                }
+            },
+            {
+                "type": "visual",
+                "content": {
+                    "title": "Decision Trees",
+                    "explanation": "Here is the flowchart logic in action. The model starts at the root question and simply follows the True/False branches down to the final prediction.",
+                    "image": "images/decision_tree_1779772583153.png"
+                }
+            },
+            {
+                "type": "socratic",
+                "content": {
+                    "prompt": "We just learned that Decision Trees can grow too deep and memorize the training data. This is called Overfitting. If a tree just memorizes the specific practice data, what will happen when we give it brand new, unseen data to predict in the real world?",
+                    "expectedConcepts": [
+                        "fail",
+                        "bad",
+                        "poor accuracy",
+                        "memorize",
+                        "generalize",
+                        "wrong"
+                    ]
+                }
+            },
+            {
+                "type": "case_study",
+                "title": "Evaluating Classification: Beyond Accuracy",
+                "questions": [
+                    {
+                        "question": "In a dataset of 1,000 transactions, only 10 are fraudulent. A model simply predicts 'Not Fraud' for everything. What is its Accuracy?",
+                        "expectedAnswer": "99% (990/1000). This proves why Accuracy is a terrible metric for highly imbalanced datasets."
+                    },
+                    {
+                        "question": "If you want to ensure you catch EVERY single fraudulent transaction, even if it means falsely flagging some normal ones, which metric should you optimize: Precision or Recall?",
+                        "expectedAnswer": "Recall. Optimizing Recall minimizes False Negatives (missed frauds)."
+                    }
+                ]
+            },
+            {
+                "type": "concept",
+                "content": {
+                    "title": "Understanding Classification Metrics",
+                    "explanation": "\u2022 Beginner-friendly explanation.\n\u2022 Classification metrics are the report cards for your model.\n\u2022 \u2022 Precision: Of everything the model CLAIMED was positive, how many actually were?\n\u2022 \u2022 F1 Score: The harmonic mean that balances Precision and Recall into a single number.\n\u2022 Real-world intuition."
+                }
+            },
+            {
+                "type": "visual",
+                "content": {
+                    "title": "The Confusion Matrix",
+                    "explanation": "This 2x2 grid summarizes exactly where the model succeeded and where it failed, making it much more detailed and useful than just a single 'Accuracy' score.",
+                    "image": "images/confusion_matrix_1779772598503.png"
+                }
+            },
+            {
+                "type": "concept",
+                "content": {
+                    "title": "Precision vs Recall",
+                    "explanation": ""
+                }
+            },
+            {
+                "type": "visual",
+                "content": {
+                    "title": "Precision vs Recall",
+                    "explanation": "The sniper (Precision) only fires when 100% certain, avoiding false alarms but missing some targets. The massive net (Recall) catches every single target, but hauls in a bunch of garbage (false alarms) too.",
+                    "image": "images/precision_recall.png"
+                }
+            },
+            {
+                "type": "scenario",
+                "content": {
+                    "scenario": "The Hospital Dilemma",
+                    "question": "You are designing an AI for a hospital to detect a deadly, highly contagious virus. A False Positive means a healthy person gets quarantined for a day. A False Negative means an infected person goes to a concert and infects thousands. Which metric should you optimize?",
+                    "options": [
+                        {
+                            "text": "Precision (Minimize False Positives)",
+                            "isCorrect": false,
+                            "feedback": "Wrong! If you optimize Precision, the AI will only flag people it's 100% sure about, meaning it will miss mild cases (False Negatives) who will go out and infect the city!"
+                        },
+                        {
+                            "text": "Recall (Minimize False Negatives)",
+                            "isCorrect": true,
+                            "feedback": "Exactly! In a deadly pandemic, you want a 'massive net' (High Recall). It's better to accidentally quarantine a few healthy people than to let a deadly virus escape."
+                        }
+                    ]
+                }
+            },
+            {
+                "type": "code",
+                "challenge": {
+                    "explanation": "This code demonstrates calculating core classification metrics using scikit-learn. The model achieves 80% accuracy but has higher precision and recall for the positive class. The F1 score shows a balanced performance between precision and recall.",
+                    "hint": "Remember that scikit-learn's functions automatically calculate these metrics when given true and predicted labels. The output will show how well the model performed across different metrics.",
+                    "language": "python",
+                    "question": "Calculate metrics for a sample confusion matrix",
+                    "solution": "# Calculated values\n# Accuracy: 0.80\n# Precision: 0.83\n# Recall: 0.86\n# F1 Score: 0.85",
+                    "starterCode": "from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score\n\n# Sample predictions and true labels\ny_true = [1, 0, 1, 1, 0, 0, 1, 1, 1, 0]  # 1 = positive class\ny_pred = [1, 0, 1, 0, 0, 1, 1, 1, 1, 0]\n\n# Calculate metrics\naccuracy = accuracy_score(y_true, y_pred)\nprecision = precision_score(y_true, y_pred)\nrecall = recall_score(y_true, y_pred)\nf1 = f1_score(y_true, y_pred)\n\n# Print results\nprint(f'Accuracy: {accuracy:.2f}')\nprint(f'Precision: {precision:.2f}')\nprint(f'Recall: {recall:.2f}')\nprint(f'F1 Score: {f1:.2f}')"
+                }
+            },
+            {
+                "type": "fill_blank",
+                "sentences": [
+                    {
+                        "answer": "recall",
+                        "text": "In a confusion matrix, the ______ rate is calculated as TP/(TP+FN)"
+                    },
+                    {
+                        "answer": "accuracy",
+                        "text": "The ______ metric measures the proportion of true negatives plus true positives over the total observations"
+                    }
+                ]
+            },
+            {
+                "type": "mcq",
+                "questions": [
+                    {
+                        "answer": 2,
+                        "explanation": "Recall is crucial in medical diagnosis because we want to catch as many actual positive cases as possible, even if it means getting more false positives. Missing a true positive (false negative) in cancer detection could be life-threatening.",
+                        "options": [
+                            "Accuracy",
+                            "Precision",
+                            "Recall",
+                            "F1 Score"
+                        ],
+                        "question": "Which metric is most important when predicting rare but critical events like cancer detection?"
+                    },
+                    {
+                        "answer": 1,
+                        "explanation": "Accuracy can be misleading when classes are imbalanced. For example, if 99% of emails are non-spam, a model that always predicts 'not spam' would have 99% accuracy but completely fail to detect any spam.",
+                        "options": [
+                            "It's computationally expensive",
+                            "It can be misleadingly high",
+                            "It requires more memory",
+                            "It only works with binary classification"
+                        ],
+                        "question": "What's the main disadvantage of using accuracy for imbalanced datasets?"
+                    }
+                ]
+            },
+            {
+                "type": "scenario",
+                "title": "Model Evaluation Dilemma",
+                "description": "You're evaluating two models for a fraud detection system. Model A has 95% accuracy but 60% recall. Model B has 85% accuracy but 90% recall. Which model would you choose and why?",
+                "choices": [
+                    {
+                        "outcome": "You might miss many actual fraud cases (low recall) even though overall accuracy is high",
+                        "score": 50,
+                        "text": "Choose Model A for higher accuracy"
+                    },
+                    {
+                        "outcome": "You'll catch more actual fraud cases at the cost of slightly lower overall accuracy",
+                        "score": 90,
+                        "text": "Choose Model B for better recall"
+                    },
+                    {
+                        "outcome": "This could result in a balanced approach but might not optimize for either metric effectively",
+                        "score": 70,
+                        "text": "Average both models"
+                    }
+                ]
+            },
+            {
+                "type": "concept",
+                "content": {
+                    "title": "Random Forest: The Wisdom of Crowds",
+                    "explanation": "\u2022 Beginner-friendly explanation.\n\u2022 Real-world intuition.\n\u2022 Why the concept matters.\n\u2022 Random Forests are the Swiss Army Knife of Machine Learning.\n\u2022 They are the default 'first algorithm' that most data scientists reach for in industry."
+                }
+            },
+            {
+                "type": "visual",
+                "content": {
+                    "title": "Random Forest: The Wisdom of Crowds",
+                    "explanation": "Each tree sees a different random subset of data and features. Their individual predictions may be imperfect, but the aggregated majority vote is remarkably accurate and stable\u2014this is the power of Ensemble Learning.",
+                    "image": "images/random_forest.png"
+                }
+            },
+            {
+                "type": "concept",
+                "content": {
+                    "title": "Support Vector Machines (SVM): Maximizing the Margin",
+                    "explanation": "\u2022 Beginner-friendly explanation.\n\u2022 The wider the margin, the more confident the model is about its classification.\n\u2022 Real-world intuition.\n\u2022 Imagine you are building a fence between a dog park and a cat park.\n\u2022 SVM builds the widest possible fence."
+                }
+            },
+            {
+                "type": "visual",
+                "content": {
+                    "title": "Support Vector Machines (SVM): Maximizing the Margin",
+                    "explanation": "Notice the wide gap (margin) between the two classes. The data points sitting exactly on the dotted margin lines are the Support Vectors\u2014they define the boundary. SVM maximizes this gap for the most confident possible classification.",
+                    "image": "images/svm.png"
+                }
+            },
+            {
+                "type": "concept",
+                "content": {
+                    "title": "ROC & AUC: The Ultimate Balancer",
+                    "explanation": "\u2022 Beginner-friendly explanation.\n\u2022 AUC = 0.5 means the model is guessing randomly (worthless).\n\u2022 AUC = 1.0 means it is a perfect classifier.\n\u2022 Real-world intuition.\n\u2022 Imagine you are tuning a metal detector at the airport."
+                }
+            },
+            {
+                "type": "visual",
+                "content": {
+                    "title": "ROC and AUC",
+                    "explanation": "This curve visualizes the exact tradeoff we discussed. A perfect model hugs the top left, while the diagonal line represents completely random guessing.",
+                    "image": "images/roc_auc_1779772611418.png"
+                }
+            }
+        ]
+    },
+    {
+        "id": "lesson_04_unsupervised",
+        "title": "Unsupervised Learning",
+        "stages": [
+            {
+                "type": "concept",
+                "content": {
+                    "title": "K-Means Clustering: Finding Tribes",
+                    "explanation": "\u2022 Beginner-friendly explanation.\n\u2022 In unsupervised learning, we have data completely without labels\u2014just raw points.\n\u2022 Real-world intuition.\n\u2022 Imagine you walk into a massive cafeteria where hundreds of people are sitting randomly.\n\u2022 You randomly pick 3 people to be 'team captains'."
+                }
+            },
+            {
+                "type": "code",
+                "challenge": {
+                    "language": "python",
+                    "question": "Implement K-Means clustering to group unlabelled data into 3 distinct clusters.",
+                    "starterCode": "from sklearn.cluster import KMeans\nimport numpy as np\n\n# Unlabeled 2D data coordinates\nX = np.array([[1, 2], [1, 4], [1, 0], [10, 2], [10, 4], [10, 0]])\n\n# TODO: Initialize KMeans with 3 clusters and fit the data\nkmeans = \n\n# Get the cluster labels for each point\nlabels = ",
+                    "solution": "from sklearn.cluster import KMeans\nimport numpy as np\n\nX = np.array([[1, 2], [1, 4], [1, 0], [10, 2], [10, 4], [10, 0]])\n\nkmeans = KMeans(n_clusters=3, random_state=42)\nkmeans.fit(X)\nlabels = kmeans.labels_\nprint(labels)",
+                    "hint": "Pass n_clusters=3 to the KMeans constructor, then call .fit(X).",
+                    "explanation": "KMeans will mathematically group the points based on their Euclidean distance, automatically assigning a cluster ID (0, 1, or 2) to each coordinate."
+                }
+            },
+            {
+                "type": "concept",
+                "content": {
+                    "title": "Dimensionality Reduction: PCA",
+                    "explanation": "\u2022 Beginner-friendly explanation.\n\u2022 It finds the underlying 'principal' patterns and discards the noisy, redundant data.\n\u2022 Real-world intuition.\n\u2022 Imagine looking at a complex 3D object like a bicycle.\n\u2022 Why the concept matters."
+                }
+            },
+            {
+                "type": "visual",
+                "content": {
+                    "title": "PCA (Principal Component Analysis)",
+                    "explanation": "Just like our 3D mug shadow analogy, PCA finds the perfect angle to compress these complex data points into a simple 2D view.",
+                    "image": "images/pca_reduction_1779772627550.png"
+                }
+            },
+            {
+                "type": "mcq",
+                "questions": [
+                    {
+                        "question": "Why is standardizing data a strict prerequisite for PCA?",
+                        "options": [
+                            "PCA only accepts integers.",
+                            "PCA is variance-based; features with larger scales will completely dominate the principal components.",
+                            "It increases the number of dimensions automatically.",
+                            "It prevents the need for train/test splitting."
+                        ],
+                        "answer": 1,
+                        "explanation": "Since PCA seeks to maximize variance, a feature measured in millions (like volume) will mathematically overshadow a feature measured in decimals (like percentages) if not scaled."
+                    }
+                ]
+            },
+            {
+                "type": "concept",
+                "content": {
+                    "title": "Understanding t-SNE",
+                    "explanation": "\u2022 Beginner-friendly explanation.\n\u2022 Real-world intuition.\n\u2022 PCA just squashes the bowl flat.\n\u2022 Why the concept matters.\n\u2022 Human brains cannot comprehend data in 50 dimensions."
+                }
+            },
+            {
+                "type": "visual",
+                "content": {
+                    "title": "t-SNE Visualization",
+                    "explanation": "See how beautifully t-SNE untangles the messy high-dimensional data into distinct, colorful clusters that our human eyes can instantly recognize.",
+                    "image": "images/tsne_visualization_1779772646752.png"
+                }
+            },
+            {
+                "type": "code",
+                "challenge": {
+                    "explanation": "This code demonstrates the full t-SNE workflow: data scaling, model fitting, and visualization. The resulting plot shows how similar digits cluster together in 2D space.",
+                    "hint": "Remember to scale your data first! Use StandardScaler from sklearn.preprocessing.",
+                    "language": "python",
+                    "question": "Implement t-SNE on the digits dataset",
+                    "solution": "from sklearn.preprocessing import StandardScaler\nimport matplotlib.pyplot as plt\nscaler = StandardScaler()\nX_scaled = scaler.fit_transform(X)\nt_sne = TSNE(n_components=2, perplexity=30, random_state=42)\nX_embedded = t_sne.fit_transform(X_scaled)\nplt.scatter(X_embedded[:, 0], X_embedded[:, 1], c=digits.target, cmap='Spectral', alpha=0.6)\nplt.show()",
+                    "starterCode": "from sklearn.manifold import TSNE\nfrom sklearn.datasets import load_digits\ndigits = load_digits()\nX = digits.data\n# TODO: Scale data and apply t-SNE with perplexity=30\n# TODO: Plot the 2D embedding using matplotlib"
+                }
+            },
+            {
+                "type": "mcq",
+                "questions": [
+                    {
+                        "answer": 1,
+                        "explanation": "t-SNE excels at revealing local structure and nonlinear patterns in data, making it ideal for visualization tasks where PCA might obscure important relationships.",
+                        "options": [
+                            "For preserving global distances",
+                            "For visualizing nonlinear clusters",
+                            "For reducing to more than 3 dimensions",
+                            "For real-time applications"
+                        ],
+                        "question": "When should you prefer t-SNE over PCA?"
+                    },
+                    {
+                        "answer": 2,
+                        "explanation": "Perplexity acts as a smooth measure of the effective number of neighbors. Lower values focus on local structure, higher values consider more global structure.",
+                        "options": [
+                            "Learning rate",
+                            "Number of dimensions",
+                            "Balance between local/global structure",
+                            "Color intensity in plots"
+                        ],
+                        "question": "What does the perplexity parameter control?"
+                    }
+                ]
+            },
+            {
+                "type": "scenario",
+                "title": "Parameter Selection Challenge",
+                "description": "You're analyzing a dataset with complex nonlinear structures. Choose the best t-SNE parameters:",
+                "choices": [
+                    {
+                        "outcome": "Shows very local clusters but misses global patterns",
+                        "score": 70,
+                        "text": "Perplexity=5, early_exaggeration=1.0"
+                    },
+                    {
+                        "outcome": "Balanced visualization with clear clusters",
+                        "score": 95,
+                        "text": "Perplexity=50, learning_rate=1000"
+                    },
+                    {
+                        "outcome": "Overly generalized clusters",
+                        "score": 60,
+                        "text": "Perplexity=100, n_iter=250"
+                    }
+                ]
+            },
+            {
+                "type": "reflection",
+                "prompt": "How would you explain the trade-off between t-SNE and PCA to a colleague?"
+            },
+            {
+                "type": "speed_quiz",
+                "questions": [
+                    {
+                        "answer": 0,
+                        "options": [
+                            "perplexity",
+                            "n_components",
+                            "random_state",
+                            "angle"
+                        ],
+                        "question": "Which parameter affects the number of neighbors considered?"
+                    },
+                    {
+                        "answer": 1,
+                        "options": [
+                            "Overfitting",
+                            "Local minima",
+                            "Underfitting",
+                            "Collinearity"
+                        ],
+                        "question": "What's a common issue with t-SNE optimization?"
+                    }
+                ]
+            },
+            {
+                "type": "concept",
+                "content": {
+                    "title": "DBSCAN: Density-Based Clustering",
+                    "explanation": "\u2022 Beginner-friendly explanation.\n\u2022 Real-world intuition.\n\u2022 Imagine looking at a satellite map of a country at night.\n\u2022 The brightly lit, densely packed areas are cities (clusters).\n\u2022 The dark, empty spaces are rural areas (low density)."
+                }
+            },
+            {
+                "type": "concept",
+                "content": {
+                    "title": "Anomaly Detection: Spotting the Outliers",
+                    "explanation": "\u2022 Beginner-friendly explanation.\n\u2022 It learns what 'normal' looks like, so it can flag anything abnormal.\n\u2022 Real-world intuition.\n\u2022 Imagine you have a loyal dog who barks every time the mail carrier arrives.\n\u2022 You're used to this."
+                }
+            },
+            {
+                "type": "visual",
+                "content": {
+                    "title": "Anomaly Detection: Spotting the Outliers",
+                    "explanation": "Most unsupervised learning groups data (clustering). Anomaly Detection focuses on the data points that DO NOT belong to any group. Algorithms like Isolation Forest act as a high-tech security system, learning the shape of 'normal' data and instantly flagging bizarre occurrences.",
+                    "image": "images/anomaly_detection.png"
+                }
+            }
+        ]
+    },
+    {
+        "id": "lesson_05_evaluation",
+        "title": "Evaluation & Tuning",
+        "stages": [
+            {
+                "type": "concept",
+                "content": {
+                    "title": "The Bias-Variance Tradeoff",
+                    "explanation": "\u2022 Beginner-friendly explanation.\n\u2022 Every machine learning model struggles with two main errors: Bias and Variance.\n\u2022 The goal is to find the perfect balance between the two.\n\u2022 Real-world intuition.\n\u2022 Imagine studying for a math test."
+                }
+            },
+            {
+                "type": "visual",
+                "content": {
+                    "title": "Overfitting vs Underfitting",
+                    "explanation": "This image perfectly illustrates the concepts.\n\n**Left (Underfitting / High Bias):** The model is a straight line trying to fit a curve. It's too simple and completely misses the trend.\n\n**Right (Overfitting / High Variance):** The model is a crazy, squiggly line that goes perfectly through every single dot. It memorized the noise and will fail terribly on new data points.\n\n**Middle (The Goldilocks Zone):** The model captures the general curve without overreacting to individual noisy data points. This is the optimal balance!",
+                    "image": "images/bias_variance_1779772663997.png"
+                }
+            },
+            {
+                "type": "concept",
+                "content": {
+                    "title": "Regularization: Taming the Beast",
+                    "explanation": "\u2022 Beginner-friendly explanation.\n\u2022 It essentially punishes the model for being too complex.\n\u2022 Real-world intuition.\n\u2022 Regularization is a strict teacher who deducts 5 points for every unnecessary big word.\n\u2022 The student is forced to write a simpler, clearer essay that is ultimately much better."
+                }
+            },
+            {
+                "type": "concept",
+                "content": {
+                    "title": "Types of Regularization: L1 vs L2",
+                    "explanation": ""
+                }
+            },
+            {
+                "type": "concept",
+                "content": {
+                    "title": "The Silent Killer: Data Leakage",
+                    "explanation": "\u2022 1.\n\u2022 2.\n\u2022 They will get 100% on the practice test but fail in the real world.\n\u2022 3.\n\u2022 4."
+                }
+            },
+            {
+                "type": "visual",
+                "content": {
+                    "title": "Data Leakage Workflow",
+                    "explanation": "This diagram highlights the fatal flaw. If you scale before you split (top path), you leak future data into the training set. Always split first!",
+                    "image": "images/data_leakage_1779772679901.png"
+                }
+            },
+            {
+                "type": "visual",
+                "content": {
+                    "title": "K-Fold Cross Validation",
+                    "explanation": "Relying on a single Train/Test split is a gamble; you might accidentally test on an unusually easy or hard slice of data. K-Fold Cross Validation chops the data into 'K' equal chunks (folds). The model trains on K-1 chunks and tests on the remaining 1 chunk. It repeats this process K times, ensuring every single data point gets to act as a test case once. The final score is the average of all K tests.",
+                    "diagram": [
+                        "Split entire dataset into 5 equal folds",
+                        "Iteration 1: Train on Folds 2-5, Test on Fold 1",
+                        "Iteration 2: Train on Folds 1, 3, 4, 5, Test on Fold 2",
+                        "Average the evaluation metrics across all iterations for true validation score"
+                    ],
+                    "image": "images/kfold_cv.png"
+                }
+            },
+            {
+                "type": "reflection",
+                "prompt": "Consider an AI agent framework deployed to execute real-world financial trades. Why would High Variance (overfitting) in its predictive model be catastrophically dangerous when deployed to live markets?"
+            },
+            {
+                "type": "concept",
+                "content": {
+                    "explanation": "\u2022 An end-to-end ML pipeline is like a recipe for a cake.\n\u2022 The pipeline ensures reproducibility and clarity.\n\u2022 Key steps include:  1.\n\u2022 Data Preprocessing: Cleaning and transforming raw data into a usable format.\n\u2022 2.",
+                    "title": "ML Pipeline Integration"
+                }
+            },
+            {
+                "type": "concept",
+                "content": {
+                    "title": "The Scikit-Learn Workflow",
+                    "explanation": "\u2022 The process almost always follows 4 steps: 1.\n\u2022 Load Data: Get your Features (X) and Labels (y).\n\u2022 2.\n\u2022 Split Data: Use `train_test_split`.\n\u2022 3."
+                }
+            },
+            {
+                "type": "code",
+                "challenge": {
+                    "hint": "Use StandardScaler to normalize features before training.",
+                    "language": "python",
+                    "question": "Implement a basic pipeline for the Boston Housing dataset.",
+                    "solution": "# Add preprocessing\nfrom sklearn.preprocessing import StandardScaler\nscaler = StandardScaler()\nX_train = scaler.fit_transform(X_train)\nX_test = scaler.transform(X_test)\n\n# Retrain model\nmodel.fit(X_train, y_train)\n\n# Re-evaluate\ny_pred = model.predict(X_test)\nmse = mean_squared_error(y_test, y_pred)\nprint(f'Preprocessed MSE: {mse}')",
+                    "starterCode": "from sklearn.datasets import fetch_california_housing\nfrom sklearn.model_selection import train_test_split\nfrom sklearn.linear_model import LinearRegression\nfrom sklearn.metrics import mean_squared_error\n\n# Load dataset\ncalifornia = fetch_california_housing()\nX, y = california.data, california.target\n\n# Split data\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n\n# Train model\nmodel = LinearRegression()\nmodel.fit(X_train, y_train)\n\n# Predict and evaluate\ny_pred = model.predict(X_test)\nmse = mean_squared_error(y_test, y_pred)\nprint(f'MSE: {mse}')"
+                }
+            },
+            {
+                "type": "scenario",
+                "title": "Choosing Evaluation Metrics",
+                "description": "You're analyzing a regression model for predicting housing prices. Your team is debating whether to use RMSE or R\u00b2 as the primary metric. What's your decision?",
+                "choices": [
+                    {
+                        "outcome": "RMSE gives interpretable error in the same units as the target variable (e.g., $1000s).",
+                        "score": 100,
+                        "text": "Use RMSE for precise error measurement"
+                    },
+                    {
+                        "outcome": "R\u00b2 shows the proportion of variance explained, but doesn't indicate absolute error magnitude.",
+                        "score": 50,
+                        "text": "Use R\u00b2 for overall model fit"
+                    }
+                ]
+            },
+            {
+                "type": "mcq",
+                "questions": [
+                    {
+                        "answer": 2,
+                        "explanation": "Inconsistent file naming creates confusion. Use a standardized naming convention like YYYYMMDD_projectname_description.",
+                        "options": [
+                            "Version control with Git",
+                            "Writing detailed markdown comments",
+                            "Using inconsistent file naming",
+                            "Including data source URLs"
+                        ],
+                        "question": "Which practice is NOT recommended for project documentation?"
+                    }
+                ]
+            },
+            {
+                "type": "reflection",
+                "prompt": "How would you document a preprocessing step that involves removing outliers?"
+            },
+            {
+                "type": "visual",
+                "content": {
+                    "diagram": [
+                        "Raw Data",
+                        "Preprocessing",
+                        "Model Training",
+                        "Evaluation",
+                        "Documentation"
+                    ],
+                    "explanation": "1. **Raw Data**: Import dataset\n2. **Preprocessing**: Clean and normalize\n3. **Model Training**: Select and train\n4. **Evaluation**: Test performance\n5. **Documentation**: Record all steps",
+                    "title": "Pipeline Workflow",
+                    "image": "images/pipeline_workflow.png"
+                }
+            },
+            {
+                "type": "speed_quiz",
+                "questions": [
+                    {
+                        "answer": 1,
+                        "options": [
+                            "Mean absolute error",
+                            "Root mean squared error",
+                            "R-squared value",
+                            "Confusion matrix"
+                        ],
+                        "question": "What does RMSE measure?"
+                    },
+                    {
+                        "answer": 2,
+                        "options": [
+                            "numpy",
+                            "pandas",
+                            "sklearn",
+                            "matplotlib"
+                        ],
+                        "question": "Which library is used for data splitting?"
+                    }
+                ]
+            },
+            {
+                "type": "code",
+                "challenge": {
+                    "language": "python",
+                    "question": "Hyperparameters are settings you choose BEFORE training (like max_depth in a tree). Use GridSearchCV to test multiple hyperparameters and find the best combination automatically.",
+                    "starterCode": "from sklearn.ensemble import RandomForestClassifier\nfrom sklearn.model_selection import GridSearchCV\n\n# We want to test two parameters\nparam_grid = {'max_depth': [3, 5, 10], 'n_estimators': [10, 50]}\nmodel = RandomForestClassifier()\n\n# TODO: Initialize GridSearchCV with the model and param_grid, then fit it to X, y\ngrid_search = \n\n",
+                    "solution": "grid_search = GridSearchCV(model, param_grid, cv=3)\ngrid_search.fit(X, y)\nprint(f'Best parameters: {grid_search.best_params_}')",
+                    "hint": "Instantiate GridSearchCV(model, param_grid) and call .fit(X, y).",
+                    "explanation": "GridSearchCV exhaustively trains a new model for every single combination of parameters in your grid, using Cross-Validation to ensure the results are robust. It takes longer, but yields the optimal model."
+                }
+            },
+            {
+                "type": "concept",
+                "content": {
+                    "title": "ROC Curves & AUC: The Ultimate Metric",
+                    "explanation": "\u2022 When your classification threshold changes (e.g., from 0.5 to 0.7), your Precision and Recall shift.\n\u2022 The AUC (Area Under the Curve) is a single number summarizing this curve.\n\u2022 An AUC of 1.0 means perfect prediction.\n\u2022 An AUC of 0.5 means the model is just randomly guessing."
+                }
+            }
+        ]
+    },
+    {
+        "id": "lesson_06_deep_learning",
+        "title": "Intro to Neural Networks",
+        "stages": [
+            {
+                "type": "concept",
+                "content": {
+                    "title": "How Images Become Numbers (Tensors)",
+                    "explanation": "\u2022 Beginner-friendly explanation.\n\u2022 Neural Networks don't have eyes.\n\u2022 This massive grid of numbers is called a Tensor.\n\u2022 Real-world intuition.\n\u2022 A tiny 100x100 pixel image is just a spreadsheet with 10,000 numbers."
+                }
+            },
+            {
+                "type": "visual",
+                "content": {
+                    "title": "Image to Tensors",
+                    "explanation": "This is the core secret of Computer Vision. The model doesn't see a 'dog', it sees a massive grid of brightness values ranging from 0 (black) to 255 (white).",
+                    "image": "images/image_to_tensor.png"
+                }
+            },
+            {
+                "type": "concept",
+                "content": {
+                    "title": "Batch vs Epoch",
+                    "explanation": ""
+                }
+            },
+            {
+                "type": "visual",
+                "content": {
+                    "title": "Batch vs Epoch",
+                    "explanation": "You can't swallow the entire textbook (Dataset) at once without running out of memory. You must read it one Batch (chapter) at a time until you finish the full Epoch (book).",
+                    "image": "images/batch_epoch.png"
+                }
+            },
+            {
+                "type": "concept",
+                "content": {
+                    "title": "The Anatomy of a Perceptron",
+                    "explanation": "\u2022 Beginner-friendly explanation.\n\u2022 The Perceptron is the artificial equivalent of a biological neuron in your brain.\n\u2022 It is the fundamental building block of Deep Learning.\n\u2022 Real-world intuition.\n\u2022 Imagine deciding whether to go out in the rain."
+                }
+            },
+            {
+                "type": "visual",
+                "content": {
+                    "title": "Neural Network Architecture",
+                    "explanation": "A Multi-Layer Perceptron (MLP) consists of an input layer, hidden layers, and an output layer. Each connection has a learnable weight, allowing the network to approximate any mathematical function.",
+                    "image": "images/neural_network.svg"
+                }
+            },
+            {
+                "type": "concept",
+                "content": {
+                    "title": "Activation Functions: Injecting Reality",
+                    "explanation": "\u2022 Beginner-friendly explanation.\n\u2022 Activation functions are the 'decision makers' at the end of every perceptron.\n\u2022 Real-world intuition.\n\u2022 Think of a light switch with a dimmer.\n\u2022 A linear math function is just a straight wire\u2014whatever electricity comes in, goes out."
+                }
+            },
+            {
+                "type": "speed_quiz",
+                "questions": [
+                    {
+                        "question": "What is the primary mathematical purpose of an Activation Function in a neural network?",
+                        "options": [
+                            "To compress the dataset size in memory.",
+                            "To inject non-linearity, allowing the network to learn complex, non-linear patterns.",
+                            "To automatically format the input strings into floats.",
+                            "To connect to the GPU hardware."
+                        ],
+                        "answer": 1
+                    },
+                    {
+                        "question": "Which activation function is most commonly used in the hidden layers of modern deep learning architectures?",
+                        "options": [
+                            "Step Function",
+                            "Linear",
+                            "Softmax",
+                            "ReLU (Rectified Linear Unit)"
+                        ],
+                        "answer": 3
+                    }
+                ]
+            },
+            {
+                "type": "concept",
+                "content": {
+                    "title": "Activation Functions in Code",
+                    "explanation": "\u2022 Neural Networks rely on Activation Functions to introduce non-linearity.\n\u2022 Without them, a neural network is just a giant linear regression model!\n\u2022 The most popular activation function is ReLU (Rectified Linear Unit).\n\u2022 Mathematically, it's incredibly simple: - If the input is less than 0, return 0.\n\u2022 - If the input is greater than 0, return the input."
+                }
+            },
+            {
+                "type": "code",
+                "challenge": {
+                    "language": "python",
+                    "question": "Implement a simple ReLU (Rectified Linear Unit) activation function in Python.",
+                    "starterCode": "import numpy as np\n\ndef relu(x):\n    # TODO: Implement the ReLU logic (return x if x > 0, else return 0)\n    pass\n\n# Test the function\nprint(relu(-5.0))\nprint(relu(10.5))",
+                    "solution": "import numpy as np\n\ndef relu(x):\n    return np.maximum(0, x)\n\nprint(relu(-5.0))  # Outputs 0.0\nprint(relu(10.5))  # Outputs 10.5",
+                    "hint": "You can use standard Python if/else statements, or leverage numpy's optimized np.maximum(0, x) function.",
+                    "explanation": "ReLU acts as a filter that completely blocks negative signals (setting them to zero) while letting positive signals pass through perfectly unchanged. This simple geometric kink is the key to deep learning."
+                }
+            },
+            {
+                "type": "concept",
+                "content": {
+                    "explanation": "\u2022 Multi-layer Perceptrons (MLPs) are like digital puzzle solvers.\n\u2022 Each hidden layer in an MLP adds another layer of decision-making filters.\n\u2022 Common Mistake: Overcomplicating architectures with too many layers for simple problems.",
+                    "title": "MLP Architecture Fundamentals"
+                }
+            },
+            {
+                "type": "code",
+                "challenge": {
+                    "explanation": "This code demonstrates how data flows through an MLP. The tanh activation introduces non-linearity in hidden layers, while softmax converts raw outputs to probability distributions for classification tasks.",
+                    "hint": "Use tanh for hidden layer activation and softmax for output layer",
+                    "language": "python",
+                    "question": "Implement forward propagation for a 2-layer MLP",
+                    "solution": "import numpy as np\n\ndef forward_prop(X, W1, b1, W2, b2):\n    hidden = np.tanh(X @ W1 + b1)  # First layer with tanh activation\n    output = np.softmax(hidden @ W2 + b2, axis=1)  # Output with softmax\n    return output",
+                    "starterCode": "import numpy as np\n\ndef forward_prop(X, W1, b1, W2, b2):\n    # X: input data\n    # W1, b1: weights and biases for first hidden layer\n    # W2, b2: weights and biases for output layer\n    \n    # TODO: Compute hidden layer activation\n    hidden = \n    # TODO: Compute output layer activation\n    output = \n    return output"
+                }
+            },
+            {
+                "type": "scenario",
+                "title": "MLP Configuration Challenge",
+                "description": "You're tasked with classifying handwritten digits (0-9) using MLPs. The dataset has 784 input features (28x28 pixels). Choose the best configuration:",
+                "choices": [
+                    {
+                        "outcome": "Moderate accuracy but fast training",
+                        "score": 80,
+                        "text": "1 hidden layer with 64 neurons"
+                    },
+                    {
+                        "outcome": "Higher accuracy but longer training time",
+                        "score": 95,
+                        "text": "2 hidden layers with 128 and 64 neurons"
+                    },
+                    {
+                        "outcome": "Overfitting risk with limited data",
+                        "score": 60,
+                        "text": "3 hidden layers with 256 neurons each"
+                    }
+                ]
+            },
+            {
+                "type": "mcq",
+                "questions": [
+                    {
+                        "answer": 1,
+                        "explanation": "Hidden layers enable MLPs to detect increasingly complex patterns through successive transformations. Each layer builds on the patterns discovered by previous layers, similar to how humans solve problems in stages.",
+                        "options": [
+                            "Increase computational speed",
+                            "Detect complex patterns",
+                            "Reduce input dimensionality",
+                            "Store training data"
+                        ],
+                        "question": "What's the primary purpose of hidden layers in MLPs?"
+                    }
+                ]
+            },
+            {
+                "type": "speed_quiz",
+                "questions": [
+                    {
+                        "answer": 3,
+                        "options": [
+                            "ReLU",
+                            "Sigmoid",
+                            "Tanh",
+                            "All of the above"
+                        ],
+                        "question": "Which activation function is commonly used in hidden layers?"
+                    },
+                    {
+                        "answer": 0,
+                        "options": [
+                            "Normalizes outputs to probabilities",
+                            "Adds regularization",
+                            "Increases training speed",
+                            "Reduces overfitting"
+                        ],
+                        "question": "What does softmax do in the output layer?"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "lesson_06_5_modern_ai",
+        "title": "Modern AI & LLMs",
+        "stages": [
+            {
+                "type": "concept",
+                "content": {
+                    "title": "The Transformer Revolution",
+                    "explanation": "\u2022 1.\n\u2022 Beginner-friendly explanation: The Transformer is the specific type of neural network that made ChatGPT possible.\n\u2022 It processes language incredibly well because it looks at entire sentences simultaneously.\n\u2022 2.\n\u2022 Transformers use 'Self-Attention' to instantly make that same connection."
+                }
+            },
+            {
+                "type": "visual",
+                "content": {
+                    "title": "Transformer Self-Attention",
+                    "explanation": "Unlike older models that read word-by-word, see how the Self-Attention mechanism allows every word to instantly connect with every other word to gain full context.",
+                    "image": "images/transformer_intro_1779772693935.png"
+                }
+            },
+            {
+                "type": "concept",
+                "content": {
+                    "title": "Large Language Models (LLMs)",
+                    "explanation": "\u2022 An LLM (like GPT, Gemini,\n\u2022 or Claude) is essentially a\n\u2022 massive Transformer model trained on\n\u2022 a vast portion of the\n\u2022 internet."
+                }
+            },
+            {
+                "type": "recall",
+                "content": {
+                    "question": "At their very core, despite their massive size and complexity, what is the single simple task that LLMs (like GPT) are fundamentally doing?",
+                    "correctAnswer": "Predicting the next word based on context.",
+                    "hints": [
+                        "Think about auto-complete on your phone.",
+                        "It starts with 'Predicting...'",
+                        "It predicts the next..."
+                    ]
+                }
+            },
+            {
+                "type": "scenario",
+                "title": "Choosing the Right Tool",
+                "description": "You need to predict if a bank transaction is fraudulent based on 50 numeric columns (amount, time, distance from home). Should you use a Random Forest or fine-tune an LLM?",
+                "choices": [
+                    {
+                        "text": "Fine-tune an LLM. It's the most advanced technology.",
+                        "score": 0,
+                        "outcome": "Wrong! LLMs are terrible at structured numerical tabular data and are vastly overkill for this."
+                    },
+                    {
+                        "text": "Use a Random Forest or XGBoost model.",
+                        "score": 100,
+                        "outcome": "Correct! Classic ML algorithms still heavily dominate structured tabular data tasks in speed, cost, and accuracy."
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "lesson_07_deployment",
+        "title": "Model Deployment",
+        "stages": [
+            {
+                "type": "concept",
+                "content": {
+                    "title": "Pipeline Thinking & ML Workflows",
+                    "explanation": "\u2022 1.\n\u2022 Beginner-friendly explanation: In the real world, you never just run one algorithm.\n\u2022 2.\n\u2022 Real-world intuition: Think of a car assembly line.\n\u2022 Step 1: Clean the metal."
+                }
+            },
+            {
+                "type": "visual",
+                "content": {
+                    "title": "Pipeline Workflow",
+                    "explanation": "This assembly line ensures that when raw, messy production data comes in, it automatically flows through the exact same cleaning and scaling filters before it hits the prediction engine.",
+                    "image": "images/pipeline_workflow.png"
+                }
+            },
+            {
+                "type": "concept",
+                "content": {
+                    "title": "What is Model Deployment?",
+                    "explanation": "\u2022 You've trained a highly accurate model.\n\u2022 Now what?\n\u2022 It's sitting on your laptop doing nothing."
+                }
+            },
+            {
+                "type": "concept",
+                "content": {
+                    "title": "Serialization (Pickling)",
+                    "explanation": "\u2022 Before you can deploy a model, you have to save it.\n\u2022 You don't want to re-train the model every time the server starts!\n\u2022 In Python, saving a trained model object to a file is called Serialization.\n\u2022 The two most common tools for this are: 1.\n\u2022 Pickle: The standard Python serialization library."
+                }
+            },
+            {
+                "type": "visual",
+                "content": {
+                    "title": "Model Deployment: From Lab to Production",
+                    "explanation": "A model on your laptop is useless to a business. Deployment is the process of taking your trained model and making it available to the outside world.\n\nUsually, this involves saving the model to a file, loading it onto a cloud server, and wrapping it in an API (Application Programming Interface). When an app sends data to the API, the model makes a prediction and sends it back in milliseconds.",
+                    "image": "images/deployment.png"
+                }
+            },
+            {
+                "type": "code",
+                "challenge": {
+                    "language": "python",
+                    "question": "Use the `joblib` library to save a trained model to your hard drive, then load it back into memory.",
+                    "starterCode": "import joblib\nfrom sklearn.linear_model import LogisticRegression\n\nmodel = LogisticRegression()\nmodel.fit(X, y)\n\n# TODO: Save the model to a file named 'model.pkl'\n\n\n# TODO: Load the model from 'model.pkl' into a new variable called loaded_model\nloaded_model = \n",
+                    "solution": "import joblib\n# Save\njoblib.dump(model, 'model.pkl')\n\n# Load\nloaded_model = joblib.load('model.pkl')",
+                    "hint": "Use joblib.dump(model, filename) and joblib.load(filename).",
+                    "explanation": "Serialization (Pickling) converts your model's learned weights into a byte-stream file. You can email this file to a colleague or upload it to a server, and they can load the exact same brain."
+                }
+            },
+            {
+                "type": "scenario",
+                "title": "The API Dilemma",
+                "description": "Your Model is deployed on a cloud server via a Flask API. It processes loan applications. Suddenly, the API crashes because a user submitted a loan application where their 'Age' was 'Twenty-Five' instead of 25. What is the fundamental issue?",
+                "choices": [
+                    {
+                        "text": "The model was trained for too long and overfit.",
+                        "score": 0,
+                        "outcome": "Overfitting affects prediction accuracy, not software crashes."
+                    },
+                    {
+                        "text": "The API lacks input data validation. Models expect strict numerical formats, not strings.",
+                        "score": 100,
+                        "outcome": "Exactly! In production, you must validate and clean incoming API data to match the exact format the model was trained on."
+                    },
+                    {
+                        "text": "The cloud server doesn't have enough RAM.",
+                        "score": 0,
+                        "outcome": "While RAM is important, a single string input causing a crash is a type mismatch error, not a memory error."
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "lesson_08_responsible_ai",
+        "title": "Responsible AI & Ethics",
+        "stages": [
+            {
+                "type": "concept",
+                "content": {
+                    "title": "The Danger of Bias",
+                    "explanation": "\u2022 Machine Learning models have no morals; they only reflect the data they are fed.\n\u2022 Building ML systems requires ethical vigilance."
+                }
+            },
+            {
+                "type": "concept",
+                "content": {
+                    "title": "Explainable AI (XAI)",
+                    "explanation": "\u2022 Explainability is the field of trying to peer inside these black boxes."
+                }
+            }
+        ]
+    },
+    {
+        "id": "lesson_09_real_world_projects",
+        "title": "Real-world ML Projects",
+        "stages": [
+            {
+                "type": "concept",
+                "content": {
+                    "title": "The End-to-End ML Lifecycle",
+                    "explanation": "\u2022 In the real world, training the model is only 10% of the work.\n\u2022 The full lifecycle involves:  1.\n\u2022 Business Understanding: What problem are we actually solving?\n\u2022 2.\n\u2022 Data Acquisition & Engineering: Gathering, cleaning, and formatting data."
+                }
+            },
+            {
+                "type": "code",
+                "challenge": {
+                    "language": "python",
+                    "question": "End-to-End Challenge: Train a Decision Tree classifier to predict if a customer will churn.",
+                    "starterCode": "import pandas as pd\nfrom sklearn.model_selection import train_test_split\nfrom sklearn.tree import DecisionTreeClassifier\nfrom sklearn.metrics import accuracy_score\n\n# 1. Load Data\ndata = pd.DataFrame({'age': [25, 45, 35, 50, 23], 'spend': [100, 500, 200, 600, 50], 'churn': [1, 0, 1, 0, 1]})\nX = data[['age', 'spend']]\ny = data['churn']\n\n# TODO: 2. Split data (test_size=0.2, random_state=42)\nX_train, X_test, y_train, y_test = \n\n# TODO: 3. Initialize and train a DecisionTreeClassifier(random_state=42)\nmodel = \n\n\n# TODO: 4. Predict on X_test and calculate accuracy\npredictions = \naccuracy = ",
+                    "solution": "import pandas as pd\nfrom sklearn.model_selection import train_test_split\nfrom sklearn.tree import DecisionTreeClassifier\nfrom sklearn.metrics import accuracy_score\n\ndata = pd.DataFrame({'age': [25, 45, 35, 50, 23], 'spend': [100, 500, 200, 600, 50], 'churn': [1, 0, 1, 0, 1]})\nX = data[['age', 'spend']]\ny = data['churn']\n\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\nmodel = DecisionTreeClassifier(random_state=42)\nmodel.fit(X_train, y_train)\npredictions = model.predict(X_test)\naccuracy = accuracy_score(y_test, predictions)",
+                    "hint": "Combine your knowledge of train_test_split, model.fit(), and accuracy_score()",
+                    "explanation": "You have just executed a complete, albeit mini, machine learning pipeline from raw data to evaluation!"
+                }
+            }
+        ]
+    }
+]

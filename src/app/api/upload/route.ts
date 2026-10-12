@@ -83,10 +83,37 @@ const ALLOWED_TYPES: Record<string, { mimeTypes: string[]; extensions: string[];
     extensions: [".txt", ".md", ".pdf"],
     maxSizeMB: 20,
   },
+  code: {
+    mimeTypes: [
+      "text/plain",
+      "text/x-python",
+      "text/javascript",
+      "application/javascript",
+      "text/typescript",
+      "application/typescript",
+      "text/x-c",
+      "text/x-c++",
+      "text/x-java-source",
+      "text/x-rust",
+      "text/x-go",
+      "text/html",
+      "text/css",
+      "application/json",
+      "application/zip",
+      "application/x-zip-compressed",
+      "application/octet-stream",
+    ],
+    extensions: [
+      ".py", ".ipynb", ".js", ".jsx", ".ts", ".tsx", ".cpp", ".c", ".h", ".hpp",
+      ".java", ".rs", ".go", ".html", ".css", ".sql", ".json", ".yaml", ".yml",
+      ".sh", ".txt", ".md", ".zip", ".tar", ".gz"
+    ],
+    maxSizeMB: 50,
+  },
   video: {
     mimeTypes: ["video/mp4", "video/webm", "video/quicktime", "video/x-m4v", "video/mkv"],
     extensions: [".mp4", ".mov", ".webm", ".m4v", ".mkv"],
-    maxSizeMB: 500,
+    maxSizeMB: 2560, // 2.5 GB
   },
 };
 
@@ -99,22 +126,43 @@ export async function POST(req: Request) {
 
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
-    const category = (formData.get("category") as string) || "general";
+    const category = ((formData.get("category") as string) || (formData.get("type") as string) || "assignment").toLowerCase();
     const courseId = (formData.get("courseId") as string) || undefined;
 
     if (!file) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
-    const config = ALLOWED_TYPES[category];
+    const config = ALLOWED_TYPES[category] || {
+      mimeTypes: [
+        "application/pdf",
+        "application/zip",
+        "application/x-zip-compressed",
+        "application/x-tar",
+        "application/gzip",
+        "text/plain",
+        "text/x-python",
+        "text/markdown",
+        "application/json",
+        "application/msword",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "application/octet-stream",
+        "image/jpeg",
+        "image/png",
+        "image/webp"
+      ],
+      extensions: [".pdf", ".zip", ".tar", ".gz", ".py", ".ipynb", ".doc", ".docx", ".txt", ".md", ".json", ".csv", ".jpg", ".png", ".webp"],
+      maxSizeMB: 100
+    };
+
     const originalName = file.name || "upload";
     const ext = path.extname(originalName).toLowerCase();
 
-    // Check type validation if category config exists
+    // Check type validation
     if (config) {
       const isExtValid = config.extensions.includes(ext);
       const isMimeValid = config.mimeTypes.includes(file.type);
-      if (!isExtValid && !isMimeValid) {
+      if (!isExtValid && !isMimeValid && ext) {
         return NextResponse.json(
           {
             error: `Invalid file format for ${category}. Allowed types: ${config.extensions.join(", ")}`,

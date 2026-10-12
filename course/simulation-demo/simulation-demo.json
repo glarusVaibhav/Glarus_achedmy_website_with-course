@@ -1,0 +1,138 @@
+{
+  "courseId": "simulation-demo",
+  "title": "System Simulation Masterclass",
+  "theme": {
+    "primary": "#06b6d4",
+    "accent": "#8b5cf6"
+  },
+  "lessons": [
+    {
+      "id": "lesson-pipeline",
+      "title": "Pipeline: Database Meltdown",
+      "stages": [
+        {
+          "type": "interactive_simulation",
+          "mode": "pipeline",
+          "title": "Database Meltdown Simulation",
+          "description": "The production database is under extreme load. Make split-second decisions to stabilize the system before the 45-second timer runs out.",
+          "goalDescription": "Complete all 4 steps while keeping system stability above 0%.",
+          "timeLimit": 45,
+          "steps": [
+            {
+              "label": "Diagnostics",
+              "action": "analyze",
+              "description": "CPU usage is at 99% and queries are timing out. What is your first move?",
+              "choices": [
+                { "label": "Restart Server", "impact": -30, "feedback": "Restarting dropped all active connections!" },
+                { "label": "Enable Read Replicas", "impact": 15, "feedback": "Good choice! Load is balancing out." },
+                { "label": "Run VACUUM FULL", "impact": -60, "feedback": "CRITICAL: Tables locked! System freezing!" }
+              ]
+            },
+            {
+              "label": "Mitigation",
+              "action": "mitigate",
+              "description": "We need to shed load immediately. Which traffic do we drop?",
+              "choices": [
+                { "label": "Drop API Traffic", "impact": -10, "feedback": "Partner integrations failing, but core breathes." },
+                { "label": "Enable Rate Limiting", "impact": 20, "feedback": "Smooth move! Bad actors blocked." },
+                { "label": "Do Nothing", "impact": -40, "feedback": "Load continues to spike! Memory running out..." }
+              ]
+            },
+            {
+              "label": "Optimization",
+              "action": "optimize",
+              "description": "Apply a permanent fix now that the bleeding is stopped.",
+              "choices": [
+                { "label": "Add Missing Indexes", "impact": 20, "feedback": "Queries are blazing fast! CPU load dropped." },
+                { "label": "Scale Vertically", "impact": -20, "feedback": "Scaling required downtime. System went offline." }
+              ]
+            },
+            {
+              "label": "Recovery",
+              "action": "recover",
+              "description": "Manage the fallout and restore full capacity.",
+              "choices": [
+                { "label": "Publish Post-Mortem", "impact": 15, "feedback": "Transparent communication. Trust restored." },
+                { "label": "Hide The Issue", "impact": -50, "feedback": "Twitter found out first. PR nightmare!" }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lesson-command",
+      "title": "Command: Grid Navigator",
+      "stages": [
+        {
+          "type": "interactive_simulation",
+          "mode": "command",
+          "title": "Robot Delivery Mission",
+          "description": "Program the delivery bot to navigate the grid and reach the goal. Build a command sequence, then execute it. If you hit a wall or obstacle, the simulation fails.",
+          "goalDescription": "Navigate from top-left to bottom-right, avoiding obstacles.",
+          "grid": {
+            "rows": 5,
+            "cols": 5,
+            "start": { "x": 0, "y": 0 },
+            "goal": { "x": 4, "y": 4 },
+            "obstacles": [
+              { "x": 2, "y": 0 },
+              { "x": 2, "y": 1 },
+              { "x": 1, "y": 3 },
+              { "x": 3, "y": 2 }
+            ]
+          },
+          "commands": ["forward", "left", "right"],
+          "maxCommands": 15,
+          "animations": {
+            "movement": "spring",
+            "feedback": "float",
+            "error": "shake",
+            "success": "confetti"
+          },
+          "ui": {
+            "showGrid": true,
+            "showControls": true,
+            "theme": "neon"
+          }
+        }
+      ]
+    },
+    {
+      "id": "lesson-command-2",
+      "title": "Command: Delivery Run",
+      "stages": [
+        {
+          "type": "interactive_simulation",
+          "mode": "command",
+          "title": "Package Delivery Challenge",
+          "description": "Navigate through a tight corridor and deliver the package. Use the 'deliver' command at the goal.",
+          "goalDescription": "Reach the delivery point at (3, 3) and execute 'deliver'.",
+          "grid": {
+            "rows": 4,
+            "cols": 4,
+            "start": { "x": 0, "y": 0 },
+            "goal": { "x": 3, "y": 3 },
+            "obstacles": [
+              { "x": 1, "y": 1 },
+              { "x": 2, "y": 2 }
+            ]
+          },
+          "commands": ["forward", "left", "right", "deliver"],
+          "maxCommands": 12,
+          "animations": {
+            "movement": "tween",
+            "feedback": "float",
+            "error": "shake",
+            "success": "confetti"
+          },
+          "ui": {
+            "showGrid": true,
+            "showControls": true,
+            "theme": "neon"
+          }
+        }
+      ]
+    }
+  ]
+}

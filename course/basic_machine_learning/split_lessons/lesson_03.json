@@ -1,0 +1,122 @@
+{
+    "id": "lesson_02_regression",
+    "title": "Linear Regression",
+    "stages": [
+        {
+            "type": "concept",
+            "content": {
+                "title": "Mechanics of Linear Regression",
+                "explanation": "• Foundational supervised algorithm.\n• Predicts continuous numerical values.\n• Finds best fitting line.\n• Learns math relationship (X to Y).\n• Example: Predicting house prices."
+            }
+        },
+        {
+            "type": "flashcard",
+            "cards": [
+                {
+                    "front": "What calculates the total error of our model's predictions?",
+                    "back": "The Cost Function"
+                },
+                {
+                    "front": "What is the optimization engine that updates weights to minimize error?",
+                    "back": "Gradient Descent"
+                },
+                {
+                    "front": "What do we call the 'intercept' or starting value in our equation?",
+                    "back": "Bias"
+                }
+            ]
+        },
+        {
+            "type": "visual",
+            "content": {
+                "title": "Line of Best Fit",
+                "explanation": "Minimizes the total distance between the line and all data points.",
+                "image": "images/linear_regression.png"
+            }
+        },
+        {
+            "type": "concept",
+            "content": {
+                "title": "What is Loss?",
+                "explanation": "• Loss measures prediction error.\n• High Loss = bad predictions.\n• Zero Loss = perfect predictions.\n• Guides model improvement.\n• Like the 'Hot or Cold' game."
+            }
+        },
+        {
+            "type": "visual",
+            "content": {
+                "title": "The Loss Function",
+                "explanation": "The algorithm uses Loss to steer itself toward the target.",
+                "image": "images/loss_function.png"
+            }
+        },
+        {
+            "type": "concept",
+            "content": {
+                "title": "Hyperparameters vs Parameters",
+                "explanation": "• Hyperparameters: Set by humans.\n• Parameters: Learned by machines.\n• Hyperparameters control learning.\n• Parameters hold the knowledge.\n• Example: Learning Rate vs Weights."
+            }
+        },
+        {
+            "type": "visual",
+            "content": {
+                "title": "Hyperparameters vs Parameters",
+                "explanation": "You turn the dial (Hyperparameter). Internal reactions happen automatically (Parameters).",
+                "image": "images/hyperparameters_parameters.png"
+            }
+        },
+        {
+            "type": "concept",
+            "content": {
+                "title": "Gradient Descent",
+                "explanation": "• Mathematical optimization algorithm.\n• Finds the absolute best answer.\n• Takes small steps downhill.\n• Stops at zero errors.\n• Requires correct Learning Rate."
+            }
+        },
+        {
+            "type": "visual",
+            "content": {
+                "title": "Gradient Descent Optimization",
+                "explanation": "Steps start large when steep, and get smaller near zero loss.",
+                "diagram": [
+                    "Start with random weights (high error)",
+                    "Calculate gradient (slope of the error curve)",
+                    "Update weights in opposite direction",
+                    "Reach convergence (minimum error)"
+                ],
+                "image": "images/gradient_descent.png"
+            }
+        },
+        {
+            "type": "code",
+            "challenge": {
+                "language": "python",
+                "question": "Implement a Linear Regression model to predict a target variable.",
+                "starterCode": "from sklearn.linear_model import LinearRegression\nimport numpy as np\n\nX_train = np.array([[500], [1000], [1500], [2000]])\ny_train = np.array([50, 100, 150, 200])\nX_test = np.array([[1200]])\n\n# TODO: Initialize, train, and predict\nmodel = \nprediction = ",
+                "solution": "from sklearn.linear_model import LinearRegression\nimport numpy as np\n\nX_train = np.array([[500], [1000], [1500], [2000]])\ny_train = np.array([50, 100, 150, 200])\nX_test = np.array([[1200]])\n\nmodel = LinearRegression()\nmodel.fit(X_train, y_train)\nprediction = model.predict(X_test)\nprint(f'Predicted value: {prediction[0]}')",
+                "hint": "Instantiate LinearRegression(), call .fit(), and .predict().",
+                "explanation": ".fit() calculates the optimal weights."
+            }
+        },
+        {
+            "type": "scenario",
+            "title": "The Non-Linear Trap",
+            "description": "Data shows an accelerating spike forming a curve. Linear model underfits. Fix?",
+            "choices": [
+                {
+                    "text": "Continue using Linear Regression.",
+                    "score": 0,
+                    "outcome": "Cannot map to a curve."
+                },
+                {
+                    "text": "Apply Polynomial Features.",
+                    "score": 100,
+                    "outcome": "Perfect. Bends to fit curved data."
+                },
+                {
+                    "text": "Switch to K-Means Clustering.",
+                    "score": 0,
+                    "outcome": "K-Means is unsupervised clustering."
+                }
+            ]
+        }
+    ]
+}

@@ -39,6 +39,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { RecordingItem } from "@/app/api/student/recordings/route";
 import { calculateRecordingAvailability, RecordingAvailability } from "@/lib/recordingAvailability";
 import { StudentPortalLayout } from "@/components/student/StudentPortalLayout";
+import { useShakaPlayer } from "@/hooks/useShakaPlayer";
+import { YouTubePlayer } from "@/components/video/YouTubePlayer";
+import { parseYouTubeVideoId } from "@/lib/video/youtubeService";
 
 interface StudentNote {
   id: string;
@@ -87,6 +90,18 @@ export default function RecordedSessionPlayerPage({
     if (!recording) return null;
     return calculateRecordingAvailability(recording.completedAt);
   }, [recording]);
+
+  // Check if recording is YouTube
+  const isYouTubeRecording = useMemo(() => {
+    return parseYouTubeVideoId(recording?.recordingUrl) !== null;
+  }, [recording]);
+
+  // Shaka Player Integration for Adaptive HLS / DASH / MP4 (Bunny / MinIO)
+  const { isLoading: isShakaLoading } = useShakaPlayer({
+    videoRef,
+    manifestUrl: (!availability?.isExpired && !isYouTubeRecording) ? (recording?.recordingUrl || null) : null,
+    onError: (err) => console.warn("[Recorded Session Shaka Error]:", err),
+  });
 
   // Initial Fetch
   useEffect(() => {
@@ -429,21 +444,41 @@ export default function RecordedSessionPlayerPage({
                   }, 3500);
                 }}
               >
-                {/* HTML5 Video Element */}
-                <video
-                  ref={videoRef}
-                  src={recording.recordingUrl}
-                  poster={recording.thumbnail}
-                  onTimeUpdate={handleTimeUpdate}
-                  onLoadedMetadata={handleLoadedMetadata}
-                  onEnded={() => {
-                    setIsPlaying(false);
-                    syncProgressToBackend(effectiveDuration);
-                  }}
-                  onClick={togglePlay}
-                  className="w-full h-full object-contain cursor-pointer"
-                  playsInline
-                />
+                {isYouTubeRecording ? (
+                  <YouTubePlayer
+                    videoIdOrUrl={recording.recordingUrl || ""}
+                    initialTime={recording.watchProgress?.resumeTimestampSeconds || 0}
+                    onTimeUpdate={(cur, dur) => {
+                      setCurrentTime(cur);
+                      setDuration(dur);
+                      if (Math.abs(cur - lastSyncRef.current) >= 10) {
+                        lastSyncRef.current = cur;
+                        syncProgressToBackend(cur);
+                      }
+                    }}
+                    onPlay={() => setIsPlaying(true)}
+                    onPause={() => setIsPlaying(false)}
+                    onEnded={() => {
+                      setIsPlaying(false);
+                      syncProgressToBackend(effectiveDuration);
+                    }}
+                  />
+                ) : (
+                  <>
+                    {/* HTML5 / Shaka Adaptive Video Element */}
+                    <video
+                      ref={videoRef}
+                      poster={recording.thumbnail}
+                      onTimeUpdate={handleTimeUpdate}
+                      onLoadedMetadata={handleLoadedMetadata}
+                      onEnded={() => {
+                        setIsPlaying(false);
+                        syncProgressToBackend(effectiveDuration);
+                      }}
+                      onClick={togglePlay}
+                      className="w-full h-full object-contain cursor-pointer"
+                      playsInline
+                    />
 
                 {/* Resume Banner Overlay */}
                 <AnimatePresence>
@@ -611,8 +646,10 @@ export default function RecordedSessionPlayerPage({
                     </div>
                   </div>
                 </div>
-              </div>
+              </>
             )}
+          </div>
+        )}
 
             {/* ───────── Session Details & Instructor Row ───────── */}
             <div className="bg-[#0c111e]/90 border border-white/[0.08] rounded-3xl p-6 sm:p-7 shadow-xl space-y-4">

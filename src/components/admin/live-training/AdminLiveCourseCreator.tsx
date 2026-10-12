@@ -41,11 +41,71 @@ import {
   Copy,
   ExternalLink,
   Briefcase,
-  Building2
+  Building2,
+  UploadCloud,
+  Paperclip,
+  FileCheck,
+  Download,
+  Bell,
+  Send,
+  FolderArchive,
+  Globe,
+  FileCode
 } from "lucide-react";
 import { DatePicker } from "@/components/ui/date-picker";
 import { TimePicker } from "@/components/ui/time-picker";
 import { formatDate, formatTime } from "@/lib/dateTime";
+import { createTusUpload } from "@/lib/video/tusUploader";
+
+export interface SessionAssignmentItem {
+  id?: string;
+  title: string;
+  description: string;
+  instructions: string[];
+  totalMarks: number;
+  dueDate?: string;
+  dueTime?: string;
+  daysAfterSession?: number;
+  submissionType?: string; // "file_upload" | "github_url" | "live_url" | "text_code" | "any"
+  publishTrigger?: string; // "after_class_end" | "immediate" | "during_class" | "scheduled_date" | "manual_unlock"
+  publishDate?: string;
+  publishTime?: string;
+  availabilityDuration?: string; // "24_hours" | "3_days" | "7_days" | "14_days" | "until_next_session" | "custom_deadline"
+  allowLateSubmissions?: boolean;
+  latePenaltyPercent?: number;
+  notifyStudents?: boolean;
+  notificationMessage?: string;
+  fileUrl?: string;
+  fileName?: string;
+  fileSize?: string;
+  fileType?: string;
+  autoAssignOnSessionEnd: boolean;
+  externalStarterUrl?: string;
+}
+
+export interface SessionResourceItem {
+  id?: string;
+  title: string;
+  type: string; // "PDF" | "GITHUB" | "SLIDES" | "DOC" | "CODE" | "DATASET" | "ZIP" | "URL"
+  url: string;
+  fileSize?: string;
+  publishTrigger?: string; // "after_class_end" | "before_class" | "during_class" | "immediate" | "scheduled_date"
+  publishDate?: string;
+  publishTime?: string;
+  availabilityDuration?: string; // "always" | "until_next_session" | "7_days" | "30_days" | "custom_expiry"
+  expiryDate?: string;
+  expiryTime?: string;
+  notifyStudents?: boolean;
+}
+
+export interface SessionQuizQuestion {
+  id?: string;
+  question: string;
+  options: string[];
+  correctAnswer: number;
+  explanation?: string;
+  points?: number;
+}
 
 export interface AISessionItem {
   id?: string;
@@ -58,6 +118,31 @@ export interface AISessionItem {
   duration: string;
   timezone?: string;
   status: "DRAFT" | "SCHEDULED" | "LIVE" | "COMPLETED";
+  videoUrl?: string;
+  recordingUrl?: string;
+  recordingStatus?: string;
+  recordingReleaseTime?: string; // "after_class_end" | "immediate" | "2_hours" | "4_hours" | "12_hours" | "24_hours" | "48_hours" | "scheduled_date" | "custom"
+  recordingReleaseDate?: string;
+  recordingReleaseTimeOfDay?: string;
+  recordingCustomHours?: string;
+  recordingValidity?: string; // "lifetime" | "1_year" | "90_days" | "30_days" | "cohort_duration" | "custom_expiry"
+  recordingExpiryDate?: string;
+  missedClassPolicy?: string; // "doubt_session" | "next_batch" | "mentor_call" | "self_paced"
+  autoNotifyStudents?: boolean;
+  videoNotificationMessage?: string;
+  allowOfflineDownload?: boolean;
+  isBackupSession?: boolean;
+  parentSessionNumber?: number;
+  isPreview?: boolean;
+  // Quiz timing and settings
+  quizPublishTrigger?: string; // "after_class_end" | "during_class" | "immediate" | "scheduled_date" | "manual_unlock"
+  quizPublishDate?: string;
+  quizPublishTime?: string;
+  quizDueDate?: string;
+  quizDueTime?: string;
+  quizDurationWindow?: string; // "24_hours" | "48_hours" | "until_next_session" | "custom_deadline" | "unlimited"
+  quizTimeLimitMinutes?: number;
+  quizNotifyStudents?: boolean;
   agenda: {
     title: string;
     description: string;
@@ -68,7 +153,9 @@ export interface AISessionItem {
   topics: { title: string; description: string }[];
   learningOutcomes: string[];
   activities: { title: string; instructions: string; duration: string }[];
-  resources: { title: string; type: string; url: string }[];
+  resources: SessionResourceItem[];
+  quizzes?: SessionQuizQuestion[];
+  assignment?: SessionAssignmentItem;
   homework?: { title: string; description: string; dueDate?: string };
 }
 
@@ -353,6 +440,13 @@ export default function AdminLiveCourseCreator() {
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
   const [aiGeneratedSessions, setAiGeneratedSessions] = useState<AISessionItem[]>([]);
   const [activeSessionIndex, setActiveSessionIndex] = useState(0);
+  const [activeSessionTab, setActiveSessionTab] = useState<"agenda" | "video" | "resources" | "quiz" | "assignment">("agenda");
+  const [uploadingSessionVideo, setUploadingSessionVideo] = useState(false);
+  const [sessionVideoUploadProgress, setSessionVideoUploadProgress] = useState(0);
+  const [uploadingResourceIndex, setUploadingResourceIndex] = useState<number | null>(null);
+  const [uploadingAssignmentFile, setUploadingAssignmentFile] = useState(false);
+  const [isGeneratingSessionQuiz, setIsGeneratingSessionQuiz] = useState(false);
+  const [isGeneratingAssignment, setIsGeneratingAssignment] = useState(false);
   const [hasUnsavedAIChanges, setHasUnsavedAIChanges] = useState(false);
   const [aiOriginalBackup, setAiOriginalBackup] = useState<AISessionItem[]>([]);
 
@@ -492,9 +586,15 @@ export default function AdminLiveCourseCreator() {
 
   const handleApplyOverviewOnly = () => {
     if (!aiOverviewPreview) return;
+    const descStr = Array.isArray(aiOverviewPreview.description)
+      ? aiOverviewPreview.description.join("\n\n")
+      : typeof aiOverviewPreview.description === "object" && aiOverviewPreview.description !== null
+      ? JSON.stringify(aiOverviewPreview.description)
+      : String(aiOverviewPreview.description || "");
+
     setFormData((prev) => ({
       ...prev,
-      description: aiOverviewPreview.description
+      description: descStr
     }));
     setAiOverviewModalOpen(false);
     setAiOverviewPreview(null);
@@ -502,14 +602,26 @@ export default function AdminLiveCourseCreator() {
 
   const handleApplyAllOverviewFields = () => {
     if (!aiOverviewPreview) return;
+    const descStr = Array.isArray(aiOverviewPreview.description)
+      ? aiOverviewPreview.description.join("\n\n")
+      : typeof aiOverviewPreview.description === "object" && aiOverviewPreview.description !== null
+      ? JSON.stringify(aiOverviewPreview.description)
+      : String(aiOverviewPreview.description || "");
+
+    const shortDescStr = Array.isArray(aiOverviewPreview.shortDescription)
+      ? aiOverviewPreview.shortDescription.join(" ")
+      : typeof aiOverviewPreview.shortDescription === "object" && aiOverviewPreview.shortDescription !== null
+      ? JSON.stringify(aiOverviewPreview.shortDescription)
+      : (aiOverviewPreview.shortDescription || prevTargetAudience(formData.shortDescription));
+
     const targetAudienceStr = Array.isArray(aiOverviewPreview.targetAudience)
       ? (aiOverviewPreview.targetAudience as any[]).join(", ")
       : (aiOverviewPreview.targetAudience || prevTargetAudience(formData.targetAudience));
 
     setFormData((prev) => ({
       ...prev,
-      description: aiOverviewPreview.description,
-      shortDescription: aiOverviewPreview.shortDescription || prev.shortDescription,
+      description: descStr,
+      shortDescription: shortDescStr || prev.shortDescription,
       targetAudience: targetAudienceStr,
       prerequisites: aiOverviewPreview.prerequisites?.length ? aiOverviewPreview.prerequisites : prev.prerequisites,
       objectives: aiOverviewPreview.objectives?.length ? aiOverviewPreview.objectives : prev.objectives,
@@ -533,6 +645,18 @@ export default function AdminLiveCourseCreator() {
 
   const handleApplyAllAiCourseInfo = () => {
     if (pendingAiCourseInfo) {
+      const descStr = Array.isArray(pendingAiCourseInfo.description)
+        ? pendingAiCourseInfo.description.join("\n\n")
+        : typeof pendingAiCourseInfo.description === "object" && pendingAiCourseInfo.description !== null
+        ? JSON.stringify(pendingAiCourseInfo.description)
+        : (pendingAiCourseInfo.description || formData.description || "");
+
+      const shortDescStr = Array.isArray(pendingAiCourseInfo.shortDescription)
+        ? pendingAiCourseInfo.shortDescription.join(" ")
+        : typeof pendingAiCourseInfo.shortDescription === "object" && pendingAiCourseInfo.shortDescription !== null
+        ? JSON.stringify(pendingAiCourseInfo.shortDescription)
+        : (pendingAiCourseInfo.shortDescription || formData.shortDescription || "");
+
       const targetAudienceStr = Array.isArray(pendingAiCourseInfo.targetAudience)
         ? (pendingAiCourseInfo.targetAudience as any[]).join(", ")
         : (pendingAiCourseInfo.targetAudience || formData.targetAudience || "");
@@ -540,8 +664,8 @@ export default function AdminLiveCourseCreator() {
       setFormData((prev) => ({
         ...prev,
         title: pendingAiCourseInfo.title || prev.title,
-        shortDescription: pendingAiCourseInfo.shortDescription || prev.shortDescription,
-        description: pendingAiCourseInfo.description || prev.description,
+        shortDescription: shortDescStr || prev.shortDescription,
+        description: descStr || prev.description,
         targetAudience: targetAudienceStr,
         prerequisites: pendingAiCourseInfo.prerequisites?.length ? pendingAiCourseInfo.prerequisites : prev.prerequisites,
         objectives: pendingAiCourseInfo.objectives?.length ? pendingAiCourseInfo.objectives : prev.objectives,
@@ -935,6 +1059,559 @@ export default function AdminLiveCourseCreator() {
     handleUpdateActiveSession("agenda", updatedAgenda);
   };
 
+  // ══════════════════════════════════════════════════════════
+  // SESSION VIDEO / REPLAY HANDLERS
+  // ══════════════════════════════════════════════════════════
+  const handleUploadSessionVideo = async (file: File) => {
+    if (!file) return;
+    setUploadingSessionVideo(true);
+    setSessionVideoUploadProgress(0);
+    setErrorMessage("");
+    try {
+      // 1. Try Direct Bunny Stream TUS Resumable Upload
+      try {
+        const sessionRes = await fetch("/api/videos/upload-session", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            filename: file.name,
+            contentType: file.type || "video/mp4",
+            size: file.size,
+            title: aiGeneratedSessions[activeSessionIndex]?.title || file.name,
+          }),
+        });
+
+        if (sessionRes.ok) {
+          const sessionData = await sessionRes.json();
+          if (sessionData.provider === "BUNNY_STREAM" && (sessionData.uploadEndpoint || sessionData.tusEndpoint)) {
+            await new Promise<void>((resolve, reject) => {
+              const tusUpload = createTusUpload(file, {
+                endpoint: sessionData.uploadEndpoint || sessionData.tusEndpoint,
+                headers: sessionData.tusHeaders || {},
+                metadata: {
+                  filetype: file.type || "video/mp4",
+                  title: aiGeneratedSessions[activeSessionIndex]?.title || file.name,
+                },
+                onProgress: (percent) => {
+                  setSessionVideoUploadProgress(percent);
+                },
+                onSuccess: () => resolve(),
+                onError: (err) => reject(err),
+              });
+              tusUpload.start();
+            });
+
+            const streamUrl = `/api/videos/${sessionData.videoAssetId}/status`;
+            handleUpdateActiveSession("videoUrl", streamUrl);
+            handleUpdateActiveSession("recordingUrl", streamUrl);
+            handleUpdateActiveSession("recordingStatus", "available");
+            setSaveSuccessMsg("📹 Video uploaded to Bunny Stream! Adaptive HLS encoding initiated.");
+            setTimeout(() => setSaveSuccessMsg(""), 3500);
+            return;
+          }
+        }
+      } catch (bunnyErr: any) {
+        console.warn("Bunny Stream session upload fallback:", bunnyErr?.message);
+      }
+
+      // 2. Standard Fallback to /api/upload
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("type", "video");
+      fd.append("courseId", formData.title || "live-course");
+
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: fd
+      });
+      const data = await res.json();
+      if (res.ok && data.url) {
+        handleUpdateActiveSession("videoUrl", data.url);
+        handleUpdateActiveSession("recordingUrl", data.url);
+        handleUpdateActiveSession("recordingStatus", "available");
+        setSaveSuccessMsg("📹 Session video uploaded & linked successfully!");
+        setTimeout(() => setSaveSuccessMsg(""), 3500);
+      } else {
+        setErrorMessage(data.error || "Failed to upload video file.");
+      }
+    } catch (err: any) {
+      console.error("Video upload error:", err);
+      setErrorMessage("Network error occurred during video upload.");
+    } finally {
+      setUploadingSessionVideo(false);
+      setSessionVideoUploadProgress(0);
+    }
+  };
+
+  const handleClearSessionVideo = () => {
+    handleUpdateActiveSession("videoUrl", "");
+    handleUpdateActiveSession("recordingUrl", "");
+    handleUpdateActiveSession("recordingStatus", "unavailable");
+  };
+
+  // Add dedicated Make-Up / Doubt Clearance Session for current session
+  const handleAddBackupSession = (parentIdx: number) => {
+    const parent = aiGeneratedSessions[parentIdx];
+    if (!parent) return;
+    const newNum = aiGeneratedSessions.length + 1;
+    let nextDateStr = formData.startDate;
+    try {
+      const baseDate = parent.date ? new Date(parent.date) : new Date();
+      baseDate.setDate(baseDate.getDate() + 2); // 2 days after main session
+      nextDateStr = baseDate.toISOString().split("T")[0];
+    } catch {
+      nextDateStr = parent.date || formData.startDate;
+    }
+
+    const backupSession: AISessionItem = {
+      sessionNumber: newNum,
+      title: `${parent.title} – Make-Up & Doubt Clearing Session`,
+      description: `Live doubt resolution, milestone review, and hands-on pair debugging for learners who missed Session ${parent.sessionNumber} or need extra guidance.`,
+      date: nextDateStr,
+      startTime: parent.startTime || "07:00 PM",
+      endTime: parent.endTime || "08:00 PM",
+      duration: "60 min",
+      timezone: parent.timezone || formData.timezone,
+      status: "SCHEDULED",
+      isBackupSession: true,
+      parentSessionNumber: parent.sessionNumber,
+      recordingStatus: "available",
+      recordingReleaseTime: "immediate",
+      agenda: [
+        { title: "Review Core Concepts & Blockers", description: `Recap of key architecture and patterns from Session ${parent.sessionNumber}.`, duration: "15 min" },
+        { title: "Live Pair Debugging & Sandbox Help", description: "1-on-1 live error resolution and code lab debugging with instructor.", duration: "35 min" },
+        { title: "Next Milestones & Take-Home Brief", description: "Assignment checkpoint review and preview of the next module.", duration: "10 min" }
+      ],
+      topics: [{ title: `Doubt Resolution & Code Review`, description: `Interactive review of student blockers for Session ${parent.sessionNumber}` }],
+      learningOutcomes: [
+        `Clarify architectural misunderstandings from Session ${parent.sessionNumber}`,
+        "Complete and submit hands-on project milestones without errors"
+      ],
+      activities: [{ title: "Live Screen Share & Debugging", instructions: "Students ask live questions and share development workspaces.", duration: "30 min" }],
+      resources: parent.resources ? JSON.parse(JSON.stringify(parent.resources)) : [],
+      homework: undefined
+    };
+
+    const updated = [...aiGeneratedSessions, backupSession];
+    setAiGeneratedSessions(updated);
+    setActiveSessionIndex(updated.length - 1);
+    setSaveSuccessMsg(`➕ Created Make-Up / Doubt Clearance Session for Session #${parent.sessionNumber}!`);
+    setTimeout(() => setSaveSuccessMsg(""), 3500);
+  };
+
+  // ══════════════════════════════════════════════════════════
+  // SESSION RESOURCES & ATTACHMENTS HANDLERS
+  // ══════════════════════════════════════════════════════════
+  const handleAddResource = (template?: Partial<SessionResourceItem>) => {
+    const current = aiGeneratedSessions[activeSessionIndex];
+    if (!current) return;
+    const newResList: SessionResourceItem[] = [
+      ...(current.resources || []),
+      {
+        title: "New Session Resource",
+        type: "PDF",
+        url: "",
+        ...template
+      }
+    ];
+    handleUpdateActiveSession("resources", newResList);
+  };
+
+  const handleUpdateResource = (resIdx: number, field: keyof SessionResourceItem, value: any) => {
+    const current = aiGeneratedSessions[activeSessionIndex];
+    if (!current) return;
+    const updated = [...(current.resources || [])];
+    updated[resIdx] = {
+      ...updated[resIdx],
+      [field]: value
+    };
+    handleUpdateActiveSession("resources", updated);
+  };
+
+  const handleRemoveResource = (resIdx: number) => {
+    const current = aiGeneratedSessions[activeSessionIndex];
+    if (!current) return;
+    const updated = (current.resources || []).filter((_, i) => i !== resIdx);
+    handleUpdateActiveSession("resources", updated);
+  };
+
+  const handleUploadResourceFile = async (resIdx: number, file: File) => {
+    if (!file) return;
+    setUploadingResourceIndex(resIdx);
+    setErrorMessage("");
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("type", "resource");
+      fd.append("courseId", formData.title || "live-course");
+
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: fd
+      });
+      const data = await res.json();
+      if (res.ok && data.url) {
+        const current = aiGeneratedSessions[activeSessionIndex];
+        if (!current) return;
+        const updated = [...(current.resources || [])];
+        const curItem = updated[resIdx] || { title: file.name, type: "PDF", url: "" };
+
+        let inferredType = "PDF";
+        const ext = file.name.split(".").pop()?.toLowerCase();
+        if (ext === "pdf") inferredType = "PDF";
+        else if (["zip", "tar", "gz", "rar", "7z"].includes(ext || "")) inferredType = "ZIP";
+        else if (["py", "ts", "js", "ipynb", "cpp", "java", "rs"].includes(ext || "")) inferredType = "CODE";
+        else if (["csv", "json", "parquet", "xlsx", "sql"].includes(ext || "")) inferredType = "DATASET";
+        else if (["ppt", "pptx", "key"].includes(ext || "")) inferredType = "SLIDES";
+        else if (["doc", "docx", "txt", "md"].includes(ext || "")) inferredType = "DOC";
+
+        updated[resIdx] = {
+          ...curItem,
+          title: curItem.title && curItem.title !== "New Session Resource" ? curItem.title : file.name.replace(/\.[^/.]+$/, ""),
+          url: data.url,
+          type: inferredType,
+          fileSize: (file.size / (1024 * 1024)).toFixed(2) + " MB"
+        };
+        handleUpdateActiveSession("resources", updated);
+        setSaveSuccessMsg("📁 Resource file attached successfully!");
+        setTimeout(() => setSaveSuccessMsg(""), 3500);
+      } else {
+        setErrorMessage(data.error || "Failed to upload resource file.");
+      }
+    } catch (err: any) {
+      console.error("Resource upload error:", err);
+      setErrorMessage("Network error occurred during resource upload.");
+    } finally {
+      setUploadingResourceIndex(null);
+    }
+  };
+
+  // ══════════════════════════════════════════════════════════
+  // SESSION QUIZ & KNOWLEDGE CHECK HANDLERS
+  // ══════════════════════════════════════════════════════════
+  const handleAddQuizQuestion = (initial?: SessionQuizQuestion) => {
+    const current = aiGeneratedSessions[activeSessionIndex];
+    if (!current) return;
+    const newQuizzes: SessionQuizQuestion[] = [
+      ...(current.quizzes || []),
+      initial || {
+        question: "",
+        options: [
+          "Primary architectural mechanism and production implementation",
+          "Alternative design with specific latency tradeoffs",
+          "Deprecated pattern causing runtime exceptions",
+          "Non-standard configuration not recommended for production"
+        ],
+        correctAnswer: 0,
+        explanation: "This option is correct because it follows standard enterprise best practices taught in this session."
+      }
+    ];
+    handleUpdateActiveSession("quizzes", newQuizzes);
+  };
+
+  const handleUpdateQuizQuestion = (qIdx: number, field: keyof SessionQuizQuestion, value: any) => {
+    const current = aiGeneratedSessions[activeSessionIndex];
+    if (!current) return;
+    const updated = [...(current.quizzes || [])];
+    updated[qIdx] = {
+      ...updated[qIdx],
+      [field]: value
+    };
+    handleUpdateActiveSession("quizzes", updated);
+  };
+
+  const handleUpdateQuizOption = (qIdx: number, optIdx: number, value: string) => {
+    const current = aiGeneratedSessions[activeSessionIndex];
+    if (!current) return;
+    const updated = [...(current.quizzes || [])];
+    const curQ = updated[qIdx];
+    if (!curQ) return;
+    const currentOpts = [...(curQ.options || ["Option A", "Option B", "Option C", "Option D"])];
+    currentOpts[optIdx] = value;
+    updated[qIdx] = {
+      ...curQ,
+      options: currentOpts
+    };
+    handleUpdateActiveSession("quizzes", updated);
+  };
+
+  const handleSetCorrectQuizOption = (qIdx: number, correctIdx: number) => {
+    const current = aiGeneratedSessions[activeSessionIndex];
+    if (!current) return;
+    const updated = [...(current.quizzes || [])];
+    if (!updated[qIdx]) return;
+    updated[qIdx] = {
+      ...updated[qIdx],
+      correctAnswer: correctIdx
+    };
+    handleUpdateActiveSession("quizzes", updated);
+  };
+
+  const handleRemoveQuizQuestion = (qIdx: number) => {
+    const current = aiGeneratedSessions[activeSessionIndex];
+    if (!current) return;
+    const updated = (current.quizzes || []).filter((_, i) => i !== qIdx);
+    handleUpdateActiveSession("quizzes", updated);
+  };
+
+  const handleGenerateSessionQuizAI = async () => {
+    const current = aiGeneratedSessions[activeSessionIndex];
+    if (!current) return;
+    setIsGeneratingSessionQuiz(true);
+    setErrorMessage("");
+    try {
+      const res = await fetch("/api/ai/lesson-assist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          lessonTitle: current.title,
+          contentType: "quiz",
+          courseTitle: formData.title,
+          moduleTitle: `Session ${current.sessionNumber}: ${current.title}`,
+          difficulty: formData.level,
+          customPrompt: `Generate an insightful multiple-choice quiz question for a live masterclass session on "${current.title}". Description: ${current.description}. Agenda: ${current.agenda?.map((a: any) => a.title).join(", ")}.`
+        })
+      });
+      const data = await res.json();
+      if (data.success && data.generated) {
+        const gen = data.generated;
+        const newQ: SessionQuizQuestion = {
+          question: gen.quizQuestion || `What is the core principle taught in ${current.title}?`,
+          options: Array.isArray(gen.options) && gen.options.length >= 2 ? gen.options : [
+            `Key concept and production implementation for ${current.title}`,
+            `Alternative implementation with high latency overhead`,
+            `Deprecated syntax not suitable for enterprise systems`,
+            `Unrelated mechanism from legacy architectures`
+          ],
+          correctAnswer: typeof gen.correctIndex === "number" ? gen.correctIndex : 0,
+          explanation: gen.explanation || `Understanding this principle is vital for mastering ${current.title}.`
+        };
+        handleAddQuizQuestion(newQ);
+        setSaveSuccessMsg("✨ AI generated Quiz question added to this session!");
+        setTimeout(() => setSaveSuccessMsg(""), 3500);
+      } else {
+        // Fallback generation
+        handleAddQuizQuestion({
+          question: `What is the primary architectural concept covered in "${current.title}"?`,
+          options: [
+            `The standard production workflow and best practices for ${current.title}`,
+            `A legacy method with sub-optimal execution guarantees`,
+            `An unverified experimental feature with no production support`,
+            `A purely cosmetic configuration without performance benefits`
+          ],
+          correctAnswer: 0,
+          explanation: `In "${current.title}", mastering this foundational concept ensures correct and efficient deployment.`
+        });
+        setSaveSuccessMsg("✨ Quiz question generated and added!");
+        setTimeout(() => setSaveSuccessMsg(""), 3500);
+      }
+    } catch (err) {
+      console.error("Quiz AI gen error:", err);
+      handleAddQuizQuestion();
+    } finally {
+      setIsGeneratingSessionQuiz(false);
+    }
+  };
+
+  // ══════════════════════════════════════════════════════════
+  // SESSION ASSIGNMENT HANDLERS
+  // ══════════════════════════════════════════════════════════
+  const handleUpdateAssignment = (
+    fieldOrObj: keyof SessionAssignmentItem | Partial<SessionAssignmentItem>,
+    value?: any
+  ) => {
+    setAiGeneratedSessions((prev) => {
+      const copy = [...prev];
+      const current = copy[activeSessionIndex];
+      if (!current) return prev;
+
+      const defaultAssignment: SessionAssignmentItem = {
+        title: `${current.title} – Hands-On Assignment`,
+        description: `Implement and submit the core architectural deliverables for Session ${current.sessionNumber}.`,
+        instructions: [
+          "Clone the starter repository or initialize your project workspace",
+          "Implement the required components discussed during the live session",
+          "Write unit tests to validate edge cases and performance",
+          "Submit your GitHub repository URL or ZIP package before the deadline"
+        ],
+        totalMarks: 100,
+        submissionType: "github_url",
+        publishTrigger: "after_class_end",
+        availabilityDuration: "7_days",
+        allowLateSubmissions: true,
+        latePenaltyPercent: 10,
+        notifyStudents: true,
+        notificationMessage: `📢 New Assignment: ${current.title} Capstone has been assigned. Due in 7 days.`,
+        autoAssignOnSessionEnd: true
+      };
+
+      const existingAssignment = current.assignment || defaultAssignment;
+      const updates = typeof fieldOrObj === "object" && fieldOrObj !== null ? fieldOrObj : { [fieldOrObj]: value };
+
+      copy[activeSessionIndex] = {
+        ...current,
+        assignment: {
+          ...existingAssignment,
+          ...updates
+        }
+      };
+      return copy;
+    });
+  };
+
+  const handleInitAssignment = () => {
+    const current = aiGeneratedSessions[activeSessionIndex];
+    if (!current) return;
+    let defaultDueDate = "";
+    try {
+      const baseDate = current.date ? new Date(current.date) : new Date();
+      baseDate.setDate(baseDate.getDate() + 7);
+      defaultDueDate = baseDate.toISOString().split("T")[0];
+    } catch {
+      defaultDueDate = current.date || "";
+    }
+
+    const newAssignment: SessionAssignmentItem = {
+      title: `${current.title} – Practical Project Challenge`,
+      description: `Apply the core patterns learned in Session #${current.sessionNumber} (${current.title}) to engineer a working production solution.`,
+      instructions: [
+        `Review the session slides and architecture blueprints from Session ${current.sessionNumber}.`,
+        "Implement the primary logic, state persistence, and error handling.",
+        "Add inline code documentation and verify all tests pass locally.",
+        "Submit your work with proof of execution or GitHub repository URL."
+      ],
+      totalMarks: 100,
+      submissionType: "github_url",
+      publishTrigger: "after_class_end",
+      dueDate: defaultDueDate,
+      dueTime: "11:59 PM",
+      availabilityDuration: "7_days",
+      allowLateSubmissions: true,
+      latePenaltyPercent: 10,
+      notifyStudents: true,
+      notificationMessage: `📢 Assignment Assigned: Session ${current.sessionNumber} (${current.title}) is now live. Due on ${defaultDueDate || "7 days"}.`,
+      autoAssignOnSessionEnd: true,
+      externalStarterUrl: "https://github.com/glarus-academy"
+    };
+
+    handleUpdateActiveSession("assignment", newAssignment);
+    setSaveSuccessMsg(`📝 Created Assignment for Session ${current.sessionNumber}!`);
+    setTimeout(() => setSaveSuccessMsg(""), 3500);
+  };
+
+  const handleClearAssignment = () => {
+    handleUpdateActiveSession("assignment", undefined);
+    setSaveSuccessMsg("Assignment removed from this session.");
+    setTimeout(() => setSaveSuccessMsg(""), 2500);
+  };
+
+  const handleAddAssignmentInstruction = () => {
+    const current = aiGeneratedSessions[activeSessionIndex];
+    if (!current?.assignment) return;
+    const curInstructions = current.assignment.instructions || [];
+    handleUpdateAssignment("instructions", [...curInstructions, "New step-by-step deliverable instruction..."]);
+  };
+
+  const handleUpdateAssignmentInstruction = (index: number, text: string) => {
+    const current = aiGeneratedSessions[activeSessionIndex];
+    if (!current?.assignment) return;
+    const curInstructions = [...(current.assignment.instructions || [])];
+    curInstructions[index] = text;
+    handleUpdateAssignment("instructions", curInstructions);
+  };
+
+  const handleRemoveAssignmentInstruction = (index: number) => {
+    const current = aiGeneratedSessions[activeSessionIndex];
+    if (!current?.assignment) return;
+    const curInstructions = (current.assignment.instructions || []).filter((_, i) => i !== index);
+    handleUpdateAssignment("instructions", curInstructions);
+  };
+
+  const handleUploadAssignmentFile = async (file: File) => {
+    if (!file) return;
+    setUploadingAssignmentFile(true);
+    setErrorMessage("");
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("category", "assignment");
+      fd.append("type", "assignment");
+      fd.append("courseId", formData.title || "live-course");
+
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: fd
+      });
+      const data = await res.json();
+      if (res.ok && data.url) {
+        handleUpdateAssignment({
+          fileUrl: data.url,
+          fileName: file.name,
+          fileSize: (file.size / (1024 * 1024)).toFixed(2) + " MB",
+          fileType: file.name.split(".").pop()?.toLowerCase() || "pdf"
+        });
+        setSaveSuccessMsg(`📎 Attached "${file.name}" to assignment successfully!`);
+        setTimeout(() => setSaveSuccessMsg(""), 3500);
+      } else {
+        setErrorMessage(data.error || "Failed to upload assignment attachment.");
+      }
+    } catch (err: any) {
+      console.error("Assignment upload error:", err);
+      setErrorMessage("Network error occurred during assignment upload.");
+    } finally {
+      setUploadingAssignmentFile(false);
+    }
+  };
+
+  const handleGenerateAssignmentAI = async () => {
+    const current = aiGeneratedSessions[activeSessionIndex];
+    if (!current) return;
+    setIsGeneratingAssignment(true);
+    setErrorMessage("");
+    try {
+      let defaultDueDate = "";
+      try {
+        const baseDate = current.date ? new Date(current.date) : new Date();
+        baseDate.setDate(baseDate.getDate() + 7);
+        defaultDueDate = baseDate.toISOString().split("T")[0];
+      } catch {
+        defaultDueDate = current.date || "";
+      }
+
+      const generatedAssignment: SessionAssignmentItem = {
+        title: `Hands-On Project: Production ${current.title}`,
+        description: `In this take-home challenge, you will implement an end-to-end production solution reinforcing the core concepts of Session ${current.sessionNumber}: "${current.title}". You are expected to design modular components, handle edge cases, and ensure clean architecture.`,
+        instructions: [
+          `Architecture Setup: Scaffold the repository using standard conventions discussed in Session ${current.sessionNumber}.`,
+          "Core Implementation: Build the stateful pipeline with error boundaries and validation checks.",
+          "Testing & Benchmarking: Write integration tests covering nominal and edge-case execution paths.",
+          "Documentation & Delivery: Provide a comprehensive README.md with setup instructions and architecture diagram."
+        ],
+        totalMarks: 100,
+        submissionType: "github_url",
+        publishTrigger: "after_class_end",
+        dueDate: defaultDueDate,
+        dueTime: "11:59 PM",
+        availabilityDuration: "7_days",
+        allowLateSubmissions: true,
+        latePenaltyPercent: 10,
+        notifyStudents: true,
+        notificationMessage: `📢 Assignment Released: Session ${current.sessionNumber} (${current.title}) challenge is now active. Due date: ${defaultDueDate || "7 days"}.`,
+        autoAssignOnSessionEnd: true,
+        externalStarterUrl: "https://github.com/glarus-academy"
+      };
+
+      handleUpdateActiveSession("assignment", generatedAssignment);
+      setSaveSuccessMsg(`✨ AI generated tailored Assignment for Session ${current.sessionNumber}!`);
+      setTimeout(() => setSaveSuccessMsg(""), 3500);
+    } catch (err: any) {
+      console.error("AI Assignment error:", err);
+      setErrorMessage("Could not generate AI assignment.");
+    } finally {
+      setIsGeneratingAssignment(false);
+    }
+  };
+
   const handleAddNewSession = () => {
     const newNum = aiGeneratedSessions.length + 1;
     const newSess: AISessionItem = {
@@ -986,7 +1663,17 @@ export default function AdminLiveCourseCreator() {
       setAiGeneratedSessions(fallbackSessions);
     }
 
-    const sessionsToSave = aiGeneratedSessions.length > 0 ? aiGeneratedSessions : generateScheduleDates(sessionCount);
+    const rawSessions = aiGeneratedSessions.length > 0 ? aiGeneratedSessions : generateScheduleDates(sessionCount);
+
+    const sessionsToSave = rawSessions.map((s, idx) => ({
+      ...s,
+      title: typeof s.title === "string" ? s.title : `Session ${idx + 1}`,
+      description: Array.isArray(s.description)
+        ? s.description.join("\n\n")
+        : typeof s.description === "object" && s.description !== null
+        ? JSON.stringify(s.description)
+        : String(s.description || "")
+    }));
 
     setIsSubmitting(true);
     setErrorMessage("");
@@ -1013,16 +1700,32 @@ export default function AdminLiveCourseCreator() {
         }
       }
 
+      const normalizedDesc = Array.isArray(formData.description)
+        ? formData.description.join("\n\n")
+        : typeof formData.description === "object" && formData.description !== null
+        ? JSON.stringify(formData.description)
+        : String(formData.description || "");
+
+      const normalizedShortDesc = Array.isArray(formData.shortDescription)
+        ? formData.shortDescription.join(" ")
+        : typeof formData.shortDescription === "object" && formData.shortDescription !== null
+        ? JSON.stringify(formData.shortDescription)
+        : (formData.shortDescription || "");
+
+      const normalizedAudience = Array.isArray(formData.targetAudience)
+        ? (formData.targetAudience as any[]).join(", ")
+        : (formData.targetAudience || "");
+
       const res = await fetch("/api/admin/live-training/courses", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...formData,
+          description: normalizedDesc,
+          shortDescription: normalizedShortDesc,
           registrationStartDate: regStartISO,
           registrationEndDate: regEndISO,
-          targetAudience: Array.isArray(formData.targetAudience)
-            ? (formData.targetAudience as any[]).join(", ")
-            : (formData.targetAudience || ""),
+          targetAudience: normalizedAudience,
           status: publishStatus,
           sessions: sessionsToSave,
           leadInstructorPermissions
@@ -1170,6 +1873,35 @@ export default function AdminLiveCourseCreator() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              {/* Delivery Format (Top Selector) */}
+              <div className="md:col-span-2 space-y-2">
+                <label className="text-xs font-bold text-text">Delivery Format</label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => router.push("/admin/create")}
+                    className="p-3.5 rounded-2xl border border-white/10 bg-background/50 hover:bg-card hover:border-purple-500/40 text-left transition-all group cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2 font-bold text-xs text-text group-hover:text-purple-300">
+                      <BookOpen className="w-4 h-4 text-purple-400" />
+                      <span className="text-white group-hover:text-purple-300">Self-Paced ↗</span>
+                    </div>
+                    <span className="text-[11px] text-subtext block mt-1">On-demand video & labs</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    className="p-3.5 rounded-2xl border bg-emerald-500/15 border-emerald-500 text-emerald-300 ring-2 ring-emerald-500/20 shadow-md shadow-emerald-500/10 text-left transition-all cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2 font-bold text-xs">
+                      <Radio className="w-4 h-4 text-emerald-400 animate-pulse" />
+                      <span className="text-white">Live Bootcamp</span>
+                    </div>
+                    <span className="text-[11px] text-subtext block mt-1">Cohort live classes</span>
+                  </button>
+                </div>
+              </div>
+
               <div className="md:col-span-2 space-y-1.5">
                 <label className="text-xs font-bold text-text">Course Title *</label>
                 <input
@@ -1301,21 +2033,100 @@ export default function AdminLiveCourseCreator() {
                   </div>
                 </div>
 
-                {/* Program Duration Badge */}
+                {/* Structured Program Duration Builder */}
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-text">Live Program Duration</label>
-                  <input
-                    type="text"
-                    value={formData.duration}
-                    onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
-                    placeholder="e.g. 6 Weeks · 12 Live Sessions"
-                    className="w-full h-10 px-3 rounded-xl bg-background border border-white/10 text-text text-xs focus:outline-none focus:border-purple-500/50"
-                  />
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-bold text-text">Live Program Duration</label>
+                    <span className="text-[10px] text-purple-400 font-bold bg-purple-500/10 px-2 py-0.5 rounded-md border border-purple-500/20">
+                      {formData.duration || "6 Weeks"}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-12 gap-2">
+                    <div className="col-span-5">
+                      <input
+                        type="number"
+                        min="1"
+                        max="999"
+                        value={
+                          formData.duration
+                            ? (formData.duration.match(/\d+(\.\d+)?/)?.[0] || "")
+                            : ""
+                        }
+                        onChange={(e) => {
+                          const num = e.target.value;
+                          const currentUnit = formData.duration
+                            ? formData.duration.replace(/^\d+(\.\d+)?\s*/, "").trim() || "Weeks"
+                            : "Weeks";
+                          setFormData({
+                            ...formData,
+                            duration: num ? `${num} ${currentUnit}` : ""
+                          });
+                        }}
+                        placeholder="e.g. 6"
+                        className="w-full h-10 px-3 rounded-xl bg-background border border-white/10 text-text text-xs font-bold focus:outline-none focus:border-purple-500/50"
+                      />
+                    </div>
+                    <div className="col-span-7">
+                      <select
+                        value={(() => {
+                          if (!formData.duration) return "Weeks";
+                          const unitPart = formData.duration.replace(/^\d+(\.\d+)?\s*/, "").trim();
+                          return unitPart || "Weeks";
+                        })()}
+                        onChange={(e) => {
+                          const newUnit = e.target.value;
+                          const currentNum = formData.duration
+                            ? (formData.duration.match(/\d+(\.\d+)?/)?.[0] || "6")
+                            : "6";
+                          setFormData({
+                            ...formData,
+                            duration: `${currentNum} ${newUnit}`
+                          });
+                        }}
+                        className="w-full h-10 px-3 rounded-xl bg-background border border-white/10 text-purple-300 text-xs font-bold focus:outline-none focus:border-purple-500/50 cursor-pointer"
+                      >
+                        <option value="Weeks">Weeks (e.g. 6 Weeks)</option>
+                        <option value="Live Sessions">Live Sessions (e.g. 12 Live Sessions)</option>
+                        <option value="Months">Months (e.g. 2 Months)</option>
+                        <option value="Days">Days (e.g. 30 Days)</option>
+                        <option value="Hours">Hours (e.g. 24 Hours)</option>
+                        <option value="Hours Live">Hours Live (e.g. 24 Hours Live)</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Presets */}
+                  <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                    <span className="text-[10px] text-subtext font-bold uppercase tracking-wider">Presets:</span>
+                    {[
+                      "4 Weeks",
+                      "6 Weeks",
+                      "8 Weeks",
+                      "12 Live Sessions",
+                      "2 Months",
+                      "30 Days",
+                      "24 Hours Live"
+                    ].map((preset) => (
+                      <button
+                        key={preset}
+                        type="button"
+                        onClick={() => setFormData({ ...formData, duration: preset })}
+                        className={`text-[10px] px-2 py-0.5 rounded-lg border font-semibold transition-all ${
+                          formData.duration === preset
+                            ? "bg-purple-600/30 border-purple-500 text-purple-200 font-bold"
+                            : "bg-white/5 hover:bg-white/10 border-white/5 text-subtext hover:text-text"
+                        }`}
+                      >
+                        {preset}
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
                 {/* Preview Video URL */}
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-text">16:9 Preview Video URL</label>
+                  <label className="text-xs font-bold text-text">Preview Video URL</label>
                   <input
                     type="text"
                     value={formData.previewVideoUrl}
@@ -2651,12 +3462,15 @@ export default function AdminLiveCourseCreator() {
                           </div>
                           <h4 className="text-xs font-bold text-text line-clamp-1">{sess.title}</h4>
                           <p className="text-[11px] text-subtext line-clamp-1 mt-0.5">{sess.description}</p>
-                          <div className="flex items-center gap-2 mt-2 pt-2 border-t border-white/5 text-[10px] text-subtext">
+                          <div className="flex flex-wrap items-center gap-1.5 mt-2 pt-2 border-t border-white/5 text-[10px] text-subtext">
                             <span>{sess.date ? formatDate(sess.date) : "Date TBA"}</span>
                             <span>•</span>
                             <span>{sess.startTime ? formatTime(sess.startTime) : "07:00 PM"}</span>
                             <span>•</span>
-                            <span className="text-emerald-400 font-semibold">{sess.agenda?.length || 0} agenda items</span>
+                            <span className="text-emerald-400 font-semibold">{sess.agenda?.length || 0} agenda</span>
+                            {sess.videoUrl && <span className="text-purple-400 font-bold">• 📹 Video</span>}
+                            {(sess.resources?.length || 0) > 0 && <span className="text-blue-400 font-bold">• 📁 {sess.resources.length} res</span>}
+                            {(sess.quizzes?.length || 0) > 0 && <span className="text-amber-400 font-bold">• ❓ {sess.quizzes?.length || 0} quiz</span>}
                           </div>
                         </div>
                       );
@@ -2732,75 +3546,1363 @@ export default function AdminLiveCourseCreator() {
                       </div>
                     </div>
 
-                    {/* Interactive Agenda Timeline Builder */}
-                    <div className="space-y-3 pt-2 border-t border-white/10">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h4 className="text-xs font-bold text-text flex items-center gap-1.5">
-                            <Clock className="w-3.5 h-3.5 text-purple-400" />
-                            Live Session Agenda Timeline ({aiGeneratedSessions[activeSessionIndex].agenda?.length || 0} Steps)
-                          </h4>
-                          <p className="text-[11px] text-subtext">
-                            Step-by-step minute breakdown for instructor and learners.
-                          </p>
-                        </div>
+                    {/* Interactive Session Sub-Navigation Tabs (5 Tabs) */}
+                    <div className="pt-2 border-t border-white/10">
+                      <div className="grid grid-cols-2 sm:grid-cols-5 gap-1.5 p-1 bg-background/80 rounded-2xl border border-white/10">
                         <button
                           type="button"
-                          onClick={handleAddAgendaItem}
-                          className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 border border-purple-500/30 text-xs font-bold"
+                          onClick={() => setActiveSessionTab("agenda")}
+                          className={`py-2 px-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all ${
+                            activeSessionTab === "agenda"
+                              ? "bg-purple-600 text-white shadow-lg shadow-purple-600/30"
+                              : "text-subtext hover:text-text hover:bg-white/5"
+                          }`}
                         >
-                          <Plus className="w-3 h-3" />
-                          <span>Add Step</span>
+                          <Clock className="w-3.5 h-3.5 shrink-0" />
+                          <span>Agenda ({aiGeneratedSessions[activeSessionIndex].agenda?.length || 0})</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setActiveSessionTab("video")}
+                          className={`py-2 px-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all ${
+                            activeSessionTab === "video"
+                              ? "bg-purple-600 text-white shadow-lg shadow-purple-600/30"
+                              : "text-subtext hover:text-text hover:bg-white/5"
+                          }`}
+                        >
+                          <Video className="w-3.5 h-3.5 shrink-0" />
+                          <span>Video & Replay {aiGeneratedSessions[activeSessionIndex].videoUrl ? "✓" : ""}</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setActiveSessionTab("resources")}
+                          className={`py-2 px-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all ${
+                            activeSessionTab === "resources"
+                              ? "bg-purple-600 text-white shadow-lg shadow-purple-600/30"
+                              : "text-subtext hover:text-text hover:bg-white/5"
+                          }`}
+                        >
+                          <Paperclip className="w-3.5 h-3.5 shrink-0" />
+                          <span>Resources ({aiGeneratedSessions[activeSessionIndex].resources?.length || 0})</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setActiveSessionTab("quiz")}
+                          className={`py-2 px-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all ${
+                            activeSessionTab === "quiz"
+                              ? "bg-purple-600 text-white shadow-lg shadow-purple-600/30"
+                              : "text-subtext hover:text-text hover:bg-white/5"
+                          }`}
+                        >
+                          <HelpCircle className="w-3.5 h-3.5 shrink-0" />
+                          <span>Quiz ({(aiGeneratedSessions[activeSessionIndex].quizzes?.length || 0)})</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setActiveSessionTab("assignment")}
+                          className={`py-2 px-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all col-span-2 sm:col-span-1 ${
+                            activeSessionTab === "assignment"
+                              ? "bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-600/30"
+                              : "text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 border border-emerald-500/20"
+                          }`}
+                        >
+                          <FileCheck className="w-3.5 h-3.5 shrink-0" />
+                          <span>Assignment {aiGeneratedSessions[activeSessionIndex].assignment ? "✓" : "(0)"}</span>
                         </button>
                       </div>
+                    </div>
 
-                      <div className="space-y-2.5">
-                        {aiGeneratedSessions[activeSessionIndex].agenda?.map((ag, agIdx) => (
-                          <div
-                            key={agIdx}
-                            className="p-3 rounded-xl bg-background/60 border border-white/5 space-y-2"
+                    {/* ══════════════════════════════════════════════════════════
+                        TAB 1: LIVE AGENDA TIMELINE
+                        ══════════════════════════════════════════════════════════ */}
+                    {activeSessionTab === "agenda" && (
+                      <div className="space-y-3 animate-in fade-in duration-150">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h4 className="text-xs font-bold text-text flex items-center gap-1.5">
+                              <Clock className="w-3.5 h-3.5 text-purple-400" />
+                              Live Session Agenda Timeline ({aiGeneratedSessions[activeSessionIndex].agenda?.length || 0} Steps)
+                            </h4>
+                            <p className="text-[11px] text-subtext">
+                              Step-by-step minute breakdown for instructor and learners.
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={handleAddAgendaItem}
+                            className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 border border-purple-500/30 text-xs font-bold"
                           >
-                            <div className="flex items-center justify-between gap-2">
-                              <div className="flex items-center gap-2 flex-1 min-w-0">
-                                <span className="w-6 h-6 rounded-lg bg-purple-500/20 text-purple-300 flex items-center justify-center text-[10px] font-black shrink-0">
-                                  {agIdx + 1}
-                                </span>
-                                <input
-                                  type="text"
-                                  value={ag.title}
-                                  onChange={(e) => handleUpdateAgendaItem(agIdx, "title", e.target.value)}
-                                  placeholder="Step Title"
-                                  className="flex-1 h-8 px-2.5 rounded-lg bg-card border border-white/10 text-xs font-bold text-text focus:outline-none focus:border-purple-500/50"
-                                />
+                            <Plus className="w-3 h-3" />
+                            <span>Add Step</span>
+                          </button>
+                        </div>
+
+                        <div className="space-y-2.5">
+                          {aiGeneratedSessions[activeSessionIndex].agenda?.map((ag, agIdx) => (
+                            <div
+                              key={agIdx}
+                              className="p-3 rounded-xl bg-background/60 border border-white/5 space-y-2"
+                            >
+                              <div className="flex items-center justify-between gap-2">
+                                <div className="flex items-center gap-2 flex-1 min-w-0">
+                                  <span className="w-6 h-6 rounded-lg bg-purple-500/20 text-purple-300 flex items-center justify-center text-[10px] font-black shrink-0">
+                                    {agIdx + 1}
+                                  </span>
+                                  <input
+                                    type="text"
+                                    value={ag.title}
+                                    onChange={(e) => handleUpdateAgendaItem(agIdx, "title", e.target.value)}
+                                    placeholder="Step Title"
+                                    className="flex-1 h-8 px-2.5 rounded-lg bg-card border border-white/10 text-xs font-bold text-text focus:outline-none focus:border-purple-500/50"
+                                  />
+                                </div>
+                                <div className="flex items-center gap-2 shrink-0">
+                                  <input
+                                    type="text"
+                                    value={ag.duration}
+                                    onChange={(e) => handleUpdateAgendaItem(agIdx, "duration", e.target.value)}
+                                    placeholder="15 min"
+                                    className="w-20 h-8 px-2 rounded-lg bg-card border border-white/10 text-xs font-bold text-center text-subtext focus:outline-none focus:border-purple-500/50"
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => handleRemoveAgendaItem(agIdx)}
+                                    className="p-1.5 rounded text-subtext hover:text-red-400 transition-colors"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
                               </div>
-                              <div className="flex items-center gap-2 shrink-0">
-                                <input
-                                  type="text"
-                                  value={ag.duration}
-                                  onChange={(e) => handleUpdateAgendaItem(agIdx, "duration", e.target.value)}
-                                  placeholder="15 min"
-                                  className="w-20 h-8 px-2 rounded-lg bg-card border border-white/10 text-xs font-bold text-center text-subtext focus:outline-none focus:border-purple-500/50"
-                                />
+                              <input
+                                type="text"
+                                value={ag.description}
+                                onChange={(e) => handleUpdateAgendaItem(agIdx, "description", e.target.value)}
+                                placeholder="Detailed teaching instructions, live code focus, or interactive checkpoints..."
+                                className="w-full h-7 px-2.5 rounded-lg bg-card/60 border border-white/5 text-[11px] text-subtext focus:outline-none focus:border-purple-500/50"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* ══════════════════════════════════════════════════════════
+                        TAB 2: VIDEO & REPLAY (WITH SCHEDULING & NOTIFICATION)
+                        ══════════════════════════════════════════════════════════ */}
+                    {activeSessionTab === "video" && (
+                      <div className="space-y-5 animate-in fade-in duration-150">
+                        <div>
+                          <h4 className="text-xs font-bold text-text flex items-center gap-1.5">
+                            <Video className="w-3.5 h-3.5 text-purple-400" />
+                            Session Video Recording & Replay Stream
+                          </h4>
+                          <p className="text-[11px] text-subtext">
+                            Upload high-definition session recording file or paste direct cloud stream / Zoom replay URL.
+                          </p>
+                        </div>
+
+                        {/* Drag & Drop File Upload Dropzone */}
+                        <div className="p-5 bg-background/50 border-2 border-dashed border-purple-500/30 hover:border-purple-500/60 rounded-2xl text-center space-y-2 transition-all">
+                          <input
+                            type="file"
+                            id={`session-video-upload-${activeSessionIndex}`}
+                            accept="video/mp4,video/webm,video/quicktime,video/x-m4v,video/mkv,.mp4,.mov,.webm,.m4v,.mkv"
+                            className="hidden"
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0];
+                              if (!file) return;
+                              await handleUploadSessionVideo(file);
+                            }}
+                          />
+                          <label
+                            htmlFor={`session-video-upload-${activeSessionIndex}`}
+                            className="cursor-pointer flex flex-col items-center justify-center gap-2"
+                          >
+                            {uploadingSessionVideo ? (
+                              <div className="w-full py-2 space-y-2">
+                                <div className="flex items-center justify-between text-xs font-bold text-purple-300">
+                                  <span className="flex items-center gap-2">
+                                    <Loader2 className="w-4 h-4 animate-spin text-purple-400" />
+                                    Uploading to Bunny Stream CDN...
+                                  </span>
+                                  <span>{sessionVideoUploadProgress}%</span>
+                                </div>
+                                <div className="w-full h-1.5 bg-background rounded-full overflow-hidden border border-white/10">
+                                  <div
+                                    className="h-full bg-gradient-to-r from-purple-500 to-indigo-500 transition-all duration-300 rounded-full"
+                                    style={{ width: `${sessionVideoUploadProgress}%` }}
+                                  />
+                                </div>
+                              </div>
+                            ) : (
+                              <>
+                                <div className="w-12 h-12 rounded-2xl bg-purple-500/15 text-purple-400 flex items-center justify-center shadow-md">
+                                  <UploadCloud className="w-6 h-6" />
+                                </div>
+                                <div>
+                                  <p className="text-xs font-bold text-text">Click or Drag & Drop to Upload Session Video</p>
+                                  <p className="text-[10px] text-subtext mt-0.5">High-Speed Bunny Stream TUS Upload · Auto-encodes HLS + Global CDN</p>
+                                </div>
+                              </>
+                            )}
+                          </label>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                          <div className="h-[1px] bg-white/10 flex-1" />
+                          <span className="text-[10px] uppercase font-bold text-subtext tracking-wider">Or Provide Video URL / Stream</span>
+                          <div className="h-[1px] bg-white/10 flex-1" />
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <label className="block text-xs font-bold text-text">Session Video / Replay URL</label>
+                          <input
+                            type="text"
+                            value={aiGeneratedSessions[activeSessionIndex].videoUrl || ""}
+                            onChange={(e) => {
+                              handleUpdateActiveSession("videoUrl", e.target.value);
+                              handleUpdateActiveSession("recordingUrl", e.target.value);
+                              handleUpdateActiveSession("recordingStatus", e.target.value ? "available" : "unavailable");
+                            }}
+                            placeholder="https://zoom.us/rec/play/xyz or https://commondatastorage.googleapis.com/.../session.mp4"
+                            className="w-full bg-background border border-white/10 rounded-xl px-3.5 py-2 text-xs text-text outline-none font-mono focus:border-purple-500"
+                          />
+                        </div>
+
+                        {aiGeneratedSessions[activeSessionIndex].videoUrl && (
+                          <div className="p-3.5 bg-purple-500/10 border border-purple-500/20 rounded-2xl space-y-2">
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs font-bold text-purple-300 flex items-center gap-1.5">
+                                <CheckCircle2 className="w-4 h-4 text-emerald-400" /> Video Attached & Verified
+                              </span>
+                              <div className="flex items-center gap-2">
+                                <a
+                                  href={aiGeneratedSessions[activeSessionIndex].videoUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-[11px] text-purple-300 hover:text-purple-200 flex items-center gap-1 font-bold"
+                                >
+                                  <ExternalLink className="w-3 h-3" />
+                                  <span>Test Play</span>
+                                </a>
                                 <button
                                   type="button"
-                                  onClick={() => handleRemoveAgendaItem(agIdx)}
-                                  className="p-1.5 rounded text-subtext hover:text-red-400 transition-colors"
+                                  onClick={handleClearSessionVideo}
+                                  className="text-[11px] text-rose-400 hover:underline cursor-pointer font-bold ml-2"
                                 >
-                                  <Trash2 className="w-3.5 h-3.5" />
+                                  Clear Video
                                 </button>
                               </div>
                             </div>
-                            <input
-                              type="text"
-                              value={ag.description}
-                              onChange={(e) => handleUpdateAgendaItem(agIdx, "description", e.target.value)}
-                              placeholder="Detailed teaching instructions, live code focus, or interactive checkpoints..."
-                              className="w-full h-7 px-2.5 rounded-lg bg-card/60 border border-white/5 text-[11px] text-subtext focus:outline-none focus:border-purple-500/50"
-                            />
+                            <p className="text-[11px] text-subtext truncate font-mono bg-background/60 p-2 rounded-lg border border-white/5">
+                              {aiGeneratedSessions[activeSessionIndex].videoUrl}
+                            </p>
                           </div>
-                        ))}
+                        )}
+
+                        {/* 🌟 VIDEO PUBLISH TIMING, DURATION & NOTIFICATION PANEL */}
+                        <div className="p-4 rounded-2xl bg-gradient-to-br from-card via-card to-purple-950/20 border border-purple-500/30 space-y-4 shadow-sm">
+                          <div className="flex items-center gap-2 border-b border-white/10 pb-2.5">
+                            <Clock className="w-4 h-4 text-purple-400" />
+                            <h5 className="text-xs font-bold text-white">Video Replay Publishing & Access Window</h5>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                            {/* When to Publish / Release Trigger */}
+                            <div className="space-y-1.5">
+                              <label className="block text-xs font-bold text-text flex items-center gap-1.5">
+                                <span>⚡ When to Publish / Release Video</span>
+                              </label>
+                              <select
+                                value={aiGeneratedSessions[activeSessionIndex].recordingReleaseTime || "after_class_end"}
+                                onChange={(e) => handleUpdateActiveSession("recordingReleaseTime", e.target.value)}
+                                className="w-full bg-background border border-white/10 rounded-xl px-3 py-2 text-xs text-text outline-none focus:border-purple-500 cursor-pointer font-medium"
+                              >
+                                <option value="after_class_end">🏁 Immediately After Live Class Ends (Standard)</option>
+                                <option value="2_hours">⏱ Within 2 Hours after live class (SLA Processing)</option>
+                                <option value="4_hours">⏱ Within 4 Hours after live class</option>
+                                <option value="24_hours">⏱ Within 24 Hours after live class (Next Day)</option>
+                                <option value="immediate">🟢 Immediate (Instant Replay Available Now)</option>
+                                <option value="scheduled_date">📅 Specific Scheduled Date & Time</option>
+                                <option value="manual_unlock">🔒 Manual Unlock by Instructor</option>
+                              </select>
+                            </div>
+
+                            {/* Replay Access Duration / Validity */}
+                            <div className="space-y-1.5">
+                              <label className="block text-xs font-bold text-text">⏳ Access Duration & Validity</label>
+                              <select
+                                value={aiGeneratedSessions[activeSessionIndex].recordingValidity || "lifetime"}
+                                onChange={(e) => handleUpdateActiveSession("recordingValidity", e.target.value)}
+                                className="w-full bg-background border border-white/10 rounded-xl px-3 py-2 text-xs text-text outline-none focus:border-purple-500 cursor-pointer font-medium"
+                              >
+                                <option value="lifetime">♾️ Lifetime Access (Always Available)</option>
+                                <option value="1_year">📅 1 Year after Cohort Completion</option>
+                                <option value="90_days">📅 90 Days after Session</option>
+                                <option value="30_days">📅 30 Days after Session</option>
+                                <option value="cohort_duration">⏳ Cohort Duration Only (Expires on Batch End)</option>
+                                <option value="custom_expiry">📅 Specific Expiration Date...</option>
+                              </select>
+                            </div>
+
+                            {/* Scheduled Release Date & Time if selected */}
+                            {aiGeneratedSessions[activeSessionIndex].recordingReleaseTime === "scheduled_date" && (
+                              <div className="sm:col-span-2 p-3 rounded-xl bg-purple-500/10 border border-purple-500/20 grid grid-cols-1 sm:grid-cols-2 gap-2.5 animate-in fade-in">
+                                <div className="space-y-1">
+                                  <label className="text-[11px] font-bold text-purple-300">Scheduled Release Date</label>
+                                  <DatePicker
+                                    value={aiGeneratedSessions[activeSessionIndex].recordingReleaseDate || ""}
+                                    onChange={(val) => handleUpdateActiveSession("recordingReleaseDate", val)}
+                                  />
+                                </div>
+                                <div className="space-y-1">
+                                  <label className="text-[11px] font-bold text-purple-300">Scheduled Release Time</label>
+                                  <TimePicker
+                                    value={aiGeneratedSessions[activeSessionIndex].recordingReleaseTimeOfDay || "10:00 PM"}
+                                    onChange={(val) => handleUpdateActiveSession("recordingReleaseTimeOfDay", val)}
+                                  />
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Custom Expiry Date if selected */}
+                            {aiGeneratedSessions[activeSessionIndex].recordingValidity === "custom_expiry" && (
+                              <div className="sm:col-span-2 p-3 rounded-xl bg-purple-500/10 border border-purple-500/20 space-y-1 animate-in fade-in">
+                                <label className="text-[11px] font-bold text-purple-300">Video Access Expiration Date</label>
+                                <DatePicker
+                                  value={aiGeneratedSessions[activeSessionIndex].recordingExpiryDate || ""}
+                                  onChange={(val) => handleUpdateActiveSession("recordingExpiryDate", val)}
+                                />
+                              </div>
+                            )}
+                          </div>
+
+                          {/* 🔔 AUTOMATED NOTIFICATION BOX */}
+                          <div className="p-3.5 rounded-xl bg-background/80 border border-white/10 space-y-2">
+                            <label className="flex items-center gap-2.5 text-xs font-bold text-text cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={aiGeneratedSessions[activeSessionIndex].autoNotifyStudents !== false}
+                                onChange={(e) => handleUpdateActiveSession("autoNotifyStudents", e.target.checked)}
+                                className="w-4 h-4 accent-purple-600 rounded"
+                              />
+                              <div className="flex items-center gap-1.5">
+                                <Bell className="w-3.5 h-3.5 text-purple-400" />
+                                <span>🔔 Send instant push & dashboard notification to enrolled students when recording is published</span>
+                              </div>
+                            </label>
+
+                            {aiGeneratedSessions[activeSessionIndex].autoNotifyStudents !== false && (
+                              <div className="p-2.5 rounded-lg bg-purple-500/10 border border-purple-500/20 text-[11px] text-purple-200 flex items-start gap-2">
+                                <Send className="w-3.5 h-3.5 text-purple-400 mt-0.5 shrink-0" />
+                                <div>
+                                  <span className="font-bold text-purple-300">Notification Preview: </span>
+                                  <span>&quot;🎥 Session {aiGeneratedSessions[activeSessionIndex].sessionNumber} HD Recording for &apos;{aiGeneratedSessions[activeSessionIndex].title}&apos; is now ready to watch!&quot;</span>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+                            <label className="flex items-center gap-2 p-2.5 rounded-xl bg-background/50 border border-white/10 text-xs font-semibold text-text cursor-pointer hover:border-purple-500/30 transition-all">
+                              <input
+                                type="checkbox"
+                                checked={aiGeneratedSessions[activeSessionIndex].allowOfflineDownload !== false}
+                                onChange={(e) => handleUpdateActiveSession("allowOfflineDownload", e.target.checked)}
+                                className="w-4 h-4 accent-purple-600 rounded"
+                              />
+                              <span className="text-[11px]">Allow offline HD MP4 download</span>
+                            </label>
+
+                            <label className="flex items-center gap-2 p-2.5 rounded-xl bg-background/50 border border-white/10 text-xs font-semibold text-text cursor-pointer hover:border-purple-500/30 transition-all">
+                              <input
+                                type="checkbox"
+                                checked={aiGeneratedSessions[activeSessionIndex].isPreview || false}
+                                onChange={(e) => handleUpdateActiveSession("isPreview", e.target.checked)}
+                                className="w-4 h-4 accent-purple-600 rounded"
+                              />
+                              <span className="text-[11px]">Free sample preview (public access)</span>
+                            </label>
+                          </div>
+                        </div>
+
+                        {/* Make-Up / Doubt Clearance Session Quick Action Banner */}
+                        <div className="p-4 rounded-2xl bg-gradient-to-r from-purple-950/40 via-indigo-950/30 to-background border border-purple-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                          <div className="space-y-0.5">
+                            <span className="text-[10px] font-black uppercase tracking-wider text-purple-400">
+                              Missed Live Class / Extra Doubt Support
+                            </span>
+                            <h5 className="text-xs font-bold text-text">
+                              Need a Make-Up or Live Doubt Clearing Session for this topic?
+                            </h5>
+                            <p className="text-[11px] text-subtext">
+                              If learners miss the live broadcast or recordings are unavailable, you can automatically append a scheduled backup doubt-resolution session.
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleAddBackupSession(activeSessionIndex)}
+                            className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold transition-all shadow-md shadow-purple-600/20 flex items-center gap-1.5 shrink-0"
+                          >
+                            <Plus className="w-3.5 h-3.5" />
+                            <span>➕ Add Make-Up / Doubt Session</span>
+                          </button>
+                        </div>
                       </div>
-                    </div>
+                    )}
+
+                    {/* ══════════════════════════════════════════════════════════
+                        TAB 3: RESOURCES & LEARNING MATERIALS (WITH SCHEDULING)
+                        ══════════════════════════════════════════════════════════ */}
+                    {activeSessionTab === "resources" && (
+                      <div className="space-y-4 animate-in fade-in duration-150">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                          <div>
+                            <h4 className="text-xs font-bold text-text flex items-center gap-1.5">
+                              <Paperclip className="w-3.5 h-3.5 text-purple-400" />
+                              Session Resources & Learning Materials ({aiGeneratedSessions[activeSessionIndex].resources?.length || 0})
+                            </h4>
+                            <p className="text-[11px] text-subtext">
+                              Attach starter repositories, lecture slides (PDF), datasets, and configure when students can access them.
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleAddResource()}
+                            className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 border border-purple-500/30 text-xs font-bold shrink-0"
+                          >
+                            <Plus className="w-3 h-3" />
+                            <span>Add Resource</span>
+                          </button>
+                        </div>
+
+                        {/* Quick Add Presets */}
+                        <div className="flex flex-wrap items-center gap-2 p-2.5 rounded-xl bg-background/50 border border-white/5">
+                          <span className="text-[10px] font-bold text-subtext uppercase tracking-wider">Quick Presets:</span>
+                          <button
+                            type="button"
+                            onClick={() => handleAddResource({
+                              title: `Session ${aiGeneratedSessions[activeSessionIndex].sessionNumber} GitHub Starter Repo`,
+                              type: "GITHUB",
+                              url: "https://github.com/glarus-academy",
+                              publishTrigger: "after_class_end",
+                              availabilityDuration: "always",
+                              notifyStudents: true
+                            })}
+                            className="text-[10px] px-2.5 py-1 rounded-lg bg-white/5 hover:bg-purple-500/20 text-subtext hover:text-purple-200 border border-white/10 transition-all font-semibold"
+                          >
+                            🚀 + GitHub Starter Repo
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleAddResource({
+                              title: `${aiGeneratedSessions[activeSessionIndex].title} - Masterclass Slides.pdf`,
+                              type: "SLIDES",
+                              url: "",
+                              publishTrigger: "after_class_end",
+                              availabilityDuration: "always",
+                              notifyStudents: true
+                            })}
+                            className="text-[10px] px-2.5 py-1 rounded-lg bg-white/5 hover:bg-purple-500/20 text-subtext hover:text-purple-200 border border-white/10 transition-all font-semibold"
+                          >
+                            📑 + Slides (PDF)
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleAddResource({
+                              title: `${aiGeneratedSessions[activeSessionIndex].title} Cheatsheet & Summary`,
+                              type: "DOC",
+                              url: "",
+                              publishTrigger: "after_class_end",
+                              availabilityDuration: "always",
+                              notifyStudents: true
+                            })}
+                            className="text-[10px] px-2.5 py-1 rounded-lg bg-white/5 hover:bg-purple-500/20 text-subtext hover:text-purple-200 border border-white/10 transition-all font-semibold"
+                          >
+                            📝 + Cheat Sheet
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleAddResource({
+                              title: `Session ${aiGeneratedSessions[activeSessionIndex].sessionNumber} Training Dataset`,
+                              type: "DATASET",
+                              url: "",
+                              publishTrigger: "during_class",
+                              availabilityDuration: "always",
+                              notifyStudents: true
+                            })}
+                            className="text-[10px] px-2.5 py-1 rounded-lg bg-white/5 hover:bg-purple-500/20 text-subtext hover:text-purple-200 border border-white/10 transition-all font-semibold"
+                          >
+                            📊 + Dataset
+                          </button>
+                        </div>
+
+                        {/* Resources List */}
+                        {(!aiGeneratedSessions[activeSessionIndex].resources || aiGeneratedSessions[activeSessionIndex].resources.length === 0) ? (
+                          <div className="p-8 text-center rounded-2xl bg-background/40 border border-white/5 space-y-2">
+                            <Paperclip className="w-8 h-8 text-subtext/40 mx-auto" />
+                            <p className="text-xs font-bold text-text">No resources attached to this session yet</p>
+                            <p className="text-[11px] text-subtext">Click &quot;Add Resource&quot; or select one of the Quick Presets above to attach materials.</p>
+                          </div>
+                        ) : (
+                          <div className="space-y-3">
+                            {aiGeneratedSessions[activeSessionIndex].resources.map((resItem, resIdx) => (
+                              <div
+                                key={resIdx}
+                                className="p-4 rounded-2xl bg-background/70 border border-white/10 space-y-3 shadow-sm hover:border-purple-500/30 transition-all"
+                              >
+                                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                                  {/* Resource Type Dropdown */}
+                                  <select
+                                    value={resItem.type}
+                                    onChange={(e) => handleUpdateResource(resIdx, "type", e.target.value)}
+                                    className="h-8 px-2 rounded-lg bg-card border border-white/10 text-xs font-bold text-purple-300 focus:outline-none focus:border-purple-500 cursor-pointer shrink-0"
+                                  >
+                                    <option value="PDF">📄 PDF Document</option>
+                                    <option value="SLIDES">📑 Slides Deck</option>
+                                    <option value="GITHUB">🚀 GitHub Repo</option>
+                                    <option value="CODE">💻 Code Lab</option>
+                                    <option value="DATASET">📊 Dataset</option>
+                                    <option value="DOC">📝 Document / Notes</option>
+                                    <option value="ZIP">📦 ZIP Archive</option>
+                                    <option value="URL">🔗 External Link</option>
+                                  </select>
+
+                                  {/* Resource Title Input */}
+                                  <input
+                                    type="text"
+                                    value={resItem.title}
+                                    onChange={(e) => handleUpdateResource(resIdx, "title", e.target.value)}
+                                    placeholder="Resource Title (e.g. Transformer Architecture Slides)"
+                                    className="flex-1 h-8 px-2.5 rounded-lg bg-card border border-white/10 text-xs font-bold text-text focus:outline-none focus:border-purple-500/50"
+                                  />
+
+                                  {/* Delete Resource Button */}
+                                  <button
+                                    type="button"
+                                    onClick={() => handleRemoveResource(resIdx)}
+                                    className="p-1.5 rounded-lg text-subtext hover:text-red-400 transition-colors self-end sm:self-auto"
+                                    title="Delete Resource"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+
+                                <div className="flex items-center gap-2">
+                                  {/* URL or Uploaded Link */}
+                                  <input
+                                    type="text"
+                                    value={resItem.url}
+                                    onChange={(e) => handleUpdateResource(resIdx, "url", e.target.value)}
+                                    placeholder="https://... or click Upload File"
+                                    className="flex-1 h-8 px-2.5 rounded-lg bg-card/60 border border-white/5 text-[11px] text-text font-mono focus:outline-none focus:border-purple-500/50"
+                                  />
+
+                                  {/* Direct File Upload Trigger */}
+                                  <input
+                                    type="file"
+                                    id={`resource-upload-${activeSessionIndex}-${resIdx}`}
+                                    className="hidden"
+                                    onChange={async (e) => {
+                                      const file = e.target.files?.[0];
+                                      if (!file) return;
+                                      await handleUploadResourceFile(resIdx, file);
+                                    }}
+                                  />
+                                  <label
+                                    htmlFor={`resource-upload-${activeSessionIndex}-${resIdx}`}
+                                    className="h-8 px-3 rounded-lg bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 border border-purple-500/30 text-xs font-bold flex items-center gap-1.5 cursor-pointer shrink-0 transition-colors"
+                                  >
+                                    {uploadingResourceIndex === resIdx ? (
+                                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                    ) : (
+                                      <UploadCloud className="w-3.5 h-3.5" />
+                                    )}
+                                    <span>Upload File</span>
+                                  </label>
+
+                                  {resItem.url && (
+                                    <a
+                                      href={resItem.url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="h-8 px-2.5 rounded-lg bg-white/5 hover:bg-white/10 text-subtext hover:text-text border border-white/10 flex items-center justify-center shrink-0"
+                                      title="Open Resource Link"
+                                    >
+                                      <ExternalLink className="w-3 h-3" />
+                                    </a>
+                                  )}
+                                </div>
+
+                                {/* 🌟 Per-Resource Publishing & Expiry Controls */}
+                                <div className="p-2.5 rounded-xl bg-card/60 border border-white/5 grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+                                  <div>
+                                    <label className="text-[10px] font-bold text-subtext block mb-1">⚡ Release When?</label>
+                                    <select
+                                      value={resItem.publishTrigger || "after_class_end"}
+                                      onChange={(e) => handleUpdateResource(resIdx, "publishTrigger", e.target.value)}
+                                      className="w-full bg-background border border-white/10 rounded-lg px-2 py-1 text-[11px] text-text outline-none cursor-pointer"
+                                    >
+                                      <option value="after_class_end">🏁 After Live Class Ends</option>
+                                      <option value="before_class">📖 Before Class (Pre-Read)</option>
+                                      <option value="during_class">💬 During Live Class</option>
+                                      <option value="immediate">🟢 Available Immediately</option>
+                                      <option value="scheduled_date">📅 Scheduled Date/Time</option>
+                                    </select>
+                                  </div>
+
+                                  <div>
+                                    <label className="text-[10px] font-bold text-subtext block mb-1">⏳ Access Validity</label>
+                                    <select
+                                      value={resItem.availabilityDuration || "always"}
+                                      onChange={(e) => handleUpdateResource(resIdx, "availabilityDuration", e.target.value)}
+                                      className="w-full bg-background border border-white/10 rounded-lg px-2 py-1 text-[11px] text-text outline-none cursor-pointer"
+                                    >
+                                      <option value="always">♾️ Always Available (Lifetime)</option>
+                                      <option value="until_next_session">⏳ Until Next Live Session</option>
+                                      <option value="7_days">📅 7 Days after Class</option>
+                                      <option value="30_days">📅 30 Days after Class</option>
+                                      <option value="custom_expiry">📅 Custom Expiry Date</option>
+                                    </select>
+                                  </div>
+
+                                  <div className="flex items-center justify-start sm:justify-center pt-3 sm:pt-0">
+                                    <label className="flex items-center gap-1.5 cursor-pointer text-[11px] text-purple-300 font-semibold">
+                                      <input
+                                        type="checkbox"
+                                        checked={resItem.notifyStudents !== false}
+                                        onChange={(e) => handleUpdateResource(resIdx, "notifyStudents", e.target.checked)}
+                                        className="w-3.5 h-3.5 accent-purple-600 rounded"
+                                      />
+                                      <span>🔔 Notify students</span>
+                                    </label>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* ══════════════════════════════════════════════════════════
+                        TAB 4: SESSION QUIZ (WITH TIMING & NOTIFICATIONS)
+                        ══════════════════════════════════════════════════════════ */}
+                    {activeSessionTab === "quiz" && (
+                      <div className="space-y-4 animate-in fade-in duration-150">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                          <div>
+                            <h4 className="text-xs font-bold text-text flex items-center gap-1.5">
+                              <HelpCircle className="w-3.5 h-3.5 text-purple-400" />
+                              Session Knowledge Check & Quizzes ({aiGeneratedSessions[activeSessionIndex].quizzes?.length || 0} Questions)
+                            </h4>
+                            <p className="text-[11px] text-subtext">
+                              Multiple-choice questions to evaluate student comprehension after the live masterclass.
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              disabled={isGeneratingSessionQuiz}
+                              onClick={handleGenerateSessionQuizAI}
+                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-purple-600/30 to-indigo-600/30 hover:from-purple-600/40 hover:to-indigo-600/40 text-purple-200 border border-purple-500/40 text-xs font-bold shadow-sm transition-all"
+                            >
+                              {isGeneratingSessionQuiz ? (
+                                <>
+                                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                  <span>Generating Quiz...</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+                                  <span>✨ AI Generate Quiz</span>
+                                </>
+                              )}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleAddQuizQuestion()}
+                              className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold shadow-md shadow-purple-600/20"
+                            >
+                              <Plus className="w-3 h-3" />
+                              <span>Add Question</span>
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* 🌟 QUIZ RELEASE TIMING, DUE DATE & NOTIFICATION SETTINGS */}
+                        <div className="p-4 rounded-2xl bg-card border border-purple-500/20 space-y-3 shadow-sm">
+                          <div className="flex items-center gap-2 border-b border-white/10 pb-2">
+                            <Clock className="w-4 h-4 text-purple-400" />
+                            <h5 className="text-xs font-bold text-white">Quiz Release Schedule & Due Date</h5>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <div className="space-y-1">
+                              <label className="text-[11px] font-bold text-subtext">⚡ When to Publish Quiz?</label>
+                              <select
+                                value={aiGeneratedSessions[activeSessionIndex].quizPublishTrigger || "after_class_end"}
+                                onChange={(e) => handleUpdateActiveSession("quizPublishTrigger", e.target.value)}
+                                className="w-full bg-background border border-white/10 rounded-xl px-2.5 py-1.5 text-xs text-text outline-none cursor-pointer"
+                              >
+                                <option value="after_class_end">🏁 Immediately After Live Class Ends</option>
+                                <option value="during_class">💬 During Live Class (In-Session)</option>
+                                <option value="immediate">🟢 Available Immediately</option>
+                                <option value="scheduled_date">📅 Specific Scheduled Date/Time</option>
+                                <option value="manual_unlock">🔒 Manual Instructor Unlock</option>
+                              </select>
+                            </div>
+
+                            <div className="space-y-1">
+                              <label className="text-[11px] font-bold text-subtext">⏳ Due Date / Window</label>
+                              <select
+                                value={aiGeneratedSessions[activeSessionIndex].quizDurationWindow || "24_hours"}
+                                onChange={(e) => handleUpdateActiveSession("quizDurationWindow", e.target.value)}
+                                className="w-full bg-background border border-white/10 rounded-xl px-2.5 py-1.5 text-xs text-text outline-none cursor-pointer"
+                              >
+                                <option value="24_hours">⏱ Due 24 Hours after Live Class</option>
+                                <option value="48_hours">⏱ Due 48 Hours after Live Class</option>
+                                <option value="until_next_session">📅 Due Before Next Live Session</option>
+                                <option value="custom_deadline">📅 Custom Due Date & Time</option>
+                                <option value="unlimited">♾️ Unlimited / Practice Mode</option>
+                              </select>
+                            </div>
+
+                            <div className="space-y-1">
+                              <label className="text-[11px] font-bold text-subtext">⏱ Time Limit per Attempt</label>
+                              <select
+                                value={aiGeneratedSessions[activeSessionIndex].quizTimeLimitMinutes || 20}
+                                onChange={(e) => handleUpdateActiveSession("quizTimeLimitMinutes", parseInt(e.target.value))}
+                                className="w-full bg-background border border-white/10 rounded-xl px-2.5 py-1.5 text-xs text-text outline-none cursor-pointer"
+                              >
+                                <option value={10}>10 Minutes</option>
+                                <option value={15}>15 Minutes</option>
+                                <option value={20}>20 Minutes (Standard)</option>
+                                <option value={30}>30 Minutes</option>
+                                <option value={0}>No Time Limit</option>
+                              </select>
+                            </div>
+                          </div>
+
+                          {/* Quiz Custom Due Date if selected */}
+                          {aiGeneratedSessions[activeSessionIndex].quizDurationWindow === "custom_deadline" && (
+                            <div className="p-3 rounded-xl bg-purple-500/10 border border-purple-500/20 grid grid-cols-1 sm:grid-cols-2 gap-2.5 animate-in fade-in">
+                              <div className="space-y-1">
+                                <label className="text-[11px] font-bold text-purple-300">Quiz Due Date</label>
+                                <DatePicker
+                                  value={aiGeneratedSessions[activeSessionIndex].quizDueDate || ""}
+                                  onChange={(val) => handleUpdateActiveSession("quizDueDate", val)}
+                                />
+                              </div>
+                              <div className="space-y-1">
+                                <label className="text-[11px] font-bold text-purple-300">Quiz Due Time</label>
+                                <TimePicker
+                                  value={aiGeneratedSessions[activeSessionIndex].quizDueTime || "11:59 PM"}
+                                  onChange={(val) => handleUpdateActiveSession("quizDueTime", val)}
+                                />
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Notification Toggle */}
+                          <div className="p-2.5 rounded-xl bg-background/60 border border-white/5 flex items-center justify-between">
+                            <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-text">
+                              <input
+                                type="checkbox"
+                                checked={aiGeneratedSessions[activeSessionIndex].quizNotifyStudents !== false}
+                                onChange={(e) => handleUpdateActiveSession("quizNotifyStudents", e.target.checked)}
+                                className="w-4 h-4 accent-purple-600 rounded"
+                              />
+                              <span className="flex items-center gap-1.5 text-purple-300">
+                                <Bell className="w-3.5 h-3.5" />
+                                <span>🔔 Auto-notify students when Quiz is published & send reminder 6 hours before deadline</span>
+                              </span>
+                            </label>
+                          </div>
+                        </div>
+
+                        {/* Quiz Questions List */}
+                        {(!aiGeneratedSessions[activeSessionIndex].quizzes || aiGeneratedSessions[activeSessionIndex].quizzes.length === 0) ? (
+                          <div className="p-8 text-center rounded-2xl bg-background/40 border border-white/5 space-y-3">
+                            <HelpCircle className="w-8 h-8 text-subtext/40 mx-auto" />
+                            <div>
+                              <p className="text-xs font-bold text-text">No quiz questions configured for this session</p>
+                              <p className="text-[11px] text-subtext mt-0.5">
+                                Add multiple-choice questions manually or click &quot;✨ AI Generate Quiz&quot; to auto-generate questions for this topic.
+                              </p>
+                            </div>
+                            <div className="flex justify-center gap-2 pt-2">
+                              <button
+                                type="button"
+                                onClick={handleGenerateSessionQuizAI}
+                                className="px-4 py-2 rounded-xl bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 border border-purple-500/30 text-xs font-bold flex items-center gap-1.5"
+                              >
+                                <Sparkles className="w-3.5 h-3.5" />
+                                <span>AI Generate Quiz for this Session</span>
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="space-y-4">
+                            {aiGeneratedSessions[activeSessionIndex].quizzes.map((q, qIdx) => (
+                              <div
+                                key={qIdx}
+                                className="p-4 rounded-2xl bg-background/70 border border-white/10 space-y-3 shadow-sm"
+                              >
+                                <div className="flex items-center justify-between gap-2 border-b border-white/5 pb-2">
+                                  <span className="text-xs font-black text-purple-300 flex items-center gap-1.5">
+                                    <span className="w-5 h-5 rounded-md bg-purple-500/20 flex items-center justify-center text-[10px]">
+                                      {qIdx + 1}
+                                    </span>
+                                    Question {qIdx + 1}
+                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleRemoveQuizQuestion(qIdx)}
+                                    className="p-1 rounded text-subtext hover:text-red-400 transition-colors"
+                                    title="Delete Question"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+
+                                {/* Question Prompt */}
+                                <div className="space-y-1">
+                                  <label className="text-[11px] font-bold text-subtext">Question Prompt</label>
+                                  <input
+                                    type="text"
+                                    value={q.question}
+                                    onChange={(e) => handleUpdateQuizQuestion(qIdx, "question", e.target.value)}
+                                    placeholder="e.g. Which architectural component ensures state persistence in cyclical graph workflows?"
+                                    className="w-full h-9 px-3 rounded-xl bg-card border border-white/10 text-xs font-bold text-text focus:outline-none focus:border-purple-500/50"
+                                  />
+                                </div>
+
+                                {/* 4 Multiple Choice Options */}
+                                <div className="space-y-1.5">
+                                  <div className="flex items-center justify-between">
+                                    <label className="text-[11px] font-bold text-subtext">
+                                      Options & Correct Answer
+                                    </label>
+                                    <span className="text-[10px] text-emerald-400/80 font-medium">
+                                      Click letter circle to mark correct answer
+                                    </span>
+                                  </div>
+
+                                  <div className="space-y-2">
+                                    {(q.options && q.options.length > 0 ? q.options : ["Option A", "Option B", "Option C", "Option D"]).map((opt, optIdx) => {
+                                      const isCorrect = (q.correctAnswer ?? 0) === optIdx;
+                                      return (
+                                        <div key={optIdx} className="flex items-center gap-2">
+                                          <button
+                                            type="button"
+                                            onClick={() => handleSetCorrectQuizOption(qIdx, optIdx)}
+                                            className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 border text-xs font-black transition-all ${
+                                              isCorrect
+                                                ? "bg-emerald-500 border-emerald-400 text-black shadow-md shadow-emerald-500/20"
+                                                : "border-white/20 text-subtext hover:border-purple-400 hover:text-white"
+                                            }`}
+                                            title={isCorrect ? "Correct Answer" : "Click to mark as Correct"}
+                                          >
+                                            {isCorrect ? "✓" : String.fromCharCode(65 + optIdx)}
+                                          </button>
+                                          <input
+                                            type="text"
+                                            value={opt}
+                                            onChange={(e) => handleUpdateQuizOption(qIdx, optIdx, e.target.value)}
+                                            placeholder={`Option ${String.fromCharCode(65 + optIdx)}`}
+                                            className={`flex-1 h-8 px-3 rounded-xl bg-card border text-xs text-text outline-none transition-all ${
+                                              isCorrect
+                                                ? "border-emerald-500/50 bg-emerald-950/15"
+                                                : "border-white/10 focus:border-purple-500/50"
+                                            }`}
+                                          />
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
+
+                                {/* Pedagogical Explanation / Hint */}
+                                <div className="space-y-1 pt-1">
+                                  <label className="text-[11px] font-bold text-subtext">Explanation & Feedback (Shown after answer)</label>
+                                  <input
+                                    type="text"
+                                    value={q.explanation || ""}
+                                    onChange={(e) => handleUpdateQuizQuestion(qIdx, "explanation", e.target.value)}
+                                    placeholder="Explain why this answer is correct and provide key insights..."
+                                    className="w-full h-8 px-3 rounded-xl bg-card/60 border border-white/5 text-[11px] text-subtext focus:outline-none focus:border-purple-500/50"
+                                  />
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* ══════════════════════════════════════════════════════════
+                        TAB 5: SESSION ASSIGNMENT & CAPSTONE CHALLENGE (BRAND NEW!)
+                        ══════════════════════════════════════════════════════════ */}
+                    {activeSessionTab === "assignment" && (
+                      <div className="space-y-5 animate-in fade-in duration-150">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4">
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <h4 className="text-sm font-bold text-text flex items-center gap-1.5">
+                                <FileCheck className="w-4 h-4 text-emerald-400" />
+                                <span>Session Assignment & Take-Home Milestone</span>
+                              </h4>
+                              <span className="px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 text-[9px] font-black uppercase tracking-wider">
+                                {aiGeneratedSessions[activeSessionIndex].assignment ? "Configured" : "Not Set"}
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-subtext mt-0.5">
+                              Assign practical coding challenges, specify when students unlock it (e.g. after live class ends), set due dates, and broadcast student notifications.
+                            </p>
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              disabled={isGeneratingAssignment}
+                              onClick={handleGenerateAssignmentAI}
+                              className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-purple-600/30 to-indigo-600/30 hover:from-purple-600/40 hover:to-indigo-600/40 text-purple-200 border border-purple-500/40 text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all"
+                            >
+                              {isGeneratingAssignment ? (
+                                <>
+                                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                  <span>Generating...</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Sparkles className="w-3.5 h-3.5 text-purple-300" />
+                                  <span>✨ AI Auto-Generate</span>
+                                </>
+                              )}
+                            </button>
+
+                            {!aiGeneratedSessions[activeSessionIndex].assignment ? (
+                              <button
+                                type="button"
+                                onClick={handleInitAssignment}
+                                className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-emerald-600/20"
+                              >
+                                <Plus className="w-3.5 h-3.5" />
+                                <span>Add Assignment</span>
+                              </button>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={handleClearAssignment}
+                                className="px-3 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/30 text-xs font-bold flex items-center gap-1"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                                <span>Remove</span>
+                              </button>
+                            )}
+                          </div>
+                        </div>
+
+                        {!aiGeneratedSessions[activeSessionIndex].assignment ? (
+                          <div className="p-10 text-center rounded-3xl bg-gradient-to-br from-card/80 via-card to-emerald-950/20 border border-emerald-500/20 space-y-4">
+                            <div className="w-14 h-14 rounded-2xl bg-emerald-500/15 text-emerald-400 flex items-center justify-center mx-auto border border-emerald-500/30 shadow-lg">
+                              <FileCheck className="w-7 h-7" />
+                            </div>
+                            <div className="space-y-1 max-w-md mx-auto">
+                              <h4 className="text-sm font-bold text-text">No Assignment Assigned Yet for Session #{aiGeneratedSessions[activeSessionIndex].sessionNumber}</h4>
+                              <p className="text-xs text-subtext leading-relaxed">
+                                Give students a take-home milestone to practice what was taught during this live masterclass. You can set the assignment to automatically unlock when the live class ends!
+                              </p>
+                            </div>
+                            <div className="flex items-center justify-center gap-3 pt-2">
+                              <button
+                                type="button"
+                                onClick={handleGenerateAssignmentAI}
+                                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-black flex items-center gap-2 shadow-lg shadow-purple-600/25"
+                              >
+                                <Sparkles className="w-4 h-4" />
+                                <span>✨ AI Generate Assignment from Session</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={handleInitAssignment}
+                                className="px-5 py-2.5 rounded-xl bg-card hover:bg-card-hover border border-white/10 text-text text-xs font-bold flex items-center gap-1.5"
+                              >
+                                <Plus className="w-4 h-4 text-emerald-400" />
+                                <span>Create Custom Assignment</span>
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="space-y-6">
+                            {/* Section 1: Basic Info */}
+                            <div className="p-5 rounded-2xl bg-background/70 border border-white/10 space-y-4 shadow-sm">
+                              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <div className="sm:col-span-2 space-y-1.5">
+                                  <label className="text-xs font-bold text-text flex items-center gap-1">
+                                    <span>Assignment Title</span>
+                                    <span className="text-rose-400">*</span>
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={aiGeneratedSessions[activeSessionIndex].assignment?.title || ""}
+                                    onChange={(e) => handleUpdateAssignment("title", e.target.value)}
+                                    placeholder="e.g. Build an Autonomous Multi-Agent Swarm with Memory"
+                                    className="w-full h-10 px-3.5 rounded-xl bg-card border border-white/10 text-xs font-bold text-text focus:outline-none focus:border-purple-500/50"
+                                  />
+                                </div>
+
+                                <div className="space-y-1.5">
+                                  <label className="text-xs font-bold text-text">Total Marks / Points</label>
+                                  <input
+                                    type="number"
+                                    min="10"
+                                    max="500"
+                                    value={aiGeneratedSessions[activeSessionIndex].assignment?.totalMarks || 100}
+                                    onChange={(e) => handleUpdateAssignment("totalMarks", parseInt(e.target.value) || 100)}
+                                    className="w-full h-10 px-3.5 rounded-xl bg-card border border-white/10 text-xs font-bold text-emerald-300 focus:outline-none focus:border-purple-500/50"
+                                  />
+                                </div>
+
+                                <div className="sm:col-span-2 space-y-1.5">
+                                  <label className="text-xs font-bold text-text">Problem Statement & Requirements</label>
+                                  <textarea
+                                    rows={3}
+                                    value={aiGeneratedSessions[activeSessionIndex].assignment?.description || ""}
+                                    onChange={(e) => handleUpdateAssignment("description", e.target.value)}
+                                    placeholder="Describe the real-world scenario, deliverables, constraints, and evaluation criteria..."
+                                    className="w-full p-3.5 rounded-xl bg-card border border-white/10 text-xs text-text font-medium leading-relaxed focus:outline-none focus:border-purple-500/50"
+                                  />
+                                </div>
+
+                                <div className="space-y-1.5">
+                                  <label className="text-xs font-bold text-text">Submission Format</label>
+                                  <select
+                                    value={aiGeneratedSessions[activeSessionIndex].assignment?.submissionType || "github_url"}
+                                    onChange={(e) => handleUpdateAssignment("submissionType", e.target.value)}
+                                    className="w-full h-10 px-3 rounded-xl bg-card border border-white/10 text-xs font-bold text-purple-300 focus:outline-none focus:border-purple-500/50 cursor-pointer"
+                                  >
+                                    <option value="github_url">🚀 GitHub Repository URL</option>
+                                    <option value="file_upload">📦 ZIP / Project Archive Upload</option>
+                                    <option value="live_url">🌐 Live Hosted Demo URL (Vercel/Cloud)</option>
+                                    <option value="text_code">💻 Text / Code Snippet</option>
+                                    <option value="any">📁 Any of the Above (Flexible)</option>
+                                  </select>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Section 2: ⚡ RELEASE SCHEDULE & ⏳ DUE DATE DURATION BUILDER */}
+                            <div className="p-5 rounded-2xl bg-gradient-to-br from-card via-card to-purple-950/20 border border-purple-500/30 space-y-4 shadow-sm">
+                              <div className="flex items-center gap-2 border-b border-white/10 pb-3">
+                                <Clock className="w-4 h-4 text-purple-400" />
+                                <div>
+                                  <h5 className="text-xs font-bold text-white">Assignment Release Timing & Due Date Window</h5>
+                                  <p className="text-[10px] text-subtext">Control exactly when students see this assignment and till when submissions are accepted.</p>
+                                </div>
+                              </div>
+
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                {/* Release Trigger */}
+                                <div className="space-y-1.5">
+                                  <label className="text-xs font-bold text-text flex items-center gap-1.5">
+                                    <span>⚡ When to Publish / Release to Student</span>
+                                  </label>
+                                  <select
+                                    value={aiGeneratedSessions[activeSessionIndex].assignment?.publishTrigger || "after_class_end"}
+                                    onChange={(e) => handleUpdateAssignment("publishTrigger", e.target.value)}
+                                    className="w-full h-10 px-3.5 rounded-xl bg-background border border-white/10 text-xs font-bold text-emerald-300 focus:outline-none focus:border-emerald-500 cursor-pointer"
+                                  >
+                                    <option value="after_class_end">🏁 Immediately After Live Class Ends (Recommended)</option>
+                                    <option value="immediate">🟢 Available Immediately (Pre-released)</option>
+                                    <option value="during_class">💬 Unlock During Live Class</option>
+                                    <option value="scheduled_date">📅 Specific Scheduled Date & Time</option>
+                                    <option value="manual_unlock">🔒 Manual Release by Instructor</option>
+                                  </select>
+                                  <span className="text-[10px] text-subtext block">
+                                    {aiGeneratedSessions[activeSessionIndex].assignment?.publishTrigger === "after_class_end"
+                                      ? "✅ Automatically visible in student dashboard the moment the live class concludes."
+                                      : "Configured custom trigger."}
+                                  </span>
+                                </div>
+
+                                {/* Due Date Availability Duration */}
+                                <div className="space-y-1.5">
+                                  <label className="text-xs font-bold text-text">⏳ Due Date Duration</label>
+                                  <div className="flex items-center gap-2">
+                                    {[
+                                      { label: "+24 Hours", days: 1 },
+                                      { label: "+3 Days", days: 3 },
+                                      { label: "+7 Days", days: 7 },
+                                      { label: "+14 Days", days: 14 }
+                                    ].map((preset) => (
+                                      <button
+                                        key={preset.label}
+                                        type="button"
+                                        onClick={() => {
+                                          const base = aiGeneratedSessions[activeSessionIndex].date
+                                            ? new Date(aiGeneratedSessions[activeSessionIndex].date!)
+                                            : new Date();
+                                          base.setDate(base.getDate() + preset.days);
+                                          handleUpdateAssignment("dueDate", base.toISOString().split("T")[0]);
+                                        }}
+                                        className="flex-1 py-1 px-2 rounded-lg bg-white/5 hover:bg-purple-500/20 border border-white/10 text-[10px] font-bold text-subtext hover:text-white transition-all text-center"
+                                      >
+                                        {preset.label}
+                                      </button>
+                                    ))}
+                                  </div>
+
+                                  <div className="grid grid-cols-2 gap-2 pt-1">
+                                    <div>
+                                      <DatePicker
+                                        value={aiGeneratedSessions[activeSessionIndex].assignment?.dueDate || ""}
+                                        onChange={(val) => handleUpdateAssignment("dueDate", val)}
+                                      />
+                                    </div>
+                                    <div>
+                                      <TimePicker
+                                        value={aiGeneratedSessions[activeSessionIndex].assignment?.dueTime || "11:59 PM"}
+                                        onChange={(val) => handleUpdateAssignment("dueTime", val)}
+                                      />
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Specific Scheduled Release Date/Time if chosen */}
+                                {aiGeneratedSessions[activeSessionIndex].assignment?.publishTrigger === "scheduled_date" && (
+                                  <div className="sm:col-span-2 p-3.5 rounded-xl bg-purple-500/10 border border-purple-500/20 grid grid-cols-1 sm:grid-cols-2 gap-3 animate-in fade-in">
+                                    <div className="space-y-1">
+                                      <label className="text-[11px] font-bold text-purple-300">Custom Release Date</label>
+                                      <DatePicker
+                                        value={aiGeneratedSessions[activeSessionIndex].assignment?.publishDate || ""}
+                                        onChange={(val) => handleUpdateAssignment("publishDate", val)}
+                                      />
+                                    </div>
+                                    <div className="space-y-1">
+                                      <label className="text-[11px] font-bold text-purple-300">Custom Release Time</label>
+                                      <TimePicker
+                                        value={aiGeneratedSessions[activeSessionIndex].assignment?.publishTime || "09:00 PM"}
+                                        onChange={(val) => handleUpdateAssignment("publishTime", val)}
+                                      />
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Late Submission & Grace Period Policy */}
+                              <div className="p-3.5 rounded-xl bg-background/60 border border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                                <label className="flex items-center gap-2 cursor-pointer font-bold text-text">
+                                  <input
+                                    type="checkbox"
+                                    checked={aiGeneratedSessions[activeSessionIndex].assignment?.allowLateSubmissions !== false}
+                                    onChange={(e) => handleUpdateAssignment("allowLateSubmissions", e.target.checked)}
+                                    className="w-4 h-4 accent-purple-600 rounded"
+                                  />
+                                  <span>Allow late submissions with penalty (Grace Period)</span>
+                                </label>
+
+                                {aiGeneratedSessions[activeSessionIndex].assignment?.allowLateSubmissions !== false && (
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-[11px] text-subtext">Penalty per day late:</span>
+                                    <select
+                                      value={aiGeneratedSessions[activeSessionIndex].assignment?.latePenaltyPercent ?? 10}
+                                      onChange={(e) => handleUpdateAssignment("latePenaltyPercent", parseInt(e.target.value))}
+                                      className="bg-card border border-white/10 rounded-lg px-2.5 py-1 text-xs font-bold text-text outline-none"
+                                    >
+                                      <option value={5}>5% deduction</option>
+                                      <option value={10}>10% deduction (Standard)</option>
+                                      <option value={20}>20% deduction</option>
+                                      <option value={0}>0% (No penalty)</option>
+                                    </select>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Section 3: 🔔 AUTOMATED STUDENT NOTIFICATION ENGINE */}
+                            <div className="p-5 rounded-2xl bg-card border border-purple-500/30 space-y-3.5 shadow-sm">
+                              <div className="flex items-center gap-2 border-b border-white/10 pb-2.5">
+                                <Bell className="w-4 h-4 text-purple-400 animate-pulse" />
+                                <h5 className="text-xs font-bold text-white">Student Notification & Automated Broadcast</h5>
+                              </div>
+
+                              <div className="space-y-2.5">
+                                <label className="flex items-center gap-2.5 text-xs font-bold text-text cursor-pointer">
+                                  <input
+                                    type="checkbox"
+                                    checked={aiGeneratedSessions[activeSessionIndex].assignment?.notifyStudents !== false}
+                                    onChange={(e) => handleUpdateAssignment("notifyStudents", e.target.checked)}
+                                    className="w-4 h-4 accent-purple-600 rounded"
+                                  />
+                                  <span className="text-purple-300">
+                                    🔔 Send instant in-app & push notification to enrolled students when assigned
+                                  </span>
+                                </label>
+
+                                <label className="flex items-center gap-2.5 text-xs font-semibold text-subtext cursor-pointer">
+                                  <input
+                                    type="checkbox"
+                                    defaultChecked={true}
+                                    className="w-4 h-4 accent-purple-600 rounded"
+                                  />
+                                  <span>⏰ Send automatic reminder notification to students 24 hours before due date</span>
+                                </label>
+
+                                {/* Notification Live Preview Card */}
+                                <div className="p-4 rounded-xl bg-gradient-to-r from-purple-950/40 via-indigo-950/30 to-background border border-purple-500/30 space-y-1.5">
+                                  <div className="flex items-center justify-between text-[10px] font-black uppercase text-purple-400 tracking-wider">
+                                    <span className="flex items-center gap-1">
+                                      <Send className="w-3 h-3" />
+                                      Live Student Notification Preview
+                                    </span>
+                                    <span className="px-1.5 py-0.5 rounded bg-purple-500/20 border border-purple-500/30 text-[9px]">
+                                      Push & Email
+                                    </span>
+                                  </div>
+                                  <p className="text-xs font-bold text-white">
+                                    📢 New Assignment: &quot;{aiGeneratedSessions[activeSessionIndex].assignment?.title || `${aiGeneratedSessions[activeSessionIndex].title} Project`}&quot;
+                                  </p>
+                                  <p className="text-[11px] text-purple-200/80 leading-relaxed">
+                                    Assigned for Session #{aiGeneratedSessions[activeSessionIndex].sessionNumber}.
+                                    Due on <strong>{aiGeneratedSessions[activeSessionIndex].assignment?.dueDate ? formatDate(aiGeneratedSessions[activeSessionIndex].assignment!.dueDate!) : "TBA"}</strong> at <strong>{aiGeneratedSessions[activeSessionIndex].assignment?.dueTime || "11:59 PM"}</strong> (Total: {aiGeneratedSessions[activeSessionIndex].assignment?.totalMarks || 100} Marks).
+                                    Click here to view requirements and submit your code.
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Section 4: Step-by-Step Instructions Checklist */}
+                            <div className="p-5 rounded-2xl bg-background/70 border border-white/10 space-y-3 shadow-sm">
+                              <div className="flex items-center justify-between border-b border-white/5 pb-2">
+                                <label className="text-xs font-bold text-text flex items-center gap-1.5">
+                                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                                  <span>Deliverables & Step-by-Step Instructions ({aiGeneratedSessions[activeSessionIndex].assignment?.instructions?.length || 0})</span>
+                                </label>
+                                <button
+                                  type="button"
+                                  onClick={handleAddAssignmentInstruction}
+                                  className="text-xs font-bold text-purple-400 hover:text-purple-300 flex items-center gap-1"
+                                >
+                                  <Plus className="w-3.5 h-3.5" /> Add Step
+                                </button>
+                              </div>
+
+                              <div className="space-y-2">
+                                {(aiGeneratedSessions[activeSessionIndex].assignment?.instructions || [
+                                  "Clone the starter repository or initialize your project workspace",
+                                  "Implement the required components discussed during the live session",
+                                  "Write unit tests to validate edge cases and performance",
+                                  "Submit your GitHub repository URL or ZIP package before the deadline"
+                                ]).map((inst, instIdx) => (
+                                  <div key={instIdx} className="flex items-center gap-2">
+                                    <span className="w-6 h-6 rounded-lg bg-emerald-500/15 text-emerald-400 flex items-center justify-center text-[10px] font-black shrink-0 border border-emerald-500/30">
+                                      {instIdx + 1}
+                                    </span>
+                                    <input
+                                      type="text"
+                                      value={inst}
+                                      onChange={(e) => handleUpdateAssignmentInstruction(instIdx, e.target.value)}
+                                      placeholder="Instruction or deliverable requirement..."
+                                      className="flex-1 h-8 px-3 rounded-xl bg-card border border-white/10 text-xs text-text focus:outline-none focus:border-purple-500/50"
+                                    />
+                                    <button
+                                      type="button"
+                                      onClick={() => handleRemoveAssignmentInstruction(instIdx)}
+                                      className="p-1.5 rounded-lg text-subtext hover:text-red-400 transition-colors"
+                                    >
+                                      <Trash2 className="w-3.5 h-3.5" />
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* Section 5: Attached Starter Files & External Repo */}
+                            <div className="p-5 rounded-2xl bg-background/70 border border-white/10 space-y-3 shadow-sm">
+                              <label className="text-xs font-bold text-text flex items-center gap-1.5">
+                                <FolderArchive className="w-3.5 h-3.5 text-purple-400" />
+                                <span>Attached Starter Repository & Evaluation Rubric</span>
+                              </label>
+
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div className="space-y-1">
+                                  <label className="text-[11px] font-bold text-subtext">Starter GitHub Repository URL</label>
+                                  <input
+                                    type="text"
+                                    value={aiGeneratedSessions[activeSessionIndex].assignment?.externalStarterUrl || ""}
+                                    onChange={(e) => handleUpdateAssignment("externalStarterUrl", e.target.value)}
+                                    placeholder="https://github.com/glarus-academy/assignment-starter"
+                                    className="w-full h-9 px-3 rounded-xl bg-card border border-white/10 text-xs text-text font-mono focus:outline-none focus:border-purple-500/50"
+                                  />
+                                </div>
+
+                                <div className="space-y-1">
+                                  <label className="text-[11px] font-bold text-subtext">Upload Technical Rubric (PDF / ZIP)</label>
+                                  <div className="flex items-center gap-2">
+                                    <input
+                                      type="file"
+                                      id={`assignment-file-upload-${activeSessionIndex}`}
+                                      accept=".pdf,.zip,.tar,.gz,.doc,.docx,.txt,.md,.json,.csv,.py,.ipynb,application/pdf"
+                                      className="hidden"
+                                      onChange={async (e) => {
+                                        const file = e.target.files?.[0];
+                                        if (!file) return;
+                                        await handleUploadAssignmentFile(file);
+                                        e.target.value = "";
+                                      }}
+                                    />
+                                    <label
+                                      htmlFor={`assignment-file-upload-${activeSessionIndex}`}
+                                      className="h-9 px-4 rounded-xl bg-purple-600/20 hover:bg-purple-600/30 text-purple-200 border border-purple-500/40 text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all shrink-0"
+                                    >
+                                      {uploadingAssignmentFile ? (
+                                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                      ) : (
+                                        <UploadCloud className="w-3.5 h-3.5 text-purple-400" />
+                                      )}
+                                      <span>Upload Rubric / File</span>
+                                    </label>
+
+                                    {aiGeneratedSessions[activeSessionIndex].assignment?.fileUrl && (
+                                      <div className="flex-1 flex items-center justify-between p-2 rounded-xl bg-card border border-purple-500/30 min-w-0">
+                                        <span className="text-[11px] text-emerald-400 font-bold truncate flex items-center gap-1.5">
+                                          <Paperclip className="w-3.5 h-3.5 text-purple-400 shrink-0" />
+                                          <span className="truncate">{aiGeneratedSessions[activeSessionIndex].assignment?.fileName || "Attached Document"}</span>
+                                          {aiGeneratedSessions[activeSessionIndex].assignment?.fileSize && (
+                                            <span className="text-[10px] text-subtext shrink-0">({aiGeneratedSessions[activeSessionIndex].assignment?.fileSize})</span>
+                                          )}
+                                        </span>
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            handleUpdateAssignment({
+                                              fileUrl: undefined,
+                                              fileName: undefined,
+                                              fileSize: undefined,
+                                              fileType: undefined
+                                            });
+                                          }}
+                                          className="text-subtext hover:text-red-400 ml-2 p-1"
+                                          title="Remove Attachment"
+                                        >
+                                          <X className="w-3 h-3" />
+                                        </button>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -2910,10 +5012,10 @@ export default function AdminLiveCourseCreator() {
                   <tr className="border-b border-white/10 text-subtext text-[11px] font-bold uppercase tracking-wider">
                     <th className="py-3 px-3">#</th>
                     <th className="py-3 px-3">Session Title & Topic</th>
-                    <th className="py-3 px-3">Date</th>
-                    <th className="py-3 px-3">Time</th>
+                    <th className="py-3 px-3">Date & Time</th>
                     <th className="py-3 px-3">Duration</th>
                     <th className="py-3 px-3">Agenda</th>
+                    <th className="py-3 px-3">Media & Materials</th>
                     <th className="py-3 px-3 text-right">Actions</th>
                   </tr>
                 </thead>
@@ -2928,16 +5030,35 @@ export default function AdminLiveCourseCreator() {
                         </p>
                       </td>
                       <td className="py-3.5 px-3 text-subtext font-medium whitespace-nowrap">
-                        {sess.date || "TBA"}
-                      </td>
-                      <td className="py-3.5 px-3 text-subtext font-medium whitespace-nowrap">
-                        {sess.startTime} – {sess.endTime}
+                        <div>{sess.date || "TBA"}</div>
+                        <div className="text-[10px] text-subtext/70">{sess.startTime} – {sess.endTime}</div>
                       </td>
                       <td className="py-3.5 px-3 text-subtext whitespace-nowrap">{sess.duration}</td>
                       <td className="py-3.5 px-3">
                         <span className="px-2 py-0.5 rounded bg-purple-500/10 text-purple-300 border border-purple-500/20 text-[10px] font-semibold">
                           {sess.agenda?.length || 0} steps
                         </span>
+                      </td>
+                      <td className="py-3.5 px-3">
+                        <div className="flex flex-wrap items-center gap-1">
+                          {sess.videoUrl ? (
+                            <span className="px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 text-[9px] font-bold flex items-center gap-1">
+                              <Video className="w-2.5 h-2.5" /> Video
+                            </span>
+                          ) : (
+                            <span className="px-1.5 py-0.5 rounded bg-white/5 text-subtext/50 text-[9px]">No video</span>
+                          )}
+                          {(sess.resources?.length || 0) > 0 ? (
+                            <span className="px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-300 border border-blue-500/20 text-[9px] font-bold flex items-center gap-1">
+                              <Paperclip className="w-2.5 h-2.5" /> {sess.resources.length} res
+                            </span>
+                          ) : null}
+                          {(sess.quizzes?.length || 0) > 0 ? (
+                            <span className="px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/20 text-[9px] font-bold flex items-center gap-1">
+                              <HelpCircle className="w-2.5 h-2.5" /> {sess.quizzes?.length || 0} quiz
+                            </span>
+                          ) : null}
+                        </div>
                       </td>
                       <td className="py-3.5 px-3 text-right whitespace-nowrap">
                         <div className="flex items-center justify-end gap-1.5">
@@ -3374,6 +5495,13 @@ export default function AdminLiveCourseCreator() {
               </div>
             </div>
 
+            {errorMessage && (
+              <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2 font-semibold animate-in fade-in">
+                <AlertTriangle className="w-4 h-4 shrink-0 text-rose-400" />
+                <span>{errorMessage}</span>
+              </div>
+            )}
+
             <div className="flex items-center justify-end gap-2 pt-2">
               <button
                 type="button"
@@ -3386,12 +5514,12 @@ export default function AdminLiveCourseCreator() {
                 type="button"
                 onClick={() => handleSubmitLiveCourse("ASSIGNED")}
                 disabled={isSubmitting}
-                className="flex items-center gap-2 px-5 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs font-bold shadow-lg shadow-purple-600/30 hover:scale-105 disabled:opacity-50"
+                className="flex items-center gap-2 px-5 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-bold shadow-lg shadow-purple-600/30 hover:scale-105 disabled:opacity-50 transition-all"
               >
                 {isSubmitting ? (
                   <>
                     <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    <span>Assigning...</span>
+                    <span>Assigning to Instructor...</span>
                   </>
                 ) : (
                   <>

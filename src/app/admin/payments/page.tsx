@@ -253,6 +253,35 @@ function PaymentsContent() {
   const [payouts, setPayouts] = useState(INITIAL_INSTRUCTOR_PAYOUTS);
   const [refunds, setRefunds] = useState(INITIAL_REFUNDS);
   const [issues, setIssues] = useState(INITIAL_ISSUES);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Load real transactions and payouts from database
+  useEffect(() => {
+    async function fetchPaymentsData() {
+      try {
+        const res = await fetch("/api/admin/payments");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success) {
+            if (data.transactions && data.transactions.length > 0) {
+              setTransactions(data.transactions);
+            }
+            if (data.payouts && data.payouts.length > 0) {
+              setPayouts(data.payouts);
+            }
+            if (data.refunds && data.refunds.length > 0) {
+              setRefunds(data.refunds);
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load payments data", err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchPaymentsData();
+  }, []);
 
   // Confirmation modal for sensitive refund actions
   const [pendingRefundAction, setPendingRefundAction] = useState<{

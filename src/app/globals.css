@@ -2,47 +2,47 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  /* Independent Premium Light Theme System */
-  --background: #F8FAFC;
-  --background-secondary: #F1F5F9;
+  /* Glarus Opal — Ultra-Premium Light Theme System */
+  --background: #FAFAFC;
+  --background-secondary: #F4F4F7;
   --card: #FFFFFF;
-  --card-hover: #EEF2FF;
-  --border: #E2E8F0;
-  --border-strong: #CBD5E1;
-  --border-hover: #94A3B8;
+  --card-hover: #F8F7FC;
+  --border: #E4E4E7;
+  --border-strong: #D4D4D8;
+  --border-hover: #A1A1AA;
 
-  --text: #0F172A;
-  --subtext: #334155;
-  --text-muted: #64748B;
-  --text-disabled: #94A3B8;
+  --text: #111113;
+  --subtext: #52525B;
+  --text-muted: #71717A;
+  --text-disabled: #B4B4BC;
 
   /* Brand Colors */
   --primary: #6D28D9;
   --primary-hover: #5B21B6;
-  --accent: #2563EB;
+  --accent: #4F46E5;
 
   /* Status Tokens */
-  --success-bg: #DCFCE7;
-  --success-border: #22C55E;
-  --success-text: #166534;
+  --success-bg: #ECFDF3;
+  --success-border: #BBF7D0;
+  --success-text: #15803D;
 
-  --warning-bg: #FEF3C7;
-  --warning-border: #F59E0B;
-  --warning-text: #92400E;
+  --warning-bg: #FFFBEB;
+  --warning-border: #FDE68A;
+  --warning-text: #A16207;
 
-  --danger-bg: #FEE2E2;
-  --danger-border: #EF4444;
-  --danger-text: #991B1B;
+  --danger-bg: #FEF2F2;
+  --danger-border: #FECACA;
+  --danger-text: #B91C1C;
 
-  --info-bg: #DBEAFE;
-  --info-border: #3B82F6;
-  --info-text: #1D4ED8;
+  --info-bg: #F5F3FF;
+  --info-border: #DDD6FE;
+  --info-text: #6D28D9;
 
   /* Elevation Shadows */
-  --shadow-sm: 0 4px 12px rgba(15, 23, 42, 0.05);
-  --shadow-md: 0 12px 30px rgba(15, 23, 42, 0.08);
-  --shadow-lg: 0 25px 60px rgba(15, 23, 42, 0.12);
-  --shadow-feature: 0 25px 80px rgba(109, 40, 217, 0.08);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+  --shadow-md: 0 4px 16px -2px rgba(15, 23, 42, 0.06), 0 2px 6px -1px rgba(15, 23, 42, 0.03);
+  --shadow-lg: 0 12px 32px -4px rgba(15, 23, 42, 0.08), 0 4px 12px -2px rgba(15, 23, 42, 0.04);
+  --shadow-feature: 0 20px 48px -8px rgba(109, 40, 217, 0.09);
 }
 
 .dark {
@@ -127,7 +127,7 @@ body {
 /* Light Mode Specific Enhancements for Contrast & Enterprise SaaS Depth */
 html:not(.dark) .bg-card {
   box-shadow: var(--shadow-sm);
-  border-color: var(--border-strong);
+  border-color: var(--border);
 }
 
 html:not(.dark) .bg-card:hover {
@@ -138,13 +138,13 @@ html:not(.dark) input,
 html:not(.dark) select,
 html:not(.dark) textarea {
   background-color: #FFFFFF;
-  border-color: #CBD5E1;
-  color: #0F172A;
+  border-color: #D4D4D8;
+  color: #111113;
 }
 
 html:not(.dark) input::placeholder,
 html:not(.dark) textarea::placeholder {
-  color: #94A3B8;
+  color: #A1A1AA;
 }
 
 html:not(.dark) input:focus,
@@ -155,9 +155,9 @@ html:not(.dark) textarea:focus {
 }
 
 html:not(.dark) nav {
-  background-color: rgba(255, 255, 255, 0.9);
-  border-color: #E2E8F0;
-  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04);
+  background-color: rgba(255, 255, 255, 0.88);
+  border-color: #E4E4E7;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
 }
 
 @keyframes float-1 {

@@ -33,6 +33,7 @@ import {
   StudentAnnouncementPayload,
   CourseCreationPermissionRequestedPayload,
   CourseCreationPermissionDecisionPayload,
+  LiveSessionEditRequestedPayload,
 } from "./events";
 
 export class NotificationRuleEngine {
@@ -683,6 +684,62 @@ export class NotificationRuleEngine {
           }));
         } catch (err) {
           console.error("Error notifying admins of course creation request:", err);
+          return null;
+        }
+      }
+    });
+
+    // 18b. LIVE_SESSION_EDIT_REQUESTED (Notify Admins)
+    this.registerRule<LiveSessionEditRequestedPayload>({
+      eventType: DOMAIN_EVENT_TYPES.LIVE_SESSION_EDIT_REQUESTED,
+      resolve: async (event) => {
+        const {
+          instructorId,
+          instructorName,
+          instructorEmail,
+          sessionId,
+          sessionCode,
+          sessionTitle,
+          courseName,
+          notes
+        } = event.payload;
+
+        try {
+          const admins = await prisma.user.findMany({
+            where: { role: "ADMIN" },
+            select: { id: true }
+          });
+
+          const targetLabel = sessionCode ? `${sessionCode} (${sessionTitle || "Live Session"})` : (sessionTitle || "Live Session");
+          const courseLabel = courseName ? ` in "${courseName}"` : "";
+
+          return admins.map(admin => ({
+            recipientId: admin.id,
+            actorId: instructorId,
+            category: "ADMIN" as NotificationCategory,
+            type: "PERMISSIONS_UPDATED" as NotificationType,
+            priority: "HIGH" as NotificationPriority,
+            title: `Session Edit Permission Requested`,
+            message: `${instructorName || "Instructor"} requested edit access for ${targetLabel}${courseLabel}.`,
+            details: notes ? `Reason from instructor: "${notes}"` : `Review instructor request and grant Live Class Edit permission.`,
+            entityType: "INSTRUCTOR_PERMISSION",
+            entityId: instructorId,
+            actionUrl: `/admin/instructors?tab=permissions`,
+            icon: "lock",
+            metadata: {
+              instructorId,
+              instructorName,
+              instructorEmail,
+              sessionId,
+              sessionCode,
+              sessionTitle,
+              courseName,
+              notes
+            },
+            deduplicationKey: `SESSION_EDIT_REQ:${instructorId}:${sessionId}:${Date.now()}`
+          }));
+        } catch (err) {
+          console.error("Error notifying admins of session edit request:", err);
           return null;
         }
       }

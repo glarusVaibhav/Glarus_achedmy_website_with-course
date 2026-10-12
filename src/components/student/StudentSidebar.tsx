@@ -38,80 +38,80 @@ export const STUDENT_NAV_ITEMS: StudentNavItem[] = [
     name: "Dashboard",
     href: "/dashboard",
     icon: Activity,
-    iconColor: "text-sky-400",
-    iconBox: "bg-sky-500/10 border-sky-500/20 group-hover:border-sky-500/40 group-hover:bg-sky-500/15",
-    activeBg: "bg-[#0d1829] border-white/80 text-white shadow-lg shadow-sky-950/40",
-    badgeColor: "bg-sky-500/20 text-sky-300 border-sky-500/30",
+    iconColor: "text-sky-600 dark:text-sky-400",
+    iconBox: "bg-sky-50 border-sky-200 dark:bg-sky-500/10 dark:border-sky-500/20 group-hover:border-sky-300 dark:group-hover:border-sky-500/40 group-hover:bg-sky-100 dark:group-hover:bg-sky-500/15",
+    activeBg: "bg-sky-50 dark:bg-[#0d1829] border-sky-300 dark:border-white/80 text-sky-950 dark:text-white shadow-sm dark:shadow-lg dark:shadow-sky-950/40",
+    badgeColor: "bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-500/20 dark:text-sky-300 dark:border-sky-500/30",
   },
   {
     id: "courses",
     name: "Self-Paced Courses",
     href: "/student/courses",
     icon: BookOpen,
-    iconColor: "text-purple-400",
-    iconBox: "bg-purple-500/10 border-purple-500/20 group-hover:border-purple-500/40 group-hover:bg-purple-500/15",
-    activeBg: "bg-[#18112e] border-white/80 text-white shadow-lg shadow-purple-950/40",
-    badgeColor: "bg-purple-500/20 text-purple-300 border-purple-500/30",
+    iconColor: "text-purple-600 dark:text-purple-400",
+    iconBox: "bg-purple-50 border-purple-200 dark:bg-purple-500/10 dark:border-purple-500/20 group-hover:border-purple-300 dark:group-hover:border-purple-500/40 group-hover:bg-purple-100 dark:group-hover:bg-purple-500/15",
+    activeBg: "bg-purple-50 dark:bg-[#18112e] border-purple-300 dark:border-white/80 text-purple-950 dark:text-white shadow-sm dark:shadow-lg dark:shadow-purple-950/40",
+    badgeColor: "bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-500/20 dark:text-purple-300 dark:border-purple-500/30",
   },
   {
     id: "live-classes",
     name: "Live Training",
     href: "/calendar",
     icon: Calendar,
-    iconColor: "text-rose-400",
-    iconBox: "bg-rose-500/10 border-rose-500/20 group-hover:border-rose-500/40 group-hover:bg-rose-500/15",
-    activeBg: "bg-[#25101a] border-white/80 text-white shadow-lg shadow-rose-950/40",
-    badgeColor: "bg-rose-500/20 text-rose-300 border-rose-500/30",
+    iconColor: "text-rose-600 dark:text-rose-400",
+    iconBox: "bg-rose-50 border-rose-200 dark:bg-rose-500/10 dark:border-rose-500/20 group-hover:border-rose-300 dark:group-hover:border-rose-500/40 group-hover:bg-rose-100 dark:group-hover:bg-rose-500/15",
+    activeBg: "bg-rose-50 dark:bg-[#25101a] border-rose-300 dark:border-white/80 text-rose-950 dark:text-white shadow-sm dark:shadow-lg dark:shadow-rose-950/40",
+    badgeColor: "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-500/20 dark:text-rose-300 dark:border-rose-500/30",
   },
   {
     id: "recorded-sessions",
     name: "Class Recordings",
     href: "/student/recorded-sessions",
     icon: PlayCircle,
-    iconColor: "text-emerald-400",
-    iconBox: "bg-emerald-500/10 border-emerald-500/20 group-hover:border-emerald-500/40 group-hover:bg-emerald-500/15",
-    activeBg: "bg-[#0b201a] border-white/80 text-white shadow-lg shadow-emerald-950/40",
-    badgeColor: "bg-emerald-500/20 text-emerald-300 border-emerald-500/30",
+    iconColor: "text-emerald-600 dark:text-emerald-400",
+    iconBox: "bg-emerald-50 border-emerald-200 dark:bg-emerald-500/10 dark:border-emerald-500/20 group-hover:border-emerald-300 dark:group-hover:border-emerald-500/40 group-hover:bg-emerald-100 dark:group-hover:bg-emerald-500/15",
+    activeBg: "bg-emerald-50 dark:bg-[#0b201a] border-emerald-300 dark:border-white/80 text-emerald-950 dark:text-white shadow-sm dark:shadow-lg dark:shadow-emerald-950/40",
+    badgeColor: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/20 dark:text-emerald-300 dark:border-emerald-500/30",
   },
   {
     id: "assignments",
     name: "Assignments",
     href: "/student/assignments",
     icon: FileCheck,
-    iconColor: "text-amber-400",
-    iconBox: "bg-amber-500/10 border-amber-500/20 group-hover:border-amber-500/40 group-hover:bg-amber-500/15",
-    activeBg: "bg-[#24190c] border-white/80 text-white shadow-lg shadow-amber-950/40",
-    badgeColor: "bg-amber-500/20 text-amber-300 border-amber-500/30",
+    iconColor: "text-amber-600 dark:text-amber-400",
+    iconBox: "bg-amber-50 border-amber-200 dark:bg-amber-500/10 dark:border-amber-500/20 group-hover:border-amber-300 dark:group-hover:border-amber-500/40 group-hover:bg-amber-100 dark:group-hover:bg-amber-500/15",
+    activeBg: "bg-amber-50 dark:bg-[#24190c] border-amber-300 dark:border-white/80 text-amber-950 dark:text-white shadow-sm dark:shadow-lg dark:shadow-amber-950/40",
+    badgeColor: "bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-500/20 dark:text-amber-300 dark:border-amber-500/30",
   },
   {
     id: "certificates",
     name: "Certificates",
     href: "/student/certificates",
     icon: Award,
-    iconColor: "text-indigo-400",
-    iconBox: "bg-indigo-500/10 border-indigo-500/20 group-hover:border-indigo-500/40 group-hover:bg-indigo-500/15",
-    activeBg: "bg-[#14182e] border-white/80 text-white shadow-lg shadow-indigo-950/40",
-    badgeColor: "bg-indigo-500/20 text-indigo-300 border-indigo-500/30",
+    iconColor: "text-indigo-600 dark:text-indigo-400",
+    iconBox: "bg-indigo-50 border-indigo-200 dark:bg-indigo-500/10 dark:border-indigo-500/20 group-hover:border-indigo-300 dark:group-hover:border-indigo-500/40 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-500/15",
+    activeBg: "bg-indigo-50 dark:bg-[#14182e] border-indigo-300 dark:border-white/80 text-indigo-950 dark:text-white shadow-sm dark:shadow-lg dark:shadow-indigo-950/40",
+    badgeColor: "bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-500/20 dark:text-indigo-300 dark:border-indigo-500/30",
   },
   {
     id: "payments",
     name: "Payments",
     href: "/student/payments",
     icon: CreditCard,
-    iconColor: "text-cyan-400",
-    iconBox: "bg-cyan-500/10 border-cyan-500/20 group-hover:border-cyan-500/40 group-hover:bg-cyan-500/15",
-    activeBg: "bg-[#0d1d29] border-white/80 text-white shadow-lg shadow-cyan-950/40",
-    badgeColor: "bg-cyan-500/20 text-cyan-300 border-cyan-500/30",
+    iconColor: "text-cyan-600 dark:text-cyan-400",
+    iconBox: "bg-cyan-50 border-cyan-200 dark:bg-cyan-500/10 dark:border-cyan-500/20 group-hover:border-cyan-300 dark:group-hover:border-cyan-500/40 group-hover:bg-cyan-100 dark:group-hover:bg-cyan-500/15",
+    activeBg: "bg-cyan-50 dark:bg-[#0d1d29] border-cyan-300 dark:border-white/80 text-cyan-950 dark:text-white shadow-sm dark:shadow-lg dark:shadow-cyan-950/40",
+    badgeColor: "bg-cyan-50 text-cyan-700 border-cyan-200 dark:bg-cyan-500/20 dark:text-cyan-300 dark:border-cyan-500/30",
   },
   {
     id: "settings",
     name: "Settings",
     href: "/settings",
     icon: Settings,
-    iconColor: "text-slate-400",
-    iconBox: "bg-slate-500/10 border-slate-500/20 group-hover:border-slate-500/40 group-hover:bg-slate-500/15",
-    activeBg: "bg-[#171c26] border-white/80 text-white shadow-lg shadow-slate-950/40",
-    badgeColor: "bg-slate-500/20 text-slate-300 border-slate-500/30",
+    iconColor: "text-slate-600 dark:text-slate-400",
+    iconBox: "bg-zinc-100 border-zinc-200 dark:bg-slate-500/10 dark:border-slate-500/20 group-hover:border-zinc-300 dark:group-hover:border-slate-500/40 group-hover:bg-zinc-200/60 dark:group-hover:bg-slate-500/15",
+    activeBg: "bg-zinc-100 dark:bg-[#171c26] border-zinc-300 dark:border-white/80 text-zinc-950 dark:text-white shadow-sm dark:shadow-lg dark:shadow-slate-950/40",
+    badgeColor: "bg-zinc-100 text-zinc-700 border-zinc-200 dark:bg-slate-500/20 dark:text-slate-300 dark:border-slate-500/30",
   },
 ];
 
@@ -305,7 +305,7 @@ export function StudentSidebar({
 
       <aside
         style={!collapsed ? { width: `${sidebarWidth}px` } : undefined}
-        className={`fixed left-0 bg-[#080C14] border-r border-card/60 flex flex-col justify-between pt-5 pb-6 select-none ${
+        className={`fixed left-0 bg-card dark:bg-[#080C14] border-r border-border flex flex-col justify-between pt-5 pb-6 select-none ${
           isDragging ? "transition-none" : "transition-[width] duration-200 ease-out"
         } ${
           collapsed ? "w-20" : ""
@@ -330,7 +330,7 @@ export function StudentSidebar({
               className={`w-0.5 rounded-full transition-all duration-150 ${
                 isDragging
                   ? "bg-primary h-12 shadow-[0_0_8px_rgba(124,58,237,0.8)]"
-                  : "bg-white/20 h-6 group-hover:bg-primary group-hover:h-10"
+                  : "bg-zinc-400 dark:bg-white/20 h-6 group-hover:bg-primary group-hover:h-10"
               }`}
             />
           </div>
@@ -347,7 +347,7 @@ export function StudentSidebar({
               {onToggleCollapse && (
                 <button
                   onClick={onToggleCollapse}
-                  className="p-1.5 rounded-lg text-subtext hover:text-text hover:bg-white/[0.06] transition-colors hidden lg:flex cursor-pointer"
+                  className="p-1.5 rounded-lg text-subtext hover:text-text hover:bg-card-hover transition-colors hidden lg:flex cursor-pointer"
                   title="Collapse Sidebar"
                 >
                   <ChevronLeft className="w-4 h-4" />
@@ -358,7 +358,7 @@ export function StudentSidebar({
             onToggleCollapse && (
               <button
                 onClick={onToggleCollapse}
-                className="p-1.5 rounded-lg text-subtext hover:text-text hover:bg-white/[0.06] transition-colors hidden lg:flex cursor-pointer mx-auto"
+                className="p-1.5 rounded-lg text-subtext hover:text-text hover:bg-card-hover transition-colors hidden lg:flex cursor-pointer mx-auto"
                 title="Expand Sidebar"
               >
                 <ChevronRight className="w-4 h-4" />
@@ -383,7 +383,7 @@ export function StudentSidebar({
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl transition-all font-semibold text-sm group cursor-pointer border ${
                   active
                     ? item.activeBg
-                    : "text-slate-300 hover:text-white hover:bg-white/[0.04] border-transparent"
+                    : "text-subtext hover:text-text hover:bg-zinc-100 dark:hover:bg-white/[0.04] border-transparent"
                 } ${collapsed ? "justify-center px-0" : ""}`}
               >
                 {/* Colorful Icon Box */}
@@ -411,7 +411,7 @@ export function StudentSidebar({
                   <span
                     className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border shadow-xs shrink-0 ${
                       active
-                        ? "bg-white/20 text-white border-white/30"
+                        ? "bg-primary/10 text-primary border-primary/30 dark:bg-white/20 dark:text-white dark:border-white/30"
                         : item.badgeColor
                     }`}
                   >
@@ -424,16 +424,16 @@ export function StudentSidebar({
         </nav>
 
         {/* ── Bottom Section (Instructor Studio Style Avatar Pill) ── */}
-        <div className="px-4 pt-4 border-t border-card/40 shrink-0">
+        <div className="px-4 pt-4 border-t border-border shrink-0">
           {!collapsed ? (
             <div className="flex items-center justify-between">
               {/* User Profile Avatar Pill */}
               <Link
                 href="/settings"
-                className="flex items-center gap-3 group p-1.5 -ml-1 rounded-2xl hover:bg-white/[0.04] transition-colors overflow-hidden"
+                className="flex items-center gap-3 group p-1.5 -ml-1 rounded-2xl hover:bg-card-hover transition-colors overflow-hidden"
                 title="Account Settings"
               >
-                <div className="w-9 h-9 rounded-full bg-[#111827] border border-white/20 flex items-center justify-center text-white font-bold text-xs shadow-md group-hover:border-primary/60 group-hover:scale-105 transition-all shrink-0">
+                <div className="w-9 h-9 rounded-full bg-primary/10 border border-primary/20 text-primary dark:bg-[#111827] dark:border-white/20 dark:text-white flex items-center justify-center font-bold text-xs shadow-sm group-hover:border-primary/60 group-hover:scale-105 transition-all shrink-0">
                   {userInitial}
                 </div>
                 <div className="text-left overflow-hidden">
@@ -441,7 +441,7 @@ export function StudentSidebar({
                     {user?.name || "Student"}
                   </div>
                   <div className="text-[10px] font-semibold text-subtext flex items-center gap-1 truncate">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
                     Active Learner
                   </div>
                 </div>
@@ -449,7 +449,7 @@ export function StudentSidebar({
 
               {/* Streak Badge */}
               <div
-                className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-orange-500/10 border border-orange-500/20 text-[11px] font-bold text-orange-400 shrink-0"
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-orange-50 text-orange-700 border border-orange-200 dark:bg-orange-500/10 dark:border-orange-500/20 dark:text-orange-400 text-[11px] font-bold shrink-0"
                 title={`${navBadges.streak}-Day Streak`}
               >
                 <Flame className={`w-3.5 h-3.5 ${navBadges.streak > 0 ? "animate-bounce" : ""}`} />
@@ -460,7 +460,7 @@ export function StudentSidebar({
             <div className="flex flex-col items-center gap-3">
               <Link
                 href="/settings"
-                className="w-9 h-9 rounded-full bg-[#111827] border border-white/20 flex items-center justify-center text-white font-bold text-xs shadow-md hover:border-primary/60 transition-all"
+                className="w-9 h-9 rounded-full bg-primary/10 border border-primary/20 text-primary dark:bg-[#111827] dark:border-white/20 dark:text-white flex items-center justify-center font-bold text-xs shadow-sm hover:border-primary/60 transition-all"
                 title={user?.name || "Student Account"}
               >
                 {userInitial}
@@ -468,7 +468,7 @@ export function StudentSidebar({
               {onToggleCollapse && (
                 <button
                   onClick={onToggleCollapse}
-                  className="p-1.5 rounded-xl text-subtext hover:text-text hover:bg-white/[0.06] transition-colors cursor-pointer"
+                  className="p-1.5 rounded-xl text-subtext hover:text-text hover:bg-card-hover transition-colors cursor-pointer"
                   title="Expand Sidebar"
                 >
                   <ChevronRight className="w-4 h-4" />

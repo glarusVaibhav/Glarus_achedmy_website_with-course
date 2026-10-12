@@ -1,0 +1,1285 @@
+[
+  {
+    "id": "lesson_01_01_01",
+    "title": "Introduction to Machine Learning Concepts",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "example": "A spam filter learns to classify emails by analyzing labeled examples of spam vs. non-spam messages.",
+          "explanation": "Machine learning (ML) enables systems to learn patterns from data without explicit programming. It relies on algorithms that improve through experience (data) and optimization techniques.",
+          "tip": "Start by identifying whether your problem requires predictions (supervised), pattern discovery (unsupervised), or decision-making (reinforcement learning).",
+          "title": "Core Principles of Machine Learning"
+        }
+      },
+      {
+        "type": "visual",
+        "content": {
+          "diagram": [
+            "Supervised Learning: Labeled Data → Predictions",
+            "Unsupervised Learning: Unlabeled Data → Patterns",
+            "Reinforcement Learning: Actions → Rewards/Penalties"
+          ],
+          "explanation": "Supervised learning uses labeled datasets to train predictors. Unsupervised learning finds hidden structures in unlabeled data. Reinforcement learning optimizes decisions through trial-and-error with environmental feedback.",
+          "title": "Learning Paradigms"
+        }
+      },
+      {
+        "type": "flashcard",
+        "content": {
+          "cards": [
+            {
+              "back": "A learning paradigm where models learn from labeled training data to make predictions or classifications.",
+              "front": "What is supervised learning?"
+            },
+            {
+              "back": "When a model learns training data too well, capturing noise instead of generalizable patterns.",
+              "front": "Define overfitting"
+            },
+            {
+              "back": "A mathematical function that quantifies the difference between predicted and actual values during training.",
+              "front": "What is a loss function?"
+            }
+          ]
+        }
+      },
+      {
+        "type": "fill_blank",
+        "content": {
+          "sentences": [
+            {
+              "answer": "unsupervised",
+              "text": "In ___ learning, algorithms infer patterns from unlabeled data."
+            },
+            {
+              "answer": "Neural",
+              "text": "___ networks are computational models inspired by biological neurons."
+            },
+            {
+              "answer": "training",
+              "text": "The process of adjusting model parameters to minimize error is called ___."
+            }
+          ]
+        }
+      },
+      {
+        "type": "mcq",
+        "content": {
+          "questions": [
+            {
+              "answer": 1,
+              "explanation": "Customer segmentation groups similar users without predefined labels, making unsupervised learning the appropriate choice.",
+              "options": [
+                "Supervised",
+                "Unsupervised",
+                "Reinforcement",
+                "Semi-supervised"
+              ],
+              "question": "Which learning type is best suited for customer segmentation?"
+            },
+            {
+              "answer": 1,
+              "explanation": "Deep learning specifically employs multi-layered neural networks to automatically extract hierarchical features from data.",
+              "options": [
+                "Requires less data",
+                "Uses neural networks with multiple layers",
+                "Guarantees optimal solutions",
+                "Only works with structured data"
+              ],
+              "question": "What distinguishes deep learning from traditional ML?"
+            }
+          ]
+        }
+      },
+      {
+        "type": "reflection",
+        "content": {
+          "minWords": 50,
+          "prompt": "Describe one industry application of machine learning and explain which learning paradigm would be most effective. Justify your choice in 3-4 sentences."
+        }
+      }
+    ]
+  },
+  {
+    "id": "lesson_01_02_01",
+    "title": "Data Preprocessing and Feature Engineering",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "example": "from sklearn.preprocessing import StandardScaler\nscaler = StandardScaler()\n scaled_data = scaler.fit_transform(raw_data)",
+          "explanation": "Data preprocessing transforms raw data into a format suitable for machine learning. Key steps include handling missing values, normalization, and encoding categorical variables.",
+          "tip": "Always split data into train/test sets before preprocessing to prevent data leakage",
+          "title": "Foundations of Data Preprocessing"
+        }
+      },
+      {
+        "type": "visual",
+        "content": {
+          "diagram": [
+            "Raw Data → Cleaning → Feature Extraction → Transformation → Model Training"
+          ],
+          "explanation": "This pipeline shows how preprocessing steps connect to model training in a systematic workflow",
+          "title": "ML Pipeline Visualization"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "hint": "Use the fit_transform() method on the target column",
+          "language": "python",
+          "question": "Implement Min-Max Scaling on the 'age' column of a DataFrame",
+          "solution": "import pandas as pd\nfrom sklearn.preprocessing import MinMaxScaler\ndf = pd.read_csv('data.csv')\nscaler = MinMaxScaler()\ndf['age_scaled'] = scaler.fit_transform(df[['age']])",
+          "starterCode": "import pandas as pd\nfrom sklearn.preprocessing import MinMaxScaler\ndf = pd.read_csv('data.csv')\nscaler = MinMaxScaler()\n# YOUR CODE HERE"
+        }
+      },
+      {
+        "type": "fill_blank",
+        "sentences": [
+          {
+            "answer": "min-max scaling",
+            "text": "The ______ technique rescales values to a range of 0-1"
+          }
+        ]
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 0,
+            "explanation": "Z-score maintains distribution shape by centering data around mean=0 with std=1",
+            "options": [
+              "Z-score normalization",
+              "Min-Max scaling",
+              "Log transformation",
+              "Binarization"
+            ],
+            "question": "Which method preserves the original distribution while standardizing data?"
+          }
+        ]
+      },
+      {
+        "type": "scenario",
+        "title": "Feature Engineering Dilemma",
+        "description": "You have a 'timeStamp' column with datetime values. How should you process it?",
+        "choices": [
+          {
+            "outcome": "Loses temporal patterns",
+            "score": 50,
+            "text": "Convert to Unix timestamp"
+          },
+          {
+            "outcome": "Preserves temporal patterns",
+            "score": 100,
+            "text": "Extract hour/day features"
+          },
+          {
+            "outcome": "Loses potential predictive power",
+            "score": 25,
+            "text": "Ignore the column"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "lesson_02_01_01",
+    "title": "Introduction to Regression Algorithms",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "example": "import numpy as np\nX = np.array([[1, 2], [1, 3]])\ny = np.array([5, 7])",
+          "explanation": "Linear regression models the relationship between variables using a linear equation. The general form is y = β₀ + β₁x₁ + ... + βₙxₙ + ε, where β represents coefficients and ε is error.",
+          "tip": "Start with simple linear regression (single feature) before tackling multiple features.",
+          "title": "Linear Regression Fundamentals"
+        }
+      },
+      {
+        "type": "visual",
+        "content": {
+          "diagram": [
+            "Step 1: Plot data points",
+            "Step 2: Draw hypothesis line",
+            "Step 3: Calculate squared errors"
+          ],
+          "explanation": "The cost function measures the average squared difference between predicted and actual values. Minimizing this function finds the optimal model parameters.",
+          "title": "Cost Function Visualization"
+        }
+      },
+      {
+        "type": "flashcard",
+        "content": {
+          "cards": [
+            {
+              "back": "Residual Sum of Squares measures total error in a linear regression model",
+              "front": "What does RSS measure?"
+            }
+          ]
+        }
+      },
+      {
+        "type": "recall",
+        "prompt": "List three assumptions of linear regression"
+      },
+      {
+        "type": "concept",
+        "content": {
+          "example": "from sklearn.linear_model import Ridge\nmodel = Ridge(alpha=1.0)",
+          "explanation": "L1 (Lasso) adds absolute value of coefficients to cost function, L2 (Ridge) adds squared values. Both prevent overfitting by penalizing large coefficients.",
+          "tip": "Use Lasso for feature selection, Ridge when all features are relevant",
+          "title": "Regularization Techniques"
+        }
+      },
+      {
+        "type": "visual",
+        "content": {
+          "diagram": [
+            "Unregularized model (high variance)",
+            "L1 regularization (sparse coefficients)",
+            "L2 regularization (small coefficients)"
+          ],
+          "explanation": "Regularization shrinks coefficient magnitudes, with L1 potentially eliminating features entirely",
+          "title": "Regularization Impact"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "hint": "Use Ridge from sklearn.linear_model and load_diabetes from sklearn.datasets",
+          "language": "python",
+          "question": "Implement linear regression with L2 regularization using scikit-learn",
+          "solution": "from sklearn.linear_model import Ridge\nfrom sklearn.datasets import load_diabetes\n\n# Load diabetes dataset\nX, y = load_diabetes(return_X_y=True)\n\n# Create and train model\nmodel = Ridge(alpha=0.5)\nmodel.fit(X, y)",
+          "starterCode": "from sklearn.linear_model import ______\nfrom sklearn.datasets import ______\n\n# Load diabetes dataset\nX, y = ______(return_X_y=True)\n\n# Create and train model\nmodel = ______(alpha=0.5)\nmodel.______(X, y)"
+        }
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 0,
+            "explanation": "L1 regularization (Lasso) produces sparse models by driving some coefficients exactly to zero",
+            "options": [
+              "L1 Regularization",
+              "L2 Regularization",
+              "Both equally",
+              "Neither"
+            ],
+            "question": "Which regularization technique produces sparse models?"
+          }
+        ]
+      },
+      {
+        "type": "reflection",
+        "prompt": "Compare and contrast L1 and L2 regularization in your own words (minimum 15 words)"
+      }
+    ]
+  },
+  {
+    "id": "lesson_02_02_01",
+    "title": "Classification Algorithms Fundamentals",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "example": "from scipy.special import expit\nimport numpy as np\nx = np.linspace(-5, 5, 100)\nsigmoid = expit(x)",
+          "explanation": "Logistic regression uses the logistic function to model probabilities, while linear regression predicts continuous values. The logistic function (sigmoid) maps predictions to values between 0 and 1.",
+          "tip": "Use logistic regression for binary classification; linear regression for regression tasks.",
+          "title": "Logistic Regression vs Linear Regression"
+        }
+      },
+      {
+        "type": "visual",
+        "content": {
+          "diagram": [
+            "Linear boundary (Logistic Regression)",
+            "Non-linear boundary (Decision Tree)"
+          ],
+          "explanation": "Decision boundaries separate classes in feature space. Linear boundaries are straight lines/hyperplanes, while non-linear boundaries adapt to complex patterns.",
+          "title": "Decision Boundaries Visualization"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "hint": "Split the data first to evaluate generalization performance.",
+          "language": "python",
+          "question": "Implement a decision tree classifier on the Iris dataset",
+          "solution": "from sklearn.model_selection import train_test_split\nfrom sklearn.metrics import accuracy_score\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)\nclf.fit(X_train, y_train)\nprint('Accuracy:', accuracy_score(y_test, clf.predict(X_test)))",
+          "starterCode": "from sklearn.datasets import load_iris\nfrom sklearn.tree import DecisionTreeClassifier\nX, y = load_iris(return_X_y=True)\nclf = DecisionTreeClassifier()\n# TODO: Fit and evaluate the model"
+        }
+      },
+      {
+        "type": "fill_blank",
+        "sentences": [
+          {
+            "answer": "kernel trick",
+            "text": "SVMs use the ___ to transform data into higher-dimensional space"
+          }
+        ]
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 1,
+            "explanation": "Logistic regression outputs probabilities via the sigmoid function, while other algorithms may output class labels directly.",
+            "options": [
+              "Linear Regression",
+              "Logistic Regression",
+              "Decision Trees",
+              "SVM"
+            ],
+            "question": "Which algorithm produces probabilistic outputs?"
+          }
+        ]
+      },
+      {
+        "type": "scenario",
+        "title": "Algorithm Selection Challenge",
+        "description": "You have a dataset with 10 features and clear linear separability. Which algorithm should you prioritize?",
+        "choices": [
+          {
+            "outcome": "Good choice for linearly separable data with probabilistic outputs",
+            "score": 100,
+            "text": "Logistic Regression"
+          },
+          {
+            "outcome": "Overkill for this simple problem",
+            "score": 20,
+            "text": "Deep Neural Network"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "lesson_02_03_01",
+    "title": "Algorithm Selection Strategies",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "example": "# Example: Classification vs Regression\nfrom sklearn.ensemble import RandomForestClassifier\nfrom sklearn.linear_model import LinearRegression\n\n# Classification for categorical outcomes\nclf = RandomForestClassifier()\n# Regression for continuous outcomes\nreg = LinearRegression()",
+          "explanation": "Algorithm selection requires mapping problem characteristics to algorithm strengths. Supervised learning problems (classification/regression) demand different approaches than unsupervised tasks. Key factors include data size, feature dimensionality, and required interpretability.",
+          "tip": "Start by categorizing your problem type before selecting algorithms",
+          "title": "Problem-Type Taxonomy"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "hint": "Use cross_val_score for validation and classification_report for detailed metrics",
+          "language": "python",
+          "question": "Implement a selection criteria matrix comparing 3 algorithms for a classification task",
+          "solution": "from sklearn.model_selection import cross_val_score\nfrom sklearn.metrics import f1_score\nfrom sklearn.linear_model import LogisticRegression\nfrom sklearn.svm import SVC\nfrom sklearn.ensemble import RandomForestClassifier\n\ndef evaluate_algorithms(X, y):\n    models = {\n        'LogReg': LogisticRegression(),\n        'SVM': SVC(),\n        'RF': RandomForestClassifier()\n    }\n    results = {}\n    for name, model in models.items():\n        scores = cross_val_score(model, X, y, cv=5)\n        results[name] = {\n            'accuracy': scores.mean(),\n            'f1': f1_score(y, model.predict(X), average='macro')\n        }\n    return results",
+          "starterCode": "def evaluate_algorithms(X, y):\n    # Compare LogisticRegression, SVM, and Random Forest\n    # Return a dictionary with accuracy and F1 scores\n    results = {}\n    \n    # Your code here\n    \n    return results"
+        }
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 1,
+            "explanation": "Linear Regression makes strong assumptions about data relationships (high bias) but has consistent performance across different datasets (low variance)",
+            "options": [
+              "Decision Trees",
+              "Linear Regression",
+              "k-Nearest Neighbors",
+              "Neural Networks"
+            ],
+            "question": "Which algorithm typically exhibits higher bias but lower variance?"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "lesson_05_01_01",
+    "title": "Understanding Evaluation Metrics",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "example": "In medical diagnosis: High recall ensures no diseases are missed, while high precision ensures false alarms are minimized.",
+          "explanation": "Accuracy measures overall correctness, while precision focuses on positive prediction reliability. Recall evaluates model completeness in identifying actual positives, and F1-score balances precision and recall.",
+          "tip": "Use F1-score when class distribution is imbalanced.",
+          "title": "Core Evaluation Metrics"
+        }
+      },
+      {
+        "type": "visual",
+        "content": {
+          "diagram": [
+            "Accuracy = (TP+TN)/(TP+TN+FP+FN)",
+            "Precision = TP/(TP+FP)",
+            "Recall = TP/(TP+FN)",
+            "F1 = 2*(P*R)/(P+R)"
+          ],
+          "explanation": "This diagram shows mathematical relationships between metrics using confusion matrix components.",
+          "title": "Metrics Comparison"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "hint": "Precision = TP/(TP+FP), Recall = TP/(TP+FN)",
+          "language": "python",
+          "question": "Calculate precision and recall from a confusion matrix",
+          "solution": "tp, fp, fn = 45, 5, 10\nprecision = tp / (tp + fp)\nrecall = tp / (tp + fn)",
+          "starterCode": "tp, fp, fn = 45, 5, 10\nprecision = # YOUR CODE\nrecall = # YOUR CODE"
+        }
+      },
+      {
+        "type": "flashcard",
+        "cards": [
+          {
+            "back": "Few false positives: Model's positive predictions are reliable",
+            "front": "What does high precision indicate?"
+          },
+          {
+            "back": "When missing positives is critical (e.g., disease detection)",
+            "front": "When is recall most important?"
+          }
+        ]
+      },
+      {
+        "type": "recall",
+        "prompt": "List three scenarios where F1-score is preferred over accuracy"
+      },
+      {
+        "type": "reflection",
+        "prompt": "Describe a situation where optimizing for precision would conflict with recall. How would you balance them?"
+      }
+    ]
+  },
+  {
+    "id": "lesson_05_02_01",
+    "title": "Cross-Validation Strategies",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "example": "from sklearn.model_selection import KFold\nimport numpy as np\n\nX = np.array([[1,2], [3,4], [5,6], [7,8]])\ny = np.array([0, 1, 0, 1])\nkf = KFold(n_splits=2)\nfor train_index, test_index in kf.split(X):\n    print(f\"Train: {train_index}, Test: {test_index}\")",
+          "explanation": "K-fold splits data into K subsets, training on K-1 and validating on 1 iteratively. Reduces variance in model evaluation compared to single train-test splits.",
+          "tip": "Use K=5 or 10 for most applications to balance computational cost and reliability",
+          "title": "K-Fold Cross-Validation"
+        }
+      },
+      {
+        "type": "visual",
+        "content": {
+          "diagram": [
+            "Original dataset divided into 5 folds",
+            "First iteration: Fold 1 as test",
+            "Second iteration: Fold 2 as test",
+            "Repeat until all folds validated"
+          ],
+          "explanation": "Each fold serves as validation set once, ensuring all data points are used for evaluation",
+          "title": "K-Fold Workflow"
+        }
+      },
+      {
+        "type": "fill_blank",
+        "sentences": [
+          {
+            "answer": "class",
+            "text": "Stratified K-fold preserves the ______ distribution across folds"
+          }
+        ]
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "hint": "Use RandomForestClassifier for the model and calculate accuracy for each fold",
+          "language": "python",
+          "question": "Implement stratified K-fold cross-validation for a classification task using scikit-learn",
+          "solution": "# Complete implementation with model training\nfrom sklearn.ensemble import RandomForestClassifier\nfrom sklearn.metrics import accuracy_score\n\nfor train_index, test_index in skf.split(X, y):\n    X_train, X_test = X[train_index], X[test_index]\n    y_train, y_test = y[train_index], y[test_index]\n    model = RandomForestClassifier().fit(X_train, y_train)\n    print(f'Accuracy: {accuracy_score(y_test, model.predict(X_test)):.2f}')",
+          "starterCode": "from sklearn.model_selection import StratifiedKFold\nfrom sklearn.datasets import make_classification\n\nX, y = make_classification(n_samples=100, n_classes=2, random_state=42)\nskf = StratifiedKFold(n_splits=5)\nfor train_index, test_index in skf.split(X, y):\n    X_train, X_test = X[train_index], X[test_index]\n    y_train, y_test = y[train_index], y[test_index]\n    # TODO: Add model training and evaluation here"
+        }
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 0,
+            "explanation": "Bootstrapping creates multiple samples with replacement, making it more suitable for small datasets where K-fold would leave insufficient training data",
+            "options": [
+              "When working with small datasets",
+              "When computational resources are unlimited",
+              "When the data is perfectly balanced",
+              "When model variance needs to be minimized"
+            ],
+            "question": "When should bootstrapping be preferred over K-fold validation?"
+          }
+        ]
+      },
+      {
+        "type": "scenario",
+        "title": "Validation Method Selection",
+        "description": "You're evaluating a medical diagnosis model with highly imbalanced data (98% negative cases). Which approach would be most appropriate?",
+        "choices": [
+          {
+            "outcome": "Class distribution mismatch in folds may lead to unreliable evaluation",
+            "score": 30,
+            "text": "Standard 5-fold cross-validation"
+          },
+          {
+            "outcome": "Preserves class distribution across folds for reliable performance estimation",
+            "score": 100,
+            "text": "Stratified 10-fold cross-validation"
+          },
+          {
+            "outcome": "May not capture rare positive cases adequately",
+            "score": 50,
+            "text": "Bootstrapping with 100 samples"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "lesson_06_01_01",
+    "title": "Introduction to Grid & Random Search",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "example": "from sklearn.model_selection import GridSearchCV\nparam_grid = {'C': [0.1,1,10], 'kernel': ['linear','rbf']}\ngrid = GridSearchCV(SVC(), param_grid, cv=5)",
+          "explanation": "Grid Search exhaustively tests all parameter combinations while Random Search samples randomly from defined distributions. Both use cross-validation to evaluate configurations.",
+          "tip": "Use Grid Search for small parameter spaces and Random Search for high-dimensional tuning",
+          "title": "Hyperparameter Search Strategies"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "hint": "Use the GridSearchCV constructor with estimator, param_grid, and cv parameters",
+          "language": "python",
+          "question": "Implement GridSearchCV for a DecisionTreeClassifier with max_depth [3,5,7] and min_samples_split [2,5]",
+          "solution": "from sklearn.model_selection import GridSearchCV\nfrom sklearn.tree import DecisionTreeClassifier\n\ndt = DecisionTreeClassifier()\nparam_grid = {\n    'max_depth': [3,5,7],\n    'min_samples_split': [2,5]\n}\n\ngrid_search = GridSearchCV(dt, param_grid, cv=5)\ngrid_search.fit(X_train, y_train)",
+          "starterCode": "from sklearn.model_selection import GridSearchCV\nfrom sklearn.tree import DecisionTreeClassifier\n\ndt = DecisionTreeClassifier()\nparam_grid = {\n    'max_depth': [3,5,7],\n    'min_samples_split': [2,5]\n}\n\ngrid_search = GridSearchCV(____, ____, cv=____)\ngrid_search.fit(X_train, y_train)"
+        }
+      },
+      {
+        "type": "fill_blank",
+        "sentences": [
+          {
+            "answer": "all, random",
+            "text": "Grid Search evaluates ______ combinations while Random Search samples ______ combinations"
+          }
+        ]
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 1,
+            "explanation": "Random Search requires fewer evaluations to find near-optimal parameters in high-dimensional spaces compared to Grid Search's exhaustive approach",
+            "options": [
+              "Grid Search",
+              "Random Search",
+              "Both equally efficient",
+              "Neither"
+            ],
+            "question": "Which method is more computationally efficient for high-dimensional spaces?"
+          }
+        ]
+      },
+      {
+        "type": "reflection",
+        "prompt": "When would you prefer Grid Search over Random Search despite higher computational cost?"
+      },
+      {
+        "type": "case_study",
+        "questions": [
+          {
+            "expectedAnswer": "Random Search",
+            "question": "Which method should you use if you have limited computational resources?"
+          },
+          {
+            "expectedAnswer": "Grid Search",
+            "question": "Which method guarantees finding the best combination if given enough resources?"
+          }
+        ],
+        "title": "Model Tuning Comparison"
+      }
+    ]
+  },
+  {
+    "id": "lesson_06_02_01",
+    "title": "Bayesian Optimization Fundamentals",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "example": "from hyperopt import fmin, tpe\n\ndef objective(params):\n    return model.evaluate(params)\n\nbest = fmin(fn=objective, space=hyperparameter_space, algo=tpe.suggest)",
+          "explanation": "Bayesian optimization builds probabilistic models (like Gaussian Processes) to guide hyperparameter search. Unlike grid/random search, it sequentially selects points that maximize an acquisition function balancing exploration/exploitation.",
+          "tip": "Start with a small search space to observe Bayesian optimization's convergence behavior.",
+          "title": "Probabilistic Model-Based Tuning"
+        }
+      },
+      {
+        "type": "visual",
+        "content": {
+          "diagram": [
+            "1. Define search space",
+            "2. Initialize with random samples",
+            "3. Fit Gaussian Process",
+            "4. Maximize acquisition function",
+            "5. Evaluate new point",
+            "6. Update model"
+          ],
+          "explanation": "The iterative process of building a probabilistic model and using acquisition functions to guide search.",
+          "title": "Bayesian Optimization Workflow"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "hint": "Use Expected Improvement as the acquisition function",
+          "language": "python",
+          "question": "Implement Bayesian optimization for a simple quadratic function",
+          "solution": "# Bayesian optimization implementation\nx = np.linspace(0,1,100)\nfor i in range(5):\n    x_next = maximize_acquisition(x)\n    y_next = quadratic(x_next)\n    gp.fit(x, y)\nprint('Minimum found at x=', x_next)",
+          "starterCode": "from sklearn.gaussian_process import GaussianProcessRegressor\nimport numpy as np\n\ndef quadratic(x):\n    return (x-0.5)**2\n\n# Initialize Gaussian Process\ngp = GaussianProcessRegressor()..."
+        }
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 2,
+            "explanation": "Expected Improvement quantifies the potential benefit of evaluating a new point, balancing between exploring uncertain regions and exploiting known good areas.",
+            "options": [
+              "Grid Search",
+              "Random Search",
+              "Expected Improvement",
+              "Cross Validation"
+            ],
+            "question": "Which acquisition function balances exploration vs exploitation?"
+          }
+        ]
+      },
+      {
+        "type": "fill_blank",
+        "sentences": [
+          {
+            "answer": "Gaussian Process",
+            "text": "In Bayesian optimization, the ___ models the relationship between hyperparameters and objective function values."
+          }
+        ]
+      },
+      {
+        "type": "scenario",
+        "title": "Hyperparameter Tuning Scenario",
+        "description": "You have 24 hours to optimize a neural network with 3 hyperparameters. Previous experiments show non-convex performance landscape.",
+        "choices": [
+          {
+            "outcome": "Efficiently finds good hyperparameters with limited evaluations",
+            "score": 100,
+            "text": "Use Bayesian optimization with 50 iterations"
+          },
+          {
+            "outcome": "Wastes computational resources on poor candidates",
+            "score": 40,
+            "text": "Perform grid search with 10 points per parameter"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "lesson_3_1_1",
+    "title": "Introduction to Clustering Techniques",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "example": "K-means clusters data by minimizing distances between points and centroids",
+          "explanation": "Clustering groups unlabeled data into clusters based on similarity. Common applications include customer segmentation and image compression.",
+          "tip": "Use elbow method to determine optimal K in K-means",
+          "title": "Clustering Fundamentals"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "hint": "Use the fit() method to train the model",
+          "language": "python",
+          "question": "Implement K-means on sample data",
+          "solution": "# Code already implements K-means\n# Predict cluster labels\nlabels = kmeans.labels_\n# Print cluster centers\nprint(kmeans.cluster_centers_)",
+          "starterCode": "from sklearn.cluster import KMeans\nimport numpy as np\nX = np.array([[1,2], [1,4], [1,0], [4,2], [4,4], [4,0]])\nkmeans = KMeans(n_clusters=2, random_state=0).fit(X)"
+        }
+      },
+      {
+        "type": "visual",
+        "content": {
+          "diagram": [
+            "Euclidean distance between points A(1,2) and B(4,6) = √((4-1)² + (6-2)²) = 5",
+            "Manhattan distance = |4-1| + |6-2| = 7"
+          ],
+          "explanation": "Clustering algorithms rely on distance metrics to quantify similarity. Euclidean distance is most common, but Manhattan distance works better for grid-like data",
+          "title": "Distance Metrics Visualization"
+        }
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 2,
+            "explanation": "K-means requires specifying the number of clusters (K) before training, while hierarchical clustering builds a tree of clusters without needing K upfront",
+            "options": [
+              "Hierarchical clustering",
+              "DBSCAN",
+              "K-means",
+              "Mean Shift"
+            ],
+            "question": "Which clustering algorithm requires specifying K upfront?"
+          }
+        ]
+      },
+      {
+        "type": "reflection",
+        "prompt": "Compare K-means and hierarchical clustering in 3 key aspects"
+      }
+    ]
+  },
+  {
+    "id": "lesson_3_1_2",
+    "title": "Implementing K-means and Hierarchical Clustering",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "example": "from sklearn.cluster import KMeans\nkmeans = KMeans(n_clusters=3, random_state=42)\nkmeans.fit(X)\ny_pred = kmeans.predict(X)",
+          "explanation": "K-means partitions data into k clusters by minimizing variance. Use scikit-learn's KMeans class with n_clusters and random_state parameters.",
+          "tip": "Choose k using the elbow method or silhouette analysis.",
+          "title": "K-means Implementation"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "hint": "Use KMeans from sklearn.cluster with n_clusters=4",
+          "language": "python",
+          "question": "Implement K-means on the sample dataset",
+          "solution": "from sklearn.cluster import KMeans\nkmeans = KMeans(n_clusters=4, random_state=42)\nkmeans.fit(X)\ny_pred = kmeans.predict(X)",
+          "starterCode": "from sklearn.datasets import make_blobs\nX, y = make_blobs(n_samples=300, centers=4, random_state=42)\n# Add KMeans implementation here"
+        }
+      },
+      {
+        "type": "fill_blank",
+        "sentences": [
+          {
+            "answer": "n_clusters",
+            "text": "The ________ parameter in KMeans controls the number of clusters."
+          }
+        ]
+      },
+      {
+        "type": "concept",
+        "content": {
+          "example": "from sklearn.cluster import AgglomerativeClustering\ncluster = AgglomerativeClustering(n_clusters=3)\ny_pred = cluster.fit_predict(X)",
+          "explanation": "Agglomerative clustering builds nested clusters through merging. Use AgglomerativeClustering with affinity and linkage parameters.",
+          "tip": "Visualize results with dendrograms using scipy.cluster.hierarchy.",
+          "title": "Hierarchical Clustering"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "hint": "Use dendrogram() from scipy.cluster.hierarchy",
+          "language": "python",
+          "question": "Generate a dendrogram for hierarchical clustering",
+          "solution": "dendrogram(Z)\nplt.title('Dendrogram')\nplt.xlabel('Sample index')\nplt.ylabel('Distance')\nplt.show()",
+          "starterCode": "from scipy.cluster.hierarchy import dendrogram, linkage\nimport matplotlib.pyplot as plt\nZ = linkage(X, 'ward')\n# Add dendrogram code here"
+        }
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 0,
+            "explanation": "Silhouette score measures how similar samples are to their own cluster vs others (range: -1 to 1).",
+            "options": [
+              "Silhouette score",
+              "R² score",
+              "Precision",
+              "Accuracy"
+            ],
+            "question": "Which metric evaluates cluster separation quality?"
+          }
+        ]
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "hint": "Ensure y_pred variables contain cluster assignments",
+          "language": "python",
+          "question": "Calculate silhouette scores for both methods",
+          "solution": "from sklearn.metrics import silhouette_score\nprint('K-means score:', silhouette_score(X, y_pred_kmeans))\nprint('Hierarchical score:', silhouette_score(X, y_pred_hierarchical))",
+          "starterCode": "from sklearn.metrics import silhouette_score\n# Calculate silhouette scores for K-means and Hierarchical clustering\nprint('K-means score:', silhouette_score(X, y_pred_kmeans))\nprint('Hierarchical score:', silhouette_score(____, ____))"
+        }
+      },
+      {
+        "type": "reflection",
+        "prompt": "Compare trade-offs between K-means and hierarchical clustering in your implementation. Which method performed better on the sample data?"
+      }
+    ]
+  },
+  {
+    "id": "lesson_3_1_3",
+    "title": "Evaluating Clustering Performance",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "example": "from sklearn.cluster import KMeans\nkmeans = KMeans(n_clusters=3)\nkmeans.fit(data)\ninertia = kmeans.inertia_",
+          "explanation": "Inertia measures the sum of squared distances between data points and their closest cluster center. Lower values indicate tighter clusters.",
+          "tip": "Inertia alone can't determine optimal clusters - it always decreases with more clusters",
+          "title": "Inertia Metric"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "hint": "Use the .inertia_ attribute of the trained model",
+          "language": "python",
+          "question": "Calculate inertia for a KMeans model with 4 clusters",
+          "solution": "# Calculate inertia\ninertia = kmeans.inertia_\nprint(f'Inertia: {inertia}')",
+          "starterCode": "from sklearn.cluster import KMeans\nimport numpy as np\n\nX = np.array([[1,2], [1,4], [1,0], [4,2], [4,4], [4,0]])\nkmeans = KMeans(n_clusters=2, random_state=0).fit(X)"
+        }
+      },
+      {
+        "type": "concept",
+        "content": {
+          "example": "from sklearn.metrics import silhouette_score\nprint(silhouette_score(X, kmeans.labels_))",
+          "explanation": "Measures how similar a point is to its own cluster vs others (range: -1 to 1). Higher values indicate better-defined clusters.",
+          "tip": "Values near 0 indicate overlapping clusters",
+          "title": "Silhouette Coefficient"
+        }
+      },
+      {
+        "type": "fill_blank",
+        "sentences": [
+          {
+            "answer": "-1 1",
+            "text": "The silhouette coefficient ranges from ___ to ___"
+          }
+        ]
+      },
+      {
+        "type": "socratic",
+        "topic": "Cluster Validation"
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 0,
+            "explanation": "Inertia measures the sum of squared distances between points and their cluster centers",
+            "options": [
+              "Cluster separation",
+              "Cluster density",
+              "Data point variance",
+              "Model accuracy"
+            ],
+            "question": "What does inertia primarily measure?"
+          }
+        ]
+      },
+      {
+        "type": "case_study",
+        "questions": [
+          {
+            "expectedAnswer": "The higher score for 3 clusters suggests it provides better separation",
+            "question": "What might this indicate about the optimal cluster count?"
+          }
+        ],
+        "title": "Customer Segmentation Analysis"
+      },
+      {
+        "type": "reflection",
+        "prompt": "Compare the trade-offs between inertia and silhouette scores when selecting cluster count"
+      }
+    ]
+  },
+  {
+    "id": "lesson_3_2_1",
+    "title": "Principal Component Analysis (PCA)",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "example": "import numpy as np\nfrom sklearn.decomposition import PCA\n\n# Standardize data\nX_std = (X - np.mean(X)) / np.std(X)\n\n# Fit PCA\npca = PCA(n_components=2)\nX_pca = pca.fit_transform(X_std)",
+          "explanation": "PCA transforms data into a lower-dimensional space by maximizing variance. It uses covariance matrices to identify principal components (orthogonal axes) that capture maximum information.",
+          "tip": "Always standardize data before PCA to ensure features are comparable",
+          "title": "PCA Foundations"
+        }
+      },
+      {
+        "type": "fill_blank",
+        "sentences": [
+          {
+            "answer": "covariance",
+            "text": "The ________ matrix captures relationships between features in PCA."
+          }
+        ]
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "hint": "Use StandardScaler before PCA and check explained_variance_ratio_",
+          "language": "python",
+          "question": "Implement PCA to reduce iris dataset to 2 components",
+          "solution": "from sklearn.preprocessing import StandardScaler\n\nscaler = StandardScaler()\nX_std = scaler.fit_transform(X)\n\npca = PCA(n_components=2)\nX_pca = pca.fit_transform(X_std)\nprint('Explained variance ratio:', pca.explained_variance_ratio_)",
+          "starterCode": "from sklearn.datasets import load_iris\nfrom sklearn.decomposition import PCA\n\niris = load_iris()\nX = iris.data\n\n# TODO: Standardize and apply PCA\n# TODO: Print explained variance ratio"
+        }
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 0,
+            "explanation": "The first principal component is the direction that maximizes variance in the data projection",
+            "options": [
+              "Variance",
+              "Covariance",
+              "Correlation",
+              "Mean"
+            ],
+            "question": "What does PCA's first component maximize?"
+          }
+        ]
+      },
+      {
+        "type": "visual",
+        "content": {
+          "diagram": [
+            "Original 3D data points",
+            "Projection onto first two principal components",
+            "2D scatter plot of transformed data"
+          ],
+          "explanation": "PCA reduces dimensions while preserving maximum variance - shown here with a 3D → 2D transformation",
+          "title": "PCA Visualization"
+        }
+      },
+      {
+        "type": "reflection",
+        "prompt": "When would dimensionality reduction be most beneficial for a dataset?"
+      },
+      {
+        "type": "scenario",
+        "title": "Feature Reduction Dilemma",
+        "description": "You have a 1000-feature dataset. Should you use PCA or SelectKBest?",
+        "choices": [
+          {
+            "outcome": "Preserves relationships between features",
+            "score": 100,
+            "text": "Use PCA for correlated features"
+          },
+          {
+            "outcome": "Retains individual feature importance",
+            "score": 75,
+            "text": "Use SelectKBest for uncorrelated features"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "lesson_3_2_2",
+    "title": "t-SNE and Feature Selection Methods",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "example": "from sklearn.manifold import TSNE\nimport matplotlib.pyplot as plt\nt_sne = TSNE(n_components=2, perplexity=30)\nreduced_data = t_sne.fit_transform(high_dim_data)\nplt.scatter(reduced_data[:, 0], reduced_data[:, 1], c=labels)",
+          "explanation": "t-SNE (t-Distributed Stochastic Neighbor Embedding) is a non-linear dimensionality reduction technique that models high-dimensional data in low-dimensional space by preserving pairwise similarities. Unlike PCA, it focuses on local structure preservation using probability distributions.",
+          "tip": "t-SNE is computationally expensive for large datasets (>10k samples)",
+          "title": "t-SNE Algorithm"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "hint": "Use TSNE parameters: n_components=2, perplexity=30",
+          "language": "python",
+          "question": "Implement t-SNE on the digits dataset",
+          "solution": "from sklearn.manifold import TSNE\nimport matplotlib.pyplot as plt\nt_sne = TSNE(n_components=2, perplexity=30)\nreduced = t_sne.fit_transform(digits.data)\nplt.scatter(reduced[:,0], reduced[:,1], c=digits.target, cmap='tab10')",
+          "starterCode": "from sklearn.datasets import load_digits\ndigits = load_digits()\n# TODO: Apply t-SNE with 2 components and perplexity=30\n# TODO: Plot the results colored by digit class"
+        }
+      },
+      {
+        "type": "fill_blank",
+        "sentences": [
+          {
+            "answer": "perplexity",
+            "text": "The ___ parameter in t-SNE controls the balance between preserving local and global structure"
+          },
+          {
+            "answer": "VarianceThreshold",
+            "text": "___ is a feature selection technique that removes low-variance features"
+          }
+        ]
+      },
+      {
+        "type": "scenario",
+        "title": "Algorithm Selection Dilemma",
+        "description": "You have a 1000-dimensional dataset with 5000 samples. The goal is to visualize clusters in 2D. Should you use PCA or t-SNE?",
+        "choices": [
+          {
+            "outcome": "Optimal - Combines global structure preservation with local detail",
+            "score": 100,
+            "text": "Use PCA first for initial reduction to 50 dimensions, then t-SNE"
+          },
+          {
+            "outcome": "Poor - High computational cost and potential overfitting",
+            "score": 50,
+            "text": "Use t-SNE directly on 1000 dimensions"
+          }
+        ]
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 2,
+            "explanation": "t-SNE requires careful parameter tuning and is computationally intensive, unlike PCA which has deterministic results",
+            "options": [
+              "Preserves global structure better",
+              "Computational efficiency for large datasets",
+              "Sensitivity to parameter choices",
+              "Linear transformation capabilities"
+            ],
+            "question": "Which is a limitation of t-SNE compared to PCA?"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "lesson_4_1_1",
+    "title": "Introduction to Perceptrons and Activation Functions",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "example": "inputs = [x1, x2]\nweights = [w1, w2]\nbias = b\noutput = activation(sum(weights * inputs) + bias)",
+          "explanation": "A perceptron is the basic building block of neural networks. It takes multiple inputs, applies weights, adds a bias, and passes the result through an activation function.",
+          "tip": "Think of weights as the importance each input has in the decision.",
+          "title": "Perceptron Structure"
+        }
+      },
+      {
+        "type": "visual",
+        "content": {
+          "diagram": [
+            "Input Layer → Weights → Summation Unit → Activation Function → Output"
+          ],
+          "explanation": "The diagram shows how inputs flow through weighted connections, get summed, and pass through an activation function to produce output.",
+          "title": "Perceptron Diagram"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "hint": "ReLU returns max(0, x). Calculate the weighted sum first, then apply the activation function.",
+          "language": "python",
+          "question": "Implement a perceptron with ReLU activation using NumPy",
+          "solution": "import numpy as np\n\ninputs = np.array([2, -1])\nweights = np.array([0.5, 0.3])\nbias = 1.0\n\nweighted_sum = np.dot(weights, inputs) + bias\noutput = np.maximum(0, weighted_sum)",
+          "starterCode": "import numpy as np\n\ninputs = np.array([2, -1])\nweights = np.array([0.5, 0.3])\nbias = 1.0\n\nweighted_sum = np.dot(weights, inputs) + bias\n# TODO: Apply ReLU activation\noutput = "
+        }
+      },
+      {
+        "type": "concept",
+        "content": {
+          "example": "ReLU: np.maximum(0, x)\nSigmoid: 1 / (1 + np.exp(-x))",
+          "explanation": "Activation functions introduce non-linearity. Common types include ReLU (max(0,x)), sigmoid (1/(1+e^-x)), and tanh (hyperbolic tangent).",
+          "tip": "ReLU is preferred in hidden layers to avoid vanishing gradient problems.",
+          "title": "Activation Functions"
+        }
+      },
+      {
+        "type": "flashcard",
+        "cards": [
+          {
+            "back": "Rectified Linear Unit",
+            "front": "What does ReLU stand for?"
+          },
+          {
+            "back": "Sigmoid",
+            "front": "Which activation function outputs values between 0 and 1?"
+          }
+        ]
+      },
+      {
+        "type": "recall",
+        "prompt": "List three activation functions and their typical use cases"
+      },
+      {
+        "type": "reflection",
+        "prompt": "How does the choice of activation function impact a neural network's ability to learn complex patterns?"
+      }
+    ]
+  },
+  {
+    "id": "lesson_4_2_1",
+    "title": "Convolutional Neural Networks (CNNs) and Recurrent Neural Networks (RNNs)",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "example": "CNN: Image classification\nRNN: Language modeling",
+          "explanation": "CNNs use convolutional layers for spatial feature extraction (images), while RNNs use recurrent connections for sequential data (text, time series).",
+          "tip": "Use CNNs for grid-like data and RNNs for sequential patterns.",
+          "title": "CNN vs RNN Architectures"
+        }
+      },
+      {
+        "type": "visual",
+        "content": {
+          "diagram": [
+            "CNN: Conv Layer → Pooling → FC",
+            "RNN: Input → Hidden State → Output"
+          ],
+          "explanation": "Convolutional layers detect local patterns, while recurrent layers maintain memory across sequences.",
+          "title": "Architecture Comparison"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "hint": "Use MaxPooling2D after Conv2D and Flatten before Dense layers.",
+          "language": "python",
+          "question": "Implement a CNN for MNIST classification",
+          "solution": "model.add(tf.keras.layers.MaxPooling2D(2,2))\nmodel.add(tf.keras.layers.Flatten())\nmodel.add(tf.keras.layers.Dense(10, activation='softmax'))",
+          "starterCode": "import tensorflow as tf\nmodel = tf.keras.Sequential([\n    tf.keras.layers.Conv2D(32, (3,3), activation='relu', input_shape=(28,28,1)),\n    # TODO: Add MaxPooling and Flatten layers\n])"
+        }
+      },
+      {
+        "type": "fill_blank",
+        "sentences": [
+          {
+            "answer": "channel",
+            "text": "Global Average Pooling reduces spatial dimensions while retaining ___ information"
+          },
+          {
+            "answer": "forget",
+            "text": "The ___ gate in LSTMs controls information flow"
+          }
+        ]
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 0,
+            "explanation": "CNNs process spatial hierarchies across frames effectively.",
+            "options": [
+              "CNN",
+              "RNN",
+              "Transformer",
+              "Decision Tree"
+            ],
+            "question": "Which network is better for video analysis?"
+          }
+        ]
+      },
+      {
+        "type": "scenario",
+        "title": "Model Selection Challenge",
+        "description": "You need to build a system for stock price prediction. Which architecture is more appropriate?",
+        "choices": [
+          {
+            "outcome": "Poor performance - temporal patterns need sequence modeling",
+            "score": 30,
+            "text": "CNN with 3 convolutional layers"
+          },
+          {
+            "outcome": "Captures temporal dependencies effectively",
+            "score": 100,
+            "text": "LSTM network with attention"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "lesson_4_3_1",
+    "title": "Gradient Descent and Backpropagation Fundamentals",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "example": "For a simple neural network with weights W1 and W2:\nLoss = (y_pred - y_true)²\n∂Loss/∂W1 = ∂Loss/∂y_pred * ∂y_pred/∂W1\n∂Loss/∂W2 = ∂Loss/∂y_pred * ∂y_pred/∂W2",
+          "explanation": "Backpropagation applies the chain rule to compute gradients of the loss function with respect to each weight in the network. This enables weight updates via gradient descent: θₙₑ𝑤 = θₒₗ𝒹 - α∇𝐽(θ)",
+          "tip": "Visualize gradients as error signals propagating backward through the network",
+          "title": "Backpropagation Mechanics"
+        }
+      },
+      {
+        "type": "socratic",
+        "topic": "Optimization Tradeoffs"
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "hint": "Velocity is a weighted sum of previous velocity and current gradient",
+          "language": "python",
+          "question": "Implement SGD with momentum tracking velocity",
+          "solution": "def sgd_momentum(params, grads, velocity, learning_rate=0.01, momentum=0.9):\n    velocity = momentum * velocity + learning_rate * grads\n    params = params - velocity\n    return params, velocity",
+          "starterCode": "def sgd_momentum(params, grads, velocity, learning_rate=0.01, momentum=0.9):\n    velocity = ________ # Update velocity\n    params = ________ # Update parameters\n    return params, velocity"
+        }
+      },
+      {
+        "type": "case_study",
+        "questions": [
+          {
+            "expectedAnswer": "Replace ReLU activation with Leaky ReLU or switch to batch normalization",
+            "question": "What architectural modification would most directly address this issue?"
+          }
+        ],
+        "title": "Vanishing Gradient Diagnosis"
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 1,
+            "explanation": "The chain rule allows decomposition of complex derivatives into sequential multiplicative components, essential for propagating errors through network layers",
+            "options": [
+              "Central Limit Theorem",
+              "Chain Rule",
+              "Law of Large Numbers",
+              "Bayes' Theorem"
+            ],
+            "question": "Which mathematical concept is fundamental to backpropagation?"
+          },
+          {
+            "answer": 1,
+            "explanation": "Momentum maintains a moving average of gradient directions to accelerate progress in consistent directions while dampening oscillations",
+            "options": [
+              "Prevent overfitting",
+              "Accelerate convergence",
+              "Regularize weights",
+              "Reduce bias"
+            ],
+            "question": "What is the primary purpose of momentum in SGD?"
+          },
+          {
+            "answer": 0,
+            "explanation": "Adam optimizer combines RMSProp's adaptive learning rate with momentum-based velocity tracking for robust convergence properties",
+            "options": [
+              "Adam",
+              "RMSProp",
+              "Adagrad",
+              "Standard SGD"
+            ],
+            "question": "Which optimization algorithm combines adaptive learning rates with momentum?"
+          }
+        ]
+      }
+    ]
+  }
+]

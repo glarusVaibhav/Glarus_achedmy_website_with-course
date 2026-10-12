@@ -6,10 +6,10 @@ import { Logo } from "./Logo";
 
 export function Footer() {
   const pathname = usePathname();
-  if (pathname?.startsWith("/admin") || pathname?.startsWith("/learn") || pathname?.startsWith("/live-classes")) return null;
+  if (pathname?.startsWith("/admin") || pathname?.startsWith("/learn") || pathname?.startsWith("/live-classes") || pathname?.startsWith("/education-landing")) return null;
 
   return (
-    <footer className="w-full bg-background border-t border-border/30 py-10 mt-0">
+    <footer className="w-full bg-background border-t border-border py-10 mt-0">
       <div className="max-w-[1650px] mx-auto px-6 sm:px-10 grid grid-cols-1 md:grid-cols-4 gap-8">
         <div className="space-y-4">
           <Link href="/" className="flex items-center select-none group">
@@ -46,7 +46,7 @@ export function Footer() {
           </ul>
         </div>
       </div>
-      <div className="max-w-[1650px] mx-auto px-6 sm:px-10 mt-12 pt-8 border-t border-card text-center text-subtext text-sm">
+      <div className="max-w-[1650px] mx-auto px-6 sm:px-10 mt-12 pt-8 border-t border-border text-center text-subtext text-sm">
         <p>&copy; {new Date().getFullYear()} GlarusAcademy. All rights reserved.</p>
       </div>
     </footer>

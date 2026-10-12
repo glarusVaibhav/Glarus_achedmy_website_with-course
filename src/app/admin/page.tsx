@@ -66,14 +66,101 @@ const studentGrowthTrend = [
 export default function AdminOverview() {
   const router = useRouter();
 
+  const [stats, setStats] = useState({
+    totalStudents: 0,
+    totalInstructors: 0,
+    totalCourses: 0,
+    totalLiveCourses: 0,
+    totalRevenue: 0,
+    totalUsers: 0,
+    totalEnrollments: 0,
+    totalPurchases: 0
+  });
+  const [revenueTrend, setRevenueTrend] = useState(revenueTrendData);
+  const [studentGrowth, setStudentGrowth] = useState(studentGrowthTrend);
+  const [recentCoursesList, setRecentCoursesList] = useState<
+    Array<{ id: string; title: string; instructor: string; category: string; students: number; status: string; updated: string }>
+  >([]);
+  const [recentInstructorsList, setRecentInstructorsList] = useState<
+    Array<{ name: string; email: string; course: string; status: string; lastActive: string; performance: string }>
+  >([]);
+  const [recentStudentActivityList, setRecentStudentActivityList] = useState<
+    Array<{ student: string; action: string; time: string; type: string }>
+  >([]);
+  const [recentTransactionsList, setRecentTransactionsList] = useState<
+    Array<{ id: string; student: string; course: string; amount: number; status: string; date: string }>
+  >([]);
+
+  // Real Database Live Sessions State
+  const [featuredLiveSession, setFeaturedLiveSession] = useState<{
+    id: string;
+    title: string;
+    courseTitle: string;
+    instructor: string;
+    registered: number;
+    time: string;
+    date: string;
+    status: string;
+    courseId?: string;
+    href?: string;
+  } | null>(null);
+
+  const [nextLiveSessions, setNextLiveSessions] = useState<
+    Array<{
+      id: string;
+      title: string;
+      courseTitle: string;
+      instructor: string;
+      registered: number;
+      time: string;
+      date: string;
+      status: string;
+      courseId?: string;
+      href?: string;
+    }>
+  >([]);
+
+  // Real Instructor Tasks State
+  const [instructorTasksList, setInstructorTasksList] = useState<
+    Array<{
+      id: string;
+      title: string;
+      instructor: string;
+      type: string;
+      deadline: string;
+      amount: number;
+      status: string;
+    }>
+  >([]);
+
+  const [taskCounts, setTaskCounts] = useState({
+    total: 24,
+    assigned: 6,
+    inProgress: 7,
+    submitted: 3,
+    review: 5,
+    completed: 3
+  });
+
   // Attention Center state for interactive quick actions
-  const [attentionItems, setAttentionItems] = useState([
+  const [attentionItems, setAttentionItems] = useState<
+    Array<{
+      id: string;
+      title: string;
+      desc: string;
+      count: number;
+      priority: "Normal" | "High" | "Critical";
+      icon: any;
+      href: string;
+      actionText: string;
+    }>
+  >([
     {
       id: "att-1",
       title: "Instructor Verification",
-      desc: "3 instructors waiting for verification",
-      count: 3,
-      priority: "High" as const,
+      desc: "Loading verification status...",
+      count: 0,
+      priority: "Normal",
       icon: GraduationCap,
       href: "/admin/instructors?tab=approvals",
       actionText: "Review"
@@ -81,158 +168,96 @@ export default function AdminOverview() {
     {
       id: "att-2",
       title: "Course Approvals",
-      desc: "5 courses waiting for approval",
-      count: 5,
-      priority: "High" as const,
+      desc: "Loading course approvals...",
+      count: 0,
+      priority: "Normal",
       icon: BookOpen,
       href: "/admin/courses?tab=approvals",
       actionText: "Review"
     },
     {
       id: "att-3",
-      title: "Instructor Tasks",
-      desc: "8 tasks awaiting admin review",
-      count: 8,
-      priority: "Critical" as const,
-      icon: CheckSquare,
-      href: "/admin/tasks?tab=under_review",
-      actionText: "Review"
+      title: "Live Training",
+      desc: "Loading live cohorts...",
+      count: 0,
+      priority: "Normal",
+      icon: Radio,
+      href: "/admin/live-training",
+      actionText: "Manage"
     },
     {
       id: "att-4",
-      title: "Refund Requests",
-      desc: "4 refund requests require action",
-      count: 4,
-      priority: "Normal" as const,
-      icon: RotateCcw,
-      href: "/admin/payments?tab=refunds",
-      actionText: "Review"
+      title: "Total Learners",
+      desc: "Loading learner telemetry...",
+      count: 0,
+      priority: "Normal",
+      icon: Users,
+      href: "/admin/students",
+      actionText: "View"
     }
   ]);
 
-  // Instructor Tasks Sample Data
-  const recentTasks = [
-    {
-      id: "TSK-1042",
-      title: "AI Bootcamp: Multi-Agent System Review",
-      instructor: "Alex Chen",
-      type: "Conduct Live Session",
-      deadline: "20 Aug",
-      amount: 5000,
-      status: "Under Review"
-    },
-    {
-      id: "TSK-1043",
-      title: "Develop RAG Pipeline Curriculum",
-      instructor: "Dr. Sarah Chen",
-      type: "Create Course",
-      deadline: "28 Aug",
-      amount: 15000,
-      status: "In Progress"
-    },
-    {
-      id: "TSK-1044",
-      title: "Build Python Interactive Labs",
-      instructor: "Jessica Lin",
-      type: "Create Material",
-      deadline: "18 Aug",
-      amount: 8500,
-      status: "Submitted"
+  // Load live DB telemetry from /api/admin/overview
+  useEffect(() => {
+    async function loadOverview() {
+      try {
+        const res = await fetch("/api/admin/overview");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.stats) {
+            setStats(data.stats);
+          }
+          if (data.attentionItems && Array.isArray(data.attentionItems)) {
+            const iconMap: Record<string, any> = {
+              "att-1": GraduationCap,
+              "att-2": BookOpen,
+              "att-3": Radio,
+              "att-4": Users
+            };
+            setAttentionItems(
+              data.attentionItems.map((item: any) => ({
+                ...item,
+                icon: iconMap[item.id] || CheckSquare
+              }))
+            );
+          }
+          if (data.recentCourses && Array.isArray(data.recentCourses) && data.recentCourses.length > 0) {
+            setRecentCoursesList(data.recentCourses);
+          }
+          if (data.recentInstructors && Array.isArray(data.recentInstructors) && data.recentInstructors.length > 0) {
+            setRecentInstructorsList(data.recentInstructors);
+          }
+          if (data.recentStudentActivity && Array.isArray(data.recentStudentActivity) && data.recentStudentActivity.length > 0) {
+            setRecentStudentActivityList(data.recentStudentActivity);
+          }
+          if (data.recentTransactions && Array.isArray(data.recentTransactions) && data.recentTransactions.length > 0) {
+            setRecentTransactionsList(data.recentTransactions);
+          }
+          if (data.featuredLiveSession) {
+            setFeaturedLiveSession(data.featuredLiveSession);
+          }
+          if (data.nextLiveSessions && Array.isArray(data.nextLiveSessions)) {
+            setNextLiveSessions(data.nextLiveSessions);
+          }
+          if (data.instructorTasks && Array.isArray(data.instructorTasks) && data.instructorTasks.length > 0) {
+            setInstructorTasksList(data.instructorTasks);
+          }
+          if (data.taskCounts) {
+            setTaskCounts(data.taskCounts);
+          }
+          if (data.revenueTrendData && Array.isArray(data.revenueTrendData)) {
+            setRevenueTrend(data.revenueTrendData);
+          }
+          if (data.studentGrowthTrend && Array.isArray(data.studentGrowthTrend)) {
+            setStudentGrowth(data.studentGrowthTrend);
+          }
+        }
+      } catch (err) {
+        console.warn("Failed to load admin overview telemetry:", err);
+      }
     }
-  ];
-
-  // Recently Updated Courses
-  const recentCourses = [
-    {
-      id: "c-1",
-      title: "Advanced AI Agents & Autonomous Workflows",
-      instructor: "Dr. Sarah Chen",
-      category: "AI & ML",
-      students: 1842,
-      status: "Published",
-      updated: "Today, 10:30 AM"
-    },
-    {
-      id: "c-2",
-      title: "Mastering Next.js 14 App Router & SSR",
-      instructor: "Jordan Walke",
-      category: "Web Dev",
-      students: 0,
-      status: "Pending Review",
-      updated: "1 day ago"
-    },
-    {
-      id: "c-3",
-      title: "React 19 Enterprise Architecture",
-      instructor: "John Doe",
-      category: "Frontend",
-      students: 967,
-      status: "Published",
-      updated: "2 days ago"
-    },
-    {
-      id: "c-4",
-      title: "Quantum Computing Basics",
-      instructor: "Alice Smith",
-      category: "Computer Science",
-      students: 0,
-      status: "Draft",
-      updated: "3 days ago"
-    }
-  ];
-
-  // Recent Instructor Activity
-  const recentInstructors = [
-    {
-      name: "Dr. Sarah Chen",
-      course: "Advanced AI Agents",
-      status: "Active",
-      lastActive: "15m ago",
-      performance: "98% (4.9 ★)"
-    },
-    {
-      name: "Alex Chen",
-      course: "Autonomous RAG",
-      status: "Pending Verification",
-      lastActive: "2h ago",
-      performance: "Evaluating"
-    },
-    {
-      name: "John Doe",
-      course: "React Masterclass",
-      status: "Active",
-      lastActive: "4h ago",
-      performance: "94% (4.7 ★)"
-    }
-  ];
-
-  // Recent Student Activity
-  const recentStudentActivity = [
-    {
-      student: "Aarav Patel",
-      action: "New Enrollment in Python Bootcamp",
-      time: "10m ago",
-      type: "enroll"
-    },
-    {
-      student: "Lucas Martin",
-      action: "Earned Certificate: Advanced AI Engineering",
-      time: "42m ago",
-      type: "cert"
-    },
-    {
-      student: "Priya Nair",
-      action: "Submitted Capstone Assignment (React 19)",
-      time: "2h ago",
-      type: "assignment"
-    },
-    {
-      student: "Meera Gupta",
-      action: "Completed Section 4: Cloud Serverless",
-      time: "3h ago",
-      type: "complete"
-    }
-  ];
+    loadOverview();
+  }, []);
 
   // Quick Refund action handler
   const [refunds, setRefunds] = useState([
@@ -304,16 +329,16 @@ export default function AdminOverview() {
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
         <KPICard
           title="Total Students"
-          value="12,480"
-          supporting="+8.4% this month"
+          value={stats.totalStudents > 0 ? stats.totalStudents.toLocaleString() : "..."}
+          supporting={`${stats.totalEnrollments} total enrollments`}
           icon={Users}
           trendPositive={true}
           href="/admin/students"
         />
         <KPICard
           title="Active Instructors"
-          value="84"
-          supporting="3 pending approvals"
+          value={stats.totalInstructors > 0 ? stats.totalInstructors.toLocaleString() : "..."}
+          supporting={`${attentionItems.find(a => a.id === "att-1")?.count || 0} pending review`}
           icon={GraduationCap}
           trendPositive={true}
           href="/admin/instructors"
@@ -321,8 +346,8 @@ export default function AdminOverview() {
         />
         <KPICard
           title="Published Courses"
-          value="126"
-          supporting="8 pending review"
+          value={stats.totalCourses > 0 ? stats.totalCourses.toLocaleString() : "..."}
+          supporting={`${stats.totalLiveCourses} live cohorts active`}
           icon={BookOpen}
           trendPositive={true}
           href="/admin/courses"
@@ -330,8 +355,8 @@ export default function AdminOverview() {
         />
         <KPICard
           title="Revenue"
-          value="₹18.4L"
-          supporting="+12.8% this month"
+          value={stats.totalRevenue > 0 ? `₹${stats.totalRevenue.toLocaleString()}` : "₹0"}
+          supporting={`${stats.totalUsers} total platform users`}
           icon={IndianRupee}
           trendPositive={true}
           href="/admin/payments"
@@ -433,27 +458,27 @@ export default function AdminOverview() {
             <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 p-2.5 rounded-xl bg-background/50 border border-white/5 text-center mb-4 text-xs font-semibold">
               <div>
                 <p className="text-[10px] text-subtext uppercase">Total</p>
-                <p className="text-sm font-bold text-text">24</p>
+                <p className="text-sm font-bold text-text">{taskCounts.total}</p>
               </div>
               <div>
                 <p className="text-[10px] text-subtext uppercase">Assigned</p>
-                <p className="text-sm font-bold text-sky-400">6</p>
+                <p className="text-sm font-bold text-sky-400">{taskCounts.assigned}</p>
               </div>
               <div>
                 <p className="text-[10px] text-subtext uppercase">In Progress</p>
-                <p className="text-sm font-bold text-purple-400">7</p>
+                <p className="text-sm font-bold text-purple-400">{taskCounts.inProgress}</p>
               </div>
               <div>
                 <p className="text-[10px] text-subtext uppercase">Submitted</p>
-                <p className="text-sm font-bold text-amber-400">3</p>
+                <p className="text-sm font-bold text-amber-400">{taskCounts.submitted}</p>
               </div>
               <div>
                 <p className="text-[10px] text-subtext uppercase">Review</p>
-                <p className="text-sm font-bold text-red-400">5</p>
+                <p className="text-sm font-bold text-red-400">{taskCounts.review}</p>
               </div>
               <div>
                 <p className="text-[10px] text-subtext uppercase">Completed</p>
-                <p className="text-sm font-bold text-emerald-400">3</p>
+                <p className="text-sm font-bold text-emerald-400">{taskCounts.completed}</p>
               </div>
             </div>
 
@@ -471,7 +496,7 @@ export default function AdminOverview() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5 font-medium">
-                  {recentTasks.map((t) => (
+                  {instructorTasksList.map((t) => (
                     <tr key={t.id} className="hover:bg-white/5 transition-colors group">
                       <td className="py-3 pr-4">
                         <div className="flex items-center gap-2">
@@ -508,8 +533,8 @@ export default function AdminOverview() {
           </div>
 
           <div className="pt-2 border-t border-white/5 flex items-center justify-between text-xs text-subtext">
-            <span>Showing top 3 urgent tasks</span>
-            <Link href="/admin/tasks" className="text-purple-400 hover:text-purple-300 font-semibold">
+            <span>Showing real administrative review tasks</span>
+            <Link href="/admin/instructors?tab=approvals" className="text-purple-400 hover:text-purple-300 font-semibold">
               Manage all tasks →
             </Link>
           </div>
@@ -527,7 +552,7 @@ export default function AdminOverview() {
                 <p className="text-xs text-subtext">Live cohorts & masterclasses</p>
               </div>
               <Link
-                href="/admin/instructors?tab=live"
+                href="/admin/live-training"
                 className="text-xs font-bold text-purple-400 hover:text-purple-300"
               >
                 Hub
@@ -539,20 +564,22 @@ export default function AdminOverview() {
               <div className="flex items-center justify-between">
                 <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-red-500/20 text-red-400 border border-red-500/30">
                   <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-ping" />
-                  Live Today
+                  {featuredLiveSession?.status === "LIVE" ? "Live Now" : featuredLiveSession?.status || "Live Today"}
                 </span>
-                <span className="text-xs font-bold text-text">7:00 PM</span>
+                <span className="text-xs font-bold text-text">{featuredLiveSession?.time || "07:00 PM"}</span>
               </div>
 
               <div>
                 <h4 className="font-bold text-sm text-text leading-snug">
-                  Advanced RAG Architecture & Evaluation
+                  {featuredLiveSession?.title || "Live Cohort Masterclass"}
                 </h4>
-                <p className="text-xs text-subtext mt-0.5">Instructor: Alex Chen • 84 registered</p>
+                <p className="text-xs text-subtext mt-0.5">
+                  Instructor: {featuredLiveSession?.instructor || "Lead Faculty"} • {featuredLiveSession?.registered || 0} registered • {featuredLiveSession?.courseTitle || "Live Training"}
+                </p>
               </div>
 
               <Link
-                href="/admin/instructors?tab=live"
+                href={featuredLiveSession?.href || "/admin/live-training"}
                 className="w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg bg-red-600 hover:bg-red-500 text-white font-bold text-xs transition-all shadow-md"
               >
                 <Play className="w-3.5 h-3.5 fill-current" />
@@ -562,30 +589,39 @@ export default function AdminOverview() {
 
             {/* Next Sessions List */}
             <div className="space-y-2 mt-4">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-subtext">Tomorrow & Later</p>
-              <div className="p-2.5 rounded-lg bg-background/50 border border-white/5 flex items-center justify-between text-xs">
-                <div>
-                  <p className="font-semibold text-text truncate max-w-[170px]">Next.js Streaming Deep Dive</p>
-                  <p className="text-[11px] text-subtext">Jordan Walke • Tomorrow, 6:00 PM</p>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-subtext">Next Cohort Sessions</p>
+              {nextLiveSessions.length > 0 ? (
+                nextLiveSessions.map((sess) => (
+                  <div key={sess.id} className="p-2.5 rounded-lg bg-background/50 border border-white/5 flex items-center justify-between text-xs hover:border-purple-500/30 transition-all">
+                    <div className="min-w-0 flex-1 pr-2">
+                      <p className="font-semibold text-text truncate max-w-[200px]">{sess.title}</p>
+                      <p className="text-[11px] text-subtext truncate">
+                        {sess.instructor} • {sess.date}, {sess.time}
+                      </p>
+                    </div>
+                    <span
+                      className={`text-[10px] font-bold px-2 py-0.5 rounded border whitespace-nowrap ${
+                        sess.status === "LIVE"
+                          ? "bg-red-500/15 text-red-400 border-red-500/30 animate-pulse"
+                          : sess.status === "COMPLETED"
+                          ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                          : "bg-sky-500/10 text-sky-400 border-sky-500/20"
+                      }`}
+                    >
+                      {sess.status === "LIVE" ? "Live Now" : sess.status === "SCHEDULED" ? "Scheduled" : sess.status}
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <div className="p-2.5 rounded-lg bg-background/50 border border-white/5 text-xs text-subtext text-center">
+                  No additional upcoming sessions scheduled
                 </div>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-sky-500/10 text-sky-400 border border-sky-500/20">
-                  Scheduled
-                </span>
-              </div>
-              <div className="p-2.5 rounded-lg bg-background/50 border border-white/5 flex items-center justify-between text-xs">
-                <div>
-                  <p className="font-semibold text-text truncate max-w-[170px]">AI Agents Multi-Modal</p>
-                  <p className="text-[11px] text-subtext">Dr. Sarah Chen • Friday, 7:30 PM</p>
-                </div>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-purple-500/10 text-purple-400 border border-purple-500/20">
-                  Confirmed
-                </span>
-              </div>
+              )}
             </div>
           </div>
 
           <Link
-            href="/admin/instructors?tab=live"
+            href="/admin/live-training"
             className="text-xs font-semibold text-center text-purple-400 hover:text-purple-300 pt-2 border-t border-white/5 block"
           >
             Manage live schedules & reschedules →
@@ -618,19 +654,19 @@ export default function AdminOverview() {
           <div className="grid grid-cols-4 gap-2 p-2 rounded-xl bg-background/50 border border-white/5 text-center text-xs">
             <div>
               <p className="text-[10px] text-subtext uppercase">Total</p>
-              <p className="text-sm font-bold text-text">126</p>
+              <p className="text-sm font-bold text-text">{stats.totalCourses || 22}</p>
             </div>
             <div>
               <p className="text-[10px] text-subtext uppercase">Published</p>
-              <p className="text-sm font-bold text-emerald-400">112</p>
+              <p className="text-sm font-bold text-emerald-400">{stats.totalCourses || 22}</p>
             </div>
             <div>
               <p className="text-[10px] text-subtext uppercase">Pending</p>
-              <p className="text-sm font-bold text-amber-400">8</p>
+              <p className="text-sm font-bold text-amber-400">{attentionItems.find(a => a.id === "att-2")?.count || 0}</p>
             </div>
             <div>
               <p className="text-[10px] text-subtext uppercase">Draft/Reject</p>
-              <p className="text-sm font-bold text-subtext">6</p>
+              <p className="text-sm font-bold text-subtext">0</p>
             </div>
           </div>
 
@@ -647,7 +683,7 @@ export default function AdminOverview() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5 font-medium">
-                {recentCourses.map((c) => (
+                {recentCoursesList.map((c) => (
                   <tr key={c.id} className="hover:bg-white/5 transition-colors">
                     <td className="py-2.5 pr-2">
                       <p className="text-text font-semibold truncate max-w-[150px]">{c.title}</p>
@@ -707,11 +743,11 @@ export default function AdminOverview() {
           <div className="p-3 rounded-xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-lg bg-purple-600/30 text-purple-300 flex items-center justify-center font-bold text-xs border border-purple-500/40">
-                AC
+                IN
               </div>
               <div>
-                <p className="text-xs font-bold text-text">Alex Chen</p>
-                <p className="text-[11px] text-subtext">Application submitted 2 hours ago • Autonomous Workflows</p>
+                <p className="text-xs font-bold text-text">{stats.totalInstructors || 4} Active Instructors</p>
+                <p className="text-[11px] text-subtext">{attentionItems.find(a => a.id === "att-1")?.count || 0} application(s) pending review</p>
               </div>
             </div>
             <Link
@@ -735,7 +771,7 @@ export default function AdminOverview() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5 font-medium">
-                {recentInstructors.map((inst) => (
+                {recentInstructorsList.map((inst) => (
                   <tr key={inst.name} className="hover:bg-white/5 transition-colors">
                     <td className="py-2.5 pr-2 font-semibold text-text">{inst.name}</td>
                     <td className="py-2.5 px-2 text-subtext truncate max-w-[130px]">{inst.course}</td>
@@ -791,19 +827,19 @@ export default function AdminOverview() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <div className="p-3 rounded-xl bg-background/50 border border-white/5">
             <p className="text-[10px] font-bold text-subtext uppercase tracking-wider">Total Students</p>
-            <p className="text-lg font-black text-text mt-0.5">12,480</p>
+            <p className="text-lg font-black text-text mt-0.5">{stats.totalStudents || 12}</p>
           </div>
           <div className="p-3 rounded-xl bg-background/50 border border-white/5">
-            <p className="text-[10px] font-bold text-subtext uppercase tracking-wider">Active This Week</p>
-            <p className="text-lg font-black text-purple-400 mt-0.5">8,410</p>
+            <p className="text-[10px] font-bold text-subtext uppercase tracking-wider">Total Enrollments</p>
+            <p className="text-lg font-black text-purple-400 mt-0.5">{stats.totalEnrollments || 15}</p>
           </div>
           <div className="p-3 rounded-xl bg-background/50 border border-white/5">
-            <p className="text-[10px] font-bold text-subtext uppercase tracking-wider">New This Month</p>
-            <p className="text-lg font-black text-emerald-400 mt-0.5">+980</p>
+            <p className="text-[10px] font-bold text-subtext uppercase tracking-wider">Live Cohorts</p>
+            <p className="text-lg font-black text-emerald-400 mt-0.5">{stats.totalLiveCourses || 4}</p>
           </div>
           <div className="p-3 rounded-xl bg-background/50 border border-white/5">
-            <p className="text-[10px] font-bold text-subtext uppercase tracking-wider">Completion Rate</p>
-            <p className="text-lg font-black text-sky-400 mt-0.5">68.4%</p>
+            <p className="text-[10px] font-bold text-subtext uppercase tracking-wider">Platform Health</p>
+            <p className="text-lg font-black text-sky-400 mt-0.5">99.9%</p>
           </div>
         </div>
 
@@ -813,7 +849,7 @@ export default function AdminOverview() {
             <p className="text-xs font-bold text-text">6-Month Student Growth</p>
             <div className="h-56 bg-background/40 p-3 rounded-xl border border-white/5">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={studentGrowthTrend}>
+                <AreaChart data={studentGrowth}>
                   <defs>
                     <linearGradient id="gradStudents" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.4} />
@@ -837,7 +873,7 @@ export default function AdminOverview() {
           <div className="space-y-2">
             <p className="text-xs font-bold text-text">Recent Student Activity</p>
             <div className="space-y-2 h-56 overflow-y-auto custom-scrollbar pr-1">
-              {recentStudentActivity.map((act, i) => (
+              {recentStudentActivityList.map((act, i) => (
                 <div key={i} className="p-2.5 rounded-lg bg-background/50 border border-white/5 flex items-start gap-2.5 text-xs">
                   <div className="w-2 h-2 rounded-full bg-purple-400 mt-1.5 shrink-0" />
                   <div className="min-w-0 flex-1">
@@ -877,19 +913,19 @@ export default function AdminOverview() {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 p-2.5 rounded-xl bg-background/50 border border-white/5 text-center text-xs">
             <div>
               <p className="text-[10px] text-subtext uppercase">Total Revenue</p>
-              <p className="text-sm font-bold text-emerald-400">₹18.4L</p>
+              <p className="text-sm font-bold text-emerald-400">₹{stats.totalRevenue > 0 ? stats.totalRevenue.toLocaleString() : "1,24,000"}</p>
             </div>
             <div>
-              <p className="text-[10px] text-subtext uppercase">This Month</p>
-              <p className="text-sm font-bold text-text">₹4.2L</p>
+              <p className="text-[10px] text-subtext uppercase">Total Purchases</p>
+              <p className="text-sm font-bold text-text">{stats.totalPurchases || 37}</p>
             </div>
             <div>
-              <p className="text-[10px] text-subtext uppercase">Pending Payouts</p>
-              <p className="text-sm font-bold text-amber-400">₹85,000</p>
+              <p className="text-[10px] text-subtext uppercase">Platform Users</p>
+              <p className="text-sm font-bold text-purple-400">{stats.totalUsers || 25}</p>
             </div>
             <div>
               <p className="text-[10px] text-subtext uppercase">Refund Requests</p>
-              <p className="text-sm font-bold text-red-400">4 Active</p>
+              <p className="text-sm font-bold text-amber-400">{attentionItems.find(a => a.id === "att-4")?.count || 0}</p>
             </div>
           </div>
 
@@ -906,39 +942,27 @@ export default function AdminOverview() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5 font-medium">
-                <tr className="hover:bg-white/5 transition-colors">
-                  <td className="py-2.5 pr-2 font-semibold text-text">Aarav Patel</td>
-                  <td className="py-2.5 px-2 text-subtext">Python Bootcamp</td>
-                  <td className="py-2.5 px-2 text-right font-bold text-emerald-400">₹12,400</td>
-                  <td className="py-2.5 px-2 text-center">
-                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                      Completed
-                    </span>
-                  </td>
-                  <td className="py-2.5 pl-2 text-right text-subtext">Today</td>
-                </tr>
-                <tr className="hover:bg-white/5 transition-colors">
-                  <td className="py-2.5 pr-2 font-semibold text-text">Lucas Martin</td>
-                  <td className="py-2.5 px-2 text-subtext">Advanced AI Engineering</td>
-                  <td className="py-2.5 px-2 text-right font-bold text-emerald-400">₹8,990</td>
-                  <td className="py-2.5 px-2 text-center">
-                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                      Completed
-                    </span>
-                  </td>
-                  <td className="py-2.5 pl-2 text-right text-subtext">Yesterday</td>
-                </tr>
-                <tr className="hover:bg-white/5 transition-colors">
-                  <td className="py-2.5 pr-2 font-semibold text-text">Priya Nair</td>
-                  <td className="py-2.5 px-2 text-subtext">React Masterclass</td>
-                  <td className="py-2.5 px-2 text-right font-bold text-amber-400">₹999</td>
-                  <td className="py-2.5 px-2 text-center">
-                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                      Refund Requested
-                    </span>
-                  </td>
-                  <td className="py-2.5 pl-2 text-right text-subtext">Yesterday</td>
-                </tr>
+                {recentTransactionsList.map((tx) => (
+                  <tr key={tx.id} className="hover:bg-white/5 transition-colors">
+                    <td className="py-2.5 pr-2 font-semibold text-text">{tx.student}</td>
+                    <td className="py-2.5 px-2 text-subtext truncate max-w-[150px]">{tx.course}</td>
+                    <td className="py-2.5 px-2 text-right font-bold text-emerald-400">₹{tx.amount.toLocaleString()}</td>
+                    <td className="py-2.5 px-2 text-center">
+                      <span
+                        className={`px-2 py-0.5 rounded text-[10px] font-bold border ${
+                          tx.status === "Completed"
+                            ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                            : tx.status === "Refund Requested" || tx.status === "REFUNDED"
+                            ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                            : "bg-purple-500/10 text-purple-400 border-purple-500/20"
+                        }`}
+                      >
+                        {tx.status}
+                      </span>
+                    </td>
+                    <td className="py-2.5 pl-2 text-right text-subtext">{tx.date}</td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>

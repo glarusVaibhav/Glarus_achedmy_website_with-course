@@ -22,47 +22,65 @@ export async function POST(req: Request) {
       );
     }
 
-    const { lectureId, progressSeconds, isCompleted } = validation.data;
+    const { lectureId, progressSeconds, isCompleted, courseId: bodyCourseId, lectureTitle: bodyLectureTitle } = validation.data;
 
-    // 1. Upsert VideoProgress
-    const progress = await prisma.videoProgress.upsert({
-      where: { userId_lectureId: { userId: user.id, lectureId } },
-      update: {
-        progressSeconds,
-        isCompleted: isCompleted ?? undefined,
-        updatedAt: new Date(),
-      },
-      create: {
-        userId: user.id,
-        lectureId,
-        progressSeconds,
-        isCompleted: isCompleted || false,
-      },
-    });
-
-    // 2. Fetch lecture to update UserActivity (Continue Learning & Streak)
-    const lecture = await prisma.lecture.findUnique({
-      where: { id: lectureId },
-      include: { module: { include: { course: true } } },
-    });
-
-    if (lecture && lecture.module?.course) {
-      const courseId = lecture.module.course.id;
-
-      await prisma.userActivity.upsert({
-        where: { userId_courseId: { userId: user.id, courseId } },
+    // 1. Upsert VideoProgress (wrapped in try-catch in case lectureId is synthetic)
+    let progress = null;
+    try {
+      progress = await prisma.videoProgress.upsert({
+        where: { userId_lectureId: { userId: user.id, lectureId } },
         update: {
-          lastLectureId: lecture.id,
-          lastLectureTitle: lecture.title,
-          lastTimestamp: progressSeconds,
-          totalSeconds: { increment: Math.min(progressSeconds, 300) },
+          progressSeconds,
+          isCompleted: isCompleted ?? undefined,
           updatedAt: new Date(),
         },
         create: {
           userId: user.id,
-          courseId,
-          lastLectureId: lecture.id,
-          lastLectureTitle: lecture.title,
+          lectureId,
+          progressSeconds,
+          isCompleted: isCompleted || false,
+        },
+      });
+    } catch {
+      /* ignore if synthetic lecture */
+    }
+
+    // 2. Fetch lecture to update UserActivity (Continue Learning & Streak)
+    let targetCourseId = bodyCourseId;
+    let targetLectureTitle = bodyLectureTitle;
+
+    if (!targetCourseId || !targetLectureTitle) {
+      const lecture = await prisma.lecture.findUnique({
+        where: { id: lectureId },
+        include: { module: { include: { course: true } } },
+      }).catch(() => null);
+
+      if (lecture) {
+        if (!targetCourseId && lecture.module?.course) {
+          targetCourseId = lecture.module.course.id;
+        }
+        if (!targetLectureTitle) {
+          targetLectureTitle = lecture.title;
+        }
+      }
+    }
+
+    if (targetCourseId) {
+      await prisma.userActivity.upsert({
+        where: { userId_courseId: { userId: user.id, courseId: targetCourseId } },
+        update: {
+          lastLectureId: lectureId,
+          lastLectureTitle: targetLectureTitle || 'Current Session',
+          lastTimestamp: progressSeconds,
+          totalSeconds: { increment: Math.min(progressSeconds, 300) },
+          updatedAt: new Date(),
+          accessedAt: new Date(),
+        },
+        create: {
+          userId: user.id,
+          courseId: targetCourseId,
+          lastLectureId: lectureId,
+          lastLectureTitle: targetLectureTitle || 'Current Session',
           lastTimestamp: progressSeconds,
           totalSeconds: progressSeconds,
         },

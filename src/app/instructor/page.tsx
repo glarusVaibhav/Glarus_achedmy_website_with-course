@@ -24,9 +24,12 @@ import { InstructorStudentsView } from "@/components/instructor/InstructorStuden
 import { useAuth } from "@/context/AuthContext";
 import { InstructorLiveDashboard } from "@/components/instructor/InstructorLiveDashboard";
 import { InstructorSelfPacedCoursesView } from "@/components/instructor/InstructorSelfPacedCoursesView";
+import { InstructorLiveCourseCreator } from "@/components/instructor/courses/InstructorLiveCourseCreator";
 import { InstructorPermissionModal } from "@/components/instructor/courses/InstructorPermissionModal";
 import { CourseCreationPermissionStatus } from "@/lib/permissions/courseCreationPermission";
 import { formatDate } from "@/lib/dateTime";
+import { createTusUpload } from "@/lib/video/tusUploader";
+import { parseYouTubeVideoId } from "@/lib/video/youtubeService";
 
 /* ═══════════════════════════════════════════════
    TYPE DEFINITIONS
@@ -99,6 +102,7 @@ export default function InstructorDashboard() {
   const { user } = useAuth();
   const isDemoUser = user?.email === "abc@gmail.com";
   const [activeTab, setActiveTab] = useState("Dashboard");
+  const [createCourseFormat, setCreateCourseFormat] = useState<"SELF_PACED" | "LIVE_CLASS">("SELF_PACED");
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
   /* ── Shared State ── */
@@ -162,7 +166,7 @@ export default function InstructorDashboard() {
     description: "",
     price: "2499",
     originalPrice: "4999",
-    duration: "36 Hours VOD",
+    duration: "36 Hours",
     previewVideoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
     category: "Artificial Intelligence",
     level: "All Levels",
@@ -375,6 +379,49 @@ export default function InstructorDashboard() {
   ): Promise<string | null> => {
     setUploadingTarget(category);
     try {
+      // If video, attempt direct upload session (Bunny Stream TUS or MinIO)
+      if (category === "video") {
+        try {
+          const sessionRes = await fetch("/api/videos/upload-session", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              filename: file.name,
+              contentType: file.type || "video/mp4",
+              size: file.size,
+              title: file.name,
+              courseId: targetCourseId,
+            }),
+          });
+
+          if (sessionRes.ok) {
+            const sessionData = await sessionRes.json();
+            if (sessionData.provider === "BUNNY_STREAM" && (sessionData.uploadEndpoint || sessionData.tusEndpoint)) {
+              // Direct TUS upload to Bunny Stream
+              await new Promise<void>((resolve, reject) => {
+                const tusUpload = createTusUpload(file, {
+                  endpoint: sessionData.uploadEndpoint || sessionData.tusEndpoint,
+                  headers: sessionData.tusHeaders || {},
+                  metadata: {
+                    filetype: file.type || "video/mp4",
+                    title: file.name,
+                  },
+                  onSuccess: () => resolve(),
+                  onError: (err) => reject(err),
+                });
+                tusUpload.start();
+              });
+
+              setToast({ message: `Uploaded ${file.name} to Bunny Stream!`, type: "success" });
+              return `/api/videos/${sessionData.videoAssetId}/status`;
+            }
+          }
+        } catch (videoErr: any) {
+          console.warn("Direct upload session fallback to /api/upload:", videoErr?.message);
+        }
+      }
+
+      // Standard fallback to /api/upload for images, resources, and legacy uploads
       const formData = new FormData();
       formData.append("file", file);
       formData.append("category", category);
@@ -969,6 +1016,10 @@ export default function InstructorDashboard() {
   /* ── Course Creation Permission State ── */
   const [permissionStatus, setPermissionStatus] = useState<CourseCreationPermissionStatus>("NOT_REQUESTED");
   const [canCreateCourse, setCanCreateCourse] = useState(false);
+  const [canEditCourse, setCanEditCourse] = useState(false);
+  const [canCreateLiveClass, setCanCreateLiveClass] = useState(false);
+  const [canEditLiveClass, setCanEditLiveClass] = useState(false);
+  const [canRescheduleLiveClass, setCanRescheduleLiveClass] = useState(false);
   const [permissionData, setPermissionData] = useState<{
     requestedAt?: string | null;
     reviewedAt?: string | null;
@@ -982,8 +1033,16 @@ export default function InstructorDashboard() {
       const res = await fetch("/api/instructor/course-creation-permission");
       if (res.ok) {
         const data = await res.json();
-        setPermissionStatus(data.status || "NOT_REQUESTED");
-        setCanCreateCourse(Boolean(data.canCreateCourse || data.allowed || data.isAdmin));
+        const allowedCreate = Boolean(data.canCreateCourse || data.allowed || data.isAdmin);
+        const effectiveStatus = allowedCreate
+          ? "APPROVED"
+          : (data.status === "APPROVED" ? "REVOKED" : (data.status || "NOT_REQUESTED"));
+        setPermissionStatus(effectiveStatus);
+        setCanCreateCourse(allowedCreate);
+        setCanEditCourse(Boolean(data.canEditCourse ?? allowedCreate));
+        setCanCreateLiveClass(Boolean(data.canCreateLiveClass ?? false));
+        setCanEditLiveClass(Boolean(data.canEditLiveClass ?? false));
+        setCanRescheduleLiveClass(Boolean(data.canRescheduleLiveClass ?? false));
         setPermissionData({
           requestedAt: data.requestedAt,
           reviewedAt: data.reviewedAt,
@@ -1596,6 +1655,7 @@ export default function InstructorDashboard() {
               isDemoUser={isDemoUser}
               permissionStatus={permissionStatus}
               canCreateCourse={canCreateCourse}
+              canEditCourse={canEditCourse}
               onRequestPermission={() => setIsPermissionModalOpen(true)}
               onCreateCourse={() => {
                 if (!canCreateCourse) {
@@ -1613,62 +1673,179 @@ export default function InstructorDashboard() {
           )}
 
           {/* ══════════════════════════════════════
-             TAB: CREATE COURSE
+             TAB: CREATE COURSE (SELF-PACED & LIVE CLASS)
              ══════════════════════════════════════ */}
           {activeTab === "Create Course" && (
-            !canCreateCourse ? (
-              <div className="p-8 md:p-12 rounded-3xl bg-[#0E131F] border border-purple-500/30 text-center max-w-2xl mx-auto space-y-6 my-10 shadow-2xl">
-                <div className="w-16 h-16 rounded-3xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center mx-auto shadow-xl shadow-purple-500/10">
-                  <Lock className="w-8 h-8 text-purple-400" />
+            <div className="space-y-6">
+              {/* Course Type Selector Banner */}
+              <div className="bg-card border border-white/10 rounded-3xl p-4 sm:p-6 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-11 h-11 rounded-2xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center shadow-inner shrink-0">
+                    <Sparkles className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h2 className="text-base sm:text-lg font-black text-text">
+                      Course Authoring & Curriculum Studio
+                    </h2>
+                    <p className="text-xs text-subtext mt-0.5">
+                      Choose whether you want to build a self-paced video course or schedule an interactive live cohort program.
+                    </p>
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-purple-400">
-                    Restricted Functionality
-                  </span>
-                  <h2 className="text-2xl font-black text-white">Course Creation Requires Approval</h2>
-                  <p className="text-xs sm:text-sm text-slate-400 max-w-md mx-auto leading-relaxed">
-                    You need administrator approval before you can architect and create new courses on GlarusAcademy.
-                  </p>
-                </div>
-                <div className="flex items-center justify-center gap-3 pt-2">
+
+                <div className="flex items-center bg-background/80 p-1.5 rounded-2xl border border-white/10 self-start sm:self-auto gap-1">
                   <button
-                    onClick={() => setActiveTab("Self-Paced Courses")}
-                    className="px-5 py-2.5 rounded-xl bg-white/[0.05] hover:bg-white/[0.08] text-slate-300 text-xs font-bold transition-colors cursor-pointer border border-white/[0.06]"
+                    type="button"
+                    onClick={() => setCreateCourseFormat("SELF_PACED")}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                      createCourseFormat === "SELF_PACED"
+                        ? "bg-purple-600 text-white shadow-md shadow-purple-600/20"
+                        : "text-subtext hover:text-text hover:bg-white/5"
+                    }`}
                   >
-                    Back to Courses
+                    <BookOpen className="w-3.5 h-3.5" />
+                    <span>Self-Paced Course</span>
                   </button>
+
                   <button
-                    onClick={() => setIsPermissionModalOpen(true)}
-                    className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-bold transition-all shadow-lg shadow-purple-600/25 flex items-center gap-2 cursor-pointer"
+                    type="button"
+                    onClick={() => {
+                      if (!canCreateLiveClass) {
+                        setToast({
+                          message: "Live Class & Cohort Creation is locked. Admin permission required.",
+                          type: "error"
+                        });
+                        return;
+                      }
+                      setCreateCourseFormat("LIVE_CLASS");
+                    }}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                      createCourseFormat === "LIVE_CLASS"
+                        ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md shadow-purple-600/20"
+                        : canCreateLiveClass
+                        ? "text-subtext hover:text-text hover:bg-white/5"
+                        : "text-slate-500 opacity-60 hover:text-slate-400"
+                    }`}
                   >
-                    {permissionStatus === "PENDING" ? <Clock className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
-                    <span>{permissionStatus === "PENDING" ? "View Request Status" : "Request Permission"}</span>
+                    {canCreateLiveClass ? (
+                      <Video className="w-3.5 h-3.5 text-sky-400" />
+                    ) : (
+                      <Lock className="w-3.5 h-3.5 text-amber-400" />
+                    )}
+                    <span>Live Class & Cohort</span>
+                    {canCreateLiveClass ? (
+                      <span className="px-1.5 py-0.5 rounded-md bg-white/20 text-[9px] font-black uppercase">
+                        Live
+                      </span>
+                    ) : (
+                      <span className="px-1.5 py-0.5 rounded-md bg-amber-500/20 text-amber-400 text-[9px] font-black uppercase">
+                        Locked
+                      </span>
+                    )}
                   </button>
                 </div>
               </div>
-            ) : (
-            <div className="flex gap-8 animate-in fade-in duration-300">
-              {/* Left Stepper */}
-              <div className="w-64 shrink-0 hidden lg:block">
-                <div className="sticky top-10 space-y-10 relative">
-                  <div className="absolute left-5 top-6 bottom-6 w-0.5 bg-card" />
-                  {wizardSteps.map((step) => {
-                    const isActive = wizardStep === step.num;
-                    const isCompleted = step.num < wizardStep;
-                    return (
-                      <button key={step.num} onClick={() => setWizardStep(step.num)} className={`flex items-start gap-4 transition-all duration-300 w-full text-left ${isActive ? "opacity-100" : isCompleted ? "opacity-60" : "opacity-40"}`}>
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 border-2 bg-background z-10 shadow-sm ${isActive ? "border-purple-500 text-purple-500 scale-110 shadow-purple-500/20" : isCompleted ? "border-emerald-500 text-emerald-500" : "border-card text-subtext"}`}>
-                          {isCompleted ? <Check className="w-5 h-5" /> : <step.icon className={`w-4 h-4 ${isActive ? "animate-pulse" : ""}`} />}
-                        </div>
-                        <div className="pt-2">
-                          <p className={`text-[10px] font-black tracking-widest uppercase mb-0.5 ${isActive ? "text-purple-500" : "text-subtext"}`}>Step {step.num}</p>
-                          <h3 className={`font-bold text-sm ${isActive ? "text-text" : "text-subtext"}`}>{step.title}</h3>
-                        </div>
+
+              {/* FORMAT 1: LIVE INTERACTIVE COHORT CLASS */}
+              {createCourseFormat === "LIVE_CLASS" ? (
+                !canCreateLiveClass ? (
+                  <div className="p-8 md:p-12 rounded-3xl bg-[#0E131F] border border-sky-500/30 text-center max-w-2xl mx-auto space-y-6 my-6 shadow-2xl">
+                    <div className="w-16 h-16 rounded-3xl bg-sky-500/10 border border-sky-500/30 flex items-center justify-center mx-auto shadow-xl shadow-sky-500/10">
+                      <Lock className="w-8 h-8 text-sky-400" />
+                    </div>
+                    <div className="space-y-2">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-sky-400">
+                        Live Class Authority Locked
+                      </span>
+                      <h2 className="text-2xl font-black text-white">Live Class Creation Requires Approval</h2>
+                      <p className="text-xs sm:text-sm text-slate-400 max-w-md mx-auto leading-relaxed">
+                        You need administrative authorization for live class creation and cohort scheduling on Glarus Academy.
+                      </p>
+                    </div>
+                    <div className="flex items-center justify-center gap-3 pt-2">
+                      <button
+                        onClick={() => setActiveTab("Live Sessions")}
+                        className="px-5 py-2.5 rounded-xl bg-white/[0.05] hover:bg-white/[0.08] text-slate-300 text-xs font-bold transition-colors cursor-pointer border border-white/[0.06]"
+                      >
+                        Back to Live Sessions
                       </button>
-                    );
-                  })}
-                </div>
-              </div>
+                      <button
+                        onClick={() => setIsPermissionModalOpen(true)}
+                        className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 text-white text-xs font-bold transition-all shadow-lg shadow-sky-600/25 flex items-center gap-2 cursor-pointer"
+                      >
+                        <Lock className="w-4 h-4" />
+                        <span>Request Permission</span>
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <InstructorLiveCourseCreator
+                    onSuccess={(created) => {
+                      setToast({
+                        message: `Live Class "${created.title}" created & submitted for Admin approval!`,
+                        type: "success"
+                      });
+                      fetchAll();
+                      setActiveTab("Live Sessions");
+                    }}
+                    onCancel={() => setActiveTab("Live Sessions")}
+                  />
+                )
+              ) : (
+                /* FORMAT 2: SELF-PACED VIDEO COURSE */
+                !canCreateCourse ? (
+                  <div className="p-8 md:p-12 rounded-3xl bg-[#0E131F] border border-purple-500/30 text-center max-w-2xl mx-auto space-y-6 my-10 shadow-2xl">
+                    <div className="w-16 h-16 rounded-3xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center mx-auto shadow-xl shadow-purple-500/10">
+                      <Lock className="w-8 h-8 text-purple-400" />
+                    </div>
+                    <div className="space-y-2">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-purple-400">
+                        Restricted Functionality
+                      </span>
+                      <h2 className="text-2xl font-black text-white">Course Creation Requires Approval</h2>
+                      <p className="text-xs sm:text-sm text-slate-400 max-w-md mx-auto leading-relaxed">
+                        You need administrator approval before you can architect and create new courses on GlarusAcademy.
+                      </p>
+                    </div>
+                    <div className="flex items-center justify-center gap-3 pt-2">
+                      <button
+                        onClick={() => setActiveTab("Self-Paced Courses")}
+                        className="px-5 py-2.5 rounded-xl bg-white/[0.05] hover:bg-white/[0.08] text-slate-300 text-xs font-bold transition-colors cursor-pointer border border-white/[0.06]"
+                      >
+                        Back to Courses
+                      </button>
+                      <button
+                        onClick={() => setIsPermissionModalOpen(true)}
+                        className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-bold transition-all shadow-lg shadow-purple-600/25 flex items-center gap-2 cursor-pointer"
+                      >
+                        {permissionStatus === "PENDING" ? <Clock className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
+                        <span>{permissionStatus === "PENDING" ? "View Request Status" : "Request Permission"}</span>
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                <div className="flex gap-8 animate-in fade-in duration-300">
+                  {/* Left Stepper */}
+                  <div className="w-64 shrink-0 hidden lg:block">
+                    <div className="sticky top-10 space-y-10 relative">
+                      <div className="absolute left-5 top-6 bottom-6 w-0.5 bg-card" />
+                      {wizardSteps.map((step) => {
+                        const isActive = wizardStep === step.num;
+                        const isCompleted = step.num < wizardStep;
+                        return (
+                          <button key={step.num} onClick={() => setWizardStep(step.num)} className={`flex items-start gap-4 transition-all duration-300 w-full text-left ${isActive ? "opacity-100" : isCompleted ? "opacity-60" : "opacity-40"}`}>
+                            <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 border-2 bg-background z-10 shadow-sm ${isActive ? "border-purple-500 text-purple-500 scale-110 shadow-purple-500/20" : isCompleted ? "border-emerald-500 text-emerald-500" : "border-card text-subtext"}`}>
+                              {isCompleted ? <Check className="w-5 h-5" /> : <step.icon className={`w-4 h-4 ${isActive ? "animate-pulse" : ""}`} />}
+                            </div>
+                            <div className="pt-2">
+                              <p className={`text-[10px] font-black tracking-widest uppercase mb-0.5 ${isActive ? "text-purple-500" : "text-subtext"}`}>Step {step.num}</p>
+                              <h3 className={`font-bold text-sm ${isActive ? "text-text" : "text-subtext"}`}>{step.title}</h3>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
 
               {/* Right Content */}
               <div className="flex-1 space-y-8 min-w-0">
@@ -1778,7 +1955,7 @@ export default function InstructorDashboard() {
                           type="text"
                           value={formData.duration}
                           onChange={e => setFormData({ ...formData, duration: e.target.value })}
-                          placeholder="e.g. 36 Hours VOD or 6 Weeks"
+                          placeholder="e.g. 36 Hours or 6 Weeks"
                           className="w-full bg-background border border-card rounded-2xl px-4 py-2.5 text-xs text-text font-bold focus:outline-none focus:border-primary"
                         />
                       </div>
@@ -2482,7 +2659,7 @@ export default function InstructorDashboard() {
                         </div>
                         <div className="p-3 bg-background/50 rounded-xl border border-card">
                           <span className="text-[10px] font-bold text-subtext uppercase block">Duration</span>
-                          <span className="text-sm font-black text-text">{formData.duration || "36 Hours VOD"}</span>
+                          <span className="text-sm font-black text-text">{formData.duration || "36 Hours"}</span>
                         </div>
                         <div className="p-3 bg-background/50 rounded-xl border border-card">
                           <span className="text-[10px] font-bold text-subtext uppercase block">Status</span>
@@ -2580,6 +2757,8 @@ export default function InstructorDashboard() {
               </div>
             </div>
             )
+          )}
+            </div>
           )}
 
           {/* ══════════════════════════════════════
@@ -3050,7 +3229,7 @@ export default function InstructorDashboard() {
                         <UploadCloud className="w-5 h-5" />
                       </div>
                       <p className="text-xs font-bold text-text">Click or Drag & Drop to Upload Video File</p>
-                      <p className="text-[10px] text-subtext">MP4, WebM, MOV up to 500MB</p>
+                      <p className="text-[10px] text-subtext">MP4, WebM, MOV up to 2.5GB</p>
                     </>
                   )}
                 </label>
@@ -4245,7 +4424,7 @@ export default function InstructorDashboard() {
                         </div>
                         <div>
                           <p className="text-xs font-bold text-text">Click or Drag & Drop to Upload Video File</p>
-                          <p className="text-[10px] text-subtext mt-0.5">Supports MP4, WebM, QuickTime MOV up to 500MB</p>
+                          <p className="text-[10px] text-subtext mt-0.5">Supports MP4, WebM, QuickTime MOV up to 2.5GB</p>
                         </div>
                       </>
                     )}
@@ -4288,13 +4467,9 @@ export default function InstructorDashboard() {
 
                     {/* In-Modal Video Preview */}
                     <div className="rounded-xl overflow-hidden bg-black/80 border border-white/10 max-h-56 flex items-center justify-center shadow-lg">
-                      {editingLesson.lesson.videoUrl.includes("youtube.com") || editingLesson.lesson.videoUrl.includes("youtu.be") ? (
+                      {parseYouTubeVideoId(editingLesson.lesson.videoUrl) ? (
                         <iframe
-                          src={`https://www.youtube-nocookie.com/embed/${
-                            editingLesson.lesson.videoUrl.includes("v=")
-                              ? editingLesson.lesson.videoUrl.split("v=")[1]?.split("&")[0]
-                              : editingLesson.lesson.videoUrl.split("youtu.be/")[1]?.split("?")[0]
-                          }`}
+                          src={`https://www.youtube-nocookie.com/embed/${parseYouTubeVideoId(editingLesson.lesson.videoUrl)}?rel=0&modestbranding=1`}
                           className="w-full h-48"
                           allowFullScreen
                           title="Video Preview"
@@ -5261,6 +5436,7 @@ export default function InstructorDashboard() {
         isOpen={isPermissionModalOpen}
         onClose={() => setIsPermissionModalOpen(false)}
         status={permissionStatus}
+        canCreateCourse={canCreateCourse}
         requestedAt={permissionData.requestedAt}
         reviewedAt={permissionData.reviewedAt}
         rejectionReason={permissionData.rejectionReason}

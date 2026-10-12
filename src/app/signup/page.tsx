@@ -279,7 +279,7 @@ function SignupContent() {
       <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-primary/20 blur-[100px] rounded-full pointer-events-none" />
       <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-accent/20 blur-[100px] rounded-full pointer-events-none" />
 
-      <div className="w-full max-w-md bg-card border border-card p-8 sm:p-10 rounded-3xl shadow-2xl relative z-10">
+      <div className="w-full max-w-md bg-card border border-border p-8 sm:p-10 rounded-3xl shadow-xl relative z-10">
         
         {/* Brand Header */}
         <div className="flex flex-col items-center mb-6">
@@ -313,13 +313,13 @@ function SignupContent() {
 
         {/* Global Feedback Banners */}
         {error && (
-          <div className="mb-5 p-3.5 bg-red-500/10 border border-red-500/30 text-red-400 text-sm rounded-xl text-center leading-relaxed">
+          <div className="mb-5 p-3.5 bg-red-50 border border-red-200 text-red-700 dark:bg-red-500/10 dark:border-red-500/30 dark:text-red-400 text-sm rounded-xl text-center leading-relaxed">
             {error}
           </div>
         )}
 
         {successMsg && (
-          <div className="mb-5 p-3.5 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-sm rounded-xl text-center leading-relaxed">
+          <div className="mb-5 p-3.5 bg-emerald-50 border border-emerald-200 text-emerald-700 dark:bg-emerald-500/10 dark:border-emerald-500/30 dark:text-emerald-400 text-sm rounded-xl text-center leading-relaxed">
             {successMsg}
           </div>
         )}
@@ -330,7 +330,7 @@ function SignupContent() {
         {step === "FORM" && (
           <>
             {/* Role Selection Toggle */}
-            <div className="grid grid-cols-2 gap-2 p-1 bg-background border border-card rounded-2xl mb-5">
+            <div className="grid grid-cols-2 gap-2 p-1 bg-muted/60 border border-border rounded-2xl mb-5">
               <button
                 type="button"
                 onClick={() => setRole("STUDENT")}
@@ -364,7 +364,7 @@ function SignupContent() {
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full bg-background border border-card text-text rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:outline-none transition-all placeholder:text-subtext/50 text-sm"
+                  className="w-full bg-background border border-border text-text rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition-all placeholder:text-subtext/50 text-sm"
                   placeholder="John Doe"
                   autoComplete="name"
                 />
@@ -377,7 +377,7 @@ function SignupContent() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full bg-background border border-card text-text rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:outline-none transition-all placeholder:text-subtext/50 text-sm"
+                  className="w-full bg-background border border-border text-text rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition-all placeholder:text-subtext/50 text-sm"
                   placeholder="name@example.com"
                   autoComplete="email"
                 />
@@ -390,7 +390,7 @@ function SignupContent() {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-background border border-card text-text rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:outline-none transition-all placeholder:text-subtext/50 text-sm"
+                  className="w-full bg-background border border-border text-text rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition-all placeholder:text-subtext/50 text-sm"
                   placeholder="At least 8 chars (A-Z, 0-9, symbol)"
                   autoComplete="new-password"
                 />
@@ -403,7 +403,7 @@ function SignupContent() {
                   required
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full bg-background border border-card text-text rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:outline-none transition-all placeholder:text-subtext/50 text-sm"
+                  className="w-full bg-background border border-border text-text rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition-all placeholder:text-subtext/50 text-sm"
                   placeholder="Re-enter your password"
                   autoComplete="new-password"
                 />
@@ -427,7 +427,7 @@ function SignupContent() {
             {/* OR Divider */}
             <div className="relative my-6">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-card" />
+                <div className="w-full border-t border-border" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
                 <span className="bg-card px-3 text-subtext font-medium">OR</span>
@@ -438,7 +438,7 @@ function SignupContent() {
             <button
               type="button"
               onClick={handleGoogleSignup}
-              className="w-full py-3 px-4 bg-background hover:bg-background/80 border border-card hover:border-primary/40 text-text rounded-xl font-medium text-sm transition-all flex items-center justify-center gap-3 cursor-pointer shadow-sm"
+              className="w-full py-3 px-4 bg-background hover:bg-muted border border-border hover:border-primary/40 text-text rounded-xl font-medium text-sm transition-all flex items-center justify-center gap-3 cursor-pointer shadow-xs"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path
@@ -491,7 +491,7 @@ function SignupContent() {
                     value={digit}
                     onChange={(e) => handleOtpChange(idx, e.target.value)}
                     onKeyDown={(e) => handleOtpKeyDown(idx, e)}
-                    className="w-11 h-13 sm:w-12 sm:h-14 text-center text-xl font-bold bg-background border border-card rounded-xl text-text focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition-all shadow-sm"
+                    className="w-11 h-13 sm:w-12 sm:h-14 text-center text-xl font-bold bg-background border border-border rounded-xl text-text focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition-all shadow-xs"
                   />
                 ))}
               </div>

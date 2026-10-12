@@ -26,6 +26,7 @@ export async function GET(
         modules: {
           include: {
             lectures: {
+              include: { videoAsset: true },
               orderBy: { order: "asc" }
             }
           },
@@ -89,8 +90,22 @@ export async function PATCH(
     }
 
     // Permission check
-    if (session.role === "INSTRUCTOR" && existing.instructorId !== session.id) {
-      return NextResponse.json({ error: "Forbidden: You do not own this course" }, { status: 403 });
+    if (session.role === "INSTRUCTOR") {
+      if (existing.instructorId !== session.id) {
+        return NextResponse.json({ error: "Forbidden: You do not own this course" }, { status: 403 });
+      }
+
+      const { hasPermission } = await import("@/lib/permissions/instructorPermissions");
+      const canEdit = await hasPermission(session, "COURSE_EDIT");
+      if (!canEdit) {
+        return NextResponse.json(
+          {
+            error: "COURSE_EDIT_PERMISSION_REQUIRED",
+            message: "Administrative permission is required before you can edit courses."
+          },
+          { status: 403 }
+        );
+      }
     }
 
     const body = await req.json();

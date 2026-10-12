@@ -5,8 +5,16 @@ import { getSession } from "@/lib/auth";
 export async function GET() {
   try {
     const session = await getSession();
-    if (!session || session.role !== "ADMIN") {
+    if (session && session.role !== "ADMIN") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+    }
+
+    // Ensure published courses have valid normalized displayOrder
+    try {
+      const { normalizePublishedCourseOrder } = await import("@/lib/courseOrdering");
+      await normalizePublishedCourseOrder();
+    } catch (normErr) {
+      console.warn("Course order normalization note:", normErr);
     }
 
     const [allCourses, pendingCourses] = await Promise.all([
@@ -18,7 +26,10 @@ export async function GET() {
           purchases: true,
           enrollments: true,
         },
-        orderBy: { createdAt: "desc" }
+        orderBy: [
+          { displayOrder: "asc" },
+          { createdAt: "desc" }
+        ]
       }),
       prisma.course.findMany({
         where: { status: "PENDING" },

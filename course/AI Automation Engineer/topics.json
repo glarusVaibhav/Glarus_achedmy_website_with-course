@@ -1,0 +1,84 @@
+[
+  {
+    "id": "M002",
+    "title": "Module 2: n8n Fundamentals",
+    "topics": [
+      {
+        "id": "M002-what-is-n8n",
+        "title": "What is n8n?"
+      },
+      {
+        "id": "M002-installing-n8n",
+        "title": "Installing n8n"
+      },
+      {
+        "id": "M002-exploring-interface",
+        "title": "Exploring the n8n Interface"
+      },
+      {
+        "id": "M002-what-is-workflow",
+        "title": "What is a Workflow?"
+      },
+      {
+        "id": "M002-first-workflow",
+        "title": "Creating Your First Workflow"
+      },
+      {
+        "id": "M002-trigger-nodes",
+        "title": "Trigger Nodes"
+      },
+      {
+        "id": "M002-action-nodes",
+        "title": "Working with Action Nodes"
+      },
+      {
+        "id": "M002-data-inside-n8n",
+        "title": "Data Inside n8n"
+      },
+      {
+        "id": "M002-expressions",
+        "title": "Expressions"
+      },
+      {
+        "id": "M002-edit-fields",
+        "title": "Edit Fields Node & Data Transformation"
+      },
+      {
+        "id": "M002-code-node",
+        "title": "Code Node"
+      },
+      {
+        "id": "M002-conditional-logic",
+        "title": "Conditional Logic"
+      },
+      {
+        "id": "M002-loops",
+        "title": "Loops & Batch Processing"
+      },
+      {
+        "id": "M002-http-requests",
+        "title": "Mastering HTTP Requests"
+      },
+      {
+        "id": "M002-credentials",
+        "title": "Credentials & Security"
+      },
+      {
+        "id": "M002-debugging",
+        "title": "Debugging Workflows"
+      },
+      {
+        "id": "M002-best-practices",
+        "title": "Workflow Best Practices & Optimization"
+      },
+      {
+        "id": "M002-mini-projects",
+        "title": "Mini Projects"
+      },
+      {
+        "id": "M002-capstone-smart-lead-system",
+        "title": "Practice Project: Smart Lead Management System"
+      }
+    ]
+  }
+]

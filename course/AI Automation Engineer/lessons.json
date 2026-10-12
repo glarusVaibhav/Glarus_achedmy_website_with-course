@@ -1,0 +1,1128 @@
+{
+  "lessons": [
+    {
+      "id": "M002-what-is-n8n",
+      "title": "What is n8n?",
+      "stages": [
+        {
+          "type": "concept",
+          "content": {
+            "title": "Welcome to n8n — The Automation Powerhouse",
+            "explanation": "Imagine you spend 2 hours every morning reading emails, copying data into spreadsheets, sending Slack messages, and updating your CRM. What if a robot did all of that in 2 seconds while you slept?\n\n**That robot is n8n.**\n\nn8n (pronounced 'n-eight-n') is an open-source workflow automation platform that lets you connect apps, services, and APIs together — without writing much code. Think of it as building a conveyor belt in a factory: data enters from one side, gets processed, transformed, and routed to the right destination automatically.\n\n**Why 'n8n'?**\nThe name stands for **nodemation** (node + automation). Every step in your workflow is a 'node' — a building block that does one specific thing. You connect nodes together to create powerful automated workflows.\n\n**Real Numbers:**\n- 400+ built-in integrations (Gmail, Slack, OpenAI, Google Sheets, Notion, and more)\n- 1M+ workflows created by the community\n- Used by companies from startups to enterprises\n- Self-hosted or cloud — you choose\n\n**What makes n8n different from Zapier or Make?**\n\n| Feature | n8n | Zapier | Make |\n|---------|-----|--------|------|\n| Open Source | ✅ Yes | ❌ No | ❌ No |\n| Self-Hosted | ✅ Yes | ❌ No | ❌ No |\n| Code Node | ✅ Full JS/Python | ❌ Limited | ⚠️ Basic |\n| AI Integration | ✅ Native | ⚠️ Add-on | ⚠️ Add-on |\n| Pricing | Free (self-hosted) | $20+/mo | $9+/mo |\n| Complex Logic | ✅ Branching, loops | ⚠️ Limited | ✅ Good |\n\n**Bottom line:** n8n gives you the power of code with the simplicity of drag-and-drop. You get full control, full transparency, and zero vendor lock-in.",
+            "tip": "n8n is especially powerful for AI engineers because it has native OpenAI, LangChain, and vector database nodes — making it the best platform for building AI-powered automations."
+          }
+        },
+        {
+          "type": "visual",
+          "content": {
+            "title": "How n8n Works — The Big Picture",
+            "diagram": [
+              "Trigger (Something Happens)",
+              "Node 1: Fetch Data",
+              "Node 2: Process / Transform",
+              "Node 3: Make Decision (IF/Switch)",
+              "Node 4: Take Action (Send Email, Update DB)",
+              "Node 5: Notify (Slack, Telegram)"
+            ],
+            "explanation": "Every n8n workflow follows this pattern: A trigger starts the workflow, then data flows through nodes that fetch, process, decide, act, and notify. Each node receives data from the previous node, does something with it, and passes the result to the next node."
+          }
+        },
+        {
+          "type": "concept",
+          "content": {
+            "title": "Low-Code vs No-Code — Where Does n8n Fit?",
+            "explanation": "You have probably heard the terms 'no-code' and 'low-code' thrown around. Let's clarify what they mean and where n8n sits:\n\n**No-Code Platforms** (e.g., Zapier, Airtable)\n- Zero coding required\n- Simple drag-and-drop\n- Limited flexibility — you can only do what the platform allows\n- Great for non-technical users\n\n**Low-Code Platforms** (e.g., n8n, Retool)\n- Mostly visual drag-and-drop\n- CAN write code when needed (JavaScript, Python)\n- Much more flexible — you can customize everything\n- Great for developers AND non-developers\n\n**Full-Code** (e.g., writing Python scripts from scratch)\n- Maximum flexibility\n- Requires programming expertise\n- Takes longer to build\n- Full control over everything\n\n**n8n is the perfect 'low-code' sweet spot:**\n- 90% of the time, you drag and drop nodes — no coding needed\n- 10% of the time, you write a few lines of JavaScript in a Code Node for custom logic\n- You get the speed of no-code WITH the power of full code\n\n**Why this matters for AI Automation:**\nWhen building AI automations, you often need to parse complex API responses, transform data structures, or implement custom logic. Pure no-code tools hit a wall. n8n lets you break through that wall with its Code Node while keeping everything visual and manageable.",
+            "tip": "Think of n8n as 'Visual Programming'. You see the entire data flow on a canvas, but you can zoom into any node and write custom code when the visual tools are not enough."
+          }
+        },
+        {
+          "type": "concept",
+          "content": {
+            "title": "Where Companies Use n8n — Real-World Examples",
+            "explanation": "n8n is not a toy — it powers real business operations across industries. Here are concrete examples:\n\n**🏢 Sales & Marketing**\n- Auto-qualify leads from website forms using AI\n- Sync contacts between CRM, email, and ad platforms\n- Send personalized follow-up emails based on user behavior\n\n**📧 Customer Support**\n- Auto-categorize support tickets with OpenAI\n- Route tickets to the right team based on content\n- Send satisfaction surveys after ticket resolution\n\n**💻 DevOps & Engineering**\n- Monitor server health and alert on Slack when something breaks\n- Auto-create Jira tickets from GitHub issues\n- Deploy code and notify the team on Discord\n\n**📊 Data & Analytics**\n- Pull data from multiple APIs and combine into a dashboard\n- Auto-generate weekly reports and email them to stakeholders\n- Sync data between databases and spreadsheets\n\n**🤖 AI Automation (What YOU Will Build)**\n- Process incoming emails with AI and auto-respond\n- Build RAG chatbots that query your company knowledge base\n- Auto-generate social media content using OpenAI\n- Transcribe meeting recordings and send summaries to Slack\n\n**Scale Example:**\nA mid-size e-commerce company uses n8n to:\n1. Receive new orders (Webhook trigger)\n2. Check inventory (Database query)\n3. Process payment (Stripe API)\n4. Update inventory (Database update)\n5. Send confirmation email (Gmail)\n6. Notify warehouse (Slack)\n7. Track shipment (Shipping API)\n\nAll of this happens automatically, 24/7, handling thousands of orders per day."
+          }
+        },
+        {
+          "type": "concept",
+          "content": {
+            "title": "n8n Cloud vs Self-Hosted — Which Should You Choose?",
+            "explanation": "n8n offers two ways to run the platform. Let's break down each:\n\n**☁️ n8n Cloud (Managed Service)**\n- n8n hosts everything for you\n- No server setup required\n- Automatic updates and backups\n- Starts at $20/month (Starter plan)\n- Best for: Beginners, small teams, quick prototyping\n\n**🖥️ Self-Hosted (You Run It)**\n- You install n8n on your own server\n- Full control over data and security\n- Completely free (open source)\n- Requires Docker or npm knowledge\n- Best for: Developers, privacy-sensitive data, cost optimization\n\n**Quick Decision Matrix:**\n\n| Factor | Cloud | Self-Hosted |\n|--------|-------|-------------|\n| Setup Time | 2 minutes | 15-30 minutes |\n| Cost | $20+/month | Free (+ server costs) |\n| Maintenance | n8n handles it | You handle it |\n| Data Privacy | n8n servers | Your servers |\n| Custom Nodes | Limited | Unlimited |\n| Scalability | Auto-scaled | You manage |\n| Best For | Learning, small teams | Production, enterprises |\n\n**Our Recommendation for This Course:**\nStart with **n8n Cloud** (free trial available) to learn without friction. Once you are comfortable, set up a self-hosted instance with Docker for production workflows.\n\n**Important:** Both options use the exact same interface and features. Everything you learn on Cloud works identically on self-hosted, and vice versa.",
+            "tip": "If you are following this course to learn, use n8n Cloud first. You can always migrate to self-hosted later — n8n lets you export and import workflows easily."
+          }
+        },
+        {
+          "type": "concept",
+          "content": {
+            "title": "Your Learning Journey — What This Module Covers",
+            "explanation": "This module is your complete n8n masterclass. Here is the roadmap:\n\n**🟢 Section 1-2: Foundations**\n- What is n8n and why it matters\n- Installing n8n (Cloud, Docker, npm)\n- Navigating the interface\n\n**🔵 Section 3-5: Core Building Blocks**\n- Workflows, Nodes, and Connections\n- Trigger Nodes (what starts a workflow)\n- Action Nodes (what the workflow does)\n\n**🟣 Section 6-7: Data Mastery**\n- JSON data structure inside n8n\n- Expressions and dynamic values\n- Data transformation and the Code Node\n\n**🟠 Section 8-9: Control Flow & APIs**\n- IF/Switch conditional logic\n- Loops and batch processing\n- HTTP Request node — calling any API\n\n**🔴 Section 10-12: Production Skills**\n- Credentials and security\n- Error handling and debugging\n- Workflow optimization and best practices\n\n**⭐ Section 13-15: Real Projects**\n- Templates and community workflows\n- 12+ mini projects you build from scratch\n- Capstone: Smart Lead Management System\n\n**By the end of this module, you will be able to:**\n✅ Build workflows that connect 10+ services\n✅ Handle errors gracefully so workflows never silently fail\n✅ Transform and process complex JSON data\n✅ Call any API using HTTP requests\n✅ Write custom JavaScript for complex logic\n✅ Deploy production-ready workflows with monitoring\n\nLet's begin!"
+          }
+        },
+        {
+          "type": "fill_blank",
+          "challenge": {
+            "title": "n8n Fundamentals Check",
+            "question": "Fill in the blanks about n8n basics.",
+            "template": [
+              "n8n stands for ____ (node + automation)",
+              "n8n is classified as a ____ platform (not no-code, not full-code)",
+              "Each step in an n8n workflow is called a ____",
+              "n8n can be run on your own servers using ____ mode"
+            ],
+            "options": [
+              "nodemation",
+              "low-code",
+              "node",
+              "self-hosted",
+              "high-code",
+              "pipeline",
+              "cloud-only",
+              "zapier"
+            ],
+            "answers": {
+              "blank_1": "nodemation",
+              "blank_2": "low-code",
+              "blank_3": "node",
+              "blank_4": "self-hosted"
+            },
+            "explanation": "n8n (nodemation) is a low-code platform where each workflow step is a node. It can be self-hosted for free or used via n8n Cloud.",
+            "hint": "Think about the name origin, the platform category, the building blocks, and the deployment options."
+          }
+        },
+        {
+          "type": "reorder",
+          "challenge": {
+            "instruction": "Arrange the typical n8n workflow execution order from start to finish.",
+            "correctOrder": [
+              "Trigger fires (event happens)",
+              "Data enters the workflow",
+              "Nodes process and transform the data",
+              "Decision nodes route the data",
+              "Action nodes perform tasks (send email, update DB)",
+              "Workflow execution completes"
+            ]
+          }
+        },
+        {
+          "type": "concept",
+          "content": {
+            "title": "Lesson Summary",
+            "explanation": "In this lesson, you learned:\n\n• **n8n** is an open-source, low-code workflow automation platform\n• It connects 400+ apps and services using visual drag-and-drop nodes\n• n8n sits in the **low-code** sweet spot — mostly visual, with code when needed\n• Companies use n8n for sales automation, customer support, DevOps, data pipelines, and AI workflows\n• You can run n8n on **Cloud** (managed) or **Self-Hosted** (free, full control)\n• This module covers everything from basics to production-ready workflows\n\nNext up: Installing n8n on your machine!"
+          }
+        }
+      ]
+    },
+    {
+      "id": "M002-installing-n8n",
+      "title": "Installing n8n",
+      "stages": [
+        {
+          "type": "concept",
+          "content": {
+            "title": "Three Ways to Install n8n",
+            "explanation": "There are three main ways to get n8n running. We will cover all of them so you can choose the best option for your situation.\n\n**Method 1: n8n Cloud (Easiest — 2 minutes)**\nSign up at https://n8n.io and start using n8n instantly in your browser. No installation needed. Best for learning and quick prototyping.\n\n**Method 2: npm (For Node.js developers)**\nInstall n8n as a global npm package. Requires Node.js 18+ installed on your machine.\n\n```bash\n# Install n8n globally\nnpm install n8n -g\n\n# Start n8n\nn8n start\n```\n\nAfter running `n8n start`, open your browser and go to `http://localhost:5678`. That is your n8n instance!\n\n**Method 3: Docker (Recommended for production)**\nRun n8n in a Docker container. This is the most reliable method for production deployments.\n\n```bash\n# Pull and run n8n with Docker\ndocker run -it --rm \\\n  --name n8n \\\n  -p 5678:5678 \\\n  -v n8n_data:/home/node/.n8n \\\n  docker.n8n.io/n8nio/n8n\n```\n\nThis command:\n- `-p 5678:5678` — Maps port 5678 so you can access n8n in your browser\n- `-v n8n_data:/home/node/.n8n` — Persists your data so workflows survive container restarts\n\n**Which should you use right now?**\n- If you want to start learning immediately → **n8n Cloud**\n- If you have Node.js installed → **npm**\n- If you know Docker → **Docker**",
+            "tip": "For this course, we recommend starting with n8n Cloud to focus on learning workflows, not infrastructure. You can always switch to self-hosted later."
+          }
+        },
+        {
+          "type": "concept",
+          "content": {
+            "title": "Docker Compose Setup — The Professional Way",
+            "explanation": "For production deployments, Docker Compose is the gold standard. It lets you define your entire n8n stack (n8n + database + reverse proxy) in a single file.\n\n**Create a `docker-compose.yml` file:**\n\n```yaml\nversion: '3.8'\n\nservices:\n  n8n:\n    image: docker.n8n.io/n8nio/n8n\n    restart: always\n    ports:\n      - '5678:5678'\n    environment:\n      - N8N_BASIC_AUTH_ACTIVE=true\n      - N8N_BASIC_AUTH_USER=admin\n      - N8N_BASIC_AUTH_PASSWORD=your-secure-password\n      - N8N_HOST=localhost\n      - N8N_PORT=5678\n      - N8N_PROTOCOL=http\n      - GENERIC_TIMEZONE=Asia/Kolkata\n      - TZ=Asia/Kolkata\n      - DB_TYPE=sqlite\n    volumes:\n      - n8n_data:/home/node/.n8n\n\nvolumes:\n  n8n_data:\n```\n\n**Start it with:**\n```bash\ndocker-compose up -d\n```\n\n**Key Environment Variables:**\n\n| Variable | Purpose | Example |\n|----------|---------|--------|\n| `N8N_BASIC_AUTH_ACTIVE` | Enable login protection | `true` |\n| `N8N_BASIC_AUTH_USER` | Login username | `admin` |\n| `N8N_BASIC_AUTH_PASSWORD` | Login password | `securePass123` |\n| `GENERIC_TIMEZONE` | Set your timezone | `Asia/Kolkata` |\n| `DB_TYPE` | Database type | `sqlite` or `postgresdb` |\n| `N8N_ENCRYPTION_KEY` | Encrypt stored credentials | Any random string |\n\n**For PostgreSQL (production-grade):**\nReplace `DB_TYPE=sqlite` with PostgreSQL configuration for better performance at scale:\n```\nDB_TYPE=postgresdb\nDB_POSTGRESDB_HOST=postgres\nDB_POSTGRESDB_PORT=5432\nDB_POSTGRESDB_DATABASE=n8n\nDB_POSTGRESDB_USER=n8n\nDB_POSTGRESDB_PASSWORD=n8n\n```",
+            "tip": "Always set N8N_ENCRYPTION_KEY in production. Without it, your stored API keys and credentials are not encrypted at rest."
+          }
+        },
+        {
+          "type": "concept",
+          "content": {
+            "title": "Updating n8n and Backup Strategies",
+            "explanation": "Keeping n8n updated is important for security patches and new features. Here is how to update for each installation method:\n\n**npm Update:**\n```bash\nnpm update n8n -g\n```\n\n**Docker Update:**\n```bash\n# Pull the latest image\ndocker pull docker.n8n.io/n8nio/n8n\n\n# Restart the container\ndocker-compose down\ndocker-compose up -d\n```\n\n**n8n Cloud:**\nUpdates happen automatically — you do not need to do anything!\n\n---\n\n**Backup Strategies:**\n\nYour n8n data includes workflows, credentials, execution history, and settings. Losing this data means rebuilding everything from scratch.\n\n**Method 1: Export Workflows (Manual)**\n- Go to each workflow → Menu → Download as JSON\n- Store the JSON files in a Git repository\n- Best for: Version control and collaboration\n\n**Method 2: Volume Backup (Docker)**\n```bash\n# Backup the n8n data volume\ndocker run --rm -v n8n_data:/data -v $(pwd):/backup \\\n  alpine tar czf /backup/n8n-backup-$(date +%Y%m%d).tar.gz /data\n```\n\n**Method 3: Database Backup (PostgreSQL)**\n```bash\npg_dump -U n8n -d n8n > n8n-backup.sql\n```\n\n**Backup Schedule Recommendation:**\n- Daily: Automated database/volume backups\n- Weekly: Full workflow exports to Git\n- Before updates: Always backup before upgrading n8n",
+            "tip": "Create a backup workflow inside n8n itself! Use a Schedule Trigger to auto-export all workflows to Google Drive or S3 every night."
+          }
+        },
+        {
+          "type": "fill_blank",
+          "challenge": {
+            "title": "Installation Knowledge Check",
+            "question": "Fill in the blanks about n8n installation.",
+            "template": [
+              "To install n8n via npm, run: npm install ____ -g",
+              "n8n runs on port ____ by default",
+              "In Docker, the -v flag creates a ____ to persist data",
+              "The environment variable ____ protects your stored API keys"
+            ],
+            "options": [
+              "n8n",
+              "5678",
+              "volume",
+              "N8N_ENCRYPTION_KEY",
+              "3000",
+              "container",
+              "N8N_PASSWORD",
+              "automation"
+            ],
+            "answers": {
+              "blank_1": "n8n",
+              "blank_2": "5678",
+              "blank_3": "volume",
+              "blank_4": "N8N_ENCRYPTION_KEY"
+            },
+            "explanation": "n8n is installed via npm, runs on port 5678, uses Docker volumes for data persistence, and the N8N_ENCRYPTION_KEY environment variable encrypts stored credentials.",
+            "hint": "Think about the npm package name, the default port, Docker data persistence, and credential security."
+          }
+        },
+        {
+          "type": "reorder",
+          "challenge": {
+            "instruction": "Arrange the Docker Compose deployment steps in the correct order.",
+            "correctOrder": [
+              "Create a docker-compose.yml file",
+              "Configure environment variables",
+              "Run docker-compose up -d",
+              "Open browser at localhost:5678",
+              "Set up admin credentials",
+              "Create your first workflow"
+            ]
+          }
+        },
+        {
+          "type": "concept",
+          "content": {
+            "title": "Lesson Summary",
+            "explanation": "In this lesson, you learned three ways to install n8n:\n\n• **n8n Cloud** — Instant, no setup, managed hosting\n• **npm** — `npm install n8n -g` then `n8n start`\n• **Docker** — Production-ready with `docker-compose`\n\nYou also learned about:\n• Essential environment variables for security and configuration\n• How to update n8n across all installation methods\n• Three backup strategies to protect your workflows\n\nNext up: Exploring the n8n Interface!"
+          }
+        }
+      ]
+    },
+    {
+      "id": "M002-exploring-interface",
+      "title": "Exploring the n8n Interface",
+      "stages": [
+        {
+          "type": "concept",
+          "content": {
+            "title": "The n8n Interface — Your Automation Command Center",
+            "explanation": "When you first open n8n, you will see a clean, modern interface. Let's take a tour of every section so you know exactly where everything is.\n\n**🏠 Dashboard (Home)**\nThe first thing you see when you log in. It shows:\n- All your workflows (active and inactive)\n- Search and filter workflows\n- Create new workflow button\n- Workflow folders for organization\n\n**🎨 Canvas (Workflow Editor)**\nThis is where the magic happens. The canvas is your visual workspace where you:\n- Drag and drop nodes\n- Connect nodes with wires\n- See data flow in real-time\n- Test and debug workflows\n\n**📦 Nodes Panel**\nClick the '+' button on the canvas to open the nodes panel. It contains:\n- 400+ built-in nodes organized by category\n- Search bar to find nodes quickly\n- Categories: Action, Trigger, Core, AI, Transform, etc.\n- Each node has a description and documentation link\n\n**🔧 Workflow Toolbar**\nThe top bar of the workflow editor contains:\n- Workflow name (click to rename)\n- Save button\n- Execute/Test button (play icon)\n- Activate/Deactivate toggle\n- Share and export options\n- Settings menu"
+          }
+        },
+        {
+          "type": "concept",
+          "content": {
+            "title": "Executions, Credentials, and Settings",
+            "explanation": "**📊 Executions Page**\nEvery time a workflow runs, n8n logs the execution. The Executions page shows:\n- Execution history with timestamps\n- Status (Success ✅, Error ❌, Running 🔄)\n- Input/output data for each node\n- Execution duration\n- Retry failed executions\n\nThis is your **debugging headquarters**. When something goes wrong, come here to see exactly what happened at each step.\n\n**🔑 Credentials Section**\nCredentials store your API keys, OAuth tokens, and login information securely. Features:\n- Encrypted storage (when N8N_ENCRYPTION_KEY is set)\n- Reuse across multiple workflows\n- Support for 200+ services (Google, OpenAI, Slack, etc.)\n- OAuth2 flow with automatic token refresh\n\n**📁 Templates**\nPre-built workflow templates created by the n8n team and community:\n- Browse by category (Marketing, Sales, DevOps, AI)\n- One-click import into your instance\n- Great starting points to learn and customize\n\n**⚙️ Settings**\nAdmin settings for your n8n instance:\n- User management (add team members)\n- API keys (for external access)\n- Community nodes (install custom nodes)\n- Log level and debugging options\n- License and usage information",
+            "tip": "Get in the habit of checking the Executions page whenever you test a workflow. It shows you the exact data that flowed through each node — invaluable for debugging!"
+          }
+        },
+        {
+          "type": "visual",
+          "content": {
+            "title": "n8n Interface Map",
+            "diagram": [
+              "Dashboard (Home) — View all workflows",
+              "Canvas — Build workflows visually",
+              "Nodes Panel — Browse 400+ integrations",
+              "Toolbar — Save, test, activate",
+              "Executions — Debug and monitor",
+              "Credentials — Manage API keys",
+              "Settings — Configure your instance"
+            ],
+            "explanation": "These seven sections make up the entire n8n interface. Master each one, and you will be able to build, test, and maintain any workflow efficiently."
+          }
+        },
+        {
+          "type": "fill_blank",
+          "challenge": {
+            "title": "Interface Knowledge Check",
+            "question": "Match each n8n interface section to its purpose.",
+            "template": [
+              "Build workflows visually → ____",
+              "View execution history and debug → ____",
+              "Store API keys securely → ____",
+              "Browse 400+ integrations → ____"
+            ],
+            "options": [
+              "Canvas",
+              "Executions",
+              "Credentials",
+              "Nodes Panel",
+              "Dashboard",
+              "Settings",
+              "Templates"
+            ],
+            "answers": {
+              "blank_1": "Canvas",
+              "blank_2": "Executions",
+              "blank_3": "Credentials",
+              "blank_4": "Nodes Panel"
+            },
+            "explanation": "The Canvas is where you build workflows. Executions shows run history. Credentials stores API keys. The Nodes Panel lets you browse all available integrations."
+          }
+        },
+        {
+          "type": "concept",
+          "content": {
+            "title": "Lesson Summary",
+            "explanation": "In this lesson, you explored the complete n8n interface:\n\n• **Dashboard** — Your workflow management home\n• **Canvas** — The visual workspace for building workflows\n• **Nodes Panel** — Browse and add 400+ integrations\n• **Toolbar** — Save, test, and activate workflows\n• **Executions** — Debug and monitor workflow runs\n• **Credentials** — Securely store API keys and tokens\n• **Settings** — Configure your n8n instance\n\nNext up: Understanding what a Workflow actually is!"
+          }
+        }
+      ]
+    },
+    {
+      "id": "M002-what-is-workflow",
+      "title": "What is a Workflow?",
+      "stages": [
+        {
+          "type": "concept",
+          "content": {
+            "title": "Workflows — The Heart of n8n",
+            "explanation": "A **workflow** is a sequence of automated steps that accomplish a task. Think of it like a recipe:\n\n- A recipe has ingredients (data) and steps (nodes)\n- Each step transforms the ingredients in some way\n- The final result is a finished dish (automated outcome)\n\n**Workflow Components:**\n\n**1. Trigger Node (The Starting Point)**\nEvery workflow begins with a trigger. The trigger answers the question: 'When should this workflow run?'\n- On a schedule (every hour, every morning at 9 AM)\n- When something happens (new email received, form submitted)\n- When manually clicked (for testing)\n\n**2. Nodes (The Steps)**\nEach node performs one action:\n- Fetch data from an API\n- Send an email\n- Update a spreadsheet\n- Process data with AI\n- Make a decision (if/else)\n\n**3. Connections (The Wires)**\nConnections are the lines between nodes. They define:\n- The order of execution (which node runs first)\n- The data flow (what data passes from one node to the next)\n\n**4. Data (The Information)**\nData flows through the workflow as JSON objects. Each node:\n- Receives input data from the previous node\n- Processes or transforms that data\n- Sends output data to the next node",
+            "tip": "A workflow can be as simple as 2 nodes (trigger → action) or as complex as 50+ nodes with branches, loops, and error handling. Start simple and add complexity as needed."
+          }
+        },
+        {
+          "type": "visual",
+          "content": {
+            "title": "Workflow Lifecycle",
+            "diagram": [
+              "Create Workflow",
+              "Add Trigger Node",
+              "Add Action Nodes",
+              "Connect Nodes Together",
+              "Test with Manual Execution",
+              "Review Output Data",
+              "Fix Errors (if any)",
+              "Activate Workflow",
+              "Monitor Executions"
+            ],
+            "explanation": "Every workflow follows this lifecycle: you create it, build it with nodes and connections, test it, fix any issues, then activate it to run automatically. After activation, you monitor it through the Executions page."
+          }
+        },
+        {
+          "type": "concept",
+          "content": {
+            "title": "Execution Order and Data Flow",
+            "explanation": "Understanding how data flows through a workflow is crucial for building reliable automations.\n\n**Execution Order:**\nn8n executes nodes from left to right, following the connections. If a node has multiple outputs (like an IF node), only the matching branch executes.\n\n```\nTrigger → Node A → Node B → Node C\n                         ↘ Node D (branch)\n```\n\nIn this example:\n1. Trigger fires\n2. Node A runs, output goes to Node B\n3. Node B runs, output goes to Node C AND Node D\n4. Node C and Node D run (if connected)\n\n**Input vs Output:**\nEvery node has:\n- **Input**: The data it receives from the previous node\n- **Output**: The data it produces after processing\n\nYou can see both by clicking on a node after execution. The left panel shows input, the right panel shows output.\n\n**Items:**\nn8n processes data as 'items'. If a node receives 5 items (e.g., 5 emails), it processes each one. This is like a loop — the node runs its logic on each item individually.\n\nExample:\n```json\n[\n  { \"name\": \"Alice\", \"email\": \"alice@example.com\" },\n  { \"name\": \"Bob\", \"email\": \"bob@example.com\" },\n  { \"name\": \"Charlie\", \"email\": \"charlie@example.com\" }\n]\n```\nIf this data flows into a Gmail node, it will send 3 separate emails — one to each person.",
+            "example": "Input (3 items) → Gmail Node → Output (3 emails sent)"
+          }
+        },
+        {
+          "type": "concept",
+          "content": {
+            "title": "Workflow Best Practices",
+            "explanation": "Before you start building, learn these best practices that will save you hours of debugging:\n\n**1. Name Everything Clearly**\n- Bad: 'HTTP Request', 'IF', 'Code'\n- Good: 'Fetch Customer Data', 'Is VIP Customer?', 'Calculate Discount'\n- Why: When you have 20 nodes, clear names tell you what each one does at a glance\n\n**2. Add Sticky Notes**\nUse sticky notes on the canvas to document:\n- What the workflow does\n- Why certain decisions were made\n- Input/output format expectations\n\n**3. Test Incrementally**\nDo NOT build 15 nodes and then test. Instead:\n- Add 1-2 nodes → Test → Verify output\n- Add the next node → Test → Verify\n- This way, when something breaks, you know exactly which node caused it\n\n**4. Use Error Handling**\nAlways add error handling for nodes that call external APIs:\n- APIs can be down\n- Rate limits can be hit\n- Data format can change\nWe will cover error handling in detail in Lesson 2.17.\n\n**5. Keep Workflows Focused**\nOne workflow = One job. If a workflow does too many unrelated things, split it into smaller workflows that call each other.\n\n**6. Version Your Workflows**\nExport your workflows as JSON regularly. Store them in Git. This gives you a history of changes and the ability to roll back.",
+            "tip": "The #1 mistake beginners make is building a huge workflow without testing. Always test after adding each node. It takes 5 seconds and saves you 5 hours of debugging."
+          }
+        },
+        {
+          "type": "reorder",
+          "challenge": {
+            "instruction": "Arrange the workflow building process in the correct order.",
+            "correctOrder": [
+              "Create a new workflow",
+              "Add a Trigger node",
+              "Add Action nodes",
+              "Connect nodes with wires",
+              "Test the workflow manually",
+              "Review execution data",
+              "Activate the workflow for production"
+            ]
+          }
+        },
+        {
+          "type": "concept",
+          "content": {
+            "title": "Lesson Summary",
+            "explanation": "In this lesson, you learned:\n\n• A **workflow** is a series of automated steps (nodes) connected together\n• Every workflow starts with a **Trigger** node\n• Data flows through nodes as **JSON items**\n• Each node has **input** (what it receives) and **output** (what it produces)\n• **Best practices**: Name clearly, test incrementally, handle errors, keep workflows focused\n\nNext up: Building your first workflow!"
+          }
+        }
+      ]
+    },
+    {
+      "id": "M002-first-workflow",
+      "title": "Creating Your First Workflow",
+      "stages": [
+        {
+          "type": "concept",
+          "content": {
+            "title": "Let's Build Your First Workflow!",
+            "explanation": "Enough theory — let's build something real. We will create a simple workflow that:\n\n1. **Triggers** on a schedule (every morning)\n2. **Fetches** the current weather using an API\n3. **Sends** the weather report via email\n\nThis covers the three fundamental building blocks: Trigger → Process → Action.\n\n**Step 1: Create a New Workflow**\n- Click the '+' button or 'New Workflow' on the Dashboard\n- Name it: 'Daily Weather Email'\n- You are now on the Canvas — an empty workspace\n\n**Step 2: Add a Schedule Trigger**\n- Click the '+' button on the canvas\n- Search for 'Schedule Trigger'\n- Add it to the canvas\n- Configure: Run every day at 7:00 AM\n\n**Step 3: Add an HTTP Request Node**\n- Click '+' after the Schedule Trigger\n- Search for 'HTTP Request'\n- Configure:\n  - Method: GET\n  - URL: `https://wttr.in/London?format=j1`\n  - This is a free weather API — no API key needed!\n\n**Step 4: Add a Gmail Node**\n- Click '+' after the HTTP Request\n- Search for 'Gmail'\n- Select 'Send Email'\n- Configure:\n  - To: your email address\n  - Subject: 'Daily Weather Report'\n  - Body: Use expressions to insert weather data (we will learn expressions soon)\n\n**Step 5: Test the Workflow**\n- Click 'Test Workflow' (play button)\n- Check each node: green = success, red = error\n- Click on each node to see the data that flowed through it"
+          }
+        },
+        {
+          "type": "visual",
+          "content": {
+            "title": "Your First Workflow — Visual Flow",
+            "diagram": [
+              "Schedule Trigger (Every day at 7 AM)",
+              "HTTP Request (Fetch weather from wttr.in)",
+              "Gmail (Send weather report email)"
+            ],
+            "explanation": "This three-node workflow runs every morning, fetches the current weather, and emails it to you. Simple, powerful, and useful from day one."
+          }
+        },
+        {
+          "type": "concept",
+          "content": {
+            "title": "Manual Trigger, Execute, Save, and Activate",
+            "explanation": "Four essential actions you will use every day in n8n:\n\n**▶️ Manual Trigger**\nThe 'Manual Trigger' node lets you run a workflow by clicking a button. Perfect for testing.\n- Every new workflow starts with a Manual Trigger by default\n- You can replace it with a Schedule, Webhook, or other trigger later\n- During development, always keep a Manual Trigger so you can test easily\n\n**🔄 Execute Workflow**\nClick the play button (▶️) in the toolbar to run the workflow once.\n- This is called a 'manual execution'\n- All nodes run in order\n- You can see the output data of each node\n- Use this for testing and debugging\n\n**💾 Save Workflow**\nPress `Ctrl+S` or click the save button. Important:\n- n8n does NOT auto-save by default\n- If you close the browser without saving, your changes are lost\n- Get in the habit of saving after every change\n\n**✅ Activate Workflow**\nThe activate toggle (top right) switches the workflow from 'inactive' to 'active'.\n- **Inactive**: The workflow only runs when you manually click Execute\n- **Active**: The workflow runs automatically based on its trigger\n- Example: If you have a Schedule Trigger set to 9 AM, the workflow only runs at 9 AM if it is activated\n\n**Important:** A workflow MUST be active for its trigger to fire automatically. This is the #1 confusion for beginners — they build a workflow, wonder why it is not running, and realize they forgot to activate it.",
+            "tip": "Keyboard shortcut: Ctrl+S to save. Use it religiously. You will thank yourself later."
+          }
+        },
+        {
+          "type": "fill_blank",
+          "challenge": {
+            "title": "First Workflow Concepts",
+            "question": "Test your understanding of workflow fundamentals.",
+            "template": [
+              "To run a workflow manually, click the ____ button",
+              "A workflow must be ____ for its trigger to fire automatically",
+              "The keyboard shortcut to save a workflow is ____",
+              "The ____ node lets you fetch data from any API"
+            ],
+            "options": [
+              "Execute",
+              "activated",
+              "Ctrl+S",
+              "HTTP Request",
+              "paused",
+              "Ctrl+Z",
+              "Gmail",
+              "deleted"
+            ],
+            "answers": {
+              "blank_1": "Execute",
+              "blank_2": "activated",
+              "blank_3": "Ctrl+S",
+              "blank_4": "HTTP Request"
+            },
+            "explanation": "You execute workflows with the play button, activate them for automatic triggers, save with Ctrl+S, and use the HTTP Request node to fetch data from APIs."
+          }
+        },
+        {
+          "type": "concept",
+          "content": {
+            "title": "Lesson Summary",
+            "explanation": "Congratulations — you built your first n8n workflow! 🎉\n\nIn this lesson, you learned:\n• How to create a new workflow and add nodes to the canvas\n• Built a **3-node workflow**: Schedule Trigger → HTTP Request → Gmail\n• The difference between **Manual Trigger** (testing) and scheduled triggers (production)\n• How to **Execute** (test), **Save** (Ctrl+S), and **Activate** (go live) a workflow\n\nNext up: Understanding Trigger Nodes in depth!"
+          }
+        }
+      ]
+    },
+    {
+      "id": "M002-trigger-nodes",
+      "title": "Trigger Nodes",
+      "stages": [
+        {
+          "type": "concept",
+          "content": {
+            "title": "Triggers — What Starts Your Workflow",
+            "explanation": "A **Trigger** is the 'when' of your workflow. It defines the event that starts the automation. Without a trigger, a workflow just sits there doing nothing.\n\n**Every workflow must have exactly one trigger node** (placed at the very beginning).\n\nHere are the most important trigger types in n8n:\n\n**1. Manual Trigger**\n- Runs when you click 'Execute'\n- Used for testing and one-off tasks\n- No configuration needed\n\n**2. Schedule Trigger** ⏰\n- Runs on a time-based schedule\n- Options: Every X minutes, hourly, daily, weekly, monthly, cron expression\n- Example: Every Monday at 9 AM, every 15 minutes\n\n**3. Webhook Trigger** 🌐\n- Runs when an external service sends data to a URL\n- n8n gives you a unique URL — anyone who sends data to that URL triggers the workflow\n- Example: A website form submission, a payment notification, a GitHub event\n\n**4. Form Trigger** 📝\n- Creates a web form that users can fill out\n- When submitted, the form data enters the workflow\n- No external form builder needed\n\n**5. Email Trigger (IMAP)** 📧\n- Monitors an email inbox\n- Triggers when a new email arrives\n- Can filter by sender, subject, or folder"
+          }
+        },
+        {
+          "type": "concept",
+          "content": {
+            "title": "More Trigger Types and When to Use Each",
+            "explanation": "**6. App-Specific Triggers**\nn8n has dedicated triggers for popular services:\n\n| Trigger | When It Fires |\n|---------|---------------|\n| Slack Trigger | New message in a channel |\n| Google Drive Trigger | File uploaded or modified |\n| GitHub Trigger | New commit, PR, or issue |\n| Telegram Trigger | New message to your bot |\n| Airtable Trigger | New or updated record |\n| Google Sheets Trigger | New row added |\n\n**7. Database Triggers**\n- PostgreSQL Trigger: Fires when rows change\n- MySQL Trigger: Fires on INSERT, UPDATE, DELETE\n\n**Which Trigger Should You Use?**\n\n| Scenario | Best Trigger |\n|----------|-------------|\n| Run every morning at 9 AM | Schedule Trigger |\n| React to a form submission | Webhook or Form Trigger |\n| Process new emails | Email Trigger (IMAP) |\n| Monitor file uploads | Google Drive Trigger |\n| Respond to Slack messages | Slack Trigger |\n| Receive API calls from other systems | Webhook Trigger |\n| Manual testing | Manual Trigger |\n\n**Key Insight:**\nThe trigger determines the **shape of your input data**. A Webhook trigger gives you whatever data was sent to the URL. A Gmail trigger gives you email fields (from, subject, body). Understanding what data each trigger provides is crucial for building the rest of the workflow.",
+            "tip": "Webhook triggers are the most versatile — any service that can send HTTP requests can trigger your workflow. This includes websites, mobile apps, IoT devices, and other automation tools."
+          }
+        },
+        {
+          "type": "concept",
+          "content": {
+            "title": "Mini Project: Three Trigger Workflows",
+            "explanation": "Let's build three quick workflows to practice different trigger types:\n\n**🌤️ Project 1: Every Morning Weather Email**\n```\nSchedule Trigger (Daily at 7 AM)\n  ↓\nHTTP Request (Fetch weather from wttr.in)\n  ↓\nGmail (Send weather report)\n```\nSchedule Trigger Config:\n- Trigger at: Day\n- Hour: 7\n- Minute: 0\n\n**🔗 Project 2: Webhook Receiver**\n```\nWebhook Trigger (Receives POST data)\n  ↓\nSet Node (Format the data)\n  ↓\nSlack (Send notification)\n```\nWebhook Config:\n- HTTP Method: POST\n- Path: /lead-capture\n- n8n gives you a URL like: `https://your-instance.n8n.cloud/webhook/lead-capture`\n- Test by sending a curl request:\n```bash\ncurl -X POST https://your-n8n-url/webhook/lead-capture \\\n  -H 'Content-Type: application/json' \\\n  -d '{\"name\": \"John\", \"email\": \"john@example.com\"}'\n```\n\n**📁 Project 3: File Upload Trigger**\n```\nGoogle Drive Trigger (File Created)\n  ↓\nGoogle Drive (Download File)\n  ↓\nOpenAI (Summarize file content)\n  ↓\nSlack (Post summary to channel)\n```\nGoogle Drive Trigger Config:\n- Event: File Created\n- Folder: Select the folder to watch\n- Poll every: 1 minute\n\nThese three projects cover the most common trigger patterns you will use throughout this course."
+          }
+        },
+        {
+          "type": "drag_drop",
+          "challenge": {
+            "title": "Match the Trigger to the Scenario",
+            "instruction": "Match each scenario to the correct trigger type.",
+            "pairs": [
+              {
+                "left": "Run a report every Monday morning",
+                "right": "Schedule Trigger"
+              },
+              {
+                "left": "Process data sent from a website form",
+                "right": "Webhook Trigger"
+              },
+              {
+                "left": "React to a new email in your inbox",
+                "right": "Email Trigger (IMAP)"
+              },
+              {
+                "left": "Respond to a Slack message",
+                "right": "Slack Trigger"
+              },
+              {
+                "left": "One-time test during development",
+                "right": "Manual Trigger"
+              }
+            ]
+          }
+        },
+        {
+          "type": "concept",
+          "content": {
+            "title": "Lesson Summary",
+            "explanation": "In this lesson, you mastered trigger nodes:\n\n• **Manual Trigger** — For testing\n• **Schedule Trigger** — Time-based (cron)\n• **Webhook Trigger** — Receives data from external services\n• **Form Trigger** — Built-in web forms\n• **Email/App Triggers** — React to events in Gmail, Slack, Google Drive, etc.\n\nYou also built 3 mini-projects using different trigger types.\n\nNext up: Action Nodes — the 'doers' of your workflow!"
+          }
+        }
+      ]
+    },
+    {
+      "id": "M002-action-nodes",
+      "title": "Working with Action Nodes",
+      "stages": [
+        {
+          "type": "concept",
+          "content": {
+            "title": "Action Nodes — Making Things Happen",
+            "explanation": "If triggers are the 'when', action nodes are the 'what'. They perform the actual work in your workflow.\n\n**The Most Important Action Nodes:**\n\n**📧 Gmail Node**\nSend, read, reply to, and manage emails.\n- Actions: Send Email, Get Email, Reply to Email, Add Label, Delete Email\n- Key fields: To, Subject, Body (supports HTML), Attachments\n- Tip: Use expressions in the Body to create dynamic, personalized emails\n\n**📊 Google Sheets Node**\nRead, write, update, and delete spreadsheet data.\n- Actions: Append Row, Read Rows, Update Row, Delete Row, Clear Sheet\n- Connect to any Google Sheet using your Google credentials\n- Perfect for logging data, creating reports, and managing lists\n\n**💬 Slack Node**\nSend messages, update channels, and manage Slack workspaces.\n- Actions: Send Message, Update Message, Upload File, Get Channel Info\n- Supports: Channel messages, DMs, threads, rich formatting (blocks)\n- Tip: Use Slack Block Kit for beautiful, interactive messages\n\n**📝 Notion Node**\nCreate pages, update databases, and query Notion workspaces.\n- Actions: Create Page, Update Page, Get Database Items, Search\n- Perfect for: Knowledge bases, task management, content planning\n\n**🤖 OpenAI Node**\nInteract with ChatGPT and other OpenAI models.\n- Actions: Chat Completion, Create Image, Transcribe Audio, Embeddings\n- This is your gateway to AI-powered automations\n- Requires an OpenAI API key"
+          }
+        },
+        {
+          "type": "concept",
+          "content": {
+            "title": "More Action Nodes You Should Know",
+            "explanation": "**💬 Discord Node**\nSend messages to Discord channels and manage servers.\n- Actions: Send Message, Edit Message, Get Channel\n- Great for: Dev team notifications, community management\n\n**📱 Telegram Node**\nSend messages, photos, and files to Telegram users or groups.\n- Actions: Send Message, Send Photo, Send Document\n- Create a Telegram Bot first (via @BotFather)\n- Use for: Personal notifications, team alerts\n\n**🌐 HTTP Request Node (The Universal Node)**\nThis is arguably the most powerful node in n8n. It can connect to ANY service that has an API.\n- Supports: GET, POST, PUT, PATCH, DELETE\n- Authentication: API Key, Bearer Token, OAuth, Basic Auth\n- Body types: JSON, Form Data, Raw\n- If n8n does not have a dedicated node for a service, the HTTP Request node can fill the gap\n\n**We will cover the HTTP Request node in depth in Lesson 2.15.**\n\n**Quick Comparison:**\n\n| Node | When to Use It |\n|------|---------------|\n| Gmail | Send/read emails |\n| Google Sheets | Log data, read spreadsheets |\n| Slack | Team notifications |\n| Notion | Knowledge management |\n| OpenAI | AI-powered processing |\n| Discord | Gaming/dev community alerts |\n| Telegram | Personal/bot notifications |\n| HTTP Request | Any API not covered above |",
+            "tip": "When in doubt, use the HTTP Request node. If a service has a REST API, the HTTP Request node can talk to it. It is the Swiss Army knife of n8n."
+          }
+        },
+        {
+          "type": "concept",
+          "content": {
+            "title": "Project: AI Email Summarizer",
+            "explanation": "Let's build a practical workflow that showcases action nodes working together.\n\n**What It Does:**\nWhen a new email arrives, the workflow reads it, sends the content to OpenAI for summarization, and posts the summary to Slack.\n\n**Workflow:**\n```\nEmail Trigger (IMAP — new email arrives)\n  ↓\nOpenAI Node (Summarize the email)\n  ↓\nSlack Node (Post summary to #email-summaries channel)\n  ↓\nGmail Node (Add 'Processed' label to the email)\n```\n\n**Node Configurations:**\n\n**1. Email Trigger (IMAP)**\n- Mailbox: INBOX\n- Check every: 1 minute\n\n**2. OpenAI Node**\n- Model: gpt-4o-mini\n- System Prompt: 'You are an email summarizer. Summarize the following email in 2-3 bullet points. Include the sender, main topic, and any action items.'\n- User Message: `{{ $json.text }}` (the email body from the trigger)\n\n**3. Slack Node**\n- Channel: #email-summaries\n- Message:\n```\n📧 *New Email Summary*\n*From:* {{ $('Email Trigger').item.json.from }}\n*Subject:* {{ $('Email Trigger').item.json.subject }}\n\n{{ $json.message.content }}\n```\n\n**4. Gmail Node**\n- Action: Add Label\n- Label: 'AI-Processed'\n- Message ID: from the Email Trigger output\n\nThis workflow saves you from reading every email. AI reads them for you and posts summaries where your team can see them."
+          }
+        },
+        {
+          "type": "fill_blank",
+          "challenge": {
+            "title": "Action Node Knowledge Check",
+            "question": "Test your knowledge of n8n action nodes.",
+            "template": [
+              "To interact with any REST API, use the ____ node",
+              "The ____ node is used to send messages to Discord channels",
+              "To add AI capabilities to a workflow, use the ____ node",
+              "The ____ node can append rows, read data, and update cells in spreadsheets"
+            ],
+            "options": [
+              "HTTP Request",
+              "Discord",
+              "OpenAI",
+              "Google Sheets",
+              "Slack",
+              "Code",
+              "Telegram",
+              "Gmail"
+            ],
+            "answers": {
+              "blank_1": "HTTP Request",
+              "blank_2": "Discord",
+              "blank_3": "OpenAI",
+              "blank_4": "Google Sheets"
+            },
+            "explanation": "The HTTP Request node connects to any API. Discord sends messages to Discord. OpenAI adds AI capabilities. Google Sheets manages spreadsheet data."
+          }
+        },
+        {
+          "type": "concept",
+          "content": {
+            "title": "Lesson Summary",
+            "explanation": "In this lesson, you learned about the most important action nodes:\n\n• **Gmail** — Send, read, and manage emails\n• **Google Sheets** — Read and write spreadsheet data\n• **Slack** — Send team notifications\n• **Notion** — Manage knowledge bases\n• **OpenAI** — AI-powered text generation and analysis\n• **HTTP Request** — Connect to ANY API\n\nYou also built an **AI Email Summarizer** project combining multiple action nodes.\n\nNext up: Understanding how data works inside n8n!"
+          }
+        }
+      ]
+    },
+    {
+      "id": "M002-data-inside-n8n",
+      "title": "Data Inside n8n",
+      "stages": [
+        {
+          "type": "concept",
+          "content": {
+            "title": "JSON — The Language of n8n Data",
+            "explanation": "Every piece of data in n8n is JSON (JavaScript Object Notation). If you understand JSON, you understand n8n data. Let's master it.\n\n**What is JSON?**\nJSON is a structured text format for representing data. It uses key-value pairs.\n\n**Basic JSON Object:**\n```json\n{\n  \"name\": \"Alice\",\n  \"email\": \"alice@example.com\",\n  \"age\": 28,\n  \"isVIP\": true\n}\n```\n\n**Key Rules:**\n- Keys are always strings in double quotes: `\"name\"`\n- Values can be: strings, numbers, booleans, arrays, or nested objects\n- Key-value pairs are separated by commas\n- Objects are wrapped in `{ }`\n- Arrays are wrapped in `[ ]`\n\n**JSON Array (Multiple Items):**\n```json\n[\n  { \"name\": \"Alice\", \"email\": \"alice@example.com\" },\n  { \"name\": \"Bob\", \"email\": \"bob@example.com\" },\n  { \"name\": \"Charlie\", \"email\": \"charlie@example.com\" }\n]\n```\n\n**Nested Objects:**\n```json\n{\n  \"customer\": {\n    \"name\": \"Alice\",\n    \"address\": {\n      \"city\": \"Mumbai\",\n      \"country\": \"India\"\n    },\n    \"orders\": [\n      { \"id\": 1, \"total\": 150 },\n      { \"id\": 2, \"total\": 300 }\n    ]\n  }\n}\n```\n\nTo access the city: `customer.address.city` → `\"Mumbai\"`\nTo access the first order total: `customer.orders[0].total` → `150`"
+          }
+        },
+        {
+          "type": "concept",
+          "content": {
+            "title": "Items — How n8n Processes Data",
+            "explanation": "In n8n, data flows between nodes as **items**. Each item is one JSON object.\n\n**Single Item:**\nWhen an HTTP Request node fetches weather data, it returns 1 item:\n```json\n[\n  {\n    \"json\": {\n      \"temperature\": 28,\n      \"humidity\": 65,\n      \"description\": \"Partly cloudy\"\n    }\n  }\n]\n```\n\n**Multiple Items:**\nWhen a Google Sheets node reads 3 rows, it returns 3 items:\n```json\n[\n  { \"json\": { \"name\": \"Alice\", \"score\": 95 } },\n  { \"json\": { \"name\": \"Bob\", \"score\": 82 } },\n  { \"json\": { \"name\": \"Charlie\", \"score\": 78 } }\n]\n```\n\n**Why Items Matter:**\nWhen a node receives multiple items, it processes EACH item separately. This is like an automatic loop.\n\nExample: If 3 items flow into a Gmail node configured to send an email:\n- Item 1 → Email to Alice\n- Item 2 → Email to Bob\n- Item 3 → Email to Charlie\n\n**You do NOT need to write a loop manually.** n8n does it for you.\n\n**Accessing Item Data:**\nInside any node, you access the current item's data using:\n- `{{ $json.name }}` → The 'name' field of the current item\n- `{{ $json.score }}` → The 'score' field of the current item\n\nWe will learn more about these expressions in the next lesson.",
+            "tip": "Click on any node after execution to see its items. The left shows input items, the right shows output items. Use the 'Table' view for a spreadsheet-like display."
+          }
+        },
+        {
+          "type": "concept",
+          "content": {
+            "title": "Practice: Reading and Passing Data",
+            "explanation": "Let's practice reading JSON and understanding how data flows between nodes.\n\n**Scenario:** You fetch customer data from an API. The response is:\n\n```json\n{\n  \"customers\": [\n    {\n      \"id\": 101,\n      \"name\": \"Priya Sharma\",\n      \"email\": \"priya@techcorp.com\",\n      \"plan\": \"premium\",\n      \"monthly_spend\": 4500\n    },\n    {\n      \"id\": 102,\n      \"name\": \"Rahul Patel\",\n      \"email\": \"rahul@startup.io\",\n      \"plan\": \"free\",\n      \"monthly_spend\": 0\n    }\n  ]\n}\n```\n\n**Question 1:** How do you access Priya's email?\nAnswer: `customers[0].email` → `\"priya@techcorp.com\"`\n\n**Question 2:** How do you access Rahul's plan?\nAnswer: `customers[1].plan` → `\"free\"`\n\n**Question 3:** How many items would this produce if split?\nAnswer: 2 items (one per customer)\n\n**Important Node: Split Out**\nThe 'Split Out' node takes an array (like `customers`) and converts it into separate items. This is how you go from 1 item containing an array to multiple items:\n\nBefore Split Out: 1 item with `customers` array (2 entries)\nAfter Split Out: 2 separate items (one per customer)\n\nThis is essential when API responses contain arrays that you need to process individually."
+          }
+        },
+        {
+          "type": "fill_blank",
+          "challenge": {
+            "title": "JSON Data Challenge",
+            "question": "Fill in the blanks about JSON and n8n data.",
+            "template": [
+              "JSON keys are always wrapped in ____ quotes",
+              "Arrays in JSON are wrapped in ____ brackets",
+              "In n8n, each data element flowing between nodes is called an ____",
+              "To access data in the current item, use {{ $json.____ }}"
+            ],
+            "options": [
+              "double",
+              "square",
+              "item",
+              "fieldName",
+              "single",
+              "curly",
+              "node",
+              "data"
+            ],
+            "answers": {
+              "blank_1": "double",
+              "blank_2": "square",
+              "blank_3": "item",
+              "blank_4": "fieldName"
+            },
+            "explanation": "JSON keys use double quotes, arrays use square brackets [ ], n8n processes data as items, and you access item fields with $json.fieldName."
+          }
+        },
+        {
+          "type": "concept",
+          "content": {
+            "title": "Lesson Summary",
+            "explanation": "In this lesson, you mastered n8n data fundamentals:\n\n• All n8n data is **JSON** — key-value pairs in a structured format\n• Data flows between nodes as **items** (each item = one JSON object)\n• Multiple items are processed **automatically** — no loops needed\n• **Nested data** uses dot notation: `customer.address.city`\n• **Arrays** use index notation: `orders[0].total`\n• The **Split Out** node converts arrays into individual items\n\nNext up: Expressions — making your workflows dynamic!"
+          }
+        }
+      ]
+    },
+    {
+      "id": "M002-expressions",
+      "title": "Expressions",
+      "stages": [
+        {
+          "type": "concept",
+          "content": {
+            "title": "Expressions — Making Workflows Dynamic",
+            "explanation": "Expressions are what make n8n workflows powerful. Instead of hardcoding values, you use expressions to dynamically reference data from previous nodes.\n\n**What is an Expression?**\nAn expression is a piece of code wrapped in `{{ }}` that gets replaced with actual data at runtime.\n\n**Static (Hardcoded):**\n```\nSubject: Daily Report\n```\n\n**Dynamic (Expression):**\n```\nSubject: Daily Report for {{ $now.format('MMMM d, yyyy') }}\n```\nResult: `Daily Report for July 6, 2026`\n\n**The Expression Editor:**\nIn any node, click on a field and you will see an option to switch to 'Expression' mode (the `{ }` icon). This opens the Expression Editor where you can:\n- Write expressions\n- Browse available variables\n- See a live preview of the result\n\n**Essential Expression Syntax:**\n\n| Expression | Description | Example Output |\n|-----------|-------------|----------------|\n| `{{ $json.name }}` | Current item field | `\"Alice\"` |\n| `{{ $json.email }}` | Another field | `\"alice@example.com\"` |\n| `{{ $('Node Name').item.json.field }}` | Field from a specific node | Any value from that node |\n| `{{ $now }}` | Current date/time | `2026-07-06T07:30:00` |\n| `{{ $execution.id }}` | Current execution ID | `\"abc123\"` |\n| `{{ $workflow.name }}` | Workflow name | `\"Daily Report\"` |"
+          }
+        },
+        {
+          "type": "concept",
+          "content": {
+            "title": "Accessing Data from Previous Nodes",
+            "explanation": "The most common use of expressions is accessing data from previous nodes.\n\n**From the Immediately Previous Node:**\n```\n{{ $json.fieldName }}\n```\nThis accesses data from the node directly connected before the current one.\n\n**From Any Specific Node (by name):**\n```\n{{ $('HTTP Request').item.json.temperature }}\n```\nThis accesses the 'temperature' field from a node named 'HTTP Request', regardless of where it is in the chain.\n\n**Example Workflow:**\n```\nWebhook → HTTP Request → Gmail\n```\n\nInside the Gmail node:\n- `{{ $json.temperature }}` → Gets data from HTTP Request (previous node)\n- `{{ $('Webhook').item.json.name }}` → Gets data from Webhook (2 nodes back)\n\n**Accessing Nested Data:**\n```\n{{ $json.user.address.city }}\n{{ $json.orders[0].total }}\n{{ $json.tags.join(', ') }}\n```\n\n**String Concatenation:**\n```\n{{ 'Hello ' + $json.name + ', your order #' + $json.orderId + ' is confirmed!' }}\n```\nResult: `Hello Alice, your order #4521 is confirmed!`"
+          }
+        },
+        {
+          "type": "concept",
+          "content": {
+            "title": "Built-in Functions: Date, Math, and String",
+            "explanation": "n8n provides powerful built-in functions you can use inside expressions.\n\n**📅 Date Functions:**\n\n| Expression | Output |\n|-----------|--------|\n| `{{ $now }}` | Current date/time ISO string |\n| `{{ $now.format('yyyy-MM-dd') }}` | `2026-07-06` |\n| `{{ $now.format('MMMM d, yyyy') }}` | `July 6, 2026` |\n| `{{ $now.format('HH:mm') }}` | `13:04` |\n| `{{ $now.minus(1, 'day').format('yyyy-MM-dd') }}` | Yesterday's date |\n| `{{ $now.plus(7, 'days').format('yyyy-MM-dd') }}` | Date 7 days from now |\n| `{{ $today }}` | Today at midnight |\n\n**🔢 Math Functions:**\n\n| Expression | Output |\n|-----------|--------|\n| `{{ $json.price * 1.18 }}` | Price + 18% GST |\n| `{{ Math.round($json.score * 100) / 100 }}` | Round to 2 decimals |\n| `{{ Math.max($json.a, $json.b) }}` | Larger of two values |\n| `{{ Math.floor($json.price) }}` | Round down |\n\n**📝 String Functions:**\n\n| Expression | Output |\n|-----------|--------|\n| `{{ $json.name.toUpperCase() }}` | `ALICE` |\n| `{{ $json.name.toLowerCase() }}` | `alice` |\n| `{{ $json.email.split('@')[1] }}` | `example.com` (domain) |\n| `{{ $json.text.substring(0, 100) }}` | First 100 characters |\n| `{{ $json.sentence.replace('old', 'new') }}` | Replace text |\n| `{{ $json.tags.join(', ') }}` | Array to comma string |\n| `{{ $json.name.includes('Ali') }}` | `true` or `false` |",
+            "tip": "The Expression Editor has autocomplete! Start typing and it will suggest available fields and functions. Use it — it prevents typos and shows you what is available."
+          }
+        },
+        {
+          "type": "concept",
+          "content": {
+            "title": "Practice: Building Dynamic Expressions",
+            "explanation": "Let's practice with real scenarios:\n\n**Scenario 1: Dynamic Email Subject**\nYou want the subject line to include the current date:\n```\nSubject: {{ 'Sales Report — ' + $now.format('MMMM d, yyyy') }}\n```\nResult: `Sales Report — July 6, 2026`\n\n**Scenario 2: Extract Email Domain**\nYou have `email: \"john@techcorp.com\"` and want just the domain:\n```\n{{ $json.email.split('@')[1] }}\n```\nResult: `techcorp.com`\n\n**Scenario 3: Generate Invoice ID**\nCreate a unique ID combining date and a number:\n```\n{{ 'INV-' + $now.format('yyyyMMdd') + '-' + $json.orderNumber }}\n```\nResult: `INV-20260706-4521`\n\n**Scenario 4: Conditional Text**\nShow different text based on a value:\n```\n{{ $json.amount > 1000 ? 'High Value Order' : 'Standard Order' }}\n```\nThis is a ternary operator: `condition ? valueIfTrue : valueIfFalse`\n\n**Scenario 5: Format Currency**\n```\n{{ '₹' + $json.amount.toLocaleString('en-IN') }}\n```\nResult: `₹1,50,000`"
+          }
+        },
+        {
+          "type": "fill_blank",
+          "challenge": {
+            "title": "Expression Mastery",
+            "question": "Fill in the correct expressions.",
+            "template": [
+              "Access the 'name' field of the current item: {{ $json.____ }}",
+              "Get today's date formatted as YYYY-MM-DD: {{ $now.format('____') }}",
+              "Access data from a node named 'Webhook': {{ $('____').item.json.field }}",
+              "Convert a string to uppercase: {{ $json.name.____ }}"
+            ],
+            "options": [
+              "name",
+              "yyyy-MM-dd",
+              "Webhook",
+              "toUpperCase()",
+              "email",
+              "DD/MM/YYYY",
+              "HTTP Request",
+              "toLowerCase()"
+            ],
+            "answers": {
+              "blank_1": "name",
+              "blank_2": "yyyy-MM-dd",
+              "blank_3": "Webhook",
+              "blank_4": "toUpperCase()"
+            },
+            "explanation": "Access fields with $json.fieldName, format dates with $now.format(), reference other nodes with $('NodeName'), and use JavaScript string methods like toUpperCase()."
+          }
+        },
+        {
+          "type": "concept",
+          "content": {
+            "title": "Lesson Summary",
+            "explanation": "In this lesson, you mastered n8n expressions:\n\n• Expressions use `{{ }}` syntax to create dynamic values\n• `$json.field` accesses data from the previous node\n• `$('Node Name').item.json.field` accesses data from any specific node\n• **Date functions**: `$now.format()`, `$now.minus()`, `$now.plus()`\n• **String functions**: `toUpperCase()`, `split()`, `replace()`, `includes()`\n• **Math functions**: `Math.round()`, `Math.max()`, arithmetic operators\n• **Ternary operator**: `condition ? trueValue : falseValue`\n\nNext up: Transforming data with the Edit Fields node and Code node!"
+          }
+        }
+      ]
+    },
+    {
+      "id": "M002-edit-fields",
+      "title": "Edit Fields Node & Data Transformation",
+      "stages": [
+        {
+          "type": "concept",
+          "content": {
+            "title": "The Edit Fields Node — Reshaping Your Data",
+            "explanation": "The **Edit Fields** node (also called 'Set' node) lets you reshape, rename, and transform data. It is one of the most frequently used nodes in n8n.\n\n**When You Need It:**\n- An API returns 20 fields but you only need 3\n- Field names do not match what the next node expects\n- You need to create new computed fields\n- You want to combine data from multiple sources\n\n**Common Operations:**\n\n**1. Keep Only Specific Fields**\nInput:\n```json\n{ \"name\": \"Alice\", \"email\": \"alice@ex.com\", \"age\": 28, \"phone\": \"123\", \"address\": \"...\" }\n```\nEdit Fields Config: Keep only `name` and `email`\nOutput:\n```json\n{ \"name\": \"Alice\", \"email\": \"alice@ex.com\" }\n```\n\n**2. Rename Fields**\nInput: `{ \"customer_name\": \"Alice\" }`\nRename: `customer_name` → `name`\nOutput: `{ \"name\": \"Alice\" }`\n\n**3. Create New Computed Fields**\nInput: `{ \"price\": 1000, \"quantity\": 5 }`\nNew field: `total` = `{{ $json.price * $json.quantity }}`\nOutput: `{ \"price\": 1000, \"quantity\": 5, \"total\": 5000 }`\n\n**4. Set Static Values**\nAdd a field with a hardcoded value:\n`status` = `\"processed\"`\n`processed_at` = `{{ $now.toISO() }}`",
+            "tip": "Use the Edit Fields node after every API call to clean up the data before passing it to the next node. This makes your workflows easier to debug."
+          }
+        },
+        {
+          "type": "concept",
+          "content": {
+            "title": "Project: Transform CRM Data into a Clean Report",
+            "explanation": "Let's build a practical data transformation workflow.\n\n**Scenario:** Your CRM API returns messy customer data. You need to clean it up and create a formatted report in Google Sheets.\n\n**Raw CRM Data (from HTTP Request):**\n```json\n{\n  \"cust_f_name\": \"Priya\",\n  \"cust_l_name\": \"Sharma\",\n  \"cust_email_addr\": \"priya@tech.com\",\n  \"purchase_total_usd\": 2500,\n  \"acct_created_ts\": \"2024-03-15T10:30:00Z\",\n  \"last_login_ts\": \"2026-07-05T14:20:00Z\",\n  \"internal_id\": \"xyz123\",\n  \"debug_flag\": false\n}\n```\n\n**What We Want (Clean Data for Report):**\n```json\n{\n  \"Full Name\": \"Priya Sharma\",\n  \"Email\": \"priya@tech.com\",\n  \"Total Purchases (₹)\": \"₹2,07,500\",\n  \"Member Since\": \"March 2024\",\n  \"Status\": \"Active\"\n}\n```\n\n**Edit Fields Configuration:**\n- Full Name: `{{ $json.cust_f_name + ' ' + $json.cust_l_name }}`\n- Email: `{{ $json.cust_email_addr }}`\n- Total Purchases (₹): `{{ '₹' + ($json.purchase_total_usd * 83).toLocaleString('en-IN') }}`\n- Member Since: `{{ DateTime.fromISO($json.acct_created_ts).toFormat('MMMM yyyy') }}`\n- Status: `{{ $json.last_login_ts > $now.minus(30, 'days').toISO() ? 'Active' : 'Inactive' }}`\n\n**Workflow:**\n```\nSchedule Trigger (Weekly)\n  ↓\nHTTP Request (Fetch CRM data)\n  ↓\nEdit Fields (Transform and clean)\n  ↓\nGoogle Sheets (Append to report)\n```"
+          }
+        },
+        {
+          "type": "concept",
+          "content": {
+            "title": "Lesson Summary",
+            "explanation": "In this lesson, you learned:\n\n• The **Edit Fields** node reshapes data by keeping, removing, renaming, and creating fields\n• Use it to clean up messy API responses before passing data to other nodes\n• Create **computed fields** using expressions (math, string concatenation, date formatting)\n• Built a **CRM Data Transformation** project\n\nNext up: The Code Node — writing custom JavaScript for unlimited flexibility!"
+          }
+        }
+      ]
+    },
+    {
+      "id": "M002-code-node",
+      "title": "Code Node",
+      "stages": [
+        {
+          "type": "concept",
+          "content": {
+            "title": "The Code Node — Unlimited Power",
+            "explanation": "When the visual nodes are not enough, the **Code Node** lets you write custom JavaScript (or Python) to process data however you want.\n\n**When to Use the Code Node:**\n- Complex data transformations that expressions cannot handle\n- Custom calculations (discounts, scoring, tax)\n- Filtering items based on complex conditions\n- Parsing non-standard data formats\n- Generating dynamic data\n\n**How It Works:**\nThe Code Node receives input items, runs your code, and returns output items.\n\n**Basic Structure:**\n```javascript\n// Access all input items\nconst items = $input.all();\n\n// Process each item\nconst results = items.map(item => {\n  return {\n    json: {\n      name: item.json.name,\n      processed: true\n    }\n  };\n});\n\n// Return processed items\nreturn results;\n```\n\n**Key Variables Available:**\n- `$input.all()` — All input items as an array\n- `$input.first()` — The first input item\n- `$input.item` — Current item (in 'Run Once for Each Item' mode)\n- `$('Node Name').all()` — All items from a specific node\n- `$now` — Current date/time\n- `$execution.id` — Current execution ID",
+            "tip": "The Code Node supports two modes: 'Run Once for All Items' (you get all items at once) and 'Run Once for Each Item' (your code runs once per item). Use 'All Items' when you need to compare or aggregate across items."
+          }
+        },
+        {
+          "type": "code",
+          "challenge": {
+            "title": "Filter High-Value Customers",
+            "question": "Write a Code Node that filters customers to only keep those with a 'total_spend' greater than 5000. Return only 'name' and 'total_spend' for each qualifying customer.",
+            "starterCode": "// Input: array of customer objects with name, email, total_spend\nconst items = $input.all();\n\n// Your code here: filter and transform\n\nreturn results;",
+            "solution": "const items = $input.all();\n\nconst results = items\n  .filter(item => item.json.total_spend > 5000)\n  .map(item => ({\n    json: {\n      name: item.json.name,\n      total_spend: item.json.total_spend\n    }\n  }));\n\nreturn results;",
+            "language": "javascript",
+            "hint": "Use .filter() to keep items matching a condition, then .map() to reshape each item into the desired output format."
+          }
+        },
+        {
+          "type": "code",
+          "challenge": {
+            "title": "Calculate Discounts",
+            "question": "Write a Code Node that adds a 'discount' field to each item based on the quantity ordered:\n- quantity >= 100: 20% discount\n- quantity >= 50: 10% discount\n- quantity >= 10: 5% discount\n- quantity < 10: 0% discount\nAlso add a 'final_price' field (price * quantity * (1 - discount/100)).",
+            "starterCode": "const items = $input.all();\n\n// Each item has: { product, price, quantity }\n// Add: discount (%) and final_price\n\nreturn results;",
+            "solution": "const items = $input.all();\n\nconst results = items.map(item => {\n  const { product, price, quantity } = item.json;\n  \n  let discount = 0;\n  if (quantity >= 100) discount = 20;\n  else if (quantity >= 50) discount = 10;\n  else if (quantity >= 10) discount = 5;\n  \n  const final_price = price * quantity * (1 - discount / 100);\n  \n  return {\n    json: {\n      product,\n      price,\n      quantity,\n      discount: discount + '%',\n      final_price: Math.round(final_price * 100) / 100\n    }\n  };\n});\n\nreturn results;",
+            "language": "javascript",
+            "hint": "Use if/else if to determine the discount percentage based on quantity. Calculate final_price using the formula: price * quantity * (1 - discount/100)."
+          }
+        },
+        {
+          "type": "code",
+          "challenge": {
+            "title": "Convert Currency",
+            "question": "Write a Code Node that converts prices from USD to INR (rate: 83.5) and EUR (rate: 0.92). Add 'price_inr' and 'price_eur' fields.",
+            "starterCode": "const items = $input.all();\n\n// Each item has: { product, price_usd }\n// Add: price_inr and price_eur\n\nreturn results;",
+            "solution": "const items = $input.all();\n\nconst USD_TO_INR = 83.5;\nconst USD_TO_EUR = 0.92;\n\nconst results = items.map(item => {\n  const priceUsd = item.json.price_usd;\n  return {\n    json: {\n      ...item.json,\n      price_inr: Math.round(priceUsd * USD_TO_INR * 100) / 100,\n      price_eur: Math.round(priceUsd * USD_TO_EUR * 100) / 100\n    }\n  };\n});\n\nreturn results;",
+            "language": "javascript",
+            "hint": "Multiply price_usd by each conversion rate. Use Math.round to keep 2 decimal places. Use the spread operator (...item.json) to keep existing fields."
+          }
+        },
+        {
+          "type": "concept",
+          "content": {
+            "title": "Lesson Summary",
+            "explanation": "In this lesson, you learned:\n\n• The **Code Node** lets you write JavaScript/Python for custom logic\n• Access input data with `$input.all()` or `$input.item`\n• Use `.filter()` to keep/remove items based on conditions\n• Use `.map()` to transform item structure\n• Always return an array of objects with `{ json: { ... } }` format\n• Built 3 mini-projects: Filter Customers, Calculate Discounts, Convert Currency\n\nNext up: Conditional Logic with IF and Switch nodes!"
+          }
+        }
+      ]
+    },
+    {
+      "id": "M002-conditional-logic",
+      "title": "Conditional Logic",
+      "stages": [
+        {
+          "type": "concept",
+          "content": {
+            "title": "IF Node — Making Decisions",
+            "explanation": "Real workflows need to make decisions. The **IF node** evaluates a condition and routes data to one of two paths: **True** or **False**.\n\n**How It Works:**\n```\n                    ┌─ True Branch → Send VIP Email\nData → IF Node ─────┤\n                    └─ False Branch → Send Standard Email\n```\n\n**Example: VIP Customer Routing**\nCondition: `{{ $json.total_spend }}` is greater than `10000`\n\n- If total_spend > 10000 → True branch → Send VIP welcome package\n- If total_spend <= 10000 → False branch → Send standard welcome email\n\n**Condition Types:**\n\n| Type | Example |\n|------|--------|\n| Number: Greater than | `$json.amount > 1000` |\n| Number: Less than | `$json.quantity < 5` |\n| Number: Equal | `$json.status_code == 200` |\n| String: Equal | `$json.country == 'India'` |\n| String: Contains | `$json.email` contains `@gmail.com` |\n| Boolean: Is true | `$json.isActive` is true |\n| Value: Exists | `$json.phone` exists |\n| Value: Is empty | `$json.notes` is empty |\n\n**Multiple Conditions:**\nYou can combine conditions with AND/OR:\n- AND: Both conditions must be true\n- OR: At least one condition must be true\n\nExample: `total_spend > 10000 AND country == 'India'`",
+            "tip": "Always connect BOTH outputs (True and False) of an IF node. If you only connect the True branch, items that fail the condition will be silently dropped."
+          }
+        },
+        {
+          "type": "concept",
+          "content": {
+            "title": "Switch Node — Multiple Paths",
+            "explanation": "The **Switch node** is like a more powerful IF. Instead of just True/False, it can route data to multiple paths based on different conditions.\n\n**When to Use Switch vs IF:**\n- **IF**: Two paths (yes/no, true/false)\n- **Switch**: Three or more paths (multiple categories)\n\n**Example: Order Priority Routing**\n```\n                      ┌─ Output 0: 'critical' → Alert on-call team immediately\n                      │\nData → Switch Node ───┼─ Output 1: 'high' → Create urgent Jira ticket\n                      │\n                      ├─ Output 2: 'medium' → Send Slack message\n                      │\n                      └─ Output 3: 'low' → Log to spreadsheet\n```\n\n**Switch Configuration:**\nMode: Rules\nRouting Rules:\n1. `$json.priority` equals `'critical'` → Output 0\n2. `$json.priority` equals `'high'` → Output 1\n3. `$json.priority` equals `'medium'` → Output 2\n4. Fallback (everything else) → Output 3\n\n**Nested Conditions Example:**\nYou can chain IF and Switch nodes for complex logic:\n```\nData → IF (Is Customer?) \n         ├─ True → Switch (Customer Tier)\n         │           ├─ Gold → VIP Treatment\n         │           ├─ Silver → Standard Treatment\n         │           └─ Bronze → Basic Treatment\n         └─ False → Guest Flow\n```"
+          }
+        },
+        {
+          "type": "concept",
+          "content": {
+            "title": "Project: VIP Customer Routing & High-Value Order Processing",
+            "explanation": "Let's build two projects that use conditional logic:\n\n**Project 1: VIP Customer Routing**\n```\nWebhook (New Customer Data)\n  ↓\nIF Node (total_spend > 10000?)\n  ├─ True → Gmail (Send VIP welcome package)\n  │           ↓\n  │         Google Sheets (Add to VIP list)\n  │           ↓\n  │         Slack (Notify sales team: 'New VIP!')\n  └─ False → Gmail (Send standard welcome email)\n              ↓\n            Google Sheets (Add to regular list)\n```\n\n**Project 2: High-Value Order Processing**\n```\nWebhook (New Order)\n  ↓\nSwitch Node (Order Value)\n  ├─ > ₹50,000 → Requires manager approval\n  │                ↓\n  │              Slack (Message to #approvals)\n  │                ↓\n  │              Gmail (Send approval request)\n  │\n  ├─ > ₹10,000 → Priority processing\n  │                ↓\n  │              Google Sheets (Add to priority queue)\n  │                ↓\n  │              Slack (Notify fulfillment team)\n  │\n  └─ Default   → Standard processing\n                   ↓\n                 Google Sheets (Add to standard queue)\n```\n\n**Key Configuration for Switch Node:**\n- Rule 1: `$json.order_value` greater than `50000` → Output 0\n- Rule 2: `$json.order_value` greater than `10000` → Output 1\n- Fallback → Output 2\n\nNote: Rules are checked in order. The first matching rule wins."
+          }
+        },
+        {
+          "type": "fill_blank",
+          "challenge": {
+            "title": "Conditional Logic Check",
+            "question": "Test your understanding of conditional nodes.",
+            "template": [
+              "The ____ node splits data into True and False paths",
+              "The ____ node can route data to three or more paths",
+              "When combining conditions, ____ requires all conditions to be true",
+              "Switch node rules are checked in ____ — the first match wins"
+            ],
+            "options": [
+              "IF",
+              "Switch",
+              "AND",
+              "order",
+              "Merge",
+              "Code",
+              "OR",
+              "parallel"
+            ],
+            "answers": {
+              "blank_1": "IF",
+              "blank_2": "Switch",
+              "blank_3": "AND",
+              "blank_4": "order"
+            },
+            "explanation": "The IF node has True/False outputs. The Switch node has multiple outputs. AND requires all conditions true. Rules are checked in order — first match wins."
+          }
+        },
+        {
+          "type": "concept",
+          "content": {
+            "title": "Lesson Summary",
+            "explanation": "In this lesson, you mastered conditional logic:\n\n• **IF Node** — Routes data to True or False based on a condition\n• **Switch Node** — Routes data to multiple paths based on rules\n• Conditions support: numbers, strings, booleans, existence checks\n• Combine with **AND** (all must be true) or **OR** (any can be true)\n• Built **VIP Customer Routing** and **High-Value Order Processing** projects\n\nNext up: Loops and batch processing!"
+          }
+        }
+      ]
+    },
+    {
+      "id": "M002-loops",
+      "title": "Loops & Batch Processing",
+      "stages": [
+        {
+          "type": "concept",
+          "content": {
+            "title": "Loops in n8n — Processing Large Datasets",
+            "explanation": "n8n automatically loops over items — when a node receives 100 items, it processes each one. But sometimes you need more control over looping.\n\n**Automatic Looping (Built-in):**\nMost nodes automatically process each item. If 50 items flow into a Gmail node, it sends 50 emails. No configuration needed.\n\n**Loop Over Items Node:**\nFor cases where you need to:\n- Process items in batches (e.g., 10 at a time)\n- Add delays between iterations (to avoid API rate limits)\n- Implement pagination (fetching page 1, then page 2, etc.)\n\n**Batch Processing:**\nAPIs often have rate limits (e.g., 'max 100 requests per minute'). The **Split In Batches** node helps:\n\n```\n1000 Items → Split In Batches (size: 10)\n  ↓ (processes 10 items)\n  ↓ (waits)\n  ↓ (processes next 10)\n  ↓ ... (continues until all 1000 are processed)\n```\n\n**Configuration:**\n- Batch Size: How many items per batch (e.g., 10)\n- The node automatically loops and feeds batches to the next node\n\n**Pagination Pattern:**\nWhen an API returns paginated results:\n```\nLoop:\n  HTTP Request (GET /api/customers?page=1)\n  ↓\n  Check: Are there more pages?\n  ├─ Yes → Increment page number → Loop again\n  └─ No → Continue to next node with all collected data\n```",
+            "tip": "Always check API rate limits before processing large datasets. Most APIs allow 60-100 requests per minute. Use batch processing with delays to stay within limits."
+          }
+        },
+        {
+          "type": "concept",
+          "content": {
+            "title": "Merge Node — Combining Data from Multiple Sources",
+            "explanation": "The **Merge node** combines data from two or more inputs into a single output. Essential when your workflow has parallel branches.\n\n**Merge Modes:**\n\n**1. Append** — Combine all items from both inputs into one list\n```\nInput 1: [Alice, Bob]     → Output: [Alice, Bob, Charlie, Diana]\nInput 2: [Charlie, Diana]\n```\n\n**2. Combine by Position** — Merge items by their index (1st with 1st, 2nd with 2nd)\n```\nInput 1: [{name: 'Alice'}, {name: 'Bob'}]\nInput 2: [{score: 95}, {score: 82}]\nOutput:  [{name: 'Alice', score: 95}, {name: 'Bob', score: 82}]\n```\n\n**3. Combine by Field** — Merge items that share a matching field value (like SQL JOIN)\n```\nInput 1: [{id: 1, name: 'Alice'}, {id: 2, name: 'Bob'}]\nInput 2: [{id: 1, city: 'Mumbai'}, {id: 2, city: 'Delhi'}]\nMerge on: 'id'\nOutput:  [{id: 1, name: 'Alice', city: 'Mumbai'}, {id: 2, name: 'Bob', city: 'Delhi'}]\n```\n\n**Project: Combine CRM and Billing Data**\n```\n                    ┌─ HTTP Request (CRM API) ─────┐\nSchedule Trigger ───┤                               ├─ Merge (by customer_id) → Google Sheets\n                    └─ HTTP Request (Billing API) ──┘\n```\n\nThis workflow fetches customer data from two different APIs, merges them by customer ID, and creates a unified report in Google Sheets."
+          }
+        },
+        {
+          "type": "concept",
+          "content": {
+            "title": "Project: Process 1,000 Customer Records",
+            "explanation": "**Scenario:** You have 1,000 customers in a Google Sheet. You need to:\n1. Read all records\n2. Enrich each with data from an API (which has a rate limit of 30 requests/minute)\n3. Write enriched data back to another sheet\n\n**Workflow:**\n```\nManual Trigger\n  ↓\nGoogle Sheets (Read 1000 rows)\n  ↓\nSplit In Batches (batch size: 10)\n  ↓\nHTTP Request (Enrich each customer)\n  ↓\nWait Node (2 second delay between batches)\n  ↓\nLoop back to Split In Batches (until all done)\n  ↓\nGoogle Sheets (Write enriched data)\n```\n\n**Why This Works:**\n- 1000 customers ÷ 10 per batch = 100 batches\n- 2 second delay between batches\n- ~30 requests per minute (within API limits)\n- Total time: ~3.5 minutes\n\nWithout batching, you would hit the rate limit after 30 requests and get errors for the remaining 970."
+          }
+        },
+        {
+          "type": "concept",
+          "content": {
+            "title": "Lesson Summary",
+            "explanation": "In this lesson, you learned:\n\n• n8n **automatically loops** over items — most nodes process each item individually\n• **Split In Batches** node processes items in configurable batch sizes\n• Add **Wait nodes** between batches to respect API rate limits\n• **Merge node** combines data from multiple sources (Append, by Position, by Field)\n• Built a project to **process 1,000 records** with rate limiting\n\nNext up: Mastering the HTTP Request node — calling any API!"
+          }
+        }
+      ]
+    },
+    {
+      "id": "M002-http-requests",
+      "title": "Mastering HTTP Requests",
+      "stages": [
+        {
+          "type": "concept",
+          "content": {
+            "title": "The HTTP Request Node — Your Universal API Connector",
+            "explanation": "The **HTTP Request** node is the most versatile node in n8n. It can connect to ANY web service that has an API.\n\n**HTTP Methods Explained:**\n\n| Method | Purpose | Example |\n|--------|---------|--------|\n| **GET** | Read/Fetch data | Get weather, list users, fetch a webpage |\n| **POST** | Create/Send data | Create a user, submit a form, send a message |\n| **PUT** | Replace/Update data | Update an entire user record |\n| **PATCH** | Partially update | Change just the email of a user |\n| **DELETE** | Remove data | Delete a record, remove a file |\n\n**Anatomy of an HTTP Request:**\n\n```\nMethod:  GET\nURL:     https://api.example.com/users/123\nHeaders: {\n  \"Authorization\": \"Bearer sk-abc123\",\n  \"Content-Type\": \"application/json\"\n}\nQuery Parameters: ?page=1&limit=10\nBody (POST/PUT only): {\n  \"name\": \"Alice\",\n  \"email\": \"alice@example.com\"\n}\n```\n\n**In the n8n HTTP Request node:**\n- Method: Select from dropdown (GET, POST, PUT, PATCH, DELETE)\n- URL: The API endpoint\n- Authentication: Select the auth type (or use pre-configured credentials)\n- Headers: Additional metadata\n- Query Parameters: Filters appended to the URL\n- Body: Data to send (for POST/PUT/PATCH)"
+          }
+        },
+        {
+          "type": "concept",
+          "content": {
+            "title": "Four API Projects — Hands-On Practice",
+            "explanation": "**🌤️ Project 1: Weather API (GET)**\n```\nHTTP Request:\n  Method: GET\n  URL: https://wttr.in/Mumbai?format=j1\n  Auth: None (free API)\n```\nResult: JSON with temperature, humidity, wind, forecast\n\n**💱 Project 2: Currency API (GET with Parameters)**\n```\nHTTP Request:\n  Method: GET\n  URL: https://api.exchangerate-api.com/v4/latest/USD\n  Auth: None (free API)\n```\nResult: Exchange rates for all currencies\nAccess INR rate: `{{ $json.rates.INR }}`\n\n**🐙 Project 3: GitHub API (GET with Auth)**\n```\nHTTP Request:\n  Method: GET\n  URL: https://api.github.com/repos/n8n-io/n8n/issues\n  Headers:\n    Authorization: Bearer ghp_your_token\n    Accept: application/vnd.github.v3+json\n  Query Parameters:\n    state: open\n    per_page: 10\n```\nResult: Latest 10 open issues from the n8n repository\n\n**🤖 Project 4: OpenAI API (POST with Body)**\n```\nHTTP Request:\n  Method: POST\n  URL: https://api.openai.com/v1/chat/completions\n  Headers:\n    Authorization: Bearer sk-your_key\n    Content-Type: application/json\n  Body (JSON):\n  {\n    \"model\": \"gpt-4o-mini\",\n    \"messages\": [\n      {\"role\": \"user\", \"content\": \"Summarize this: ...\"}\n    ]\n  }\n```\nResult: AI-generated response from OpenAI\n\nThese four projects cover the most common API patterns you will encounter."
+          }
+        },
+        {
+          "type": "concept",
+          "content": {
+            "title": "Authentication Types in HTTP Requests",
+            "explanation": "Most APIs require authentication. Here are the common types and how to configure them in n8n:\n\n**1. API Key (Most Common)**\nThe API gives you a key. You include it in a header or query parameter.\n```\nHeader: X-API-Key: your-api-key-here\n  OR\nQuery:  ?api_key=your-api-key-here\n```\nn8n Config: Authentication → Generic Credential Type → Header Auth or Query Auth\n\n**2. Bearer Token**\nSimilar to API Key but uses the standard Authorization header.\n```\nHeader: Authorization: Bearer your-token-here\n```\nn8n Config: Authentication → Predefined → Header Auth with `Authorization: Bearer <token>`\n\n**3. OAuth 2.0 (Google, Slack, GitHub, etc.)**\nThe most secure method. Requires a setup flow:\n1. Create credentials in the service's developer console\n2. In n8n, add OAuth credentials with Client ID and Secret\n3. Click 'Connect' — a popup lets you authorize\n4. n8n stores and auto-refreshes the token\n\nn8n has pre-built OAuth for: Google, Microsoft, Slack, GitHub, Notion, and many more.\n\n**4. Basic Auth**\nUsername and password encoded in the header.\n```\nHeader: Authorization: Basic base64(username:password)\n```\nn8n Config: Authentication → Basic Auth → Enter username and password\n\n**Security Rule:** NEVER hardcode API keys in expressions. Always use n8n's Credentials system.",
+            "tip": "When setting up OAuth credentials (Google, Slack), you need to create a project in the service's developer console first. n8n's documentation has step-by-step guides for each service."
+          }
+        },
+        {
+          "type": "fill_blank",
+          "challenge": {
+            "title": "HTTP Request Fundamentals",
+            "question": "Test your API knowledge.",
+            "template": [
+              "To fetch data from an API, use the ____ method",
+              "To send/create data, use the ____ method",
+              "API keys should be stored in n8n's ____ system, never hardcoded",
+              "The standard header for token-based auth is: Authorization: ____ your-token"
+            ],
+            "options": [
+              "GET",
+              "POST",
+              "Credentials",
+              "Bearer",
+              "PUT",
+              "DELETE",
+              "Variables",
+              "Basic"
+            ],
+            "answers": {
+              "blank_1": "GET",
+              "blank_2": "POST",
+              "blank_3": "Credentials",
+              "blank_4": "Bearer"
+            },
+            "explanation": "GET fetches data, POST creates/sends data, credentials should be stored in n8n's secure Credentials system, and Bearer tokens use the 'Authorization: Bearer' header."
+          }
+        },
+        {
+          "type": "concept",
+          "content": {
+            "title": "Lesson Summary",
+            "explanation": "In this lesson, you mastered the HTTP Request node:\n\n• **GET** fetches data, **POST** sends data, **PUT/PATCH** updates, **DELETE** removes\n• Configure: Method, URL, Headers, Query Parameters, Body\n• **Authentication types**: API Key, Bearer Token, OAuth 2.0, Basic Auth\n• Built 4 API projects: Weather, Currency, GitHub, OpenAI\n• **Always** use Credentials for API keys — never hardcode them\n\nNext up: Managing credentials securely!"
+          }
+        }
+      ]
+    },
+    {
+      "id": "M002-credentials",
+      "title": "Credentials & Security",
+      "stages": [
+        {
+          "type": "concept",
+          "content": {
+            "title": "Credentials — Keeping Your API Keys Safe",
+            "explanation": "Credentials in n8n are the secure containers for your API keys, OAuth tokens, passwords, and other sensitive data.\n\n**Why Credentials Matter:**\n- API keys give access to your accounts (Gmail, Slack, OpenAI)\n- Leaked keys can result in unauthorized access, data breaches, and unexpected bills\n- n8n encrypts credentials at rest (when N8N_ENCRYPTION_KEY is set)\n\n**How to Create Credentials:**\n1. Go to **Credentials** in the left sidebar\n2. Click **Add Credential**\n3. Search for the service (e.g., 'Google Sheets')\n4. Follow the setup instructions\n5. Click **Save**\n6. Use the credential in any workflow node\n\n**Credential Types:**\n\n| Type | Setup | Used By |\n|------|-------|---------|\n| **API Key** | Paste your key | OpenAI, SendGrid, weather APIs |\n| **OAuth2** | Click 'Connect' and authorize | Google, Slack, Microsoft, GitHub |\n| **Basic Auth** | Enter username + password | Jenkins, some REST APIs |\n| **Bearer Token** | Paste your token | GitHub, custom APIs |\n| **Header Auth** | Custom header name + value | APIs with non-standard auth |\n\n**Reuse Credentials:**\nOnce created, a credential can be used across ALL your workflows. Create it once, use it everywhere. If the key changes, update it in one place — all workflows automatically use the new key.\n\n**Environment Variables:**\nFor self-hosted n8n, you can also reference environment variables in credentials:\n```\n{{ $env.OPENAI_API_KEY }}\n```\nThis keeps keys out of the n8n database entirely.",
+            "tip": "Create a naming convention for credentials: 'Google Sheets - Marketing Team', 'OpenAI - Production Key', 'Slack - Bot User'. This makes it easy to find and manage them."
+          }
+        },
+        {
+          "type": "concept",
+          "content": {
+            "title": "Lesson Summary",
+            "explanation": "In this lesson, you learned:\n\n• **Credentials** securely store API keys, tokens, and passwords\n• n8n **encrypts credentials at rest** (with N8N_ENCRYPTION_KEY)\n• Credential types: **API Key, OAuth2, Basic Auth, Bearer Token**\n• Create once, **reuse across all workflows**\n• Use **environment variables** for extra security in self-hosted deployments\n\nNext up: Debugging workflows when things go wrong!"
+          }
+        }
+      ]
+    },
+    {
+      "id": "M002-debugging",
+      "title": "Debugging Workflows",
+      "stages": [
+        {
+          "type": "concept",
+          "content": {
+            "title": "Debugging — Finding and Fixing Problems",
+            "explanation": "Every workflow will eventually fail. APIs go down, data formats change, rate limits are hit. The difference between a beginner and a pro is how quickly they can find and fix the problem.\n\n**Debugging Tools in n8n:**\n\n**1. Execution Logs**\nThe Executions page shows every workflow run with:\n- ✅ Success or ❌ Error status\n- Timestamp and duration\n- Click any execution to see the data at each node\n- Pin-point which node failed and what data it received\n\n**2. Node Output Inspector**\nClick any node after execution to see:\n- **Input**: What data the node received\n- **Output**: What data the node produced\n- **Error**: The exact error message if it failed\n- Switch between Table, JSON, and Schema views\n\n**3. Test Individual Nodes**\nYou can execute just one node (without running the entire workflow):\n- Click the node\n- Click 'Execute Node'\n- See the output immediately\n- Great for testing HTTP Request configurations\n\n**4. Console Logging (Code Node)**\nIn Code Nodes, use `console.log()` to debug:\n```javascript\nconst items = $input.all();\nconsole.log('Number of items:', items.length);\nconsole.log('First item:', JSON.stringify(items[0].json));\n\n// Check appears in the execution's Code Node output\n```"
+          }
+        },
+        {
+          "type": "concept",
+          "content": {
+            "title": "Error Handling — Making Workflows Resilient",
+            "explanation": "n8n provides powerful error handling features so your workflows recover gracefully instead of crashing.\n\n**1. Continue on Fail**\nEnable this on any node to continue the workflow even if that node fails.\n- The error is captured in the output data\n- Subsequent nodes can check for errors and handle them\n- Use case: If email sending fails, still log the data to a spreadsheet\n\n**2. Retry Logic**\nConfigure nodes to automatically retry on failure:\n- Number of retries: 1-5\n- Wait between retries: configurable\n- Use case: API timeout → wait 5 seconds → try again\n\n**3. Error Trigger Workflow**\nCreate a separate workflow that runs whenever ANY workflow fails:\n```\nError Trigger\n  ↓\nSlack Node (Send error alert to #alerts channel)\n  ↓\nGmail Node (Email the error details to admin)\n  ↓\nGoogle Sheets (Log the error for tracking)\n```\n\nThe Error Trigger receives:\n- Which workflow failed\n- Which node failed\n- The error message\n- The input data that caused the failure\n\n**4. Try/Catch Pattern (Code Node)**\n```javascript\ntry {\n  // Risky operation\n  const result = someFunction();\n  return [{ json: { success: true, data: result } }];\n} catch (error) {\n  return [{ json: { success: false, error: error.message } }];\n}\n```\n\n**Project: Auto-Recovery Workflow**\n```\nSchedule Trigger (Every 5 minutes)\n  ↓\nHTTP Request (Call API) [Continue on Fail: ON, Retry: 3]\n  ↓\nIF Node (Did it succeed?)\n  ├─ True → Process data normally\n  └─ False → Slack Alert + Retry in 10 minutes\n```",
+            "tip": "Set up an Error Trigger workflow on day one. It takes 5 minutes and will save you from silent failures that go unnoticed for days."
+          }
+        },
+        {
+          "type": "fill_blank",
+          "challenge": {
+            "title": "Debugging & Error Handling Check",
+            "question": "Test your debugging knowledge.",
+            "template": [
+              "The ____ page shows the history of all workflow runs",
+              "Enable ____ on a node to continue the workflow even if that node fails",
+              "The ____ workflow runs automatically when any workflow fails",
+              "In a Code Node, use ____ to print debug information"
+            ],
+            "options": [
+              "Executions",
+              "Continue on Fail",
+              "Error Trigger",
+              "console.log()",
+              "Dashboard",
+              "Retry on Error",
+              "Main Trigger",
+              "alert()"
+            ],
+            "answers": {
+              "blank_1": "Executions",
+              "blank_2": "Continue on Fail",
+              "blank_3": "Error Trigger",
+              "blank_4": "console.log()"
+            },
+            "explanation": "The Executions page shows run history. Continue on Fail keeps the workflow going despite errors. Error Trigger catches failures. console.log() outputs debug info in Code Nodes."
+          }
+        },
+        {
+          "type": "concept",
+          "content": {
+            "title": "Lesson Summary",
+            "explanation": "In this lesson, you learned:\n\n• **Execution Logs** — Inspect every workflow run step-by-step\n• **Node Output Inspector** — See input, output, and errors per node\n• **Continue on Fail** — Keep running even when a node fails\n• **Retry Logic** — Automatically retry failed operations\n• **Error Trigger** — A dedicated workflow for catching failures\n• Built an **Auto-Recovery Workflow** project\n\nNext up: Workflow best practices and optimization!"
+          }
+        }
+      ]
+    },
+    {
+      "id": "M002-best-practices",
+      "title": "Workflow Best Practices & Optimization",
+      "stages": [
+        {
+          "type": "concept",
+          "content": {
+            "title": "Building Production-Quality Workflows",
+            "explanation": "You now know how to build workflows. But there is a huge difference between a workflow that 'works' and one that is production-ready. Let's level up.\n\n**1. Naming Conventions**\n- Workflow names: `[Team] Action - Service` → `[Sales] New Lead → CRM + Slack`\n- Node names: Verb + Noun → `Fetch Customer Data`, `Send VIP Email`, `Check Is Active`\n- Bad: `HTTP Request 1`, `IF`, `Code`\n- Good: `GET Weather from wttr.in`, `Is VIP Customer?`, `Calculate Discount`\n\n**2. Folder Organization**\nOrganize workflows into folders:\n```\n📁 Sales\n   ├── Lead Qualification\n   ├── CRM Sync\n   └── Follow-up Emails\n📁 DevOps\n   ├── Server Monitoring\n   ├── Deploy Notifications\n   └── Incident Alerts\n📁 AI Automations\n   ├── Email Summarizer\n   ├── Content Generator\n   └── Support Ticket Classifier\n```\n\n**3. Modular Design**\nBreak complex workflows into smaller sub-workflows that call each other:\n- Main Workflow → calls `Validate Data` sub-workflow\n- Main Workflow → calls `Enrich Customer` sub-workflow\n- Main Workflow → calls `Send Notifications` sub-workflow\n\nBenefits:\n- Each sub-workflow can be tested independently\n- Reuse sub-workflows across multiple main workflows\n- Easier to debug (smaller scope)\n\n**4. Documentation with Sticky Notes**\nAdd sticky notes to explain:\n- What the workflow does (at the top)\n- Why specific logic was chosen\n- Expected input/output format\n- Known limitations or gotchas"
+          }
+        },
+        {
+          "type": "concept",
+          "content": {
+            "title": "Performance, Versioning, and Production Features",
+            "explanation": "**5. Performance Optimization**\n- Use batch processing for large datasets\n- Add Wait nodes to respect API rate limits\n- Use the 'Execute Once' option when a node does not need to loop\n- Cache frequently-used data (store in a variable, avoid repeated API calls)\n\n**6. Workflow Versioning**\n- Export workflows as JSON files regularly\n- Store them in a Git repository\n- Use meaningful commit messages: `'Added error handling to lead pipeline'`\n- Before major changes, export the current version as backup\n\n**7. Activation Checklist**\nBefore activating a workflow for production:\n- ✅ All nodes named clearly\n- ✅ Error handling on external API nodes\n- ✅ Error Trigger workflow set up\n- ✅ Tested with edge cases (empty data, large payloads, special characters)\n- ✅ Credentials verified and working\n- ✅ Rate limits respected (batch processing where needed)\n- ✅ Sticky notes documenting the workflow\n- ✅ Exported to Git as backup\n\n**8. Monitoring Active Workflows**\n- Check the Executions page daily for the first week\n- Set up Slack/email alerts for failures\n- Monitor execution duration — increasing times may indicate problems\n- Review logs weekly for patterns (same error recurring = systemic issue)"
+          }
+        },
+        {
+          "type": "concept",
+          "content": {
+            "title": "Using Templates and Sharing Workflows",
+            "explanation": "**Templates — Learn from the Community**\n\nn8n has a rich library of pre-built workflow templates:\n- Browse at: https://n8n.io/workflows\n- Categories: Marketing, Sales, DevOps, AI, Data, Communication\n- One-click import into your n8n instance\n\n**How to Use Templates:**\n1. Go to Templates in n8n\n2. Browse or search for what you need\n3. Click 'Use Workflow'\n4. Customize for your specific needs\n5. Connect your credentials\n\n**Sharing Your Workflows:**\n- Export: Workflow menu → Download → JSON file\n- Import: Workflow menu → Import from File → Select JSON\n- Share: Upload to the n8n community template library\n\n**Import/Export Best Practices:**\n- Credentials are NEVER included in exports (for security)\n- After importing, you need to reconnect credentials\n- Test imported workflows before activating them\n- Check that all node versions are compatible with your n8n version",
+            "tip": "When you find a template you like, do not just use it as-is. Read through every node to understand HOW it works. This is one of the best ways to learn advanced patterns."
+          }
+        },
+        {
+          "type": "reorder",
+          "challenge": {
+            "instruction": "Arrange the production deployment checklist in the correct order.",
+            "correctOrder": [
+              "Name all nodes clearly",
+              "Add error handling to API nodes",
+              "Set up Error Trigger workflow",
+              "Test with edge cases",
+              "Add documentation with sticky notes",
+              "Export to Git as backup",
+              "Activate the workflow",
+              "Monitor executions for the first week"
+            ]
+          }
+        },
+        {
+          "type": "concept",
+          "content": {
+            "title": "Lesson Summary",
+            "explanation": "In this lesson, you learned production-quality workflow practices:\n\n• **Naming conventions** — Clear, descriptive names for workflows and nodes\n• **Folder organization** — Group workflows by team or function\n• **Modular design** — Break complex workflows into reusable sub-workflows\n• **Documentation** — Sticky notes explaining what and why\n• **Performance** — Batch processing, caching, rate limiting\n• **Versioning** — Export to Git regularly\n• **Templates** — Learn from and share with the community\n\nNext up: Building 12 mini projects from scratch!"
+          }
+        }
+      ]
+    },
+    {
+      "id": "M002-mini-projects",
+      "title": "Mini Projects",
+      "stages": [
+        {
+          "type": "concept",
+          "content": {
+            "title": "12 Mini Projects — Build Real Workflows",
+            "explanation": "Time to put everything together. Here are 12 mini projects that cover every concept you learned. Build each one from scratch.\n\n**🌤️ Project 1: Daily Weather Notification**\n```\nSchedule Trigger (Daily 7 AM)\n  ↓\nHTTP Request (GET wttr.in/YourCity?format=j1)\n  ↓\nEdit Fields (Extract temperature, condition, humidity)\n  ↓\nSlack/Telegram (Send formatted weather report)\n```\nSkills: Schedule Trigger, HTTP Request, Expressions, Action Nodes\n\n---\n\n**🤖 Project 2: AI Email Summarizer**\n```\nEmail Trigger (IMAP)\n  ↓\nIF Node (Is email body > 200 characters?)\n  ├─ True → OpenAI (Summarize email)\n  │           ↓\n  │         Slack (Post summary)\n  └─ False → Skip (too short to summarize)\n```\nSkills: Email Trigger, IF Node, OpenAI Node, Conditional Logic\n\n---\n\n**📊 Project 3: Google Sheets Data Logger**\n```\nWebhook Trigger (Receives form data)\n  ↓\nEdit Fields (Add timestamp, format data)\n  ↓\nGoogle Sheets (Append row)\n  ↓\nSlack (Confirm: 'New entry logged')\n```\nSkills: Webhook Trigger, Edit Fields, Google Sheets, Expressions\n\n---\n\n**🖥️ Project 4: Website Uptime Monitor**\n```\nSchedule Trigger (Every 5 minutes)\n  ↓\nHTTP Request (GET your-website.com) [Continue on Fail]\n  ↓\nIF Node (Status code == 200?)\n  ├─ True → Do nothing (site is up)\n  └─ False → Slack Alert ('🚨 Website is DOWN!')\n              ↓\n            Gmail (Send alert email)\n```\nSkills: Schedule Trigger, HTTP Request, Error Handling, IF Node"
+          }
+        },
+        {
+          "type": "concept",
+          "content": {
+            "title": "Mini Projects 5-8",
+            "explanation": "**💬 Project 5: Slack Notification System**\n```\nWebhook Trigger (Receives event data)\n  ↓\nSwitch Node (Event type?)\n  ├─ 'order' → Slack #orders ('🛒 New order: ${{ $json.amount }}')\n  ├─ 'signup' → Slack #growth ('👤 New user: {{ $json.name }}')\n  ├─ 'error' → Slack #alerts ('🚨 Error: {{ $json.message }}')\n  └─ default → Slack #general ('📋 Event: {{ $json.type }}')\n```\nSkills: Webhook, Switch Node, Dynamic Slack Messages\n\n---\n\n**📰 Project 6: RSS Feed to Telegram**\n```\nSchedule Trigger (Every 30 minutes)\n  ↓\nRSS Feed Read (Tech blog RSS URL)\n  ↓\nIF Node (Published in last 30 minutes?)\n  ├─ True → Telegram (Send article title + link)\n  └─ False → Skip\n```\nSkills: RSS Node, Date Expressions, Telegram Bot\n\n---\n\n**📝 Project 7: Form Submission to Gmail**\n```\nForm Trigger (Name, Email, Message fields)\n  ↓\nEdit Fields (Format email body with HTML)\n  ↓\nGmail (Send confirmation to submitter)\n  ↓\nGmail (Send notification to admin)\n  ↓\nGoogle Sheets (Log submission)\n```\nSkills: Form Trigger, Gmail with HTML, Google Sheets logging\n\n---\n\n**🧾 Project 8: PDF Invoice Generator**\n```\nWebhook Trigger (Order data)\n  ↓\nCode Node (Generate HTML invoice)\n  ↓\nHTTP Request (Convert HTML to PDF using an API)\n  ↓\nGmail (Send invoice PDF as attachment)\n  ↓\nGoogle Drive (Save PDF copy)\n```\nSkills: Code Node, HTML generation, File handling, Gmail attachments"
+          }
+        },
+        {
+          "type": "concept",
+          "content": {
+            "title": "Mini Projects 9-12",
+            "explanation": "**🐙 Project 9: GitHub Issue Notification**\n```\nSchedule Trigger (Every hour)\n  ↓\nHTTP Request (GET /repos/owner/repo/issues?state=open&since=1h)\n  ↓\nIF Node (New issues found?)\n  ├─ True → Loop over issues\n  │           ↓\n  │         Slack (Post each issue: title, author, link)\n  └─ False → Skip\n```\nSkills: GitHub API, Date filtering, Loop processing\n\n---\n\n**💱 Project 10: Currency Exchange Alert**\n```\nSchedule Trigger (Every 4 hours)\n  ↓\nHTTP Request (GET exchange rates API)\n  ↓\nCode Node (Check if USD/INR crossed threshold)\n  ↓\nIF Node (Rate > 85 or Rate < 80?)\n  ├─ True → Telegram ('🚨 USD/INR Alert: ₹{{ $json.rate }}')\n  └─ False → Skip (rate is normal)\n```\nSkills: API monitoring, Code Node calculations, Conditional alerts\n\n---\n\n**📰 Project 11: Daily News Digest**\n```\nSchedule Trigger (Daily 8 AM)\n  ↓\nHTTP Request (Fetch top news from NewsAPI)\n  ↓\nCode Node (Format top 5 articles into a digest)\n  ↓\nOpenAI (Generate a brief summary of today's news)\n  ↓\nGmail (Send formatted digest email)\n```\nSkills: News API, Code Node formatting, AI summarization\n\n---\n\n**✍️ Project 12: AI Blog Idea Generator**\n```\nSchedule Trigger (Every Monday 9 AM)\n  ↓\nHTTP Request (Fetch trending topics from API)\n  ↓\nOpenAI (Generate 5 blog ideas based on trends)\n  ↓\nNotion (Create page with the ideas)\n  ↓\nSlack (Share ideas in #content-team)\n```\nSkills: AI content generation, Notion integration, Multi-service workflow\n\n---\n\n**🎯 Challenge:** Build ALL 12 projects. Each one teaches a unique combination of skills. By the end, you will have a portfolio of real, working automations."
+          }
+        },
+        {
+          "type": "concept",
+          "content": {
+            "title": "Lesson Summary",
+            "explanation": "In this lesson, you have 12 mini projects to build:\n\n1. Daily Weather Notification\n2. AI Email Summarizer\n3. Google Sheets Data Logger\n4. Website Uptime Monitor\n5. Slack Notification System\n6. RSS Feed to Telegram\n7. Form Submission to Gmail\n8. PDF Invoice Generator\n9. GitHub Issue Notification\n10. Currency Exchange Alert\n11. Daily News Digest\n12. AI Blog Idea Generator\n\nEach project practices different combinations of triggers, action nodes, data transformation, expressions, conditional logic, and error handling.\n\nNext up: The final capstone challenge — Smart Lead Management System!"
+          }
+        }
+      ]
+    },
+    {
+      "id": "M002-capstone-smart-lead-system",
+      "title": "Practice Project: Smart Lead Management System",
+      "stages": [
+        {
+          "type": "concept",
+          "content": {
+            "title": "Practice Project: Smart Lead Management System",
+            "explanation": "**Welcome to Your Module 2 Capstone Project!**\n\nYou have completed all the lessons in this module. Now it is time to combine EVERYTHING into one comprehensive, production-ready workflow.\n\n**Your Mission:**\nBuild a Smart Lead Management System that captures leads from a website form, validates them, uses AI to qualify them, stores them in a CRM, and notifies your sales team — all automatically.\n\n**Why This Project?**\nLead management is one of the most common automation use cases in business. Companies pay thousands of dollars for tools that do exactly what you are about to build for free.\n\n**The Complete Workflow:**\n```\nWebsite Form → Webhook Trigger → Validate Data → Remove Duplicates\n  → AI Lead Qualification → Store in Google Sheets → Create CRM Contact\n  → Notify Sales Team on Slack → Send Welcome Email → Log Execution\n```\n\n**Skills You Will Use:**\n- ✅ Triggers (Webhook)\n- ✅ Action Nodes (Gmail, Google Sheets, Slack)\n- ✅ Expressions (Dynamic content)\n- ✅ HTTP Requests (CRM API)\n- ✅ AI Integration (OpenAI for lead scoring)\n- ✅ Conditional Logic (IF/Switch for routing)\n- ✅ Error Handling (Continue on Fail, retries)\n- ✅ Data Transformation (Edit Fields, Code Node)\n- ✅ Google Workspace Integration\n- ✅ Production Best Practices (naming, documentation, monitoring)"
+          }
+        },
+        {
+          "type": "concept",
+          "content": {
+            "title": "Step 1: Webhook Trigger and Data Validation",
+            "explanation": "**Step 1A: Set Up the Webhook Trigger**\n\nCreate a Webhook that receives lead data from a website form:\n```\nWebhook Trigger:\n  Method: POST\n  Path: /new-lead\n  Response Mode: Last Node (so the form gets a response)\n```\n\n**Expected Input Data:**\n```json\n{\n  \"name\": \"Priya Sharma\",\n  \"email\": \"priya@techcorp.com\",\n  \"company\": \"TechCorp\",\n  \"phone\": \"+91-9876543210\",\n  \"message\": \"Interested in your enterprise plan for our team of 50 people.\",\n  \"source\": \"website_contact_form\"\n}\n```\n\n**Step 1B: Validate the Data**\n\nAdd an IF node to check for required fields:\n```\nIF Node: 'Validate Required Fields'\n  Conditions (AND):\n    - $json.name is not empty\n    - $json.email is not empty\n    - $json.email contains '@'\n  \n  True → Continue to next step\n  False → Respond with error: 'Missing required fields'\n```\n\n**Step 1C: Check for Duplicates**\n\nQuery your Google Sheet to check if this email already exists:\n```\nGoogle Sheets Node: 'Check Existing Leads'\n  Action: Read Rows\n  Filter: email = {{ $json.email }}\n\nIF Node: 'Is Duplicate?'\n  Condition: $json length > 0\n  True → Respond: 'You are already in our system!'\n  False → Continue (new lead)\n```"
+          }
+        },
+        {
+          "type": "concept",
+          "content": {
+            "title": "Step 2: AI Lead Qualification",
+            "explanation": "**Use OpenAI to score and qualify the lead based on their message.**\n\n```\nOpenAI Node: 'AI Lead Scorer'\n  Model: gpt-4o-mini\n  System Prompt:\n    'You are a lead qualification expert. Analyze the following lead\n    information and return a JSON object with:\n    - score (1-100): How likely they are to become a customer\n    - tier: \"hot\" (score > 70), \"warm\" (score 40-70), \"cold\" (score < 40)\n    - summary: One sentence describing the lead\n    - recommended_action: What the sales team should do next'\n  \n  User Message:\n    'Name: {{ $json.name }}\n    Company: {{ $json.company }}\n    Message: {{ $json.message }}'\n```\n\n**Expected AI Response:**\n```json\n{\n  \"score\": 85,\n  \"tier\": \"hot\",\n  \"summary\": \"Enterprise prospect from TechCorp looking for a team plan for 50 users.\",\n  \"recommended_action\": \"Schedule a demo call within 24 hours. This is a high-value enterprise lead.\"\n}\n```\n\n**Step 3: Route Based on Score**\n```\nSwitch Node: 'Lead Tier Router'\n  Rule 1: score > 70 → Hot Lead Path\n  Rule 2: score > 40 → Warm Lead Path\n  Default → Cold Lead Path\n```\n\n**Hot Lead Path:**\n→ Slack DM to sales manager: '🔥 HOT LEAD! {{ $json.name }} from {{ $json.company }}'\n→ Gmail: Send personalized VIP welcome email\n→ Google Sheets: Add to 'Hot Leads' tab\n\n**Warm Lead Path:**\n→ Slack #leads channel: '🟡 Warm lead: {{ $json.name }}'\n→ Gmail: Send standard welcome email\n→ Google Sheets: Add to 'Warm Leads' tab\n\n**Cold Lead Path:**\n→ Gmail: Send nurture email sequence\n→ Google Sheets: Add to 'Cold Leads' tab"
+          }
+        },
+        {
+          "type": "concept",
+          "content": {
+            "title": "Step 3: Store, Notify, and Log",
+            "explanation": "**Step 4: Store in Google Sheets**\n```\nGoogle Sheets Node: 'Save Lead'\n  Action: Append Row\n  Spreadsheet: 'Lead Management'\n  Sheet: Based on tier (Hot/Warm/Cold)\n  Columns:\n    - Name: {{ $('Webhook').item.json.name }}\n    - Email: {{ $('Webhook').item.json.email }}\n    - Company: {{ $('Webhook').item.json.company }}\n    - AI Score: {{ $('AI Lead Scorer').item.json.score }}\n    - Tier: {{ $('AI Lead Scorer').item.json.tier }}\n    - Summary: {{ $('AI Lead Scorer').item.json.summary }}\n    - Date: {{ $now.format('yyyy-MM-dd HH:mm') }}\n    - Source: {{ $('Webhook').item.json.source }}\n```\n\n**Step 5: Notify Sales Team on Slack**\n```\nSlack Node: 'Notify Sales'\n  Channel: #new-leads\n  Message:\n    '🎯 *New Lead Alert*\n    \n    *Name:* {{ $('Webhook').item.json.name }}\n    *Company:* {{ $('Webhook').item.json.company }}\n    *Score:* {{ $('AI Lead Scorer').item.json.score }}/100 ({{ $('AI Lead Scorer').item.json.tier }})\n    *Summary:* {{ $('AI Lead Scorer').item.json.summary }}\n    *Action:* {{ $('AI Lead Scorer').item.json.recommended_action }}'\n```\n\n**Step 6: Send Welcome Email**\n```\nGmail Node: 'Send Welcome'\n  To: {{ $('Webhook').item.json.email }}\n  Subject: 'Welcome, {{ $('Webhook').item.json.name }}! We received your inquiry'\n  Body: Personalized HTML email based on tier\n```\n\n**Step 7: Log Execution**\n```\nGoogle Sheets Node: 'Execution Log'\n  Sheet: 'Workflow Logs'\n  Columns:\n    - Execution ID: {{ $execution.id }}\n    - Timestamp: {{ $now.toISO() }}\n    - Lead: {{ $('Webhook').item.json.email }}\n    - Result: Success/Error\n    - Duration: Execution time\n```\n\n**Error Handling:**\n- Add 'Continue on Fail' on HTTP Request and Gmail nodes\n- Add retry logic (3 retries with 5 second delays)\n- Set up Error Trigger workflow to alert on failures"
+          }
+        },
+        {
+          "type": "concept",
+          "content": {
+            "title": "Evaluation Criteria and Final Checklist",
+            "explanation": "**Test Your Workflow:**\n\nSend these test payloads to your webhook and verify each scenario:\n\n**Test 1: Hot Lead**\n```json\n{\"name\": \"Vikram CEO\", \"email\": \"vikram@bigcorp.com\", \"company\": \"BigCorp (500 employees)\", \"message\": \"Need enterprise plan for 200 users. Budget approved. Want demo this week.\"}\n```\nExpected: Score > 70, Slack DM to manager, VIP email\n\n**Test 2: Warm Lead**\n```json\n{\"name\": \"Sneha Dev\", \"email\": \"sneha@startup.io\", \"company\": \"Startup.io\", \"message\": \"Exploring automation tools for our 10-person team.\"}\n```\nExpected: Score 40-70, Slack channel post, standard email\n\n**Test 3: Cold Lead**\n```json\n{\"name\": \"Test User\", \"email\": \"test@gmail.com\", \"company\": \"\", \"message\": \"Just checking this out\"}\n```\nExpected: Score < 40, nurture email, cold leads sheet\n\n**Test 4: Invalid Data**\n```json\n{\"name\": \"\", \"email\": \"invalid\"}\n```\nExpected: Validation fails, error response returned\n\n**Test 5: Duplicate**\nSend the same email twice — second should be caught as duplicate.\n\n**Production Checklist:**\n- ✅ All nodes named descriptively\n- ✅ Sticky notes documenting each section\n- ✅ Error handling on all external nodes\n- ✅ Error Trigger workflow configured\n- ✅ All 5 test scenarios pass\n- ✅ Workflow exported to Git\n- ✅ Credentials properly configured\n\n**Congratulations!** You have built a production-ready lead management system that combines triggers, AI, conditional logic, data transformation, multi-service integration, and error handling. You are now ready for Module 3: APIs and AI Integration!"
+          }
+        }
+      ]
+    }
+  ]
+}

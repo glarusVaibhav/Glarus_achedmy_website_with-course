@@ -1,0 +1,886 @@
+[
+  {
+    "id": "definition",
+    "title": "Initialization & Blueprint",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "title": "Welcome Aboard, Engineer",
+          "explanation": "The year is 2084. You have just boarded the deep-space research vessel 'The Turing'. Your mission: bring online a revolutionary new AI called A.L.I.C.E. (Artificial Learning Intelligence for Complex Environments).\n\nBut ALICE is not like any program you've seen before. She is a Neural Network — a type of AI that doesn't follow pre-written rules. Instead, she learns from experience, just like a human child.\n\nImagine teaching a toddler to recognize a cat. You don't give the child a rulebook ('IF it has four legs AND whiskers AND fur, THEN it is a cat'). Instead, you show the child hundreds of pictures of cats. Eventually, the child just *knows* what a cat looks like. That's exactly how ALICE works."
+        }
+      },
+      {
+        "type": "concept",
+        "content": {
+          "title": "Welcome Aboard, Engineer (Key Points)",
+          "blocks": [
+            {
+              "type": "sevenPoint",
+              "content": [
+                {
+                  "number": 1,
+                  "title": "Rule-Based AI (Old Way)",
+                  "body": "Like a recipe book — only works for dishes you've written down. Fails completely with anything new."
+                },
+                {
+                  "number": 2,
+                  "title": "Neural Network AI (ALICE)",
+                  "body": "Like a chef who has tasted thousands of dishes and can now create new ones on her own, even ones she's never seen before."
+                },
+                {
+                  "number": 3,
+                  "title": "Why This Matters",
+                  "body": "Deep space is full of the unknown. ALICE needs to handle situations nobody has ever programmed for."
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "type": "scenario",
+        "title": "Booting Sequence",
+        "description": "The ship's computer asks you to choose the AI engine for ALICE. This is a critical decision — the wrong choice could be catastrophic in deep space.",
+        "choices": [
+          {
+            "text": "Run Legacy Rule-Based Engine (IF-THEN heuristics)",
+            "outcome": "CRITICAL ERROR: Deep space anomalies are too complex for hardcoded rules. The system crashes on the first unrecognized signal. You need something that can LEARN.",
+            "score": 0
+          },
+          {
+            "text": "Initialize Neural Network Engine (learns from data)",
+            "outcome": "BOOT SUCCESSFUL! ALICE's neural core hums to life. She doesn't know anything yet, but she's ready to learn from whatever the galaxy throws at her.",
+            "score": 100
+          }
+        ]
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "question": "What makes a Neural Network different from traditional programming?",
+            "options": [
+              "It runs faster on older hardware",
+              "It learns patterns from data instead of following pre-written rules",
+              "It uses less electricity",
+              "It doesn't need a computer to run"
+            ],
+            "answer": 1,
+            "explanation": "Neural Networks learn from examples (data), not from rigid IF-THEN rules written by a programmer."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "why-neural-networks",
+    "title": "Why A.L.I.C.E.?",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "title": "Why Not Just Write More Rules?",
+          "explanation": "You might be wondering: 'Why can't we just write a really big rulebook for ALICE?'\n\nHere's the problem. Imagine trying to write rules to recognize every possible alien ship in the galaxy. You'd need to account for every shape, every color, every size, every angle. The rulebook would be infinite.\n\nNeural Networks solve this beautifully. Instead of writing rules, you show ALICE thousands of examples. After enough examples, ALICE figures out the patterns herself.",
+          "tip": "Think of it like learning to ride a bicycle. Nobody can write you a rulebook for balancing — you just have to practice until your brain figures it out!"
+        }
+      },
+      {
+        "type": "concept",
+        "content": {
+          "title": "Why Not Just Write More Rules? (Key Points)",
+          "blocks": [
+            {
+              "type": "sevenPoint",
+              "content": [
+                {
+                  "number": 1,
+                  "title": "Friendly Ships",
+                  "body": "You feed ALICE sensor data of known allied vessels and label them with a ✓."
+                },
+                {
+                  "number": 2,
+                  "title": "Hostile Ships",
+                  "body": "You feed her data of enemy fighters and label them with a ✗. She learns their unique energy signatures."
+                },
+                {
+                  "number": 3,
+                  "title": "Space Debris",
+                  "body": "You show her harmless asteroids. She learns to ignore them without needing an explicit 'if asteroid' rule."
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "type": "speed_quiz",
+        "questions": [
+          {
+            "question": "Why did Command choose a Neural Network over standard programming?",
+            "options": [
+              "To save electricity",
+              "To handle incredibly complex, non-linear problems",
+              "Because it is easier to code"
+            ],
+            "answer": 1
+          },
+          {
+            "question": "Which task is ALICE best suited for?",
+            "options": [
+              "Calculating standard ship payroll",
+              "Sorting an alphabetical list",
+              "Decoding unknown alien radio transmissions from noise"
+            ],
+            "answer": 2
+          },
+          {
+            "question": "What does ALICE need to learn?",
+            "options": [
+              "A bigger hard drive",
+              "Thousands of example data points",
+              "A faster internet connection"
+            ],
+            "answer": 1
+          }
+        ],
+        "timePerQuestion": 15
+      }
+    ]
+  },
+  {
+    "id": "real-world-applications",
+    "title": "Earth Archives",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "title": "ALICE's Ancestors on Earth",
+          "explanation": "Before ALICE was deployed to space, Neural Networks had already changed life on Earth. Let's access the historical archives to see what her technology is capable of.\n\nEvery time you unlock your phone with your face, every time a self-driving car avoids an obstacle, every time a doctor uses AI to detect cancer in an X-ray — that's a Neural Network at work.\n\nALICE is the next evolution of this technology, designed to operate in the most extreme environment imaginable: deep space."
+        }
+      },
+      {
+        "type": "flashcard",
+        "cards": [
+          {
+            "front": "🔭 Computer Vision",
+            "back": "ALICE using her optical sensors to identify space debris and hostile ships — just like how your phone recognizes your face."
+          },
+          {
+            "front": "🗣️ Natural Language Processing",
+            "back": "ALICE translating chaotic alien communications in real-time — just like how Google Translate converts one language to another."
+          },
+          {
+            "front": "🔧 Predictive Maintenance",
+            "back": "ALICE analyzing ship vibrations to predict which engine will fail next — just like how Netflix predicts what movie you'll want to watch."
+          },
+          {
+            "front": "🎨 Generative AI",
+            "back": "ALICE creating new shield configurations she was never explicitly taught — just like how ChatGPT writes text it has never seen before."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "history-of-neural-networks",
+    "title": "The AI Winters",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "title": "The Lost Decades",
+          "explanation": "ALICE's technology wasn't always popular. In fact, the world gave up on Neural Networks — twice!\n\nIn 1943, scientists created the first mathematical model of a brain cell. Everyone was excited. But by 1969, a famous book called 'Perceptrons' proved that simple Neural Networks couldn't solve certain problems, and funding dried up. This was called the first 'AI Winter' — a long, cold period where nobody believed in the technology.\n\nIt took until 1986 for scientists to discover 'Backpropagation' — a way to teach multi-layer networks. And then in 2012, a Neural Network called 'AlexNet' crushed a computer vision competition so badly that the entire world took notice.\n\nThat breakthrough led directly to the creation of ALICE. Let's put these events in order to unlock her memory banks."
+        }
+      },
+      {
+        "type": "reorder",
+        "challenge": {
+          "instruction": "Arrange these historical events in chronological order to unlock ALICE's memory banks:",
+          "correctOrder": [
+            "1943: First mathematical model of a neural network created",
+            "1969: 'Perceptrons' book triggers the first AI Winter",
+            "1986: Backpropagation rediscovered, reviving the field",
+            "2012: AlexNet Deep Learning breakthrough shocks the world",
+            "2084: Project ALICE deployed on The Turing"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "human-brain-inspiration",
+    "title": "Biomimetic Core",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "title": "Built Like a Brain",
+          "explanation": "ALICE is modeled after the most powerful computer ever created: the human brain.\n\nYour brain contains about 86 billion tiny cells called 'neurons'. Each neuron is like a tiny decision-maker. It receives signals from other neurons through tree-like branches called 'dendrites', processes them in its body (the 'soma'), and sends the result out through a long cable called the 'axon'. The connection point between two neurons is called a 'synapse'.\n\nALICE works the same way, but with mechanical parts:\n• Dendrites → Sensor Arrays (receive data)\n• Soma → Core Processor (process data)\n• Axon → Relay Cable (send result)\n• Synapse → Data Junction (connection strength)\n\nYour next task: physically connect these biological parts to ALICE's hardware!"
+        }
+      },
+      {
+        "type": "concept",
+        "content": {
+          "title": "Built Like a Brain (Key Points)",
+          "blocks": [
+            {
+              "type": "sevenPoint",
+              "content": [
+                {
+                  "number": 1,
+                  "title": "Dendrites → Sensors",
+                  "body": "Tree-like branches that receive incoming signals. On ALICE, these are her radar and thermal sensors."
+                },
+                {
+                  "number": 2,
+                  "title": "Soma → Processor",
+                  "body": "The cell body that adds up all the incoming signals. On ALICE, this is her core processing chip."
+                },
+                {
+                  "number": 3,
+                  "title": "Axon → Transmitter",
+                  "body": "The long cable that sends the final output. On ALICE, this is her relay cable to the ship's thrusters."
+                },
+                {
+                  "number": 4,
+                  "title": "Synapse → Data Junction",
+                  "body": "The tiny gap between two neurons where the signal strength is adjusted. On ALICE, this determines how much she 'trusts' each sensor."
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "type": "drag_drop",
+        "content": {
+          "question": "Connect the biological brain components to ALICE's mechanical systems to activate her hardware:",
+          "buckets": [
+            {
+              "name": "🔌 Input Receivers (Sensor Arrays)",
+              "accepts": [
+                "Dendrites"
+              ]
+            },
+            {
+              "name": "🧠 Processor (Core Chip)",
+              "accepts": [
+                "Soma (Cell Body)"
+              ]
+            },
+            {
+              "name": "📡 Output Transmitter (Relay Cable)",
+              "accepts": [
+                "Axon"
+              ]
+            },
+            {
+              "name": "⚡ Connection Weights (Data Junctions)",
+              "accepts": [
+                "Synapse"
+              ]
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "dendrites",
+    "title": "Sensor Arrays (Dendrites)",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "title": "The Sensor Arrays (Dendrites)",
+          "explanation": "In your brain, dendrites are the tree-like branches that receive signals from other neurons. They're like tiny antennas, constantly listening for incoming messages.\n\nOn ALICE, these are her Sensor Arrays — the radar dishes, thermal cameras, and radio receivers that collect raw data from the galaxy around her. Without these 'ears', ALICE would be completely blind and deaf.\n\nKey insight: Dendrites (and sensors) only RECEIVE data. They don't process it or make decisions. They just pass the raw information to the next stage.",
+          "tip": "Think of dendrites like your ears — they collect sound waves, but your brain is what actually understands the words."
+        }
+      }
+    ]
+  },
+  {
+    "id": "axon",
+    "title": "Transmitters (Axons)",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "title": "The Relay Cables (Axons)",
+          "explanation": "After the brain cell (soma) processes all the incoming signals and makes a decision, it needs to send that decision somewhere. That's the job of the Axon — a long cable that transmits the output signal.\n\nOn ALICE, the Axon is her Relay Cable. Once her processor decides 'That asteroid is dangerous!', the relay cable sends the command to the ship's thrusters to dodge.\n\nKey insight: Each neuron has only ONE axon (one output), but it can branch out to connect with thousands of other neurons. This is how information spreads through the network.",
+          "tip": "Think of an axon like a phone line — it carries your message from your brain to wherever it needs to go."
+        }
+      }
+    ]
+  },
+  {
+    "id": "synapses",
+    "title": "Data Junctions (Synapses)",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "title": "The Data Junctions (Synapses)",
+          "explanation": "Synapses are the most important part of a neural network. They are the tiny gaps between neurons where the signal gets adjusted.\n\nImagine you have two friends giving you advice. One friend is an expert chef, the other knows nothing about cooking. When they both give you cooking advice, you 'weight' the expert's opinion much more heavily, right?\n\nSynapses work the same way. They control how much 'trust' or 'importance' is given to each incoming signal. In ALICE's case, her Data Junctions control whether she trusts the radar more than the thermal camera.\n\nKey insight: Learning = adjusting synapse strength. When ALICE learns, she's literally changing how much she trusts each connection.",
+          "warning": "This concept of 'adjustable connection strength' is THE most important idea in all of neural networks. It's what makes learning possible!"
+        }
+      }
+    ]
+  },
+  {
+    "id": "artificial-neuron-components",
+    "title": "The Spark of Life",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "title": "Building ALICE's First Brain Cell",
+          "explanation": "Now that you understand how biological neurons work, it's time to build ALICE's first artificial neuron from scratch.\n\nAn artificial neuron is surprisingly simple. It has just 3 components:\n\n1. INPUTS (x) — The raw data coming in (sensor readings)\n2. WEIGHTS (w) — How much ALICE trusts each input\n3. BIAS (b) — A baseline sensitivity setting\n\nHere's the beautiful part: these three simple things, combined with basic math, can learn to recognize patterns that no human programmer could ever code by hand.\n\nLet's step into the engineering bay and wire up each component."
+        }
+      },
+      {
+        "type": "concept",
+        "content": {
+          "title": "Building ALICE's First Brain Cell (Key Points)",
+          "blocks": [
+            {
+              "type": "sevenPoint",
+              "content": [
+                {
+                  "number": 1,
+                  "title": "Inputs (x)",
+                  "body": "The raw numbers coming from ALICE's sensors. Example: radar = 0.8, thermal = 0.3"
+                },
+                {
+                  "number": 2,
+                  "title": "Weights (w)",
+                  "body": "How much ALICE 'trusts' each input. High weight = high trust. Example: radar weight = 0.9, thermal weight = 0.1"
+                },
+                {
+                  "number": 3,
+                  "title": "Bias (b)",
+                  "body": "A baseline setting that controls how easily the neuron 'fires'. Like the sensitivity dial on a smoke detector."
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "type": "interactive_simulation",
+        "title": "Igniting the First Node",
+        "description": "Step into the engineering bay and wire ALICE's first artificial neuron.",
+        "steps": [
+          {
+            "label": "Step 1: Connect Inputs",
+            "action": "Plug in the sensor cables",
+            "description": "You connect the radar sensor (x₁ = 0.8) and the thermal sensor (x₂ = 0.3) to the neuron's input ports."
+          },
+          {
+            "label": "Step 2: Calibrate Weights",
+            "action": "Turn the trust dials",
+            "description": "You turn the radar trust dial to w₁ = 0.9 (high trust) and the thermal trust dial to w₂ = 0.1 (low trust)."
+          },
+          {
+            "label": "Step 3: Set Bias",
+            "action": "Adjust the sensitivity",
+            "description": "You set the bias to b = -0.5. This means the neuron won't fire unless the weighted signal is strong enough to overcome this threshold."
+          }
+        ],
+        "goalDescription": "ALICE's first neuron is online and ready to process data!"
+      }
+    ]
+  },
+  {
+    "id": "inputs",
+    "title": "Sensor Calibration (Inputs)",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "title": "Inputs: ALICE's Eyes and Ears",
+          "explanation": "Inputs are simply numbers that represent what ALICE can sense about the world.\n\nImagine you're deciding whether to bring an umbrella. Your 'inputs' might be:\n• Cloud coverage: 0.9 (very cloudy)\n• Humidity: 0.7 (pretty humid)\n• Weather app says rain: 1.0 (yes)\n\nFor ALICE, her inputs come from the ship's sensors:\n• Radar distance to object: 0.8\n• Thermal signature: 0.3\n• Radio frequency detected: 0.6\n\nEach input is just a number between 0 and 1 (or sometimes negative numbers too). The key thing to remember: inputs are RAW data. The neuron hasn't done anything with them yet.",
+          "tip": "Inputs are like ingredients sitting on a kitchen counter. They're ready to be used, but nothing has been cooked yet."
+        }
+      }
+    ]
+  },
+  {
+    "id": "weights",
+    "title": "Trust Factors (Weights)",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "title": "Weights: Who Does ALICE Trust?",
+          "explanation": "Weights are the secret sauce of neural networks. They determine how much importance ALICE gives to each input.\n\nBack to the umbrella example:\n• You might give heavy weight to the weather app (w = 0.9) because it's usually accurate\n• But low weight to your friend's guess (w = 0.1) because they're always wrong\n\nFor ALICE:\n• Radar weight = 0.9 → She trusts radar a LOT\n• Thermal weight = 0.1 → She barely trusts the thermal scanner\n\nHere's the magic: When ALICE 'learns', she is literally adjusting these weight numbers. If the thermal scanner turns out to be more useful than she thought, her weight for it will increase over time.\n\nA weight can be:\n• Positive → 'This input matters, pay attention!'\n• Negative → 'This input is misleading, ignore it!'\n• Zero → 'This input is completely irrelevant'",
+          "warning": "Learning IS weight adjustment. When we say ALICE is 'learning', we mean her weights are changing. That's it. That's the whole secret."
+        }
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "question": "If ALICE gives a weight of 0.9 to the radar and 0.1 to the thermal scanner, what does this mean?",
+            "options": [
+              "The radar is broken",
+              "ALICE trusts the radar much more than the thermal scanner",
+              "The thermal scanner is more important",
+              "Both sensors are equally important"
+            ],
+            "answer": 1,
+            "explanation": "A higher weight means more trust/importance. ALICE considers the radar 9x more important than the thermal scanner."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "bias",
+    "title": "Baseline Sensitivity (Bias)",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "title": "Bias: The Sensitivity Dial",
+          "explanation": "Bias is like a sensitivity dial on a smoke detector.\n\nIf you set the smoke detector's sensitivity very low (high negative bias), it won't go off for burnt toast — only for a real fire.\n\nIf you set it very high (high positive bias), it will beep for everything — even steam from your shower.\n\nALICE's bias works the same way:\n• Negative bias → She's cautious. She needs a lot of evidence before she acts.\n• Positive bias → She's trigger-happy. She'll act on weak evidence.\n• Zero bias → Neutral. She lets the weighted inputs alone decide.\n\nThe bias gives ALICE the ability to be 'generally more cautious' or 'generally more aggressive' regardless of the specific sensor data she's receiving.",
+          "tip": "Think of bias as ALICE's personality setting. Cautious ALICE (negative bias) vs. Aggressive ALICE (positive bias)."
+        }
+      }
+    ]
+  },
+  {
+    "id": "weighted-sum",
+    "title": "Core Processing (Weighted Sum)",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "title": "The Recipe: How ALICE Thinks",
+          "explanation": "Now we combine everything! The Weighted Sum is ALICE's thinking process.\n\nImagine you're a chef making a smoothie:\n• 2 cups of banana (Input × Weight)\n• 1 teaspoon of honey (Input × Weight)\n• Add a base of yogurt (Bias)\n\nALICE does the exact same thing with math:\n\nz = (Input₁ × Weight₁) + (Input₂ × Weight₂) + Bias\nz = (0.8 × 0.9) + (0.3 × 0.1) + (-0.5)\nz = 0.72 + 0.03 + (-0.5)\nz = 0.25\n\nThat's it! She multiplied each sensor reading by its trust factor, added them all up, and then added the bias. The result (z = 0.25) is her raw 'gut feeling' about the situation.\n\nBut this raw number isn't a decision yet. She needs one more step..."
+        }
+      },
+      {
+        "type": "concept",
+        "content": {
+          "title": "The Recipe: How ALICE Thinks (Key Points)",
+          "blocks": [
+            {
+              "type": "sevenPoint",
+              "content": [
+                {
+                  "number": 1,
+                  "title": "Step 1: Multiply",
+                  "body": "Each input is multiplied by its weight: (0.8 × 0.9) = 0.72"
+                },
+                {
+                  "number": 2,
+                  "title": "Step 2: Sum",
+                  "body": "All the weighted inputs are added together: 0.72 + 0.03 = 0.75"
+                },
+                {
+                  "number": 3,
+                  "title": "Step 3: Add Bias",
+                  "body": "The bias shifts the result: 0.75 + (-0.5) = 0.25"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "type": "fill_blank",
+        "challenge": {
+          "title": "The Core Equation",
+          "question": "Complete the formula ALICE uses to process sensor data:",
+          "template": [
+            "z = ( ____ × Weights ) + ____"
+          ],
+          "options": [
+            "Inputs",
+            "Bias",
+            "Outputs",
+            "Activation"
+          ],
+          "answers": {
+            "blank_0": "Inputs",
+            "blank_1": "Bias"
+          },
+          "hint": "What raw data goes in, and what shifts the sensitivity?"
+        }
+      }
+    ]
+  },
+  {
+    "id": "activation-function",
+    "title": "The Decision Gate (Activation)",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "title": "The Taste Test: Making a Decision",
+          "explanation": "ALICE has calculated her weighted sum (z = 0.25). But this raw number doesn't mean anything to the ship's thrusters. They need a clear answer: FIRE or DON'T FIRE.\n\nThis is where the Activation Function comes in. Think of it as a 'taste tester' for ALICE's cooking.\n\nThe simplest activation function is the Step Function:\n• If z > 0 → Output 1 (FIRE! The asteroid is dangerous!)\n• If z ≤ 0 → Output 0 (Stand down. It's safe.)\n\nSince ALICE calculated z = 0.25, and 0.25 > 0, her output is 1. She fires the thrusters!\n\nThere are fancier activation functions too (like Sigmoid and ReLU), but the concept is the same: squash the messy math into a clean, actionable decision.",
+          "tip": "Without the activation function, ALICE's output would be some random decimal like 0.25. The activation function turns this into a clear YES or NO."
+        }
+      },
+      {
+        "type": "scenario",
+        "title": "The Decision Gate",
+        "description": "ALICE's neuron has calculated a weighted sum of 85 from her sensors. Now she must decide: is this object a threat? How should the raw math be converted into an action?",
+        "choices": [
+          {
+            "text": "Pass 85 directly to the ship's thrusters as thruster power.",
+            "outcome": "ERROR: The thrusters blast at 85% power! That's way too much for a small asteroid. Without an activation function, ALICE can't make clean decisions — she just passes raw numbers around chaotically.",
+            "score": 0
+          },
+          {
+            "text": "Apply a Step Activation Function: If > 50, output 1 (FIRE), else 0 (HOLD).",
+            "outcome": "SUCCESS! The activation function converts the messy number 85 into a clean binary decision: FIRE (1). The thrusters execute a controlled dodge maneuver. Crisis averted!",
+            "score": 100
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "neuron-equation",
+    "title": "The Neuron Equation",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "title": "Putting It All Together",
+          "explanation": "Let's review the complete journey of data through ALICE's neuron:\n\n1. INPUTS arrive from sensors → x₁ = 0.8, x₂ = 0.3\n2. Each input is MULTIPLIED by its WEIGHT → 0.8 × 0.9 = 0.72, 0.3 × 0.1 = 0.03\n3. The products are SUMMED and BIAS is added → 0.72 + 0.03 + (-0.5) = 0.25\n4. The ACTIVATION FUNCTION makes a decision → 0.25 > 0, so output = 1 (FIRE!)\n\nThe full equation:\noutput = activation( Σ(xᵢ × wᵢ) + b )\n\nThis single equation is the beating heart of every neural network ever built. From the phone in your pocket to ALICE navigating deep space — it all comes down to this formula.",
+          "warning": "Memorize this equation. Every lesson from here builds on it: output = activation(inputs × weights + bias)"
+        }
+      }
+    ]
+  },
+  {
+    "id": "linear-combination",
+    "title": "Vector Upgrades",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "title": "Speed Upgrade: Vectors and Matrices",
+          "explanation": "Right now, ALICE processes one sensor at a time: (0.8 × 0.9) then (0.3 × 0.1). But in deep space, she has hundreds of sensors!\n\nDoing them one by one would be painfully slow. Instead, we use a math shortcut called the 'Dot Product'. This lets ALICE multiply ALL inputs by ALL weights in a single operation.\n\nInstead of:\nz = (x₁ × w₁) + (x₂ × w₂) + ... + (xₙ × wₙ) + b\n\nWe write:\nz = X · W + b\n\nWhere X is a vector (list) of all inputs, and W is a vector of all weights. The dot product (·) does all the multiplications and additions in one step.\n\nThis is why neural networks love GPUs — they're designed for exactly this kind of bulk math!",
+          "tip": "Don't panic about vectors. A vector is just a list of numbers. [0.8, 0.3] is a vector. That's all it is."
+        }
+      }
+    ]
+  },
+  {
+    "id": "decision-boundaries",
+    "title": "Drawing the Line",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "title": "How ALICE Separates Friend from Foe",
+          "explanation": "Here's a beautiful way to visualize what a single neuron does.\n\nImagine a graph where the X-axis is 'Radar Signal' and the Y-axis is 'Thermal Signal'. Every object in space gets plotted as a dot on this graph based on its sensor readings.\n\nFriendly ships cluster in one area. Hostile ships cluster in another.\n\nWhat does ALICE's neuron do? It draws a straight line on this graph that separates the two groups. Everything on one side = 'Friendly'. Everything on the other side = 'Hostile'.\n\nThis line is called the 'Decision Boundary'. The position and angle of this line is determined by — you guessed it — the weights and bias!\n\nBut here's the catch: a single neuron can only draw ONE straight line. What if the hostile ships are scattered all around the friendly ones? A single straight line can't separate them...",
+          "warning": "This limitation is called the 'Linear Separability Problem'. It will become VERY important soon..."
+        }
+      },
+      {
+        "type": "visual",
+        "content": {
+          "title": "The Decision Boundary",
+          "image": "decision_boundary.png",
+          "explanation": "A single neuron draws ONE straight line. Objects above the line are classified as hostile (✕). Objects below are classified as friendly (○)."
+        }
+      }
+    ]
+  },
+  {
+    "id": "single-layer-perceptron",
+    "title": "The First Test",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "title": "ALICE Goes Live",
+          "explanation": "Congratulations, Engineer! ALICE's first neuron is wired, calibrated, and tested. It's time for her first real deployment.\n\nWe're going to deploy ALICE as a 'Perceptron' — the simplest possible neural network. It has just one layer of neurons (no hidden layers, no fancy architecture). It's basically what you just built, but scaled up.\n\nThink of it like sending a new recruit on their first solo patrol. She's trained, she knows the basics, and now she needs to face the real galaxy.\n\nThe Perceptron was invented in 1958 by Frank Rosenblatt. At the time, The New York Times predicted it would be 'the embryo of an electronic computer that [the Navy] expects will be able to walk, talk, see, write, reproduce itself and be conscious of its existence.' Bold claims!\n\nLet's see if ALICE can live up to them..."
+        }
+      }
+    ]
+  },
+  {
+    "id": "perceptron-learning-rule",
+    "title": "Error Correction",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "title": "Learning from Mistakes",
+          "explanation": "How does ALICE learn? The same way a toddler learns not to touch a hot stove.\n\n1. ALICE makes a prediction: 'That object is friendly' (output = 0)\n2. Reality: It was actually hostile! (expected = 1)\n3. ALICE feels 'error': expected - actual = 1 - 0 = 1 (she was wrong!)\n4. ALICE adjusts her weights so she's less likely to make the same mistake\n\nThis is called the Perceptron Learning Rule, and it's beautifully simple:\n\nnew_weight = old_weight + (learning_rate × error × input)\n\nThe 'learning rate' controls how much ALICE adjusts each time. Too high and she overreacts to every mistake. Too low and she takes forever to learn.\n\nImagine a student taking a test:\n• Error = 0 → Got it right! No need to change anything.\n• Error = 1 → Got it wrong! Study harder (increase weight).\n• Error = -1 → Overreacted! Calm down (decrease weight).",
+          "tip": "The learning rate is like how stubborn ALICE is. Low learning rate = she slowly adjusts. High learning rate = she wildly changes her mind after every mistake."
+        }
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "question": "ALICE predicted 0 (friendly) but the object was actually hostile (1). What is her error?",
+            "options": [
+              "0",
+              "1",
+              "-1",
+              "0.5"
+            ],
+            "answer": 1,
+            "explanation": "Error = expected - actual = 1 - 0 = 1. She was wrong by 1 unit."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "training-a-perceptron",
+    "title": "Training Simulations",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "title": "Training Camp: Epochs and Iterations",
+          "explanation": "ALICE doesn't learn from a single example. She needs to see the same data many, many times.\n\nOne complete pass through ALL the training data is called an 'Epoch'. Think of it like a semester at school.\n\nDuring each epoch, ALICE:\n1. Looks at example 1 → Makes a prediction → Calculates error → Adjusts weights\n2. Looks at example 2 → Makes a prediction → Calculates error → Adjusts weights\n3. ... (repeats for every example)\n\nAfter one epoch, she starts over from example 1. Each time through, her weights get slightly better. After 100 epochs, she's usually learned the pattern.\n\nThis process is called 'training'. When someone says 'I trained a neural network', they mean they ran the data through the network for hundreds or thousands of epochs until the error got small enough.",
+          "tip": "Training a neural network is like practicing piano. The first time through the song sounds awful. By the 100th time, it's beautiful."
+        }
+      }
+    ]
+  },
+  {
+    "id": "perceptron-algorithm",
+    "title": "Code the Learning Rule",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "title": "Time to Get Your Hands Dirty",
+          "explanation": "You've learned the theory. Now it's time to physically patch ALICE's learning engine.\n\nRemember the formula:\nnew_weight = old_weight + (learning_rate × error × input)\n\nIn Python, this translates directly to:\nw_new = w + learning_rate * error * x\n\nThat's it! One line of code. The entire foundation of neural network learning fits in a single line.\n\nYour task: write a Python function that takes the old weight, learning rate, error, and input — and returns the updated weight."
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "title": "Program ALICE's Learning Engine",
+          "question": "Write the Python code to update ALICE's weights using the Perceptron Learning Rule:\nnew_weight = old_weight + (learning_rate × error × input)",
+          "starterCode": "def update_weight(w, learning_rate, error, x):\n    # Calculate the new weight using the formula\n    # w_new = w + learning_rate * error * x\n    return w",
+          "solution": "def update_weight(w, learning_rate, error, x):\n    w_new = w + learning_rate * error * x\n    return w_new",
+          "language": "python",
+          "hint": "Replace 'return w' with the update formula. Multiply learning_rate, error, and x together, then add to w."
+        }
+      }
+    ]
+  },
+  {
+    "id": "advantages-and-limitations",
+    "title": "Success and Limitations",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "title": "Early Victory... and a Warning",
+          "explanation": "Great news! ALICE passes her initial field test with flying colors. She can:\n\n✅ Separate asteroids from debris (linear pattern)\n✅ Identify simple friend-or-foe signatures\n✅ Learn from her mistakes and improve over time\n\nBut the senior engineers are worried. They've been running simulations, and they've found a class of problems that ALICE simply CANNOT solve.\n\nRemember: a single-layer perceptron can only draw ONE straight line. This works great when the two groups are cleanly separated. But what if they're mixed together in a pattern that no single straight line can separate?\n\nThis limitation was so devastating that it nearly killed the entire field of AI in 1969...",
+          "warning": "A single-layer perceptron can only solve 'linearly separable' problems. The next lesson will show you exactly what that means — and why it almost destroyed ALICE before she was born."
+        }
+      }
+    ]
+  },
+  {
+    "id": "xor-problem",
+    "title": "The XOR Anomaly",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "title": "The Problem That Almost Killed AI",
+          "explanation": "Here's a puzzle that will break ALICE.\n\nImagine two sensor readings. Each can be 0 (off) or 1 (on).\nThe rule for 'dangerous' is: it's dangerous if EXACTLY ONE sensor is firing (not both, not neither).\n\nSensor A=0, Sensor B=0 → Safe ○\nSensor A=0, Sensor B=1 → DANGER ✕\nSensor A=1, Sensor B=0 → DANGER ✕\nSensor A=1, Sensor B=1 → Safe ○\n\nThis is called the XOR (Exclusive OR) problem. Try to draw a single straight line on a graph that separates the ✕ from the ○. You can't!\n\n○ (0,0)          ✕ (1,0)\n\n✕ (0,1)          ○ (1,1)\n\nThe safe and dangerous points are diagonally opposite. No single straight line can separate them. Since a single perceptron can only draw one straight line, ALICE is fundamentally incapable of solving this problem.\n\nIn 1969, Marvin Minsky and Seymour Papert proved this mathematically, and the world lost faith in neural networks for over a decade.",
+          "warning": "This is the 'XOR Problem' — the most famous failure in AI history. A single perceptron CANNOT solve it. We need something more..."
+        }
+      },
+      {
+        "type": "scenario",
+        "title": "🚨 Red Alert!",
+        "description": "An XOR-class anomaly approaches The Turing. The sensor pattern is non-linear — exactly one sensor fires for danger, but never both and never neither. ALICE's single-layer perceptron cannot draw a straight line to separate the safe zones from the danger zones. What do you do?",
+        "choices": [
+          {
+            "text": "Tell ALICE to try harder and draw another straight line.",
+            "outcome": "FAILURE. No matter how many times ALICE adjusts her weights, a single straight line mathematically CANNOT solve XOR. The anomaly hits the ship. A single-layer perceptron has fundamental limitations.",
+            "score": 0
+          },
+          {
+            "text": "Initiate emergency shutdown. Begin preparations for the Deep Upgrade (add hidden layers).",
+            "outcome": "CRITICAL SUCCESS! You recognized the limitation in time. ALICE needs hidden layers — additional processing stages between input and output — to handle non-linear patterns like XOR. The ship is saved, and the Deep Upgrade begins.",
+            "score": 100
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "why-multiple-layers",
+    "title": "The XOR Solution",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "title": "The Deep Upgrade Begins",
+          "explanation": "The XOR Anomaly proved that a single-layer perceptron has a fatal flaw: it can only draw ONE straight line.\n\nBut what if we stacked multiple neurons together in LAYERS? Each neuron draws its own line, and the combination of those lines can create complex, curved decision boundaries!\n\nImagine this:\n• Neuron 1 draws a line: 'Everything above this is suspicious'\n• Neuron 2 draws another line: 'Everything to the right of this is suspicious'\n• Neuron 3 combines both: 'Only fire if EXACTLY ONE of the above neurons is suspicious'\n\nThat's how you solve XOR! Two lines + a combiner = non-linear classification.\n\nThis architecture is called a Multi-Layer Perceptron (MLP), and it's the breakthrough that saved AI from the second AI Winter. Let's upgrade ALICE.",
+          "tip": "One neuron = one straight line. Multiple neurons in layers = any shape you can imagine!"
+        }
+      }
+    ]
+  },
+  {
+    "id": "input-layer",
+    "title": "Sensor Array Recalibration",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "title": "Layer 1: The Input Layer",
+          "explanation": "The Input Layer is the simplest layer. It doesn't actually do any thinking — it just holds the raw data and passes it along.\n\nThink of it as a loading dock at a warehouse. Boxes (data) arrive, get placed on shelves (input nodes), and wait to be processed.\n\nFor ALICE, the Input Layer is her sensor array. If she has 3 sensors (radar, thermal, radio), then her Input Layer has exactly 3 nodes. Each node holds one number.\n\nRules for the Input Layer:\n• Number of nodes = number of input features\n• No weights, no bias, no activation function\n• Its only job is to pass data to the next layer\n• You don't design this — it's determined by your data"
+        }
+      }
+    ]
+  },
+  {
+    "id": "hidden-layers",
+    "title": "The Subconscious Core",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "title": "Layer 2: The Hidden Layers (ALICE's Subconscious)",
+          "explanation": "Hidden Layers are where the magic happens. They're called 'hidden' because you never directly see their outputs — they work behind the scenes, like your subconscious mind.\n\nEach hidden neuron is a feature detector. It learns to recognize a specific pattern in the data:\n\n• Hidden Neuron 1 might learn: 'Is the object moving fast?'\n• Hidden Neuron 2 might learn: 'Is the object large?'\n• Hidden Neuron 3 might learn: 'Is the object emitting radiation?'\n\nNo one programs these features! The hidden neurons discover them automatically during training. This is what makes neural networks so powerful — they find patterns that humans might never think to look for.\n\nThink of it like a detective team:\n• Detective 1 notices fingerprints\n• Detective 2 notices tire tracks\n• Detective 3 notices witness statements\n• The team leader (output layer) combines all their findings to solve the case",
+          "tip": "The more hidden layers you add, the more abstract and complex the features ALICE can detect. This is why it's called 'Deep' Learning — many layers = deep network."
+        }
+      }
+    ]
+  },
+  {
+    "id": "output-layer",
+    "title": "The Action Translators",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "title": "Layer 3: The Output Layer",
+          "explanation": "The Output Layer is where ALICE announces her final decision to the world.\n\nThe number of output nodes depends on the type of problem:\n• Binary classification (Friend or Foe?) → 1 output node\n• Multi-class classification (Asteroid? Ship? Debris? Station?) → 4 output nodes\n• Regression (How far away is the object?) → 1 output node with continuous value\n\nFor ALICE's threat detection system:\n• 1 output node\n• Output ≥ 0.5 → 'HOSTILE! Fire thrusters!'\n• Output < 0.5 → 'Friendly. Stand down.'\n\nThe output layer takes all the processed features from the hidden layers and combines them into a final answer."
+        }
+      }
+    ]
+  },
+  {
+    "id": "fully-connected-networks",
+    "title": "Dense Neural Links",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "title": "Fully Connected: Everyone Talks to Everyone",
+          "explanation": "In ALICE's upgraded brain, every neuron in one layer connects to EVERY neuron in the next layer. This is called a 'Fully Connected' or 'Dense' network.\n\nImagine a school where every student in Class A passes a note to every student in Class B. And then every student in Class B passes a note to every student in Class C.\n\nIf Layer 1 has 3 neurons and Layer 2 has 4 neurons, that's 3 × 4 = 12 connections (and 12 weights to learn!).\n\nThis means ALICE's weight count grows FAST:\n• Input (3) → Hidden (100) → Output (1) = 3×100 + 100×1 = 400 weights!\n• Input (3) → Hidden (100) → Hidden (100) → Output (1) = 3×100 + 100×100 + 100×1 = 10,400 weights!\n\nThat's a lot of learning to do, but it's also what gives ALICE her incredible flexibility.",
+          "tip": "Every connection = one weight. More connections = more things ALICE can learn, but also more training data she needs."
+        }
+      }
+    ]
+  },
+  {
+    "id": "network-architecture-design",
+    "title": "Engineering the Brain",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "title": "Designing the Final Architecture",
+          "explanation": "Now you need to design ALICE's complete Multi-Layer Perceptron to defeat the XOR anomaly.\n\nThe architecture has 3 layers:\n1. Input Layer → Receives raw sensor data\n2. Hidden Layer → Processes features and draws multiple decision boundaries\n3. Output Layer → Makes the final threat assessment\n\nData flows in one direction only: Input → Hidden → Output. This is called 'feedforward'.\n\nYour task: connect these layers in the system designer to build ALICE's upgraded brain!"
+        }
+      },
+      {
+        "type": "system_design",
+        "title": "Design the Multi-Layer Perceptron",
+        "scenario": "Connect ALICE's layers to form a fully connected MLP that can defeat the XOR anomaly.",
+        "components": [
+          "Input Layer",
+          "Hidden Layer",
+          "Output Layer"
+        ],
+        "expectedConnections": [
+          {
+            "from": "Input Layer",
+            "to": "Hidden Layer",
+            "label": "Weights 1"
+          },
+          {
+            "from": "Hidden Layer",
+            "to": "Output Layer",
+            "label": "Weights 2"
+          }
+        ],
+        "hint": "Data flows in one direction: Input → Hidden → Output. Each arrow represents a set of weights."
+      }
+    ]
+  },
+  {
+    "id": "number-of-neurons-selection",
+    "title": "Sizing the Nodes",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "title": "How Many Neurons Does ALICE Need?",
+          "explanation": "Here's a critical engineering decision: how many neurons should you put in the hidden layer?\n\nToo few neurons → UNDERFITTING\nImagine hiring only 1 detective to investigate a massive crime ring. They simply don't have enough brainpower to see all the patterns. ALICE would fail to learn the XOR pattern.\n\nToo many neurons → OVERFITTING\nImagine hiring 1,000 detectives for a single theft. They'd start investigating innocent bystanders and finding 'patterns' that don't exist. ALICE would memorize the training data perfectly but fail on new data she's never seen.\n\nThe sweet spot is somewhere in between. This is one of the hardest decisions in neural network engineering, and there's no perfect formula — it requires experimentation.",
+          "warning": "Overfitting is the #1 trap in machine learning. A network that scores 100% on training data but 50% on new data is useless."
+        }
+      },
+      {
+        "type": "flashcard",
+        "cards": [
+          {
+            "front": "What happens with too FEW neurons?",
+            "back": "UNDERFITTING: ALICE lacks the capacity to learn complex patterns. Like trying to draw a detailed painting with only a crayon."
+          },
+          {
+            "front": "What happens with too MANY neurons?",
+            "back": "OVERFITTING: ALICE memorizes the training data instead of learning general patterns. Like a student who memorizes answers but can't solve new problems."
+          },
+          {
+            "front": "What's the ideal number of neurons?",
+            "back": "There's no perfect answer! Start small and increase until validation performance stops improving. This is the art of neural network engineering."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "number-of-hidden-layers-selection",
+    "title": "Depth vs Performance",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "title": "How Deep Should ALICE Go?",
+          "explanation": "You've decided how WIDE each layer should be (number of neurons). Now: how DEEP should the network be (number of hidden layers)?\n\n• 0 hidden layers → Basic perceptron (can only draw straight lines)\n• 1 hidden layer → Can approximate any continuous function (Universal Approximation Theorem!)\n• 2+ hidden layers → Can learn hierarchical features (this is 'Deep Learning')\n\nFor ALICE's XOR problem, just 1 hidden layer with 2 neurons is enough. But for more complex tasks (like understanding alien languages), she'd need many layers.\n\nEach additional layer lets ALICE build more abstract representations:\n• Layer 1: Detects edges and simple shapes\n• Layer 2: Combines edges into parts (wings, engines)\n• Layer 3: Combines parts into whole objects (friendly cruiser, hostile fighter)\n\nThis is the fundamental insight of Deep Learning: depth = abstraction.",
+          "tip": "Deep Learning is just neural networks with many layers. That's literally all the word 'deep' means!"
+        }
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "question": "If ALICE is tasked with translating complex, hierarchical alien languages, what architecture should you choose?",
+            "options": [
+              "Zero hidden layers (basic perceptron)",
+              "One hidden layer",
+              "Multiple hidden layers (Deep Learning)"
+            ],
+            "answer": 2,
+            "explanation": "Complex, hierarchical tasks like language require many layers to build up from simple features (letters) to complex ones (words → sentences → meaning)."
+          }
+        ]
+      }
+    ]
+  }
+]

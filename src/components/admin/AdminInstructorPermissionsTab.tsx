@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
+import Link from "next/link";
 import {
   ShieldCheck,
   ShieldAlert,
@@ -20,7 +21,12 @@ import {
   SlidersHorizontal,
   Info,
   BookOpen,
-  Lock
+  Lock,
+  Unlock,
+  KeyRound,
+  Edit3,
+  Video,
+  ExternalLink
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { formatDate } from "@/lib/dateTime";
@@ -46,6 +52,10 @@ export interface InstructorPermissionItem {
     id: string;
     status: CourseCreationPermissionStatus;
     canCreateCourse: boolean;
+    canEditCourse?: boolean;
+    canCreateLiveClass?: boolean;
+    canEditLiveClass?: boolean;
+    canRescheduleLiveClass?: boolean;
     requestedAt?: string | null;
     reviewedAt?: string | null;
     rejectionReason?: string | null;
@@ -102,6 +112,37 @@ export function AdminInstructorPermissionsTab() {
   useEffect(() => {
     loadData();
   }, []);
+
+  const handleTogglePermission = async (
+    instructorId: string,
+    permissionKey: "COURSE_CREATE" | "COURSE_EDIT" | "LIVE_CLASS_CREATE" | "LIVE_CLASS_EDIT" | "LIVE_CLASS_RESCHEDULE",
+    currentValue: boolean
+  ) => {
+    const targetValue = !currentValue;
+    try {
+      const res = await fetch("/api/admin/instructors/permissions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          instructorId,
+          action: "TOGGLE_PERMISSION",
+          permissionKey,
+          enabled: targetValue
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        showToast(data.error || "Failed to update permission");
+        return;
+      }
+
+      showToast(data.message || `Permission updated successfully.`);
+      await loadData();
+    } catch (err: any) {
+      showToast("Network error updating permission");
+    }
+  };
 
   const handleExecuteAction = async () => {
     if (!activeModal) return;
@@ -290,7 +331,13 @@ export function AdminInstructorPermissionsTab() {
               <tbody className="divide-y divide-white/[0.04]">
                 {filteredInstructors.map((inst) => {
                   const perm = inst.courseCreationPermission;
-                  const permStatus: CourseCreationPermissionStatus = perm?.status || "NOT_REQUESTED";
+                  const isPermApproved = perm?.status === "APPROVED" && Boolean(perm?.canCreateCourse);
+                  const permStatus: CourseCreationPermissionStatus = isPermApproved
+                    ? "APPROVED"
+                    : perm?.status === "APPROVED" && !perm?.canCreateCourse
+                    ? "REVOKED"
+                    : (perm?.status || "NOT_REQUESTED");
+                  const isSessionEditReq = perm?.notes?.toLowerCase().includes("session") || perm?.notes?.toLowerCase().includes("edit request");
 
                   return (
                     <tr key={inst.id} className="hover:bg-white/[0.02] transition-colors">
@@ -311,50 +358,81 @@ export function AdminInstructorPermissionsTab() {
                         </div>
                       </td>
 
-                      {/* Permission Status */}
+                      {/* Permission Status & Capabilities */}
                       <td className="py-4 px-4">
-                        {permStatus === "APPROVED" && (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-                            <CheckCircle2 className="w-3.5 h-3.5" />
-                            Approved
-                          </span>
-                        )}
-                        {permStatus === "PENDING" && (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30 animate-pulse">
-                            <Clock className="w-3.5 h-3.5" />
-                            Pending Review
-                          </span>
-                        )}
-                        {permStatus === "NOT_REQUESTED" && (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-bold bg-white/[0.04] text-slate-400 border border-white/[0.06]">
-                            <Lock className="w-3.5 h-3.5" />
-                            Not Requested
-                          </span>
-                        )}
-                        {permStatus === "REJECTED" && (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-bold bg-rose-500/10 text-rose-400 border border-rose-500/30">
-                            <AlertCircle className="w-3.5 h-3.5" />
-                            Rejected
-                          </span>
-                        )}
-                        {permStatus === "REVOKED" && (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-bold bg-purple-500/10 text-purple-300 border border-purple-500/30">
-                            <Ban className="w-3.5 h-3.5" />
-                            Revoked
-                          </span>
-                        )}
+                        <div className="space-y-1.5">
+                          {permStatus === "APPROVED" && (
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                              <CheckCircle2 className="w-3.5 h-3.5" />
+                              Approved
+                            </span>
+                          )}
+                          {permStatus === "PENDING" && (
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30 animate-pulse">
+                              <Clock className="w-3.5 h-3.5" />
+                              Pending Review
+                            </span>
+                          )}
+                          {permStatus === "NOT_REQUESTED" && (
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-bold bg-white/[0.04] text-slate-400 border border-white/[0.06]">
+                              <Lock className="w-3.5 h-3.5" />
+                              Not Requested
+                            </span>
+                          )}
+                          {permStatus === "REJECTED" && (
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-bold bg-rose-500/10 text-rose-400 border border-rose-500/30">
+                              <AlertCircle className="w-3.5 h-3.5" />
+                              Rejected
+                            </span>
+                          )}
+                          {permStatus === "REVOKED" && (
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-bold bg-purple-500/10 text-purple-300 border border-purple-500/30">
+                              <Ban className="w-3.5 h-3.5" />
+                              Revoked
+                            </span>
+                          )}
+
+                          {/* Active Permission Badges */}
+                          <div className="flex flex-wrap gap-1 pt-0.5">
+                            {perm?.canEditLiveClass && (
+                              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-500/15 text-purple-300 border border-purple-500/30 flex items-center gap-1">
+                                <Edit3 className="w-2.5 h-2.5" />
+                                Session Edit
+                              </span>
+                            )}
+                            {perm?.canCreateCourse && (
+                              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
+                                <BookOpen className="w-2.5 h-2.5" />
+                                Create Course
+                              </span>
+                            )}
+                            {perm?.canRescheduleLiveClass && (
+                              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30 flex items-center gap-1">
+                                <Clock className="w-2.5 h-2.5" />
+                                Reschedule
+                              </span>
+                            )}
+                          </div>
+                        </div>
                       </td>
 
                       {/* Request Details */}
                       <td className="py-4 px-4 max-w-xs">
                         {perm?.requestedAt ? (
                           <div className="space-y-1">
-                            <span className="text-slate-300 font-mono text-[11px] block">
-                              {formatDate(perm.requestedAt)}
-                            </span>
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-slate-300 font-mono text-[11px]">
+                                {formatDate(perm.requestedAt)}
+                              </span>
+                              {isSessionEditReq && (
+                                <span className="px-1.5 py-0.2 rounded text-[9px] font-bold uppercase bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                                  Session Edit
+                                </span>
+                              )}
+                            </div>
                             {perm.notes && (
-                              <p className="text-slate-400 text-[11px] truncate italic" title={perm.notes}>
-                                "{perm.notes}"
+                              <p className="text-slate-300 text-[11px] leading-relaxed break-words bg-white/[0.02] p-2 rounded-lg border border-white/[0.04]" title={perm.notes}>
+                                {perm.notes}
                               </p>
                             )}
                           </div>
@@ -393,7 +471,22 @@ export function AdminInstructorPermissionsTab() {
 
                       {/* Actions */}
                       <td className="py-4 px-4 text-right">
-                        <div className="flex items-center justify-end gap-2">
+                        <div className="flex items-center justify-end gap-2 flex-wrap">
+                          {/* Quick Session Edit Toggle */}
+                          <button
+                            type="button"
+                            onClick={() => handleTogglePermission(inst.id, "LIVE_CLASS_EDIT", Boolean(perm?.canEditLiveClass))}
+                            className={`px-2.5 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1 transition-all border cursor-pointer ${
+                              perm?.canEditLiveClass
+                                ? "bg-purple-600/20 text-purple-300 border-purple-500/40 hover:bg-purple-600/30"
+                                : "bg-white/[0.04] text-slate-400 border-white/[0.08] hover:text-white hover:bg-white/[0.08]"
+                            }`}
+                            title={perm?.canEditLiveClass ? "Revoke Session Edit Authority" : "Grant Session Edit Authority"}
+                          >
+                            <Edit3 className="w-3 h-3" />
+                            <span>{perm?.canEditLiveClass ? "Edit: Granted" : "Grant Edit"}</span>
+                          </button>
+
                           {permStatus === "PENDING" && (
                             <>
                               <button
@@ -416,22 +509,31 @@ export function AdminInstructorPermissionsTab() {
                           {permStatus === "APPROVED" && (
                             <button
                               onClick={() => setActiveModal({ type: "REVOKE", instructor: inst })}
-                              className="px-3 py-1.5 rounded-xl bg-white/[0.04] hover:bg-rose-500/10 text-slate-400 hover:text-rose-300 border border-white/[0.08] hover:border-rose-500/30 font-semibold text-xs flex items-center gap-1 transition-all cursor-pointer"
+                              className="px-2.5 py-1.5 rounded-xl bg-white/[0.04] hover:bg-rose-500/10 text-slate-400 hover:text-rose-300 border border-white/[0.08] hover:border-rose-500/30 font-semibold text-xs flex items-center gap-1 transition-all cursor-pointer"
                             >
                               <Ban className="w-3.5 h-3.5" />
-                              <span>Revoke Access</span>
+                              <span>Revoke</span>
                             </button>
                           )}
 
-                          {(permStatus === "NOT_REQUESTED" || permStatus === "REJECTED" || permStatus === "REVOKED") && (
+                          {(permStatus === "NOT_REQUESTED" || permStatus === "REJECTED" || permStatus === "REVOKED") && !perm?.canEditLiveClass && (
                             <button
                               onClick={() => setActiveModal({ type: "GRANT", instructor: inst })}
-                              className="px-3 py-1.5 rounded-xl bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 border border-purple-500/40 font-bold text-xs flex items-center gap-1 transition-all cursor-pointer"
+                              className="px-2.5 py-1.5 rounded-xl bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 border border-purple-500/40 font-bold text-xs flex items-center gap-1 transition-all cursor-pointer"
                             >
                               <Sparkles className="w-3.5 h-3.5" />
-                              <span>Grant Access</span>
+                              <span>Grant Full Access</span>
                             </button>
                           )}
+
+                          {/* Detail / Full Role Config Link */}
+                          <Link
+                            href={`/admin/instructors/${inst.id}?tab=role_permissions`}
+                            className="p-1.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-slate-400 hover:text-white border border-white/[0.08] transition-colors"
+                            title="Manage granular role permissions"
+                          >
+                            <KeyRound className="w-3.5 h-3.5" />
+                          </Link>
                         </div>
                       </td>
                     </tr>

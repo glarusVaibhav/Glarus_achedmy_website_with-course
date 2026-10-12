@@ -1,0 +1,76 @@
+{
+    "id": "lesson_07_deployment",
+    "title": "Model Deployment",
+    "stages": [
+        {
+            "type": "concept",
+            "content": {
+                "title": "Pipeline Thinking & ML Workflows",
+                "explanation": "\u2022 1.\n\u2022 Beginner-friendly explanation: In the real world, you never just run one algorithm.\n\u2022 2.\n\u2022 Real-world intuition: Think of a car assembly line.\n\u2022 Step 1: Clean the metal."
+            }
+        },
+        {
+            "type": "visual",
+            "content": {
+                "title": "Pipeline Workflow",
+                "explanation": "This assembly line ensures that when raw, messy production data comes in, it automatically flows through the exact same cleaning and scaling filters before it hits the prediction engine.",
+                "image": "images/pipeline_workflow.png"
+            }
+        },
+        {
+            "type": "concept",
+            "content": {
+                "title": "What is Model Deployment?",
+                "explanation": "\u2022 You've trained a highly accurate model.\n\u2022 Now what?\n\u2022 It's sitting on your laptop doing nothing."
+            }
+        },
+        {
+            "type": "concept",
+            "content": {
+                "title": "Serialization (Pickling)",
+                "explanation": "\u2022 Before you can deploy a model, you have to save it.\n\u2022 You don't want to re-train the model every time the server starts!\n\u2022 In Python, saving a trained model object to a file is called Serialization.\n\u2022 The two most common tools for this are: 1.\n\u2022 Pickle: The standard Python serialization library."
+            }
+        },
+        {
+            "type": "visual",
+            "content": {
+                "title": "Model Deployment: From Lab to Production",
+                "explanation": "A model on your laptop is useless to a business. Deployment is the process of taking your trained model and making it available to the outside world.\n\nUsually, this involves saving the model to a file, loading it onto a cloud server, and wrapping it in an API (Application Programming Interface). When an app sends data to the API, the model makes a prediction and sends it back in milliseconds.",
+                "image": "images/deployment.png"
+            }
+        },
+        {
+            "type": "code",
+            "challenge": {
+                "language": "python",
+                "question": "Use the `joblib` library to save a trained model to your hard drive, then load it back into memory.",
+                "starterCode": "import joblib\nfrom sklearn.linear_model import LogisticRegression\n\nmodel = LogisticRegression()\nmodel.fit(X, y)\n\n# TODO: Save the model to a file named 'model.pkl'\n\n\n# TODO: Load the model from 'model.pkl' into a new variable called loaded_model\nloaded_model = \n",
+                "solution": "import joblib\n# Save\njoblib.dump(model, 'model.pkl')\n\n# Load\nloaded_model = joblib.load('model.pkl')",
+                "hint": "Use joblib.dump(model, filename) and joblib.load(filename).",
+                "explanation": "Serialization (Pickling) converts your model's learned weights into a byte-stream file. You can email this file to a colleague or upload it to a server, and they can load the exact same brain."
+            }
+        },
+        {
+            "type": "scenario",
+            "title": "The API Dilemma",
+            "description": "Your Model is deployed on a cloud server via a Flask API. It processes loan applications. Suddenly, the API crashes because a user submitted a loan application where their 'Age' was 'Twenty-Five' instead of 25. What is the fundamental issue?",
+            "choices": [
+                {
+                    "text": "The model was trained for too long and overfit.",
+                    "score": 0,
+                    "outcome": "Overfitting affects prediction accuracy, not software crashes."
+                },
+                {
+                    "text": "The API lacks input data validation. Models expect strict numerical formats, not strings.",
+                    "score": 100,
+                    "outcome": "Exactly! In production, you must validate and clean incoming API data to match the exact format the model was trained on."
+                },
+                {
+                    "text": "The cloud server doesn't have enough RAM.",
+                    "score": 0,
+                    "outcome": "While RAM is important, a single string input causing a crash is a type mismatch error, not a memory error."
+                }
+            ]
+        }
+    ]
+}

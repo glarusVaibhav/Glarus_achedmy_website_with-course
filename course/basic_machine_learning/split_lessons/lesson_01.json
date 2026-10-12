@@ -1,0 +1,282 @@
+{
+    "id": "lesson_01_intro_data",
+    "title": "ML & Data Foundations",
+    "stages": [
+        {
+            "type": "concept",
+            "content": {
+                "title": "Features vs Labels",
+                "explanation": "• Features: The inputs (X).\n• Characteristics of the data.\n• Labels: The outputs (Y).\n• The answer to predict.\n• Example: Square footage (Feature), Price (Label)."
+            }
+        },
+        {
+            "type": "visual",
+            "content": {
+                "title": "Features vs Labels",
+                "explanation": "Features are the raw ingredients. The Label is the specific final outcome you are trying to predict.",
+                "image": "images/features_labels.png"
+            }
+        },
+        {
+            "type": "mcq",
+            "questions": [
+                {
+                    "question": "If predicting house price based on size, what is the Label?",
+                    "options": [
+                        "House location",
+                        "House size",
+                        "House price"
+                    ],
+                    "answer": 2,
+                    "explanation": "The Label is the final answer you want to predict."
+                }
+            ]
+        },
+        {
+            "type": "concept",
+            "content": {
+                "title": "Structured vs Unstructured",
+                "explanation": "• Structured: Fits in spreadsheets.\n• Rows and columns.\n• Unstructured: Messy, no grid.\n• Images, audio, text.\n• Deep Learning handles unstructured."
+            }
+        },
+        {
+            "type": "visual",
+            "content": {
+                "title": "Structured vs Unstructured Data",
+                "explanation": "Structured data fits cleanly into a grid. Unstructured data is a chaotic pile of media.",
+                "image": "images/structured_unstructured.png"
+            }
+        },
+        {
+            "type": "speed_quiz",
+            "timePerQuestion": 5,
+            "questions": [
+                {
+                    "question": "An Excel Spreadsheet?",
+                    "options": ["Structured", "Unstructured"],
+                    "answer": 0
+                },
+                {
+                    "question": "A raw MP3 Audio file?",
+                    "options": ["Structured", "Unstructured"],
+                    "answer": 1
+                },
+                {
+                    "question": "A bank transaction log?",
+                    "options": ["Structured", "Unstructured"],
+                    "answer": 0
+                },
+                {
+                    "question": "A JPEG photo?",
+                    "options": ["Structured", "Unstructured"],
+                    "answer": 1
+                }
+            ]
+        },
+        {
+            "type": "concept",
+            "content": {
+                "title": "Exploratory Data Analysis",
+                "explanation": "• Inspect data before modeling.\n• Find hidden patterns.\n• Spot anomalies and outliers.\n• Garbage in, garbage out.\n• Never skip this step."
+            }
+        },
+        {
+            "type": "visual",
+            "content": {
+                "title": "EDA Overview",
+                "explanation": "Find patterns and outliers before starting to model.",
+                "image": "images/eda_infographic.jpg"
+            }
+        },
+        {
+            "type": "mcq",
+            "questions": [
+                {
+                    "question": "Why perform EDA before training?",
+                    "options": [
+                        "To generate labels",
+                        "To find missing values and understand data",
+                        "To deploy the model"
+                    ],
+                    "answer": 1,
+                    "explanation": "EDA is your chance to check if data is clean."
+                }
+            ]
+        },
+        {
+            "type": "concept",
+            "content": {
+                "title": "Why Split Data?",
+                "explanation": "• Never evaluate on training data.\n• Training (80%): Practice homework.\n• Testing (20%): Final exam.\n• Prevents memorization (Overfitting).\n• Proves real-world readiness."
+            }
+        },
+        {
+            "type": "visual",
+            "content": {
+                "title": "Train/Test Split Strategy",
+                "explanation": "By splitting data, we ensure our model learns patterns, not just memorizing the past.",
+                "image": "images/why_split_data_infographic.jpg"
+            }
+        },
+        {
+            "type": "fill_blank",
+            "challenge": {
+                "title": "Splitting Strategy",
+                "question": "Complete the logic.",
+                "template": [
+                    "Train using the ",
+                    "____",
+                    " set. Evaluate it on the hidden ",
+                    "____",
+                    " set."
+                ],
+                "options": ["Training", "Testing", "Validation"],
+                "answers": {
+                    "0": "Training",
+                    "1": "Testing"
+                }
+            }
+        },
+        {
+            "type": "concept",
+            "content": {
+                "title": "Splitting in Python",
+                "explanation": "• Use train_test_split from scikit-learn.\n• Takes Features (X) and Labels (y).\n• Returns X_train, X_test, y_train, y_test.\n• test_size=0.2 means 20% test.\n• random_state ensures reproducibility."
+            }
+        },
+        {
+            "type": "code",
+            "challenge": {
+                "language": "python",
+                "question": "Split the dataset into 80% training data and 20% testing data.",
+                "starterCode": "import pandas as pd\nfrom sklearn.model_selection import train_test_split\n\ndf = pd.DataFrame({'volume': [100, 200, 300, 400], 'price': [50, 55, 60, 65]})\nX = df[['volume']]\ny = df['price']\n\n# TODO: Split data\nX_train, X_test, y_train, y_test = ",
+                "solution": "import pandas as pd\nfrom sklearn.model_selection import train_test_split\n\ndf = pd.DataFrame({'volume': [100, 200, 300, 400], 'price': [50, 55, 60, 65]})\nX = df[['volume']]\ny = df['price']\n\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)",
+                "hint": "Use train_test_split(X, y, test_size=0.2, random_state=42)",
+                "explanation": "Prevents data leakage."
+            }
+        },
+        {
+            "type": "reorder",
+            "challenge": {
+                "instruction": "Order the Splitting workflow.",
+                "correctOrder": [
+                    "1. Import train_test_split",
+                    "2. Load dataset into X and Y",
+                    "3. Run train_test_split(X, Y)",
+                    "4. Receive X_train, X_test, y_train, y_test"
+                ]
+            }
+        },
+        {
+            "type": "concept",
+            "content": {
+                "title": "ML Toolbelt",
+                "explanation": "• NumPy: Math operations.\n• Pandas: Data manipulation.\n• Scikit-learn: ML algorithms.\n• Matplotlib: Visualization.\n• They work together seamlessly."
+            }
+        },
+        {
+            "type": "code",
+            "challenge": {
+                "explanation": "Basic NumPy operations.",
+                "hint": "Use np.random.rand() and .reshape()",
+                "language": "python",
+                "question": "Create an array of 10 random numbers (0-1), shape 2x5.",
+                "solution": "import numpy as np\nrandom_array = np.random.rand(10).reshape(2,5)",
+                "starterCode": "import numpy as np\n# Your code here\nrandom_array = ",
+                "validation": {
+                    "type": "array_shape",
+                    "variable": "random_array",
+                    "shape": [2, 5]
+                }
+            }
+        },
+        {
+            "type": "fill_blank",
+            "sentences": [
+                {
+                    "answer": "train_test_split",
+                    "text": "To split data in scikit-learn, use ________"
+                }
+            ]
+        },
+        {
+            "type": "scenario",
+            "title": "Data Prep Dilemma",
+            "description": "You have a CSV with missing values. Which tools?",
+            "choices": [
+                {
+                    "outcome": "Best choice: Pandas handles CSVs, NumPy for math.",
+                    "score": 100,
+                    "text": "NumPy + Pandas"
+                },
+                {
+                    "outcome": "Incomplete: Poor data handling capabilities.",
+                    "score": 30,
+                    "text": "Matplotlib + scikit-learn"
+                }
+            ]
+        },
+        {
+            "type": "drag_drop",
+            "content": {
+                "question": "Match the Python libraries.",
+                "buckets": [
+                    {
+                        "name": "Data Handling",
+                        "accepts": ["Pandas", "NumPy"]
+                    },
+                    {
+                        "name": "Visualization",
+                        "accepts": ["Matplotlib", "Seaborn"]
+                    },
+                    {
+                        "name": "ML Algorithms",
+                        "accepts": ["Scikit-Learn"]
+                    }
+                ]
+            }
+        },
+        {
+            "type": "flashcard",
+            "content": {
+                "cards": [
+                    {
+                        "front": "What does EDA stand for?",
+                        "back": "Exploratory Data Analysis! Visualizing data before modeling."
+                    }
+                ]
+            }
+        },
+        {
+            "type": "scenario",
+            "content": {
+                "title": "House Price Predictor",
+                "description": "You have a massive CSV of house prices. First step?",
+                "choices": [
+                    {
+                        "text": "Train a Random Forest.",
+                        "score": 0,
+                        "outcome": "Terrible idea! Check data first."
+                    },
+                    {
+                        "text": "Perform EDA.",
+                        "score": 100,
+                        "outcome": "Perfect! Understand and clean data."
+                    },
+                    {
+                        "text": "Deploy it.",
+                        "score": 0,
+                        "outcome": "Model not built yet!"
+                    }
+                ]
+            }
+        },
+        {
+            "type": "concept",
+            "content": {
+                "title": "Lesson Summary",
+                "explanation": "• Features = Inputs, Labels = Outputs.\n• Always do EDA first.\n• Never test on training data.\n• Split 80/20 train/test.\n• Pandas + Scikit-learn = Magic."
+            }
+        }
+    ]
+}

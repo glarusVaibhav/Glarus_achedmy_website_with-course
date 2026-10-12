@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { getSession } from "@/lib/auth";
+import { extractVideoAssetId } from "@/lib/video/lessonVideoLink";
+import { parseYouTubeVideoId } from "@/lib/video/youtubeService";
 
 export async function GET(
   request: Request,
@@ -131,7 +133,7 @@ export async function PUT(
             for (let lIdx = 0; lIdx < lessons.length; lIdx++) {
               const l = lessons[lIdx];
               const isObj = typeof l === "object" && l !== null;
-              await tx.lecture.create({
+              const createdLecture = await tx.lecture.create({
                 data: {
                   moduleId: newModule.id,
                   title: isObj ? l.title || `Lecture ${lIdx + 1}` : l,
@@ -155,6 +157,32 @@ export async function PUT(
                   order: lIdx + 1
                 }
               });
+
+              // Link VideoAsset if present or referenced in videoUrl
+              const targetVideoAssetId = isObj ? extractVideoAssetId(l) : null;
+              if (targetVideoAssetId) {
+                await tx.videoAsset.update({
+                  where: { id: targetVideoAssetId },
+                  data: {
+                    lectureId: createdLecture.id,
+                    courseId,
+                  },
+                }).catch(() => {});
+              } else if (isObj && l.videoUrl) {
+                const ytId = parseYouTubeVideoId(l.videoUrl);
+                if (ytId) {
+                  await tx.videoAsset.create({
+                    data: {
+                      provider: "YOUTUBE",
+                      providerVideoId: ytId,
+                      courseId,
+                      lectureId: createdLecture.id,
+                      status: "READY",
+                      thumbnailKey: `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`,
+                    },
+                  }).catch(() => {});
+                }
+              }
             }
           }
         }
@@ -225,6 +253,18 @@ export async function PUT(
         });
       }
 
+      // Update ordering if publish state changed
+      const wasPublished = existingCourse.isPublished && existingCourse.status === "PUBLISHED";
+      const nowPublished = (isPublished !== undefined ? isPublished : existingCourse.isPublished) && (status !== undefined ? status === "PUBLISHED" : existingCourse.status === "PUBLISHED");
+
+      if (!wasPublished && nowPublished) {
+        const { assignNextPublishedCourseOrder } = await import("@/lib/courseOrdering");
+        await assignNextPublishedCourseOrder(courseId, tx);
+      } else if (wasPublished && !nowPublished) {
+        const { removeCourseFromPublishedOrder } = await import("@/lib/courseOrdering");
+        await removeCourseFromPublishedOrder(courseId, tx);
+      }
+
       // Log Audit
       try {
         await tx.auditLog.create({
@@ -277,6 +317,13 @@ export async function DELETE(
     await prisma.course.delete({
       where: { id: course.id }
     });
+
+    try {
+      const { normalizePublishedCourseOrder } = await import("@/lib/courseOrdering");
+      await normalizePublishedCourseOrder();
+    } catch (normErr) {
+      console.warn("Post-deletion course order normalization:", normErr);
+    }
 
     return NextResponse.json({ success: true, message: "Course deleted successfully" });
   } catch (err: any) {

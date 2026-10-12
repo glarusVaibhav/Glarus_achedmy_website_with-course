@@ -46,24 +46,30 @@ export async function getInstructorCourseCreationStatus(
       };
     }
 
-    const isAllowed = record.status === "APPROVED" && record.canCreateCourse;
+    const isAllowed = record.status === "APPROVED" && Boolean(record.canCreateCourse);
+    const effectiveStatus: CourseCreationPermissionStatus =
+      isAllowed
+        ? "APPROVED"
+        : record.status === "APPROVED" && !record.canCreateCourse
+        ? "REVOKED"
+        : (record.status as CourseCreationPermissionStatus);
 
     return {
       allowed: isAllowed,
-      status: record.status as CourseCreationPermissionStatus,
-      canCreateCourse: record.canCreateCourse,
+      status: effectiveStatus,
+      canCreateCourse: isAllowed,
       requestedAt: record.requestedAt,
       reviewedAt: record.reviewedAt,
       rejectionReason: record.rejectionReason,
       notes: record.notes,
       message: isAllowed
         ? "Course creation permission is active."
-        : record.status === "PENDING"
+        : effectiveStatus === "PENDING"
         ? "Your permission request is waiting for Admin approval."
-        : record.status === "REJECTED"
+        : effectiveStatus === "REJECTED"
         ? record.rejectionReason || "Your permission request was not approved."
-        : record.status === "REVOKED"
-        ? "Course creation permission has been revoked by administration."
+        : effectiveStatus === "REVOKED"
+        ? "Course creation permission is currently locked or revoked by administration."
         : "You must request and receive Admin approval before creating courses."
     };
   } catch (err) {
@@ -281,6 +287,10 @@ export async function adminReviewCourseCreationPermission(
         instructorId,
         status: newStatus,
         canCreateCourse: canCreate,
+        canEditCourse: canCreate,
+        canCreateLiveClass: canCreate,
+        canEditLiveClass: canCreate,
+        canRescheduleLiveClass: canCreate,
         reviewedAt: now,
         reviewedById: adminId,
         rejectionReason: action === "REJECT" ? (feedback || null) : null,
@@ -289,6 +299,10 @@ export async function adminReviewCourseCreationPermission(
       update: {
         status: newStatus,
         canCreateCourse: canCreate,
+        canEditCourse: canCreate,
+        canCreateLiveClass: canCreate,
+        canEditLiveClass: canCreate,
+        canRescheduleLiveClass: canCreate,
         reviewedAt: now,
         reviewedById: adminId,
         rejectionReason: action === "REJECT" ? (feedback || null) : null,
@@ -394,10 +408,10 @@ export async function getAllInstructorPermissions() {
 
     const stats = {
       total: instructors.length,
-      approved: instructors.filter(i => i.courseCreationPermission?.status === "APPROVED").length,
+      approved: instructors.filter(i => i.courseCreationPermission?.status === "APPROVED" && Boolean(i.courseCreationPermission?.canCreateCourse)).length,
       pending: instructors.filter(i => i.courseCreationPermission?.status === "PENDING").length,
       rejected: instructors.filter(i => i.courseCreationPermission?.status === "REJECTED").length,
-      revoked: instructors.filter(i => i.courseCreationPermission?.status === "REVOKED").length,
+      revoked: instructors.filter(i => i.courseCreationPermission?.status === "REVOKED" || (i.courseCreationPermission?.status === "APPROVED" && !i.courseCreationPermission?.canCreateCourse)).length,
       notRequested: instructors.filter(i => !i.courseCreationPermission || i.courseCreationPermission.status === "NOT_REQUESTED").length
     };
 

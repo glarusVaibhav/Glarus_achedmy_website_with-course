@@ -1,0 +1,1628 @@
+[
+  {
+    "id": "lesson_01_01_01",
+    "title": "Installing Python",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Downloading Python from unofficial sources risks security vulnerabilities.",
+          "example": "Think of Python like a toolbox: you need the right tools (installed Python) to build projects (write programs).",
+          "explanation": "Python is a versatile programming language used for web development, data analysis, automation, and more. Installing Python gives you access to its powerful tools and libraries.",
+          "realWorldUse": "Developers use Python for scripting, machine learning, and creating APIs.",
+          "tip": "Always install the latest stable version unless a project requires an older version.",
+          "title": "Why Install Python?"
+        }
+      },
+      {
+        "type": "visual",
+        "content": {
+          "diagram": [
+            "Download from python.org",
+            "Run installer (Windows)",
+            "Use Homebrew (macOS)",
+            "Use apt (Linux)"
+          ],
+          "explanation": "Each OS has a unique installation method. Windows uses graphical installers, macOS uses Homebrew, and Linux uses package managers like apt.",
+          "title": "Installation Steps by OS"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "This script checks the running Python version using the standard 'sys' library.",
+          "hint": "Use 'sys.version' to get the running interpreter's version details.",
+          "language": "python",
+          "question": "Verify your Python installation",
+          "solution": "import sys\n# Complete the print statement to check python version\nprint(sys.version)",
+          "starterCode": "import sys\n# Complete the print statement to check python version\nprint(sys.______)"
+        }
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 1,
+            "explanation": "Linux systems often use 'python3' to avoid conflicts with system Python 2.7.",
+            "options": [
+              "python --version",
+              "python3 --version",
+              "pip --version",
+              "conda --version"
+            ],
+            "question": "Which command checks the Python version on Linux?"
+          }
+        ]
+      },
+      {
+        "type": "scenario",
+        "title": "Installer Selection",
+        "description": "You're installing Python on Windows. Which file should you download?",
+        "choices": [
+          {
+            "outcome": "Correct: This is the official Windows installer.",
+            "score": 100,
+            "text": "python-3.11.4-amd64.exe"
+          },
+          {
+            "outcome": "Incorrect: This is for Linux/macOS source installation.",
+            "score": 0,
+            "text": "python-3.11.4.tar.gz"
+          }
+        ]
+      },
+      {
+        "type": "reflection",
+        "prompt": "What might prevent Python from working after installation?"
+      },
+      {
+        "type": "speed_quiz",
+        "questions": [
+          {
+            "answer": 1,
+            "options": [
+              "Windows",
+              "macOS",
+              "Linux"
+            ],
+            "question": "Which OS uses 'brew install python'?"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "lesson_01_01_02",
+    "title": "Configuring Development Environment",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Overloading your editor with too many plugins early on",
+          "example": "Think of an IDE as a fully-equipped kitchen and a text editor as a bare-bones countertop with added gadgets.",
+          "explanation": "An IDE (like PyCharm) provides built-in tools for debugging, code completion, and project management. A text editor (like VS Code) offers lightweight editing with plugin support.",
+          "realWorldUse": "Professional developers often pair VS Code with Python extensions for data science workflows",
+          "tip": "Start with VS Code for simplicity, then explore PyCharm as projects grow complex.",
+          "title": "IDE vs Text Editor"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "Virtual environments isolate dependencies. Inspecting the sys.executable path allows you to check which interpreter is running.",
+          "hint": "Use sys.executable to get the current Python interpreter path.",
+          "language": "python",
+          "question": "Inspect the active Python interpreter's executable path",
+          "solution": "import sys\n# Get the current Python interpreter path\ninterpreter_path = sys.executable\nprint(interpreter_path)",
+          "starterCode": "import sys\n# Get the current Python interpreter path\ninterpreter_path = sys.__________\nprint(interpreter_path)"
+        }
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 1,
+            "explanation": "The 'venv' module creates isolated environments. This allows different projects to use different Python versions and packages safely.",
+            "options": [
+              "A) Installs Python globally",
+              "B) Creates a virtual environment",
+              "C) Updates pip",
+              "D) Runs a Python script"
+            ],
+            "question": "What happens when you run 'python -m venv myenv'?"
+          }
+        ]
+      },
+      {
+        "type": "scenario",
+        "title": "Editor Choice Dilemma",
+        "description": "You're starting a new Python project. Should you use PyCharm or VS Code?",
+        "choices": [
+          {
+            "outcome": "Gets project running quickly with professional features",
+            "score": 90,
+            "text": "Use PyCharm for built-in Python tools"
+          },
+          {
+            "outcome": "Lightweight setup with customizable workflow",
+            "score": 85,
+            "text": "Use VS Code with Python extension"
+          }
+        ]
+      },
+      {
+        "type": "reflection",
+        "prompt": "Describe two ways your development workflow would change without virtual environments"
+      },
+      {
+        "type": "speed_quiz",
+        "questions": [
+          {
+            "answer": 0,
+            "options": [
+              "which python",
+              "python --version",
+              "pip list",
+              "env"
+            ],
+            "question": "Which command checks Python's installation path?"
+          },
+          {
+            "answer": 1,
+            "options": [
+              "Installs packages",
+              "Activates environment",
+              "Deletes files",
+              "Checks syntax"
+            ],
+            "question": "What does 'source venv/bin/activate' do?"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "lesson_01_01_03",
+    "title": "First Python Program",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Forgetting to include quotes around strings",
+          "example": "print('Hello World')",
+          "explanation": "A Python script is a sequence of instructions that tells the computer what to do. The most basic program prints text to the console using the print() function. This function takes a string argument enclosed in quotes.",
+          "realWorldUse": "Used in automation scripts, data analysis, and web development",
+          "tip": "Always check for matching quotes and parentheses",
+          "title": "Python Script Fundamentals"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "The print() function outputs text to the console. The string argument must be enclosed in quotes. This is the foundation of all Python programs.",
+          "hint": "Remember to use single or double quotes around your string",
+          "language": "python",
+          "question": "Write a Python script that prints 'Hello World' with proper syntax",
+          "solution": "print('Hello World')",
+          "starterCode": "# Your code here\n"
+        }
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 0,
+            "explanation": "Python will throw a SyntaxError because it interprets Hello and World as variable names rather than a string literal. Strings must be enclosed in quotes.",
+            "options": [
+              "SyntaxError",
+              "NameError",
+              "RuntimeError",
+              "No error"
+            ],
+            "question": "What error occurs if you write print(Hello World) without quotes?"
+          }
+        ]
+      },
+      {
+        "type": "case_study",
+        "questions": [
+          {
+            "expectedAnswer": "1. Verify Python installation path\n2. Check environment variables\n3. Use python3 instead of python",
+            "question": "What are three troubleshooting steps they should try?"
+          }
+        ],
+        "title": "Debugging Setup Issues"
+      },
+      {
+        "type": "reflection",
+        "prompt": "Describe your experience setting up Python and running your first script. What challenges did you face?"
+      }
+    ]
+  },
+  {
+    "id": "lesson_01_01",
+    "title": "Introduction to Python Syntax and Variables",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Mixing tabs and spaces causes 'TabError'",
+          "example": "print('Hello, World!')  # Correct syntax\nprint 'Hello, World!'   # Incorrect (missing parentheses in Python 3)",
+          "explanation": "Python syntax is like a language's grammar rules. It dictates how code must be structured using indentation, colons, and proper spacing.",
+          "realWorldUse": "Syntax rules ensure code readability across teams and projects.",
+          "tip": "Always use 4 spaces for indentation, never tabs.",
+          "title": "Python Syntax Basics"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "Variables store data values. The equals sign (=) assigns the value on the right to the variable name on the left.",
+          "hint": "Use the equals sign (=) to assign values",
+          "language": "python",
+          "question": "Assign your name to a variable and print it",
+          "solution": "name = 'Alice'\nprint(name)",
+          "starterCode": "# Your code here\n"
+        }
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 0,
+            "explanation": "Python variables must start with a letter or underscore, can contain letters/numbers/underscores, and cannot contain spaces or special characters.",
+            "options": [
+              "A) my_var",
+              "B) 2ndVar",
+              "C) my-var",
+              "D) my var"
+            ],
+            "question": "Which is a valid Python variable name?"
+          }
+        ]
+      },
+      {
+        "type": "fill_blank",
+        "sentences": [
+          {
+            "answer": "=",
+            "text": "To assign a value to a variable, use the ___ operator."
+          }
+        ]
+      },
+      {
+        "type": "scenario",
+        "title": "Variable Naming Dilemma",
+        "description": "You need to store a user's age. Which variable name is best?",
+        "choices": [
+          {
+            "outcome": "Clear and follows snake_case convention",
+            "score": 100,
+            "text": "user_age"
+          },
+          {
+            "outcome": "Abbreviated but unclear meaning",
+            "score": 30,
+            "text": "usrag"
+          }
+        ]
+      },
+      {
+        "type": "reflection",
+        "prompt": "Why do you think Python enforces strict naming rules for variables?"
+      },
+      {
+        "type": "speed_quiz",
+        "questions": [
+          {
+            "answer": 1,
+            "options": [
+              "A) //",
+              "B) #",
+              "C) /*",
+              "D) --"
+            ],
+            "question": "What symbol starts a Python comment?"
+          },
+          {
+            "answer": 0,
+            "options": [
+              "A) print(value1, value2)",
+              "B) print value1, value2",
+              "C) print(value1 value2)",
+              "D) print[value1, value2]"
+            ],
+            "question": "How do you print multiple values in Python?"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "lesson_01_02",
+    "title": "Using Print and Input Functions",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Forgetting that `input()` returns a string by default",
+          "example": "print('Welcome!')\nname = input('What is your name? ')",
+          "explanation": "Python's `print()` displays text to the user while `input()` captures user input. These form the foundation of simple text-based interactions.",
+          "realWorldUse": "Used in command-line registration forms and simple chatbots",
+          "tip": "Always use `input()` when you need user interaction",
+          "title": "Core I/O Functions"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "This demonstrates basic input/output flow. Note that age remains a string unless converted",
+          "hint": "Use input() function twice to capture both values",
+          "language": "python",
+          "question": "Write code that asks for user's name and age then greets them",
+          "solution": "name = input('Enter your name: ')\nage = input('Enter your age: ')\nprint(f'Hello {name}, you are {age} years old!')",
+          "starterCode": "# Get user input\nname = \nage = \n\n# Display output\nprint(f\"Hello {name}, you are {age} years old!\")"
+        }
+      },
+      {
+        "type": "speed_quiz",
+        "questions": [
+          {
+            "answer": 2,
+            "explanation": "`input()` always returns user input as a string, requiring explicit conversion for numeric types",
+            "options": [
+              "int",
+              "float",
+              "str",
+              "bool"
+            ],
+            "question": "What data type does input() return?"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "lesson_02_03_01",
+    "title": "Understanding Numeric Types in Python",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Confusing integer division (//) with float division (/)",
+          "example": ">>> 5          # Integer\n>>> 5.0        # Float",
+          "explanation": "Python has two main numeric types: integers (whole numbers) and floats (numbers with decimals). Think of integers as counting numbers (1 apple, 2 bananas) and floats as measurements (1.75 meters, 2.5 liters).",
+          "realWorldUse": "Integers track inventory, floats calculate prices with tax",
+          "tip": "Use integers for exact counts, floats for precise measurements.",
+          "title": "Integers and Floats"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "Mixing types is allowed in Python - the result will be a float when multiplying float and integer",
+          "hint": "Use float for length and integer for width",
+          "language": "python",
+          "question": "Calculate the area of a rectangle with length 5.2 and width 3",
+          "solution": "length = 5.2\nwidth = 3\narea = length * width\nprint(area)",
+          "starterCode": "# length = ___\n# width = ___\n# area = ___"
+        }
+      },
+      {
+        "type": "fill_blank",
+        "sentences": [
+          {
+            "answer": "2.5, 2",
+            "text": "The result of 5 / 2 is ___ but 5 // 2 is ___"
+          },
+          {
+            "answer": "int",
+            "text": "To convert 7.0 to integer use ___(7.0)"
+          }
+        ]
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 2,
+            "explanation": "Division (/) always returns a float in Python 3, even when dividing whole numbers",
+            "options": [
+              "5 + 2",
+              "5 * 2",
+              "5 / 2",
+              "5 - 2"
+            ],
+            "question": "Which operation returns a float?"
+          }
+        ]
+      },
+      {
+        "type": "scenario",
+        "title": "Choosing the Right Type",
+        "description": "You're developing a grocery store app. Which numeric type should you use for:\n1. Item quantities\n2. Item prices",
+        "choices": [
+          {
+            "outcome": "Correct! Quantities are whole numbers, prices need decimal precision for currency",
+            "score": 100,
+            "text": "Integer for quantities, float for prices"
+          },
+          {
+            "outcome": "Incorrect - using floats for quantities could introduce rounding errors",
+            "score": 30,
+            "text": "Float for both"
+          }
+        ]
+      },
+      {
+        "type": "reflection",
+        "prompt": "Think of three real-world scenarios where you would use integers versus floats. How would type conversion be necessary in these cases?"
+      }
+    ]
+  },
+  {
+    "id": "lesson_02_04_01",
+    "title": "String Manipulation and Methods",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Trying to modify a string's character directly (e.g., name[0] = 'p') will cause an error.",
+          "example": "name = 'Python'\nprint(name[0])  # Output: 'P'",
+          "explanation": "Strings in Python are sequences of characters enclosed in quotes. They are immutable, meaning once created, their contents cannot be changed.",
+          "realWorldUse": "Storing user input, processing text data, generating dynamic content.",
+          "tip": "Use single or double quotes for strings. Triple quotes for multi-line strings.",
+          "title": "Understanding Python Strings"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "String concatenation joins two or more strings. The + operator combines them while maintaining their order.",
+          "hint": "Use the + operator to join strings",
+          "language": "python",
+          "question": "Create a string variable and demonstrate concatenation",
+          "solution": "# Create two strings\nfirst = 'Hello'\nsecond = 'World'\n\n# Concatenate them with a space\ntogether = first + ' ' + second\nprint(together)",
+          "starterCode": "# Create two strings\nfirst = 'Hello'\nsecond = 'World'\n\n# Concatenate them with a space\ntogether = "
+        }
+      },
+      {
+        "type": "fill_blank",
+        "sentences": [
+          {
+            "answer": "lower",
+            "text": "The ___() method converts all characters to lowercase."
+          },
+          {
+            "answer": "name",
+            "text": "Using f-strings: print(f'My name is {___}')"
+          }
+        ]
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 2,
+            "explanation": "Strings are immutable in Python. Direct modification attempts raise a TypeError, requiring reassignment instead.",
+            "options": [
+              "A) It updates successfully",
+              "B) It creates a new string",
+              "C) It throws an error",
+              "D) It converts to a list"
+            ],
+            "question": "What happens when you try to modify a string character directly?"
+          }
+        ]
+      },
+      {
+        "type": "scenario",
+        "title": "Text Formatting Challenge",
+        "description": "You need to generate a personalized greeting. Choose the best approach:",
+        "choices": [
+          {
+            "outcome": "Creates clean, readable formatted strings with variable interpolation",
+            "score": 100,
+            "text": "Use f-strings with variables"
+          },
+          {
+            "outcome": "Works but becomes messy with multiple variables",
+            "score": 50,
+            "text": "Concatenate strings manually"
+          }
+        ]
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "F-strings provide a concise way to embed expressions inside string literals using the f prefix and curly braces.",
+          "hint": "Use f-strings for variable interpolation",
+          "language": "python",
+          "question": "Format a string with user data",
+          "solution": "name = 'Alice'\nage = 30\n\n# Create formatted string:\nmessage = f'{name} is {age} years old.'\nprint(message)",
+          "starterCode": "name = 'Alice'\nage = 30\n\n# Create formatted string:\nmessage = "
+        }
+      },
+      {
+        "type": "reflection",
+        "prompt": "When would string immutability cause issues in your code? How can you work around it?"
+      }
+    ]
+  },
+  {
+    "id": "lesson_02_05_01",
+    "title": "Lists and Tuples Fundamentals",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Trying to modify tuples like lists, leading to runtime errors.",
+          "example": "list_example = [1, 2, 3]\nlist_example[0] = 99  # Works\n\ntuple_example = (1, 2, 3)\n# tuple_example[0] = 99  # This would throw an error",
+          "explanation": "Lists are mutable (changeable) while tuples are immutable (fixed). Think of a list as a shopping cart you can edit, and a tuple as a printed receipt you can't alter.",
+          "realWorldUse": "Tuples are great for fixed data like RGB color values (e.g., (255, 0, 0) for red).",
+          "tip": "Use lists for collections that need modification, tuples for fixed data like coordinates or dates.",
+          "title": "Mutable vs Immutable Sequences"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "The append() method modifies the list in-place by adding elements to the end.",
+          "hint": "Use the .append() method for lists",
+          "language": "python",
+          "question": "Create a list of 3 fruits, then add 'mango' to the end.",
+          "solution": "fruits = ['apple', 'banana', 'cherry']\nfruits.append('mango')",
+          "starterCode": "fruits = ['apple', 'banana', 'cherry']\n# Add 'mango' to the list\n"
+        }
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 2,
+            "explanation": "Lists are mutable and support item assignment. Tuples and strings are immutable.",
+            "options": [
+              "A) Tuple",
+              "B) String",
+              "C) List",
+              "D) Dictionary"
+            ],
+            "question": "Which data structure allows item assignment like this: my_data[0] = 5?"
+          }
+        ]
+      },
+      {
+        "type": "fill_blank",
+        "sentences": [
+          {
+            "answer": "tuple",
+            "text": "To extract values from a tuple: x, y, z = ___(1, 2, 3)"
+          }
+        ]
+      },
+      {
+        "type": "scenario",
+        "title": "Data Structure Choice",
+        "description": "You need to store monthly temperature readings that shouldn't change. Which should you use?",
+        "choices": [
+          {
+            "outcome": "Incorrect - Lists allow changes which could accidentally alter historical data",
+            "score": 0,
+            "text": "List"
+          },
+          {
+            "outcome": "Correct - Tuples provide data integrity for fixed datasets",
+            "score": 100,
+            "text": "Tuple"
+          }
+        ]
+      },
+      {
+        "type": "speed_quiz",
+        "questions": [
+          {
+            "answer": 1,
+            "options": [
+              "A) List",
+              "B) Tuple"
+            ],
+            "question": "Which is faster for lookups?"
+          },
+          {
+            "answer": 0,
+            "options": [
+              "A) List",
+              "B) Tuple"
+            ],
+            "question": "Which uses square brackets?"
+          }
+        ]
+      },
+      {
+        "type": "reflection",
+        "prompt": "When would you prefer a tuple over a list in a real-world application?"
+      }
+    ]
+  },
+  {
+    "id": "lesson_03_01_01",
+    "title": "Introduction to Conditional Statements",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Confusing assignment (=) with comparison (==)",
+          "example": "x = 5\nprint(x > 3)  # True\nprint(x == 3) # False",
+          "explanation": "Conditional statements rely on boolean expressions that evaluate to True or False. Think of it like a light switch - it's either ON (True) or OFF (False).",
+          "realWorldUse": "Used in form validation to check if user input meets requirements",
+          "tip": "Always use == for comparisons, not =",
+          "title": "Boolean Logic Basics"
+        }
+      },
+      {
+        "type": "visual",
+        "content": {
+          "diagram": [
+            "if condition",
+            "elif condition",
+            "else"
+          ],
+          "explanation": "The decision tree starts at the top - first checking if the initial condition is true. If not, it moves down through elif conditions until finding a match or executing the final else block.",
+          "title": "Control Flow Diagram"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "This solution uses sequential checks to determine the number's sign. The elif clause acts as a secondary check when the first condition fails, and else handles the remaining case.",
+          "hint": "Use if-elif-else structure with numeric comparisons",
+          "language": "python",
+          "question": "Create a program that checks if a number is positive, negative, or zero",
+          "solution": "# Get user input\nnum = float(input(\"Enter a number: \"))\n\nif num > 0:\n    print(\"Positive number\")\nelif num < 0:\n    print(\"Negative number\")\nelse:\n    print(\"Zero\")",
+          "starterCode": "# Get user input\n# Add your code here"
+        }
+      },
+      {
+        "type": "fill_blank",
+        "sentences": [
+          {
+            "answer": "==",
+            "text": "The ___ operator checks for equality in Python"
+          },
+          {
+            "answer": "!=",
+            "text": "To check if x is not equal to y, we use x ___ y"
+          }
+        ]
+      },
+      {
+        "type": "scenario",
+        "title": "Grade Calculator",
+        "description": "You need to write a program that assigns letter grades based on numerical scores (90-100: A, 80-89: B, etc.)",
+        "choices": [
+          {
+            "outcome": "Works but may be less readable",
+            "score": 75,
+            "text": "Use nested if statements"
+          },
+          {
+            "outcome": "Most appropriate for this range-based decision",
+            "score": 100,
+            "text": "Use if-elif-else chain"
+          },
+          {
+            "outcome": "May evaluate multiple conditions unnecessarily",
+            "score": 50,
+            "text": "Use only if statements"
+          }
+        ]
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 1,
+            "explanation": "Python evaluates conditions in order and executes the first matching block, skipping the rest even if other conditions are also true",
+            "options": [
+              "All matching blocks execute",
+              "Only the first matching block executes",
+              "None execute",
+              "Random one executes"
+            ],
+            "question": "What happens if multiple elif conditions are true?"
+          }
+        ]
+      },
+      {
+        "type": "reflection",
+        "prompt": "Think of three real-life situations where you make decisions based on multiple conditions. How could you translate those into Python code?"
+      }
+    ]
+  },
+  {
+    "id": "lesson_03_02_01",
+    "title": "For Loops and Iteration",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Forgetting the colon at the end of the for line",
+          "example": "for fruit in ['apple', 'banana', 'cherry']:\n    print(fruit)",
+          "explanation": "For loops iterate over any sequence (lists, strings, ranges) by executing code for each item. Think of it as systematically going through a grocery list item by item.",
+          "realWorldUse": "Processing log files line by line or batch processing data",
+          "tip": "Always indent the loop body consistently (4 spaces recommended)",
+          "title": "For Loop Fundamentals"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "Enumerate returns both index and element, making it ideal for position-based iteration",
+          "hint": "Use enumerate() to get both index and value",
+          "language": "python",
+          "question": "Print each character in 'Python' with its index position",
+          "solution": "for index, char in enumerate('Python'):\n    print(f'Position {index}: {char}')",
+          "starterCode": "# Your code here\nfor ___ in ___:\n    print(___)"
+        }
+      },
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Confusing stop parameter behavior (exclusive endpoint)",
+          "example": "for i in range(2, 10, 2):\n    print(i)  # Outputs 2,4,6,8",
+          "explanation": "range(start, stop, step) generates numbers without creating a full list. Like counting steps between 1-10 with a stride of 2.",
+          "realWorldUse": "Looping through spreadsheet columns or generating test data",
+          "tip": "Use range() for numerical sequences without manual list creation",
+          "title": "The Range Function"
+        }
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 2,
+            "explanation": "range(5) starts at 0 by default and stops before 5",
+            "options": [
+              "[0,1,2,3,4,5]",
+              "[1,2,3,4,5]",
+              "[0,1,2,3,4]",
+              "Error"
+            ],
+            "question": "What does range(5) produce?"
+          }
+        ]
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "This demonstrates numerical accumulation using range for clean iteration",
+          "hint": "Initialize a counter variable before the loop",
+          "language": "python",
+          "question": "Create a loop that sums numbers 1-100",
+          "solution": "total = 0\nfor num in range(1, 101):\n    total += num",
+          "starterCode": "total = 0\nfor ___ in ___:\n    ___"
+        }
+      },
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Misplacing break/continue leading to unexpected flow",
+          "example": "for num in [1,2,3,4,5]: \n    if num == 3: break\n    print(num)",
+          "explanation": "break exits the loop immediately, continue skips to next iteration. Like skipping a broken item in a conveyor belt.",
+          "realWorldUse": "Searching through records until a match is found",
+          "tip": "Use else clause with loops for 'completed without break' logic",
+          "title": "Loop Control Statements"
+        }
+      },
+      {
+        "type": "scenario",
+        "title": "Debugging Loop Behavior",
+        "description": "You're processing user inputs and need to skip empty entries but stop when encountering 'exit'",
+        "choices": [
+          {
+            "outcome": "Correctly handles both conditions",
+            "score": 100,
+            "text": "Use continue for empty entries, break for 'exit'"
+          },
+          {
+            "outcome": "Prematurely terminates loop",
+            "score": 30,
+            "text": "Use break for both conditions"
+          }
+        ]
+      },
+      {
+        "type": "speed_quiz",
+        "questions": [
+          {
+            "answer": 1,
+            "options": [
+              "break",
+              "continue",
+              "pass",
+              "return"
+            ],
+            "question": "Which statement skips to next iteration?"
+          },
+          {
+            "answer": 2,
+            "options": [
+              "0",
+              "1",
+              "2",
+              "3"
+            ],
+            "question": "What's the last value in range(3)?"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "lesson_03_02_02",
+    "title": "While Loops and Condition-Based Iteration",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Forgetting to update loop variables causing infinite loops",
+          "example": "Sum numbers until user inputs a negative value",
+          "explanation": "While loops execute code repeatedly while a condition is true. Unlike for loops, they're ideal when the number of iterations is unknown beforehand.",
+          "realWorldUse": "Game loops that run until player quits",
+          "tip": "Always ensure your loop has a clear exit condition",
+          "title": "While Loop Fundamentals"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "This implementation uses a sentinel value (-1) to terminate. The loop continues while the number is positive, accumulating the sum until the user enters a negative value.",
+          "hint": "Check if the number is non-negative before adding",
+          "language": "python",
+          "question": "Implement a while loop that sums positive numbers until a negative is entered",
+          "solution": "# Initialize variables\nnumber = 0\ntotal = 0\n\n# Loop condition\nwhile number >= 0:\n    total += number\n    number = float(input('Enter a number: '))\n\nprint(f'Final sum: {total}')",
+          "starterCode": "# Initialize variables\nnumber = 0\ntotal = 0\n\n# Loop condition\nwhile ______:\n    total += ______\n    number = float(input('Enter a number: '))"
+        }
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 1,
+            "explanation": "Option B ensures the loop only runs for positive numbers. Option C would fail if 0 is entered, and option A creates an infinite loop without termination logic.",
+            "options": [
+              "A) while True",
+              "B) while number > 0",
+              "C) while number != 0",
+              "D) while number = 0"
+            ],
+            "question": "Which condition would prevent infinite loops in this scenario?"
+          },
+          {
+            "answer": 1,
+            "explanation": "While loops require careful condition management to avoid infinite execution when exit criteria are never met",
+            "options": [
+              "A) Memory leaks",
+              "B) Infinite loops",
+              "C) Slow execution",
+              "D) Type errors"
+            ],
+            "question": "What's the primary risk of using while loops?"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "lesson_04_01_01",
+    "title": "Function Definition Basics",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Forgetting to indent the function body or using '=' instead of '==' in parameter comparisons.",
+          "example": "def add(a, b):\n    return a + b\nresult = add(3, 4)  # Returns 7",
+          "explanation": "Functions are reusable blocks of code that perform specific tasks. They help organize code, reduce repetition, and make programs easier to maintain.",
+          "realWorldUse": "Functions are like recipes: you define the steps once and reuse them whenever needed.",
+          "tip": "Always start function definitions with 'def' and end with a colon.",
+          "title": "What Are Functions?"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "This function takes two parameters and returns their product, representing the area calculation.",
+          "hint": "Use parameters for length and width, then return their product",
+          "language": "python",
+          "question": "Complete the function to calculate the area of a rectangle",
+          "solution": "def calculate_area(length, width):\n    return length * width",
+          "starterCode": "def calculate_area(______):\n    ______"
+        }
+      },
+      {
+        "type": "visual",
+        "content": {
+          "diagram": [
+            "Function Definition",
+            "Parameters Received",
+            "Logic Execution",
+            "Return Value"
+          ],
+          "explanation": "When you call a function: 1) Python checks the definition, 2) assigns parameters, 3) executes the logic, 4) returns the result to the caller.",
+          "title": "Function Call Flow"
+        }
+      },
+      {
+        "type": "fill_blank",
+        "sentences": [
+          {
+            "answer": "def",
+            "text": "The ___ keyword is used to define a function in Python."
+          },
+          {
+            "answer": "return",
+            "text": "A function returns a value using the ___ statement."
+          }
+        ]
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 1,
+            "explanation": "Keyword arguments explicitly name parameters (e.g., name='Alice'), while positional arguments rely on order (e.g., 'Alice', 30).",
+            "options": [
+              "Positional arguments require type hints",
+              "Keyword arguments use parameter names with =",
+              "Positional arguments are faster to execute",
+              "Keyword arguments can't have default values"
+            ],
+            "question": "What's the key difference between positional and keyword arguments?"
+          }
+        ]
+      },
+      {
+        "type": "scenario",
+        "title": "Argument Order Challenge",
+        "description": "You need to call greet(name, age) with 'Alice' and 30. Which works?",
+        "choices": [
+          {
+            "outcome": "Correct: Uses keyword arguments",
+            "score": 100,
+            "text": "greet(age=30, name='Alice')"
+          },
+          {
+            "outcome": "Correct: Uses positional arguments",
+            "score": 100,
+            "text": "greet('Alice', 30)"
+          },
+          {
+            "outcome": "Incorrect: Swaps parameter order",
+            "score": 0,
+            "text": "greet(30, 'Alice')"
+          }
+        ]
+      },
+      {
+        "type": "reflection",
+        "prompt": "When should you use functions instead of writing code directly? Give two examples of good function names."
+      }
+    ]
+  },
+  {
+    "id": "lesson_04_02_01",
+    "title": "Scope & Module Organization",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Trying to modify global variables without declaring them",
+          "example": "global_var = 10\ndef func():\n    local_var = 5\n    print(global_var) # Valid\nfunc()",
+          "explanation": "Scope defines where variables can be accessed. Like a library with restricted sections, variables exist in specific contexts (local/global).",
+          "realWorldUse": "Preventing unintended variable changes in large applications",
+          "tip": "Use 'global' keyword to modify global variables inside functions",
+          "title": "Variable Scope Fundamentals"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "The 'global' keyword tells Python we want to use the outer scope's variable, not create a new local one",
+          "hint": "You need to declare global variables before modifying them",
+          "language": "python",
+          "question": "Fix this function to modify the global counter",
+          "solution": "counter = 0\ndef increment():\n    global counter\n    counter += 1",
+          "starterCode": "counter = 0\ndef increment():\n    counter += 1"
+        }
+      },
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Forgetting to prefix imported module functions",
+          "example": "'math' module provides math functions:\nimport math\nmath.sqrt(16)",
+          "explanation": "Modules are like toolboxes - they organize related functions. We import tools (functions) from specific boxes (modules)",
+          "realWorldUse": "Organizing large projects into reusable components",
+          "tip": "Use 'as' for module aliases when names are long",
+          "title": "Module Organization Principles"
+        }
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 1,
+            "explanation": "The function creates a new local x=10, separate from the global x=5",
+            "options": [
+              "5",
+              "10",
+              "Error",
+              "None"
+            ],
+            "question": "What will this code print?\nx = 5\ndef func():\n    x = 10\n    print(x)\nfunc()"
+          },
+          {
+            "answer": 0,
+            "explanation": "Python uses 'import' keyword for module inclusion",
+            "options": [
+              "import math",
+              "include math",
+              "use math",
+              "get math"
+            ],
+            "question": "What's the correct way to import a module?"
+          }
+        ]
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "This demonstrates proper module import syntax and accessing functions with dot notation",
+          "hint": "Use 'import' followed by the module name",
+          "language": "python",
+          "question": "Import the sqrt function from math module",
+          "solution": "import math\nresult = math.sqrt(25)",
+          "starterCode": "# Import math module\n# Calculate square root of 25"
+        }
+      },
+      {
+        "type": "reflection",
+        "prompt": "How would you structure a project with 100+ functions to avoid naming conflicts?"
+      },
+      {
+        "type": "speed_quiz",
+        "questions": [
+          {
+            "answer": 0,
+            "options": [
+              "global",
+              "public",
+              "external",
+              "shared"
+            ],
+            "question": "Which keyword declares a global variable?"
+          },
+          {
+            "answer": 0,
+            "options": [
+              "module.function()",
+              "function(module)",
+              "use module",
+              "import function"
+            ],
+            "question": "How do you access module functions?"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "lesson_05_10_01",
+    "title": "Introduction to Python Standard Libraries",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Forgetting to import the module before using its contents",
+          "example": "import math\nprint(math.sqrt(16))  # Output: 4.0",
+          "explanation": "Python modules are files containing reusable code that extend Python's capabilities. They allow you to organize code into logical units and reuse functionality across projects. Modules can contain functions, classes, and variables.",
+          "realWorldUse": "Modules like datetime help track application runtime, while math provides essential mathematical operations for scientific calculations.",
+          "tip": "Use 'import as' to create shorter aliases: import numpy as np",
+          "title": "Understanding Python Modules"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "The math module provides sqrt() for calculating square roots",
+          "hint": "Use math.sqrt()",
+          "language": "python",
+          "question": "Calculate the square root of 25 using the math module",
+          "solution": "import math\nresult = math.sqrt(25)\nprint(result)",
+          "starterCode": "import math\nresult = \nprint(result)"
+        }
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 2,
+            "explanation": "Import makes the module's functions/variables accessible in your code without executing the entire module immediately",
+            "options": [
+              "Executes the module code",
+              "Creates a copy of the module",
+              "Makes module contents available",
+              "Compiles the module"
+            ],
+            "question": "What does the 'import' keyword do?"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "lesson_05_11_01",
+    "title": "Reading and Writing Files in Python",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Forgetting to close files can cause resource leaks",
+          "example": "Imagine a physical notebook: 'read mode' lets you view existing notes without changing them, 'write mode' creates a blank notebook, and 'append mode' adds new notes to the end.",
+          "explanation": "Files in Python act like digital notebooks - you can read from them (like reading notes), write to them (like taking new notes), or append (like adding to existing notes). File modes determine what action you're performing.",
+          "realWorldUse": "Used in logging systems, data processing pipelines, and configuration management",
+          "tip": "Always close files after use to prevent data loss!",
+          "title": "File Operations Basics"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "The 'with' statement creates a context manager that automatically closes the file, even if errors occur. The 'w' mode creates a new file (or overwrites existing) for writing.",
+          "hint": "Use the 'with' statement for automatic closing",
+          "language": "python",
+          "question": "Write code to create a file and write three lines of text",
+          "solution": "with open('example.txt', 'w') as f:\n    f.write('First line\\n')\n    f.write('Second line\\n')\n    f.write('Third line\\n')",
+          "starterCode": "# Open file in write mode\n# Write three lines using write()\n# Close the file"
+        }
+      },
+      {
+        "type": "visual",
+        "content": {
+          "diagram": [
+            "Read (r): ▶️ Reads existing content",
+            "Write (w): ✏️ Creates new/overwrites file",
+            "Append (a): ➕ Adds to end of file"
+          ],
+          "explanation": "r: Cursor starts at beginning. w: Creates new file or truncates existing. a: Preserves existing content and appends new data.",
+          "title": "File Mode Diagram"
+        }
+      },
+      {
+        "type": "fill_blank",
+        "sentences": [
+          {
+            "answer": "append",
+            "text": "Use the ___ mode to add new content without losing existing data"
+          },
+          {
+            "answer": "with",
+            "text": "The ___ statement ensures files are properly closed"
+          }
+        ]
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 1,
+            "explanation": "'w' mode creates a new file if it doesn't exist. This is different from 'r' mode which would throw an error in this case.",
+            "options": [
+              "A) Error",
+              "B) File created",
+              "C) Nothing",
+              "D) Read-only"
+            ],
+            "question": "What happens when opening a file in 'w' mode that doesn't exist?"
+          },
+          {
+            "choices": [
+              {
+                "outcome": "Existing logs will be deleted",
+                "score": 0,
+                "text": "Use 'w' mode to ensure fresh logs"
+              },
+              {
+                "outcome": "New logs added successfully",
+                "score": 100,
+                "text": "Use 'a' mode to preserve history"
+              }
+            ],
+            "description": "You need to log user activity without losing existing logs. Which mode should you use?",
+            "title": "File Management Dilemma",
+            "type": "scenario"
+          }
+        ]
+      },
+      {
+        "type": "reflection",
+        "prompt": "Think of a real-world application where file appending would be more appropriate than overwriting"
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "The 'r' mode is used for reading. Using f.read() captures the entire content as a single string.",
+          "hint": "Use f.read() to get all contents at once",
+          "language": "python",
+          "question": "Create a function that reads a file and returns its contents",
+          "solution": "def read_file(filename):\n    with open(filename, 'r') as f:\n        return f.read()",
+          "starterCode": "def read_file(filename):\n    # Open file in read mode\n    # Read all contents\n    # Return contents"
+        }
+      }
+    ]
+  },
+  {
+    "id": "lesson_07_12_01",
+    "title": "Introduction to Exceptions and Try/Except Blocks",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Confusing syntax errors with exceptions",
+          "example": "Imagine a traffic accident on a highway - it stops normal traffic flow until it's resolved. Similarly, exceptions halt program execution unless handled properly.",
+          "explanation": "Exceptions are runtime errors that disrupt normal program flow. They occur when something unexpected happens during execution, like dividing by zero or accessing a non-existent file.",
+          "realWorldUse": "Used in banking systems to handle invalid transactions gracefully",
+          "tip": "Always handle exceptions to prevent program crashes",
+          "title": "What Are Exceptions?"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "The try block attempts the division operation. When division by zero occurs, Python raises a ZeroDivisionError which our except block catches, allowing us to return a user-friendly message instead of crashing.",
+          "hint": "Use the specific exception type for division errors",
+          "language": "python",
+          "question": "Handle division by zero using try/except",
+          "solution": "def divide(a, b):\n    try:\n        return a / b\n    except ZeroDivisionError:\n        return 'Cannot divide by zero'\n\nprint(divide(10, 0))",
+          "starterCode": "def divide(a, b):\n    try:\n        return a / b\n    except ______:\n        return 'Cannot divide by zero'\n\nprint(divide(10, 0))"
+        }
+      },
+      {
+        "type": "fill_blank",
+        "sentences": [
+          {
+            "answer": "except",
+            "text": "The ______ block allows you to define a handling procedure for exceptions"
+          }
+        ]
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 0,
+            "explanation": "ValueError occurs when a function receives an argument of correct type but inappropriate value. In this case, the string contains non-numeric characters which makes it invalid for conversion to integer.",
+            "options": [
+              "A) ValueError",
+              "B) TypeError",
+              "C) SyntaxError",
+              "D) NameError"
+            ],
+            "question": "Which exception is raised when you try to convert '123a' to an integer?"
+          }
+        ]
+      },
+      {
+        "type": "scenario",
+        "title": "User Input Handling",
+        "description": "You're building a calculator app. Users might enter 'abc' when numbers are expected. What's the best approach?",
+        "choices": [
+          {
+            "outcome": "Successfully handles invalid input with friendly error messages",
+            "score": 100,
+            "text": "Use try/except to catch ValueError"
+          },
+          {
+            "outcome": "Poor user experience with unhandled exceptions",
+            "score": 0,
+            "text": "Ignore the error and let the program crash"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "lesson_07_12_02",
+    "title": "Handling Multiple Exceptions and Finally Blocks",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Putting general Exception as the first except clause which can accidentally catch errors you didn't intend",
+          "example": "try:\n    file = open('data.txt')\nexcept FileNotFoundError:\n    print('Custom error message for missing file')\nexcept PermissionError:\n    print('You don't have access rights')",
+          "explanation": "Python allows handling different exception types with separate except blocks. This lets you respond differently to various error conditions while maintaining clean error handling logic.",
+          "realWorldUse": "Useful in file operations, network requests, and user input validation where different failure modes require different recovery strategies",
+          "tip": "Always list more specific exceptions before general ones to avoid unexpected behavior",
+          "title": "Multiple Exception Handling Basics"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "This implementation handles two specific error cases: division by zero and invalid operand types. Each except block provides a meaningful error message while allowing other exceptions to propagate.",
+          "hint": "Remember the specific exception names for division errors and type mismatches",
+          "language": "python",
+          "question": "Implement a calculator that handles division by zero and type conversion errors",
+          "solution": "def safe_divide(a, b):\n    try:\n        result = a / b\n    except ZeroDivisionError:\n        return 'Cannot divide by zero'\n    except TypeError:\n        return 'Invalid input types'\n    return result",
+          "starterCode": "def safe_divide(a, b):\n    try:\n        result = a / b\n    except ________:\n        return 'Cannot divide by zero'\n    except ________:\n        return 'Invalid input types'\n    return result"
+        }
+      },
+      {
+        "type": "scenario",
+        "title": "File Processing Error Handling",
+        "description": "You're processing a user-uploaded CSV file. The file might be missing, have incorrect permissions, or contain malformed data. Implement error handling for these scenarios.",
+        "choices": [
+          {
+            "outcome": "Provides granular error handling and appropriate user feedback for each failure scenario",
+            "score": 100,
+            "text": "Use a single try block with multiple except clauses for FileNotFound, PermissionError, and CSV errors"
+          },
+          {
+            "outcome": "Loses specific error information and provides less helpful feedback",
+            "score": 30,
+            "text": "Use a generic except block to catch all errors"
+          }
+        ]
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 1,
+            "explanation": "The else clause executes only when the try block completes without any exceptions being raised. This is useful for code that should run only on successful execution paths.",
+            "options": [
+              "When any exception occurs",
+              "When no exceptions occur",
+              "When a specific exception is caught",
+              "When the finally block completes"
+            ],
+            "question": "When will the else clause execute in a try/except block?"
+          }
+        ]
+      },
+      {
+        "type": "fill_blank",
+        "sentences": [
+          {
+            "answer": "finally",
+            "text": "The ________ block is always executed regardless of whether an exception occurred or was caught"
+          },
+          {
+            "answer": "ExceptionType1, ExceptionType2",
+            "text": "To handle multiple exceptions with the same handler, you can use except (________, ________) as e:"
+          }
+        ]
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "Custom exceptions improve code readability and allow for more precise error handling. This class can be raised when validating email addresses in user registration systems.",
+          "hint": "Custom exceptions should inherit from the Exception class",
+          "language": "python",
+          "question": "Create a custom exception class for invalid email formats",
+          "solution": "class InvalidEmailError(Exception):\n    def __init__(self, message='Invalid email format'):\n        super().__init__(message)",
+          "starterCode": "class ________(________):\n    def __init__(self, message='Invalid email format'):\n        super().__init__(message)"
+        }
+      },
+      {
+        "type": "speed_quiz",
+        "questions": [
+          {
+            "answer": 0,
+            "options": [
+              "else",
+              "finally",
+              "they execute simultaneously",
+              "depends on exceptions"
+            ],
+            "question": "Which executes first: else or finally?"
+          },
+          {
+            "answer": 0,
+            "options": [
+              "Yes, but must have finally",
+              "No",
+              "Only with else",
+              "Only with raise"
+            ],
+            "question": "Can you have a try block without any except?"
+          }
+        ]
+      },
+      {
+        "type": "reflection",
+        "prompt": "Think about a recent project where you needed to handle errors. How could multiple except clauses have improved your error handling strategy?"
+      }
+    ]
+  },
+  {
+    "id": "lesson_07_13_01",
+    "title": "Introduction to Classes and Objects",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Confusing class variables with instance variables",
+          "example": "class Dog:\n    def __init__(self, name):\n        self.name = name\n\nmy_dog = Dog(\"Buddy\")",
+          "explanation": "Classes are blueprints for creating objects. They define shared attributes and behaviors. Objects are instances of classes with unique data.",
+          "realWorldUse": "Used in game development to create player characters with shared abilities but unique stats",
+          "tip": "Use classes when you need multiple similar objects with shared functionality",
+          "title": "Classes and Objects Fundamentals"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "The __init__ method initializes new instances with specified attributes",
+          "hint": "Use self.parameter = parameter pattern inside __init__",
+          "language": "python",
+          "question": "Create a Car class with make, model, and year attributes",
+          "solution": "class Car:\n    def __init__(self, make, model, year):\n        self.make = make\n        self.model = model\n        self.year = year",
+          "starterCode": "class Car:\n    def __init__(self, ___):\n        self.make = ___\n        self.model = ___\n        self.year = ___"
+        }
+      },
+      {
+        "type": "scenario",
+        "title": "Library Management System",
+        "description": "You need to track books in a library. Should you use a class or just functions?",
+        "choices": [
+          {
+            "outcome": "Enables tracking individual books with unique data",
+            "score": 100,
+            "text": "Use a Book class with title/author attributes"
+          },
+          {
+            "outcome": "Hard to track individual books and their status",
+            "score": 30,
+            "text": "Use functions to manage book data"
+          }
+        ]
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 0,
+            "explanation": "Class variables are shared across all instances of a class while instance variables are unique to each object",
+            "options": [
+              "Class variables are shared between all instances",
+              "Instance variables are defined inside methods",
+              "Class variables use @classmethod decorator",
+              "Instance variables are unique per object"
+            ],
+            "question": "What's the difference between class and instance variables?"
+          }
+        ]
+      },
+      {
+        "type": "fill_blank",
+        "sentences": [
+          {
+            "answer": "__init__",
+            "text": "The ___ method is automatically called when creating a new object"
+          },
+          {
+            "answer": ".",
+            "text": "To access object attributes, use the ___ operator"
+          }
+        ]
+      },
+      {
+        "type": "speed_quiz",
+        "questions": [
+          {
+            "answer": 0,
+            "options": [
+              "Object",
+              "Function",
+              "Module",
+              "Variable"
+            ],
+            "question": "What's an instance of a class called?"
+          },
+          {
+            "answer": 0,
+            "options": [
+              "class",
+              "def",
+              "import",
+              "return"
+            ],
+            "question": "Which keyword defines a class?"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "lesson_07_14_01",
+    "title": "Implementing Inheritance",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Forgetting to call super() in __init__ when overriding constructors",
+          "example": "class Vehicle:\n    def start(self):\n        print('Engine started')\n\nclass Car(Vehicle):\n    pass\n\nmy_car = Car()\nmy_car.start()",
+          "explanation": "Inheritance allows a class (child) to inherit attributes/methods from another class (parent). It promotes code reuse and hierarchical relationships.",
+          "realWorldUse": "Creating a 'Vehicle' base class with specialized subclasses like 'Car', 'Truck', and 'Motorcycle'",
+          "tip": "Always define the parent class before the child class.",
+          "title": "Inheritance Basics"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "Subclasses override methods by defining methods with identical names. This allows customized behavior while maintaining the same interface.",
+          "hint": "Use the same method name as the parent class",
+          "language": "python",
+          "question": "Create a subclass 'Dog' that inherits from 'Animal' and overrides the 'speak()' method",
+          "solution": "class Animal:\n    def speak(self):\n        print('Animal sound')\n\nclass Dog(Animal):\n    def speak(self):\n        print('Bark!')",
+          "starterCode": "class Animal:\n    def speak(self):\n        print('Animal sound')\n\nclass Dog(Animal):\n    # Override speak()\n    "
+        }
+      },
+      {
+        "type": "fill_blank",
+        "sentences": [
+          {
+            "answer": "Animal",
+            "text": "To inherit from a class, add the parent class name in parentheses after the subclass name: class Dog(___):"
+          }
+        ]
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 0,
+            "explanation": "super().__init__() ensures the parent class constructor is executed, allowing the subclass to inherit and extend parent initialization logic.",
+            "options": [
+              "A) It initializes the parent class",
+              "B) It deletes parent attributes",
+              "C) It creates a new class hierarchy",
+              "D) It prevents inheritance"
+            ],
+            "question": "What happens when you call super().init__() in a subclass?"
+          }
+        ]
+      },
+      {
+        "type": "visual",
+        "content": {
+          "diagram": [
+            "Animal (Parent)",
+            "  ├─ Dog (Child)",
+            "  └─ Cat (Child)"
+          ],
+          "explanation": "The diagram shows a parent class 'Animal' with two child classes 'Dog' and 'Cat'. Each child inherits from Animal but can have unique behaviors.",
+          "title": "Inheritance Hierarchy"
+        }
+      },
+      {
+        "type": "scenario",
+        "title": "Vehicle Maintenance System",
+        "description": "You're designing a vehicle maintenance app. Which inheritance approach is best for 'ElectricCar'? Choose one:",
+        "choices": [
+          {
+            "outcome": "Duplicates code for common vehicle features",
+            "score": 30,
+            "text": "Create a new class from scratch"
+          },
+          {
+            "outcome": "Shares common features while adding electric-specific methods",
+            "score": 90,
+            "text": "Inherit from 'Car' class"
+          }
+        ]
+      }
+    ]
+  }
+]

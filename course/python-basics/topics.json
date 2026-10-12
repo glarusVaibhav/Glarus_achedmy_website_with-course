@@ -1,0 +1,224 @@
+{
+  "modules": [
+    {
+      "module_id": "M0",
+      "module_title": "Introduction to Python",
+      "description": "",
+      "order": 1,
+      "topic_ids": [
+        "T0"
+      ]
+    },
+    {
+      "module_id": "M1",
+      "module_title": "Python Basics",
+      "description": "",
+      "order": 2,
+      "topic_ids": [
+        "T1",
+        "T2"
+      ]
+    },
+    {
+      "module_id": "M2",
+      "module_title": "Python Data Types",
+      "description": "",
+      "order": 3,
+      "topic_ids": [
+        "T3",
+        "T4",
+        "T5"
+      ]
+    },
+    {
+      "module_id": "M3",
+      "module_title": "Control Flow",
+      "description": "",
+      "order": 4,
+      "topic_ids": [
+        "T6",
+        "T7"
+      ]
+    },
+    {
+      "module_id": "M4",
+      "module_title": "Functions",
+      "description": "",
+      "order": 5,
+      "topic_ids": [
+        "T8",
+        "T9"
+      ]
+    },
+    {
+      "module_id": "M5",
+      "module_title": "Modules & File I/O",
+      "description": "",
+      "order": 6,
+      "topic_ids": [
+        "T10",
+        "T11"
+      ]
+    },
+    {
+      "module_id": "M6",
+      "module_title": "Error Handling",
+      "description": "",
+      "order": 7,
+      "topic_ids": [
+        "T12"
+      ]
+    },
+    {
+      "module_id": "M7",
+      "module_title": "Object-Oriented Programming",
+      "description": "",
+      "order": 8,
+      "topic_ids": [
+        "T13",
+        "T14"
+      ]
+    }
+  ],
+  "topics": [
+    {
+      "topic_id": "T0",
+      "topic_title": "Python Installation & Setup",
+      "module_id": "M0",
+      "description": "Install Python, configure environment, write first 'Hello World'",
+      "lesson_ids": [
+        "lesson_01_01_01",
+        "lesson_01_01_02",
+        "lesson_01_01_03"
+      ]
+    },
+    {
+      "topic_id": "T1",
+      "topic_title": "Variables & Syntax",
+      "module_id": "M1",
+      "description": "Basic syntax rules, variable declaration, and naming conventions",
+      "lesson_ids": [
+        "lesson_01_01"
+      ]
+    },
+    {
+      "topic_id": "T2",
+      "topic_title": "Basic Input/Output",
+      "module_id": "M1",
+      "description": "Using print(), input(), and simple type conversion",
+      "lesson_ids": [
+        "lesson_01_02"
+      ]
+    },
+    {
+      "topic_id": "T3",
+      "topic_title": "Numeric Types",
+      "module_id": "M2",
+      "description": "Integers, floats, and basic arithmetic operations",
+      "lesson_ids": [
+        "lesson_02_03_01"
+      ]
+    },
+    {
+      "topic_id": "T4",
+      "topic_title": "Strings",
+      "module_id": "M2",
+      "description": "String manipulation, formatting, and common methods",
+      "lesson_ids": [
+        "lesson_02_04_01"
+      ]
+    },
+    {
+      "topic_id": "T5",
+      "topic_title": "Lists & Tuples",
+      "module_id": "M2",
+      "description": "Creating and manipulating sequence data types",
+      "lesson_ids": [
+        "lesson_02_05_01"
+      ]
+    },
+    {
+      "topic_id": "T6",
+      "topic_title": "Conditional Statements",
+      "module_id": "M3",
+      "description": "if/elif/else logic and boolean expressions",
+      "lesson_ids": [
+        "lesson_03_01_01"
+      ]
+    },
+    {
+      "topic_id": "T7",
+      "topic_title": "Loops",
+      "module_id": "M3",
+      "description": "for and while loops with iteration control",
+      "lesson_ids": [
+        "lesson_03_02_01",
+        "lesson_03_02_02"
+      ]
+    },
+    {
+      "topic_id": "T8",
+      "topic_title": "Function Definition",
+      "module_id": "M4",
+      "description": "Creating functions with parameters and return values",
+      "lesson_ids": [
+        "lesson_04_01_01"
+      ]
+    },
+    {
+      "topic_id": "T9",
+      "topic_title": "Scope & Modules",
+      "module_id": "M4",
+      "description": "Local/global scope and function organization",
+      "lesson_ids": [
+        "lesson_04_02_01"
+      ]
+    },
+    {
+      "topic_id": "T10",
+      "topic_title": "Standard Libraries",
+      "module_id": "M5",
+      "description": "Using built-in modules like math and datetime",
+      "lesson_ids": [
+        "lesson_05_10_01"
+      ]
+    },
+    {
+      "topic_id": "T11",
+      "topic_title": "File Operations",
+      "module_id": "M5",
+      "description": "Reading/writing files with open()",
+      "lesson_ids": [
+        "lesson_05_11_01"
+      ]
+    },
+    {
+      "topic_id": "T12",
+      "topic_title": "Exceptions",
+      "module_id": "M6",
+      "description": "try/except blocks and error handling",
+      "lesson_ids": [
+        "lesson_07_12_01",
+        "lesson_07_12_02"
+      ]
+    },
+    {
+      "topic_id": "T13",
+      "topic_title": "Classes & Objects",
+      "module_id": "M7",
+      "description": "Defining classes, creating instances, and attributes",
+      "lesson_ids": [
+        "lesson_07_13_01"
+      ]
+    },
+    {
+      "topic_id": "T14",
+      "topic_title": "Inheritance",
+      "module_id": "M7",
+      "description": "Class inheritance and method overriding",
+      "lesson_ids": [
+        "lesson_07_14_01"
+      ]
+    }
+  ]
+}

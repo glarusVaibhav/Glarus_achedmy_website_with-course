@@ -1,0 +1,1185 @@
+[
+  {
+    "id": "lesson_01_01_01",
+    "title": "Understanding Vectors in 2D and 3D",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Confusing vectors with scalars (which only have magnitude like temperature).",
+          "example": "A 2D vector (3,4) means 3 units right and 4 units up. In 3D, (1,2,3) adds depth.",
+          "explanation": "Vectors represent quantities with both magnitude and direction. Imagine you're navigating a drone: moving 5 meters north is a vector because it has distance (magnitude) and direction.",
+          "realWorldUse": "Used in physics for forces, computer graphics for 3D modeling, and GPS navigation.",
+          "tip": "Always visualize vectors as arrows from the origin to the coordinate point.",
+          "title": "What Are Vectors?"
+        }
+      },
+      {
+        "type": "visual",
+        "content": {
+          "diagram": [
+            "2D vector as arrow on x-y plane",
+            "3D vector with x-y-z axes"
+          ],
+          "explanation": "In 2D: Vectors are (x,y). In 3D: Vectors are (x,y,z). The arrow's length shows magnitude, and direction shows orientation.",
+          "title": "Vector Representation"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "This code creates a NumPy array representing a 3D position vector with x=2, y=5, z=10",
+          "hint": "Use commas to separate x, y, z values",
+          "language": "python",
+          "question": "Create a 3D vector representing a drone's position at (2,5,10)",
+          "solution": "import numpy as np\nvector = np.array([2, 5, 10])",
+          "starterCode": "import numpy as np\nvector = np.array([___, ___, ___])"
+        }
+      },
+      {
+        "type": "fill_blank",
+        "sentences": [
+          {
+            "answer": "x",
+            "text": "The first component of a 2D vector represents movement along the ___ axis"
+          },
+          {
+            "answer": "z",
+            "text": "In 3D vectors, the third value corresponds to the ___ dimension"
+          }
+        ]
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 0,
+            "explanation": "Using Pythagoras: √(3² + 4²) = √(9+16) = √25 = 5",
+            "options": [
+              "5",
+              "7",
+              "12",
+              "25"
+            ],
+            "question": "What's the magnitude of vector (3,4)?"
+          },
+          {
+            "answer": 2,
+            "explanation": "The 3D magnitude formula extends Pythagoras theorem to three dimensions",
+            "options": [
+              "√(x+y+z)",
+              "x²+y²+z²",
+              "√(x²+y²+z²)",
+              "x+y²+z"
+            ],
+            "question": "Which formula calculates 3D vector magnitude?"
+          }
+        ]
+      },
+      {
+        "type": "scenario",
+        "title": "Drone Navigation Challenge",
+        "description": "You're programming a drone to deliver a package. Current position: (2,3,5). Target: (5,7,5). What displacement vector do you need?",
+        "choices": [
+          {
+            "outcome": "Correct! (5-2,7-3,5-5) = (3,4,0)",
+            "score": 100,
+            "text": "(3,4,0)"
+          },
+          {
+            "outcome": "Incorrect - this adds coordinates instead of finding the difference",
+            "score": 0,
+            "text": "(7,10,10)"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "lesson_01_02_01",
+    "title": "Core Vector Operations",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Adding non-corresponding components",
+          "example": "If vector A = [2, 3] and vector B = [1, 4], then A + B = [3, 7]",
+          "explanation": "Vector addition combines two vectors by adding corresponding components. This is like combining forces acting on an object.",
+          "realWorldUse": "Physics simulations combine velocity vectors",
+          "tip": "Always verify component-wise addition",
+          "title": "Vector Addition"
+        }
+      },
+      {
+        "type": "visual",
+        "content": {
+          "diagram": [
+            "Step 1: Draw vector A",
+            "Step 2: Place vector B tip-to-tail with A",
+            "Step 3: Resultant is from A's tail to B's tip"
+          ],
+          "explanation": "The parallelogram law shows vector addition visually",
+          "title": "Geometric Vector Addition"
+        }
+      },
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Forgetting to scale all components",
+          "example": "3 * [2, -1] = [6, -3]",
+          "explanation": "Scales a vector's magnitude without changing direction (unless negative)",
+          "realWorldUse": "Adjusting recipe quantities proportionally",
+          "tip": "Negative scalars reverse direction",
+          "title": "Scalar Multiplication"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "This implements component-wise scaling",
+          "hint": "Multiply each component by the scalar",
+          "language": "python",
+          "question": "Scale vector [4, 2] by 1.5",
+          "solution": "def scale_vector(v, s):\n    return [x * s for x in v]",
+          "starterCode": "def scale_vector(v, s):\n    return [___, ___]"
+        }
+      },
+      {
+        "type": "fill_blank",
+        "sentences": [
+          {
+            "answer": "a₂b₂",
+            "text": "The dot product formula is a·b = a₁b₁ + ___ + aₙbₙ"
+          }
+        ]
+      },
+      {
+        "type": "scenario",
+        "title": "Orthogonality Check",
+        "description": "You're designing a robot arm. Are vectors [3, 4] and [-4, 3] orthogonal?",
+        "choices": [
+          {
+            "outcome": "Dot product is 0 - they are orthogonal",
+            "score": 100,
+            "text": "Calculate dot product"
+          },
+          {
+            "outcome": "Incorrect - calculation shows they are orthogonal",
+            "score": 0,
+            "text": "Assume they're not"
+          }
+        ]
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 1,
+            "explanation": "Zero dot product indicates perpendicular vectors",
+            "options": [
+              "Dot product is 1",
+              "Dot product is 0",
+              "Magnitudes are equal",
+              "Angles are 90° apart"
+            ],
+            "question": "When are two vectors orthogonal?"
+          }
+        ]
+      },
+      {
+        "type": "speed_quiz",
+        "questions": [
+          {
+            "answer": 0,
+            "options": [
+              "[6,2]",
+              "[6,4]",
+              "[6,2]",
+              "[6,3]"
+            ],
+            "question": "What's [2,3] + [4,-1]?"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "lesson_01_03_01",
+    "title": "Linear Combinations and Independence",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Forgetting to apply scalars before adding vectors",
+          "example": "In 2D space: 3*[1, 0] + 2*[0, 1] = [3, 2]",
+          "explanation": "A linear combination combines vectors using scalar multiplication and addition. It's like mixing ingredients in a recipe where each ingredient's quantity (scalar) determines the final dish (resultant vector).",
+          "realWorldUse": "Used in computer graphics to create color blends",
+          "tip": "Start with simple integer scalars to build intuition",
+          "title": "Linear Combinations"
+        }
+      },
+      {
+        "type": "visual",
+        "content": {
+          "diagram": [
+            "Single vector spans a line",
+            "Two non-parallel vectors span a plane",
+            "Three vectors in 3D span a volume"
+          ],
+          "explanation": "The span of vectors is all possible linear combinations they can produce. Like how two non-parallel ropes can reach any point on a flat surface when pulled.",
+          "title": "Span Visualization"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "This shows how scalar multiplication scales vectors before combination",
+          "hint": "Multiply each vector by its scalar first",
+          "language": "python",
+          "question": "Calculate this linear combination: 2*[1, 2] + (-1)*[3, 4]",
+          "solution": "# Vectors\nv1 = [1, 2]\nv2 = [3, 4]\n\n# Scalars\na = 2\nb = -1\n\n# Calculate combination\nresult = [a*v1[0] + b*v2[0], a*v1[1] + b*v2[1]]",
+          "starterCode": "# Vectors\nv1 = [1, 2]\nv2 = [3, 4]\n\n# Scalars\na = 2\nb = -1\n\n# Calculate combination\nresult = [___, ___]"
+        }
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 1,
+            "explanation": "Linear independence requires no vector can be formed by scaling another. [1,1] and [0,1] point in different directions and can't be scaled to match each other.",
+            "options": [
+              "[1,0] and [2,0]",
+              "[1,1] and [0,1]",
+              "[1,2] and [2,4]"
+            ],
+            "question": "Which set of vectors is linearly independent?"
+          }
+        ]
+      },
+      {
+        "type": "scenario",
+        "title": "Robot Navigation",
+        "description": "A robot can move in directions v1=[1,1] and v2=[2,2]. Can it reach the point (3,3)?",
+        "choices": [
+          {
+            "outcome": "The vectors are colinear, so only points along the line y=x are reachable",
+            "score": 50,
+            "text": "Yes, by combining v1 and v2"
+          },
+          {
+            "outcome": "Correct! The vectors are linearly dependent (v2 = 2*v1), so they can't span the full 2D plane",
+            "score": 100,
+            "text": "No, the vectors are insufficient"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "lesson_02_04_01",
+    "title": "Introduction to Matrix Representation",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Mixing up the order of coefficients or forgetting to include zero coefficients for missing variables.",
+          "example": "System:\n2x + 3y = 5\n4x - y = 2\n\nMatrix form:\n[2 3 | 5]\n[4 -1 | 2]",
+          "explanation": "Matrices help organize systems of linear equations by grouping coefficients and constants in a structured grid. Think of it like a spreadsheet where each row represents an equation and columns store coefficients for each variable.",
+          "realWorldUse": "Used in engineering to solve circuit networks and in economics for input-output models.",
+          "tip": "Always align variables in columns: x-coefficients first, then y-coefficients, followed by constants.",
+          "title": "Matrix as Equation Organizer"
+        }
+      },
+      {
+        "type": "visual",
+        "content": {
+          "diagram": [
+            "Equation 1: 3x + 2y = 7 → [3 2 | 7]",
+            "Equation 2: x - 4y = 3 → [1 -4 | 3]"
+          ],
+          "explanation": "Each row corresponds to an equation. Columns represent x-coefficients, y-coefficients, and constants. Vertical line separates coefficients from constants in augmented matrices.",
+          "title": "Matrix Structure Mapping"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "The first two columns store x and y coefficients, third column holds constants. This format enables efficient computation using linear algebra techniques.",
+          "hint": "Remember to include coefficients with their signs and constants in the third column",
+          "language": "python",
+          "question": "Convert the system 5x - 2y = 8 and 3x + 4y = 12 to a NumPy matrix",
+          "solution": "import numpy as np\nmatrix = np.array([\n    [5, -2, 8],\n    [3, 4, 12]\n])",
+          "starterCode": "import numpy as np\n# Create augmented matrix\nmatrix = np.array([\n    [____, ____, ____],  # First equation\n    [____, ____, ____]   # Second equation\n])"
+        }
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 0,
+            "explanation": "Rows = number of equations (3), Columns = variables (2) + 1 constant column = 3 columns total",
+            "options": [
+              "3x2",
+              "2x3",
+              "3x3",
+              "2x2"
+            ],
+            "question": "What are the dimensions of a matrix representing 3 equations with 2 variables?"
+          },
+          {
+            "answer": 1,
+            "explanation": "Constants are placed in the rightmost column after the vertical line in augmented matrices",
+            "options": [
+              "Leftmost column",
+              "Rightmost column",
+              "Diagonal",
+              "Bottom row"
+            ],
+            "question": "In an augmented matrix, where are the constants located?"
+          }
+        ]
+      },
+      {
+        "type": "fill_blank",
+        "sentences": [
+          {
+            "answer": "4, 2",
+            "text": "A matrix with 4 rows and 3 columns represents ___ equations with ___ variables."
+          },
+          {
+            "answer": "constant",
+            "text": "The element in position [2,3] of a matrix refers to the ___ of the second equation."
+          }
+        ]
+      },
+      {
+        "type": "reflection",
+        "prompt": "How might matrix representation simplify solving a system with 100 equations? Consider computational efficiency and organization."
+      },
+      {
+        "type": "scenario",
+        "title": "Engineering Design Challenge",
+        "description": "You're designing a bridge with 3 support points. The forces at each point create this system:\n2A + B = 100\nA - 3B + C = 50\nB + 2C = 80\n\nChoose the correct matrix representation",
+        "choices": [
+          {
+            "outcome": "Correct! This maintains proper column alignment for A, B, C",
+            "score": 100,
+            "text": "[[2 1 0 | 100], [1 -3 1 | 50], [0 1 2 | 80]]"
+          },
+          {
+            "outcome": "Incorrect - Constants should be in their own column",
+            "score": 0,
+            "text": "[[2 1 100], [1 -3 50], [1 2 80]]"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "lesson_02_05_01",
+    "title": "Gaussian Elimination Techniques",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Skipping row swaps when pivot is zero",
+          "example": "Solving 3x3 system:\n2x + y - z = 8\n-3x -2y +4z = -11\n-2x +5y +z = -3",
+          "explanation": "Gaussian elimination transforms a system of equations into row-echelon form through systematic row operations. Think of it as organizing a messy room step-by-step: you tackle one section at a time until everything is neatly arranged.",
+          "realWorldUse": "Used in electrical circuit analysis and structural engineering calculations",
+          "tip": "Always work from left to right, top to bottom",
+          "title": "Core Principles"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "This code systematically creates zeros below each pivot position through row operations. The pivot check handles potential zero division issues.",
+          "hint": "Use NumPy's array operations for efficient row manipulation",
+          "language": "python",
+          "question": "Implement forward elimination for a 3x3 matrix",
+          "solution": "import numpy as np\nA = np.array([[2, 1, -1, 8],\n              [-3, -2, 4, -11],\n              [-2, 5, 1, -3]], float)\n\nfor col in range(3):\n    pivot = A[col][col]\n    if pivot == 0:\n        # Swap with lower row\n        for row in range(col+1, 3):\n            if A[row][col] != 0:\n                A[[col, row]] = A[[row, col]]\n                break\n    pivot = A[col][col]\n    for row in range(col+1, 3):\n        factor = A[row][col]/pivot\n        A[row] -= factor * A[col]\nprint('Row-echelon form:')\nprint(A)",
+          "starterCode": "import numpy as np\nA = np.array([[2, 1, -1, 8],\n              [-3, -2, 4, -11],\n              [-2, 5, 1, -3]], float)\n\n# TODO: Add code to perform row operations"
+        }
+      },
+      {
+        "type": "visual",
+        "content": {
+          "diagram": [
+            "Original Matrix",
+            "First Pivot",
+            "Second Pivot",
+            "Row-echelon Form"
+          ],
+          "explanation": "1. Start with augmented matrix\n2. Create leading 1s in each row\n3. Eliminate entries below each pivot\n4. Final form has staircase pattern of leading coefficients",
+          "title": "Elimination Process"
+        }
+      },
+      {
+        "type": "fill_blank",
+        "sentences": [
+          {
+            "answer": "pivot",
+            "text": "In Gaussian elimination, we create zeros below each ___ position."
+          },
+          {
+            "answer": "scaling",
+            "text": "The ___ operation allows multiplying a row by a non-zero constant."
+          }
+        ]
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 1,
+            "explanation": "Pivoting ensures numerical stability by preventing division by zero and reducing large element magnitudes",
+            "options": [
+              "Speed up computation",
+              "Avoid division by zero",
+              "Reduce rounding errors",
+              "Simplify matrix"
+            ],
+            "question": "What's the primary purpose of pivoting?"
+          }
+        ]
+      },
+      {
+        "type": "scenario",
+        "title": "Matrix Troubleshooting",
+        "description": "You're solving a system where the second pivot position is zero. What's the best first action?",
+        "choices": [
+          {
+            "outcome": "Premature termination",
+            "score": 0,
+            "text": "Stop the algorithm"
+          },
+          {
+            "outcome": "Successful elimination",
+            "score": 100,
+            "text": "Swap with a lower row"
+          },
+          {
+            "outcome": "Incorrect solution",
+            "score": -50,
+            "text": "Skip the row"
+          },
+          {
+            "outcome": "Invalid transformation",
+            "score": -25,
+            "text": "Add a random row"
+          }
+        ]
+      },
+      {
+        "type": "reflection",
+        "prompt": "How might Gaussian elimination be applied in optimizing supply chain logistics? Provide at least two specific scenarios."
+      }
+    ]
+  },
+  {
+    "id": "lesson_02_06_01",
+    "title": "Matrix Inverses and Applications",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Assuming all square matrices are invertible",
+          "example": "For a 2x2 matrix [[a, b], [c, d]], the inverse exists only if (ad - bc) ≠ 0. Example: [[1, 2], [3, 4]] has determinant -2, so it's invertible.",
+          "explanation": "A matrix is invertible if and only if its determinant is non-zero. This means the matrix represents a bijective linear transformation with a unique solution for every output.",
+          "realWorldUse": "Used in computer graphics for 3D transformations and in economics for input-output models",
+          "tip": "Always check determinant ≠ 0 before attempting inversion",
+          "title": "The Invertible Matrix Theorem"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "This uses NumPy's built-in inverse function. In practice, manual Gaussian elimination would involve augmenting with identity matrix and row operations.",
+          "hint": "Verify your result by checking A @ A_inv ≈ identity matrix",
+          "language": "python",
+          "question": "Calculate the inverse of a 3x3 matrix using Gaussian elimination",
+          "solution": "import numpy as np\nA = np.array([[1, 2, 3],\n                [0, 1, 4],\n                [5, 6, 0]])\nA_inv = np.linalg.inv(A)\nprint('Inverse matrix:')\nprint(A_inv)",
+          "starterCode": "import numpy as np\nA = np.array([[1, 2, 3],\n                [0, 1, 4],\n                [5, 6, 0]])\n# Your code here to compute inverse"
+        }
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 2,
+            "explanation": "Full rank means all rows/columns are linearly independent, ensuring invertibility. Square matrices can be invertible but need not be (must also have non-zero determinant).",
+            "options": [
+              "Determinant = 0",
+              "Square matrix",
+              "Full rank",
+              "Symmetric"
+            ],
+            "question": "Which condition guarantees a matrix is invertible?"
+          }
+        ]
+      },
+      {
+        "type": "scenario",
+        "title": "System Solving Dilemma",
+        "description": "You need to solve Ax = b where A is 4x4. Should you use matrix inversion or Gaussian elimination?",
+        "choices": [
+          {
+            "outcome": "Slower for large matrices and numerically unstable",
+            "score": 50,
+            "text": "Use matrix inversion for faster computation"
+          },
+          {
+            "outcome": "More efficient and avoids amplifying rounding errors",
+            "score": 100,
+            "text": "Use Gaussian elimination for numerical stability"
+          }
+        ]
+      },
+      {
+        "type": "visual",
+        "content": {
+          "diagram": [
+            "Original matrix [A|I]",
+            "Row operations →",
+            "Transform to [I|A⁻¹]"
+          ],
+          "explanation": "This visual shows how augmenting with identity matrix and applying row operations systematically transforms the original matrix into its inverse.",
+          "title": "Gaussian Elimination Process"
+        }
+      },
+      {
+        "type": "reflection",
+        "prompt": "How might matrix inversion be applied in machine learning algorithms?"
+      },
+      {
+        "type": "speed_quiz",
+        "questions": [
+          {
+            "answer": 0,
+            "options": [
+              "1/det(A)",
+              "det(A)",
+              "det(A)²",
+              "Always 1"
+            ],
+            "question": "What's the determinant of the inverse matrix?"
+          },
+          {
+            "answer": 1,
+            "options": [
+              "[[1,0],[0,2]]",
+              "[[2,4],[1,2]]",
+              "[[3,0],[0,3]]",
+              "[[1,1],[0,1]]"
+            ],
+            "question": "Which matrix has no inverse?"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "lesson_03_07",
+    "title": "Introduction to Matrix Transformations",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Assuming all transformations are linear (e.g., translations are not)",
+          "example": "Scaling transformation matrix [[2,0],[0,3]] doubles x-coordinates and triples y-coordinates",
+          "explanation": "A linear transformation is a function between vector spaces that preserves vector addition and scalar multiplication. Imagine stretching or rotating a grid while keeping grid lines parallel and evenly spaced. This is the essence of linear transformations in 2D/3D space.",
+          "realWorldUse": "Used in computer graphics for 3D rendering and image transformations",
+          "tip": "Always verify T(u+v) = T(u)+T(v) and T(cu)=cT(u) for linearity",
+          "title": "Linear Transformations Defined"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "This rotates the vector 90° counterclockwise. The matrix multiplication reorients the vector's coordinates according to the rotation rules.",
+          "hint": "Use matrix multiplication with @ operator",
+          "language": "python",
+          "question": "Apply a rotation transformation to a vector",
+          "solution": "import numpy as np\n\n# 90 degree rotation matrix\nR = np.array([[0,-1],[1,0]])\n\n# Vector to rotate\nv = np.array([3, 4])\n\n# Complete the transformation\ntransformed = np.dot(R, v)",
+          "starterCode": "import numpy as np\n\n# 90 degree rotation matrix\nR = np.array([[0,-1],[1,0]])\n\n# Vector to rotate\nv = np.array([3, 4])\n\n# Complete the transformation\ntransformed = "
+        }
+      },
+      {
+        "type": "visual",
+        "content": {
+          "diagram": [
+            "Original Vector",
+            "Matrix Multiplication",
+            "Transformed Vector"
+          ],
+          "explanation": "1. Start with vector (x,y)\n2. Multiply by transformation matrix\n3. Get new coordinates (x',y')\nThis sequence shows how matrices systematically alter vector positions while maintaining linear relationships",
+          "title": "Transformation Pipeline"
+        }
+      },
+      {
+        "type": "fill_blank",
+        "sentences": [
+          {
+            "answer": "scaling matrix",
+            "text": "The ______ preserves the original vector's direction but changes its magnitude"
+          },
+          {
+            "answer": "rotation",
+            "text": "When multiplying a vector by [[cosθ, -sinθ],[sinθ, cosθ]], you perform a ______ transformation"
+          }
+        ]
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 1,
+            "explanation": "Translation adds a fixed vector, breaking the linearity requirement T(u+v)=T(u)+T(v)",
+            "options": [
+              "A) Rotation",
+              "B) Translation",
+              "C) Scaling",
+              "D) Shearing"
+            ],
+            "question": "Which operation is NOT a linear transformation?"
+          }
+        ]
+      },
+      {
+        "type": "scenario",
+        "title": "Robotics Arm Movement",
+        "description": "You're programming a robotic arm. Which matrix would move the end effector 3 units right and 2 units up?",
+        "choices": [
+          {
+            "outcome": "Incorrect - translations require adding vectors, not matrix multiplication",
+            "score": 0,
+            "text": "Add [[3,0],[0,2]] to position vector"
+          },
+          {
+            "outcome": "Correct - combines identity matrix with translation vector",
+            "score": 100,
+            "text": "Multiply by [[1,0],[0,1]] then add [3,2]"
+          }
+        ]
+      },
+      {
+        "type": "reflection",
+        "prompt": "How might matrix transformations help in 3D animation? Consider how character movements are composed of multiple transformations"
+      }
+    ]
+  },
+  {
+    "id": "lesson_03_08",
+    "title": "Kernel and Image Analysis",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Confusing kernel with solution set of Ax=b instead of Ax=0",
+          "example": "For matrix A=[[1,2],[2,4]], kernel = {t*[-2,1] | t∈ℝ} and image = span{[1,2]}",
+          "explanation": "The kernel (null space) of a matrix A is the set of all vectors x such that Ax=0. The image (column space) is the span of A's columns. These concepts reveal critical properties about linear transformations and system solvability.",
+          "realWorldUse": "In machine learning, kernel analysis helps identify redundant features",
+          "tip": "Remember: Kernel captures 'input annihilation', image captures 'output reachability'",
+          "title": "Understanding Kernel and Image"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "SVD decomposes A into UΣV*, where V's last rows form the null space basis. Column space is span of first 'rank' columns of A.",
+          "hint": "Use SVD decomposition to extract null space from the V matrix",
+          "language": "python",
+          "question": "Compute kernel and image of matrix A=[[1,2,3],[2,4,6]]",
+          "solution": "import numpy as np\nA = np.array([[1,2,3],[2,4,6]])\nrank = np.linalg.matrix_rank(A)\n# Kernel basis (null space)\n_, _, V = np.linalg.svd(A)\nnull_space = V[rank:].T\n# Image basis (column space)\nimage_basis = A[:, :rank]\nprint('Kernel basis:'), print(null_space),\nprint('Image basis:'), print(image_basis)",
+          "starterCode": "import numpy as np\nA = np.array([[1,2,3],[2,4,6]])\n# Compute rank and null space\nrank = np.linalg.matrix_rank(A)\n# Find kernel basis\n# Find image basis"
+        }
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 0,
+            "explanation": "The rank-nullity theorem establishes a fundamental relationship between the dimensions of kernel and image. For an m×n matrix, nullity(A) + rank(A) = n.",
+            "options": [
+              "dim(kernel) + dim(image) = number of columns",
+              "dim(kernel) × dim(image) = matrix rank",
+              "kernel ⊆ image always",
+              "image dimension ≤ kernel dimension"
+            ],
+            "question": "What does the rank-nullity theorem state?"
+          }
+        ]
+      },
+      {
+        "type": "scenario",
+        "title": "System Solvability Challenge",
+        "description": "You're analyzing the system Ax=b where A=[[1,2],[2,4]] and b=[3,6]. Will this system have solutions?",
+        "choices": [
+          {
+            "outcome": "Correct! Since b is in A's column space (image), solutions exist. Infinite solutions because kernel is non-trivial.",
+            "score": 100,
+            "text": "Always solvable"
+          },
+          {
+            "outcome": "Incorrect. The augmented matrix [A|b] has rank 1, same as A. Solutions exist but are not unique.",
+            "score": 0,
+            "text": "Never solvable"
+          }
+        ]
+      },
+      {
+        "type": "reflection",
+        "prompt": "How might kernel analysis help in real-world engineering problems?"
+      },
+      {
+        "type": "speed_quiz",
+        "questions": [
+          {
+            "answer": 3,
+            "options": [
+              "0",
+              "1",
+              "2",
+              "3"
+            ],
+            "question": "What's the dimension of the image for a 3×3 invertible matrix?"
+          },
+          {
+            "answer": 0,
+            "options": [
+              "Zero vector",
+              "Identity vector",
+              "Kernel basis",
+              "Eigenbasis"
+            ],
+            "question": "Which vector is guaranteed to be in the image of A?"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "lesson_04_09_01",
+    "title": "Introduction to Eigenvalue Computation",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Confusing eigenvectors with the direction of maximum stretch",
+          "example": "For matrix [[2 1], [1 2]], eigenvalues are 3 and 1, showing two distinct scaling directions",
+          "explanation": "Eigenvalues represent how much a linear transformation stretches or compresses space along specific directions. Imagine stretching a rubber sheet - eigenvalues tell you the scaling factor for each direction.",
+          "realWorldUse": "Google's PageRank algorithm uses eigenvalues to rank web pages",
+          "tip": "Always check if matrix is diagonalizable first",
+          "title": "Eigenvalues as Scaling Factors"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "This calculates roots of the characteristic polynomial det(A - λI) = 0",
+          "hint": "Use np.linalg.eigvals() function",
+          "language": "python",
+          "question": "Compute eigenvalues using numpy",
+          "solution": "import numpy as np\nA = np.array([[2, 1], [1, 2]])\neigenvalues = np.linalg.eigvals(A)\nprint(eigenvalues)",
+          "starterCode": "import numpy as np\nA = np.array([[2, 1], [1, 2]])\n# YOUR CODE HERE"
+        }
+      },
+      {
+        "type": "visual",
+        "content": {
+          "diagram": [
+            "Start with matrix A",
+            "Form A-λI",
+            "Calculate determinant",
+            "Solve polynomial = 0",
+            "Get eigenvalues"
+          ],
+          "explanation": "The characteristic equation process creates a polynomial whose roots are eigenvalues",
+          "title": "Eigenvalue Computation Flow"
+        }
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 1,
+            "explanation": "Eigenvalues are found by solving det(A - λI) = 0, which requires determinant calculation",
+            "options": [
+              "Matrix inversion",
+              "Determinant calculation",
+              "Trace computation",
+              "Rank calculation"
+            ],
+            "question": "Which method computes eigenvalues directly?"
+          }
+        ]
+      },
+      {
+        "type": "fill_blank",
+        "sentences": [
+          {
+            "answer": "λ",
+            "text": "The characteristic equation is formed by calculating det(A - ___I) = 0"
+          }
+        ]
+      },
+      {
+        "type": "reflection",
+        "prompt": "How might eigenvalues be used in real-world applications like social network analysis?"
+      },
+      {
+        "type": "speed_quiz",
+        "questions": [
+          {
+            "answer": 2,
+            "options": [
+              "1",
+              "2",
+              "3",
+              "4"
+            ],
+            "question": "What's the degree of the characteristic polynomial for a 3x3 matrix?"
+          },
+          {
+            "answer": 1,
+            "options": [
+              "Determinant",
+              "Trace",
+              "Rank",
+              "Norm"
+            ],
+            "question": "Which matrix property equals the sum of eigenvalues?"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "lesson_04_10_01",
+    "title": "Diagonalization and Eigenbasis Applications",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Assuming all matrices are diagonalizable - only matrices with full sets of linearly independent eigenvectors qualify",
+          "example": "A 2x2 matrix with distinct eigenvalues can be diagonalized by finding its eigenbasis and constructing P⁻¹AP = D",
+          "explanation": "Diagonalization transforms matrices into simpler forms using eigenvalues and eigenvectors. It's like decomposing a complex system into independent components that can be analyzed separately.",
+          "realWorldUse": "Simplifies computations in quantum mechanics and principal component analysis",
+          "tip": "Always verify that the matrix of eigenvectors is invertible before diagonalizing",
+          "title": "Diagonalization Fundamentals"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "This code verifies diagonalizability by checking if the eigenvector matrix P is invertible. Non-zero determinant confirms linear independence of eigenvectors",
+          "hint": "A matrix is diagonalizable if its eigenvectors form an invertible matrix (non-zero determinant)",
+          "language": "python",
+          "question": "Check if [[2 1], [1 2]] is diagonalizable",
+          "solution": "import numpy as np\nA = np.array([[2, 1], [1, 2]])\nevals, evecs = np.linalg.eig(A)\n# Matrix of eigenvectors\nP = evecs\n# Check determinant\ndet = np.linalg.det(P)\nprint(f'Determinant of P: {det:.2f}')",
+          "starterCode": "import numpy as np\nA = np.array([[2, 1], [1, 2]])\n# Compute eigenvalues and eigenvectors\nevals, evecs = np.linalg.eig(A)\n# Check if eigenvectors form invertible matrix"
+        }
+      },
+      {
+        "type": "scenario",
+        "content": {
+          "choices": [
+            {
+              "outcome": "Computational complexity grows exponentially",
+              "score": 30,
+              "text": "Direct multiplication"
+            },
+            {
+              "outcome": "Reduces computation to scalar exponentiation",
+              "score": 90,
+              "text": "Diagonalization"
+            },
+            {
+              "outcome": "Less efficient for high powers",
+              "score": 50,
+              "text": "LU Decomposition"
+            }
+          ],
+          "description": "You need to compute A¹⁰⁰ for a 3x3 matrix. Which approach is most efficient?",
+          "title": "Matrix Power Optimization"
+        }
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 1,
+            "explanation": "Symmetric matrices (B) always have orthogonal eigenvectors forming a complete basis, ensuring diagonalizability",
+            "options": [
+              "A. Defective matrix",
+              "B. Symmetric matrix",
+              "C. Jordan block",
+              "D. Nilpotent matrix"
+            ],
+            "question": "Which matrix is guaranteed to be diagonalizable?"
+          }
+        ]
+      },
+      {
+        "type": "visual",
+        "content": {
+          "diagram": [
+            "Original Matrix A",
+            "Find Eigenvalues λ",
+            "Compute Eigenvectors v",
+            "Construct P and D",
+            "Verify P⁻¹AP = D"
+          ],
+          "explanation": "The diagram shows how diagonalization breaks down matrix operations into simpler scalar operations through eigenbasis transformation",
+          "title": "Diagonalization Process"
+        }
+      },
+      {
+        "type": "reflection",
+        "prompt": "Explain how diagonalization simplifies solving systems of linear differential equations"
+      },
+      {
+        "type": "speed_quiz",
+        "questions": [
+          {
+            "answer": 0,
+            "options": [
+              "A. [[3,0],[0,5]]",
+              "B. [[5,3],[3,5]]",
+              "C. [[8,0],[0,8]]",
+              "D. [[3,5],[5,3]]"
+            ],
+            "question": "What's the diagonal form of a 2x2 matrix with eigenvalues 3 and 5?"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "lesson_05_11_01",
+    "title": "Introduction to Principal Component Analysis",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Assuming PCA preserves original feature interpretability",
+          "example": "In a 2D dataset of student grades (Math vs Science), PCA finds the direction where scores vary most, creating a single 'academic ability' axis.",
+          "explanation": "PCA transforms data into a new coordinate system where axes (principal components) maximize variance. Imagine rotating a 3D object to view it from the most informative angle.",
+          "realWorldUse": "Used in facial recognition to reduce pixel dimensions while retaining discriminative features",
+          "tip": "Always standardize data before PCA to prevent scale bias",
+          "title": "PCA Fundamentals"
+        }
+      },
+      {
+        "type": "visual",
+        "content": {
+          "diagram": [
+            "Original data points",
+            "Covariance ellipse",
+            "Principal component axis",
+            "Projected data points"
+          ],
+          "explanation": "The first PC aligns with the ellipse's major axis, capturing maximum variance. Each subsequent PC is orthogonal and captures remaining variance",
+          "title": "PCA Geometric Interpretation"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "This manual implementation shows how PCA computes directions of maximum variance through covariance matrix decomposition",
+          "hint": "Use numpy.linalg.eig for eigen decomposition",
+          "language": "python",
+          "question": "Implement PCA from scratch on the Iris dataset",
+          "solution": "from sklearn.datasets import load_iris\nimport numpy as np\n\ndata = load_iris().data\n# Standardize data\nX = (data - np.mean(data, axis=0)) / np.std(data, axis=0)\n# Compute covariance matrix\nC = np.cov(X, rowvar=False)\n# Compute eigenvalues and eigenvectors\nevals, evecs = np.linalg.eig(C)\nsorted_indices = np.argsort(evals)[::-1]\nprincipal_component = evecs[:, sorted_indices[0]]",
+          "starterCode": "from sklearn.datasets import load_iris\nimport numpy as np\n\ndata = load_iris().data\n# Standardize data\nX = (data - np.mean(data, axis=0)) / np.std(data, axis=0)\n# Compute covariance matrix\nC = ... # YOUR CODE HERE\n# Compute eigenvalues and eigenvectors\n..."
+        }
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 0,
+            "explanation": "Eigenvalues represent the variance captured by each component - larger values indicate more important components",
+            "options": [
+              "A) Eigenvalue magnitude",
+              "B) Eigenvector direction",
+              "C) Original feature scale",
+              "D) Data sparsity"
+            ],
+            "question": "Which property determines the importance of a principal component?"
+          }
+        ]
+      },
+      {
+        "type": "reflection",
+        "prompt": "When would PCA fail to be an effective dimensionality reduction technique? Provide two scenarios with explanations"
+      },
+      {
+        "type": "speed_quiz",
+        "questions": [
+          {
+            "options": [
+              "A) Minimize reconstruction error",
+              "B) Maximize variance",
+              "C) Minimize feature correlation",
+              "D) Maximize feature count"
+            ],
+            "question": "What is the primary goal of PCA?"
+          },
+          {
+            "options": [
+              "A) Original features",
+              "B) New coordinate axes",
+              "C) Data points",
+              "D) Variance values"
+            ],
+            "question": "What do eigenvectors represent in PCA?"
+          },
+          {
+            "options": [
+              "A) Proportion of total variance captured",
+              "B) Number of components",
+              "C) Feature importance scores",
+              "D) Reconstruction accuracy"
+            ],
+            "question": "How do you interpret the explained variance ratio?"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "lesson_05_11_02",
+    "title": "PCA Implementation Workflow",
+    "stages": [
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 0,
+            "explanation": "PCA is sensitive to feature scales. Without standardization, features with larger magnitudes dominate variance calculations.",
+            "options": [
+              "A) Ensures features are on same scale",
+              "B) Reduces computation time",
+              "C) Avoids overfitting",
+              "D) Increases model accuracy"
+            ],
+            "question": "Why is standardization crucial for PCA?"
+          },
+          {
+            "answer": 1,
+            "explanation": "The explained variance ratio shows cumulative variance captured. Typically, retain components until reaching 95% variance.",
+            "options": [
+              "A) Eigenvalues > 1",
+              "B) Explained variance ratio threshold",
+              "C) Original feature count",
+              "D) Dataset size"
+            ],
+            "question": "What determines the number of principal components to retain?"
+          },
+          {
+            "answer": 0,
+            "explanation": "The covariance matrix quantifies how features vary together, forming the basis for finding optimal projection directions.",
+            "options": [
+              "A) Feature correlations",
+              "B) Eigenvalues",
+              "C) Principal components",
+              "D) Original data"
+            ],
+            "question": "What does the covariance matrix represent in PCA?"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "lesson_05_12_01",
+    "title": "Dimensionality Reduction Applications",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Using too few components causing severe information loss in reconstructed data",
+          "example": "Compressing 1000x1000 pixel images to 50 principal components retains 95% of original variance",
+          "explanation": "Principal Component Analysis (PCA) compresses data by transforming it into fewer dimensions while retaining maximum variance. Imagine flattening a 3D sculpture into a 2D shadow - you lose depth but preserve shape. The key is balancing compression ratio with information retention.",
+          "realWorldUse": "Medical imaging compression for faster transmission between hospitals",
+          "tip": "Always normalize data before PCA to prevent scale-biased compression",
+          "title": "PCA in Data Compression"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "This code reduces 784-pixel images to 50 dimensions. The explained_variance_ratio_ property shows how much variance each component retains. Reconstructed images will have lower resolution but maintain essential features",
+          "hint": "Use 50 components to balance compression and accuracy. The inverse_transform() method reconstructs data",
+          "language": "python",
+          "question": "Implement PCA for image compression using MNIST dataset",
+          "solution": "from sklearn.decomposition import PCA\nfrom sklearn.datasets import fetch_openml\n\n# Load MNIST data\nX, y = fetch_openml('mnist_784', version=1, return_X_y=True)\n\n# Initialize PCA with 50 components\npca = PCA(n_components=50)\n\n# Fit and transform data\nX_pca = pca.fit_transform(X)\n\n# Reconstruct original space\nX_reconstructed = pca.inverse_transform(X_pca)",
+          "starterCode": "from sklearn.decomposition import PCA\nfrom sklearn.datasets import fetch_openml\n\n# Load MNIST data\nX, y = fetch_openml('mnist_784', version=1, return_X_y=True)\n\n# Initialize PCA with 50 components\npca = PCA(n_components=____)\n\n# Fit and transform data\nX_pca = pca.fit_transform(____)\n\n# Reconstruct original space\nX_reconstructed = pca.inverse_transform(____)"
+        }
+      },
+      {
+        "type": "scenario",
+        "title": "Compression Trade-off Scenario",
+        "description": "You need to compress a 10,000-dimensional gene expression dataset. Which approach would you choose?",
+        "choices": [
+          {
+            "outcome": "Balanced compression with moderate information retention",
+            "score": 85,
+            "text": "PCA with 500 components"
+          },
+          {
+            "outcome": "Better for sparse data but higher information loss",
+            "score": 70,
+            "text": "Truncated SVD with 200 components"
+          },
+          {
+            "outcome": "Non-linear compression requires more computational resources",
+            "score": 90,
+            "text": "Autoencoder neural network"
+          },
+          {
+            "outcome": "Fast but unpredictable information retention",
+            "score": 60,
+            "text": "Random projection with 100 components"
+          }
+        ]
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 1,
+            "explanation": "The variance retained in selected components (B) directly determines information preservation. PCA's explained_variance_ratio_ property quantifies this - higher cumulative variance means less information loss",
+            "options": [
+              "A) Number of original features",
+              "B) Variance retained in selected components",
+              "C) Data normalization method",
+              "D) Random seed value"
+            ],
+            "question": "Which factor most directly affects information loss in PCA?"
+          }
+        ]
+      },
+      {
+        "type": "reflection",
+        "prompt": "Describe a real-world application where data compression trade-offs would be critical. How would you balance dimensionality reduction with information retention needs?"
+      },
+      {
+        "type": "speed_quiz",
+        "questions": [
+          {
+            "answer": 1,
+            "options": [
+              "A) Requires fewer components",
+              "B) Preserves more variance",
+              "C) Works with non-numeric data",
+              "D) Is faster to compute"
+            ],
+            "question": "What's the main advantage of PCA over random projection for compression?"
+          }
+        ]
+      }
+    ]
+  }
+]

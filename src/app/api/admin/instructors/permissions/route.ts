@@ -4,6 +4,11 @@ import {
   getAllInstructorPermissions,
   adminReviewCourseCreationPermission
 } from "@/lib/permissions/courseCreationPermission";
+import {
+  toggleInstructorPermission,
+  getInstructorPermissions,
+  InstructorPermissionKey
+} from "@/lib/permissions/instructorPermissions";
 
 /**
  * GET — Fetch all instructor permissions and pending requests for Admin
@@ -25,7 +30,7 @@ export async function GET() {
 }
 
 /**
- * POST — Admin action to APPROVE, REJECT, GRANT, or REVOKE course creation permission
+ * POST — Admin action to TOGGLE individual permissions, or APPROVE, REJECT, GRANT, REVOKE
  */
 export async function POST(req: Request) {
   try {
@@ -35,12 +40,49 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { instructorId, action, feedback } = body;
+    const { instructorId, action, permissionKey, enabled, feedback } = body;
 
+    if (!instructorId) {
+      return NextResponse.json({ error: "instructorId is required." }, { status: 400 });
+    }
+
+    // Individual toggle action
+    if (action === "TOGGLE_PERMISSION") {
+      const validKeys: InstructorPermissionKey[] = [
+        "COURSE_CREATE",
+        "COURSE_EDIT",
+        "LIVE_CLASS_CREATE",
+        "LIVE_CLASS_EDIT",
+        "LIVE_CLASS_RESCHEDULE"
+      ];
+
+      if (!permissionKey || !validKeys.includes(permissionKey)) {
+        return NextResponse.json(
+          { error: `Invalid permissionKey. Must be one of: ${validKeys.join(", ")}` },
+          { status: 400 }
+        );
+      }
+
+      const result = await toggleInstructorPermission(
+        session.id,
+        instructorId,
+        permissionKey as InstructorPermissionKey,
+        Boolean(enabled)
+      );
+
+      return NextResponse.json({
+        success: true,
+        status: result.permission.status,
+        message: result.message,
+        permission: result.permission
+      });
+    }
+
+    // Bulk status actions (APPROVE, REJECT, GRANT, REVOKE)
     const validActions = ["APPROVE", "REJECT", "GRANT", "REVOKE"];
-    if (!instructorId || !validActions.includes(action)) {
+    if (!validActions.includes(action)) {
       return NextResponse.json(
-        { error: `instructorId and action (${validActions.join("/")}) are required.` },
+        { error: `Invalid action. Must be TOGGLE_PERMISSION or one of: ${validActions.join(", ")}` },
         { status: 400 }
       );
     }
@@ -59,7 +101,12 @@ export async function POST(req: Request) {
       );
     }
 
-    return NextResponse.json(result);
+    const fullPermissions = await getInstructorPermissions(instructorId);
+
+    return NextResponse.json({
+      ...result,
+      permission: fullPermissions
+    });
   } catch (err: any) {
     console.error("POST /api/admin/instructors/permissions error:", err);
     return NextResponse.json(
@@ -68,3 +115,4 @@ export async function POST(req: Request) {
     );
   }
 }
+

@@ -1,0 +1,166 @@
+{
+  "modules": [
+    {
+      "module_id": "M01",
+      "module_title": "Vector Spaces and Linear Transformations",
+      "description": "",
+      "order": 1,
+      "topic_ids": [
+        "T01",
+        "T02",
+        "T03"
+      ]
+    },
+    {
+      "module_id": "M02",
+      "module_title": "Eigenvalues and Singular Value Decomposition",
+      "description": "",
+      "order": 2,
+      "topic_ids": [
+        "T04",
+        "T05",
+        "T06"
+      ]
+    },
+    {
+      "module_id": "M03",
+      "module_title": "Least Squares and Optimization",
+      "description": "",
+      "order": 3,
+      "topic_ids": [
+        "T07",
+        "T08"
+      ]
+    },
+    {
+      "module_id": "M04",
+      "module_title": "Applications in Data Science and Machine Learning",
+      "description": "",
+      "order": 4,
+      "topic_ids": [
+        "T09",
+        "T10"
+      ]
+    },
+    {
+      "module_id": "M05",
+      "module_title": "Advanced Topics and Computer Graphics",
+      "description": "",
+      "order": 5,
+      "topic_ids": [
+        "T11",
+        "T12",
+        "T13",
+        "T14",
+        "T15"
+      ]
+    }
+  ],
+  "topics": [
+    {
+      "topic_id": "T01",
+      "topic_title": "Vector Spaces and Subspaces",
+      "module_id": "M01",
+      "description": "Foundational concepts of vector spaces, including span, basis, and dimensionality.",
+      "lesson_ids": []
+    },
+    {
+      "topic_id": "T02",
+      "topic_title": "Linear Transformations and Matrices",
+      "module_id": "M01",
+      "description": "Matrix representations of linear transformations, kernel, and image.",
+      "lesson_ids": []
+    },
+    {
+      "topic_id": "T03",
+      "topic_title": "Matrix Inverses and Determinants",
+      "module_id": "M01",
+      "description": "Computational techniques for inverses and determinants.",
+      "lesson_ids": []
+    },
+    {
+      "topic_id": "T04",
+      "topic_title": "Eigenvalues and Eigenvectors",
+      "module_id": "M02",
+      "description": "Diagonalization, eigenbasis, and applications.",
+      "lesson_ids": []
+    },
+    {
+      "topic_id": "T05",
+      "topic_title": "Singular Value Decomposition (SVD)",
+      "module_id": "M02",
+      "description": "Geometric interpretation and low-rank approximations.",
+      "lesson_ids": []
+    },
+    {
+      "topic_id": "T06",
+      "topic_title": "Spectral Theorem",
+      "module_id": "M02",
+      "description": "Orthogonal diagonalization of symmetric matrices.",
+      "lesson_ids": []
+    },
+    {
+      "topic_id": "T07",
+      "topic_title": "Least Squares Problems",
+      "module_id": "M03",
+      "description": "Geometric derivation and normal equations.",
+      "lesson_ids": []
+    },
+    {
+      "topic_id": "T08",
+      "topic_title": "Constrained Optimization",
+      "module_id": "M03",
+      "description": "Lagrangian multipliers and quadratic forms.",
+      "lesson_ids": []
+    },
+    {
+      "topic_id": "T09",
+      "topic_title": "PCA and Dimensionality Reduction",
+      "module_id": "M04",
+      "description": "Application of SVD to data compression.",
+      "lesson_ids": []
+    },
+    {
+      "topic_id": "T10",
+      "topic_title": "Regression Models",
+      "module_id": "M04",
+      "description": "Linear and ridge regression using least squares.",
+      "lesson_ids": []
+    },
+    {
+      "topic_id": "T11",
+      "topic_title": "Affine Transformations",
+      "module_id": "M05",
+      "description": "Translation, rotation, and scaling in computer graphics.",
+      "lesson_ids": []
+    },
+    {
+      "topic_id": "T12",
+      "topic_title": "Quaternions and 3D Rotations",
+      "module_id": "M05",
+      "description": "Avoiding gimbal lock with quaternions.",
+      "lesson_ids": []
+    },
+    {
+      "topic_id": "T13",
+      "topic_title": "Markov Chains",
+      "module_id": "M05",
+      "description": "Stochastic matrices and steady-state analysis.",
+      "lesson_ids": []
+    },
+    {
+      "topic_id": "T14",
+      "topic_title": "PageRank Algorithm",
+      "module_id": "M05",
+      "description": "Web graph analysis using eigenvectors.",
+      "lesson_ids": []
+    },
+    {
+      "topic_id": "T15",
+      "topic_title": "Tensor Decompositions",
+      "module_id": "M05",
+      "description": "Generalization of SVD to higher-order data.",
+      "lesson_ids": []
+    }
+  ]
+}

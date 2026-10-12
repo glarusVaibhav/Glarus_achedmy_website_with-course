@@ -1,0 +1,60 @@
+[
+  {
+    "id": "M1",
+    "title": "Core Rendering Engine",
+    "topics": [
+      {
+        "id": "intro-adaptive",
+        "title": "Introduction to Adaptive Learning"
+      },
+      {
+        "id": "code-adaptive",
+        "title": "Coding with Adaptive Layouts"
+      },
+      {
+        "id": "comparison-adaptive",
+        "title": "The Paradigm Shift Comparison"
+      }
+    ]
+  },
+  {
+    "id": "M2",
+    "title": "Cognitive State Management",
+    "topics": [
+      {
+        "id": "M002-state-management",
+        "title": "Module 2: Cognitive State Management"
+      }
+    ]
+  },
+  {
+    "id": "M3",
+    "title": "Advanced React Architecture",
+    "topics": [
+      {
+        "id": "M003-react-architecture",
+        "title": "Module 3: Advanced React Architecture"
+      }
+    ]
+  },
+  {
+    "id": "M4",
+    "title": "AI-Driven Semantic Generation",
+    "topics": [
+      {
+        "id": "M004-ai-integration",
+        "title": "Module 4: AI-Driven Semantic Generation"
+      }
+    ]
+  },
+  {
+    "id": "M5",
+    "title": "Demo Masterclass",
+    "topics": [
+      {
+        "id": "M010-fine-tuning",
+        "title": "Module 10: Fine-Tuning (The YouTuber Masterclass)"
+      }
+    ]
+  }
+]

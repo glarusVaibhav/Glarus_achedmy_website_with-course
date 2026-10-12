@@ -1,0 +1,182 @@
+{
+    "id": "lesson_06_deep_learning",
+    "title": "Intro to Neural Networks",
+    "stages": [
+        {
+            "type": "concept",
+            "content": {
+                "title": "How Images Become Numbers (Tensors)",
+                "explanation": "\u2022 Beginner-friendly explanation.\n\u2022 Neural Networks don't have eyes.\n\u2022 This massive grid of numbers is called a Tensor.\n\u2022 Real-world intuition.\n\u2022 A tiny 100x100 pixel image is just a spreadsheet with 10,000 numbers."
+            }
+        },
+        {
+            "type": "visual",
+            "content": {
+                "title": "Image to Tensors",
+                "explanation": "This is the core secret of Computer Vision. The model doesn't see a 'dog', it sees a massive grid of brightness values ranging from 0 (black) to 255 (white).",
+                "image": "images/image_to_tensor.png"
+            }
+        },
+        {
+            "type": "concept",
+            "content": {
+                "title": "Batch vs Epoch",
+                "explanation": ""
+            }
+        },
+        {
+            "type": "visual",
+            "content": {
+                "title": "Batch vs Epoch",
+                "explanation": "You can't swallow the entire textbook (Dataset) at once without running out of memory. You must read it one Batch (chapter) at a time until you finish the full Epoch (book).",
+                "image": "images/batch_epoch.png"
+            }
+        },
+        {
+            "type": "concept",
+            "content": {
+                "title": "The Anatomy of a Perceptron",
+                "explanation": "\u2022 Beginner-friendly explanation.\n\u2022 The Perceptron is the artificial equivalent of a biological neuron in your brain.\n\u2022 It is the fundamental building block of Deep Learning.\n\u2022 Real-world intuition.\n\u2022 Imagine deciding whether to go out in the rain."
+            }
+        },
+        {
+            "type": "visual",
+            "content": {
+                "title": "Neural Network Architecture",
+                "explanation": "A Multi-Layer Perceptron (MLP) consists of an input layer, hidden layers, and an output layer. Each connection has a learnable weight, allowing the network to approximate any mathematical function.",
+                "image": "images/neural_network.svg"
+            }
+        },
+        {
+            "type": "concept",
+            "content": {
+                "title": "Activation Functions: Injecting Reality",
+                "explanation": "\u2022 Beginner-friendly explanation.\n\u2022 Activation functions are the 'decision makers' at the end of every perceptron.\n\u2022 Real-world intuition.\n\u2022 Think of a light switch with a dimmer.\n\u2022 A linear math function is just a straight wire\u2014whatever electricity comes in, goes out."
+            }
+        },
+        {
+            "type": "speed_quiz",
+            "questions": [
+                {
+                    "question": "What is the primary mathematical purpose of an Activation Function in a neural network?",
+                    "options": [
+                        "To compress the dataset size in memory.",
+                        "To inject non-linearity, allowing the network to learn complex, non-linear patterns.",
+                        "To automatically format the input strings into floats.",
+                        "To connect to the GPU hardware."
+                    ],
+                    "answer": 1
+                },
+                {
+                    "question": "Which activation function is most commonly used in the hidden layers of modern deep learning architectures?",
+                    "options": [
+                        "Step Function",
+                        "Linear",
+                        "Softmax",
+                        "ReLU (Rectified Linear Unit)"
+                    ],
+                    "answer": 3
+                }
+            ]
+        },
+        {
+            "type": "concept",
+            "content": {
+                "title": "Activation Functions in Code",
+                "explanation": "\u2022 Neural Networks rely on Activation Functions to introduce non-linearity.\n\u2022 Without them, a neural network is just a giant linear regression model!\n\u2022 The most popular activation function is ReLU (Rectified Linear Unit).\n\u2022 Mathematically, it's incredibly simple: - If the input is less than 0, return 0.\n\u2022 - If the input is greater than 0, return the input."
+            }
+        },
+        {
+            "type": "code",
+            "challenge": {
+                "language": "python",
+                "question": "Implement a simple ReLU (Rectified Linear Unit) activation function in Python.",
+                "starterCode": "import numpy as np\n\ndef relu(x):\n    # TODO: Implement the ReLU logic (return x if x > 0, else return 0)\n    pass\n\n# Test the function\nprint(relu(-5.0))\nprint(relu(10.5))",
+                "solution": "import numpy as np\n\ndef relu(x):\n    return np.maximum(0, x)\n\nprint(relu(-5.0))  # Outputs 0.0\nprint(relu(10.5))  # Outputs 10.5",
+                "hint": "You can use standard Python if/else statements, or leverage numpy's optimized np.maximum(0, x) function.",
+                "explanation": "ReLU acts as a filter that completely blocks negative signals (setting them to zero) while letting positive signals pass through perfectly unchanged. This simple geometric kink is the key to deep learning."
+            }
+        },
+        {
+            "type": "concept",
+            "content": {
+                "explanation": "\u2022 Multi-layer Perceptrons (MLPs) are like digital puzzle solvers.\n\u2022 Each hidden layer in an MLP adds another layer of decision-making filters.\n\u2022 Common Mistake: Overcomplicating architectures with too many layers for simple problems.",
+                "title": "MLP Architecture Fundamentals"
+            }
+        },
+        {
+            "type": "code",
+            "challenge": {
+                "explanation": "This code demonstrates how data flows through an MLP. The tanh activation introduces non-linearity in hidden layers, while softmax converts raw outputs to probability distributions for classification tasks.",
+                "hint": "Use tanh for hidden layer activation and softmax for output layer",
+                "language": "python",
+                "question": "Implement forward propagation for a 2-layer MLP",
+                "solution": "import numpy as np\n\ndef forward_prop(X, W1, b1, W2, b2):\n    hidden = np.tanh(X @ W1 + b1)  # First layer with tanh activation\n    output = np.softmax(hidden @ W2 + b2, axis=1)  # Output with softmax\n    return output",
+                "starterCode": "import numpy as np\n\ndef forward_prop(X, W1, b1, W2, b2):\n    # X: input data\n    # W1, b1: weights and biases for first hidden layer\n    # W2, b2: weights and biases for output layer\n    \n    # TODO: Compute hidden layer activation\n    hidden = \n    # TODO: Compute output layer activation\n    output = \n    return output"
+            }
+        },
+        {
+            "type": "scenario",
+            "title": "MLP Configuration Challenge",
+            "description": "You're tasked with classifying handwritten digits (0-9) using MLPs. The dataset has 784 input features (28x28 pixels). Choose the best configuration:",
+            "choices": [
+                {
+                    "outcome": "Moderate accuracy but fast training",
+                    "score": 80,
+                    "text": "1 hidden layer with 64 neurons"
+                },
+                {
+                    "outcome": "Higher accuracy but longer training time",
+                    "score": 95,
+                    "text": "2 hidden layers with 128 and 64 neurons"
+                },
+                {
+                    "outcome": "Overfitting risk with limited data",
+                    "score": 60,
+                    "text": "3 hidden layers with 256 neurons each"
+                }
+            ]
+        },
+        {
+            "type": "mcq",
+            "questions": [
+                {
+                    "answer": 1,
+                    "explanation": "Hidden layers enable MLPs to detect increasingly complex patterns through successive transformations. Each layer builds on the patterns discovered by previous layers, similar to how humans solve problems in stages.",
+                    "options": [
+                        "Increase computational speed",
+                        "Detect complex patterns",
+                        "Reduce input dimensionality",
+                        "Store training data"
+                    ],
+                    "question": "What's the primary purpose of hidden layers in MLPs?"
+                }
+            ]
+        },
+        {
+            "type": "speed_quiz",
+            "questions": [
+                {
+                    "answer": 3,
+                    "options": [
+                        "ReLU",
+                        "Sigmoid",
+                        "Tanh",
+                        "All of the above"
+                    ],
+                    "question": "Which activation function is commonly used in hidden layers?"
+                },
+                {
+                    "answer": 0,
+                    "options": [
+                        "Normalizes outputs to probabilities",
+                        "Adds regularization",
+                        "Increases training speed",
+                        "Reduces overfitting"
+                    ],
+                    "question": "What does softmax do in the output layer?"
+                }
+            ]
+        }
+    ]
+}

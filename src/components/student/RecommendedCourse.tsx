@@ -84,11 +84,11 @@ export function RecommendedCourse({
   };
 
   return (
-    <section className="relative w-full my-10 font-sans text-slate-200">
+    <section className="relative w-full my-10 font-sans text-text">
       {/* ───────────────────────────────────────────────────────────── */}
       {/* 1. SECTION HEADER                                             */}
       {/* ───────────────────────────────────────────────────────────── */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6 pb-4 border-b border-white/[0.06]">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6 pb-4 border-b border-border">
         <div>
           {/* Eyebrow Label with subtle glowing indicator */}
           <div className="flex items-center gap-2 mb-2">
@@ -96,20 +96,20 @@ export function RecommendedCourse({
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-purple-500"></span>
             </span>
-            <span className="text-[11px] font-mono font-bold uppercase tracking-[0.2em] text-purple-400">
+            <span className="text-[11px] font-mono font-bold uppercase tracking-[0.2em] text-purple-700 dark:text-purple-400">
               DISCOVER & GROW
             </span>
-            <span className="text-white/20 text-xs">•</span>
-            <span className="text-[11px] text-slate-400 font-medium tracking-wide">
+            <span className="text-subtext/30 text-xs">•</span>
+            <span className="text-[11px] text-subtext font-medium tracking-wide">
               Curated pathways to elevate your skills
             </span>
           </div>
 
           {/* Heading & Supporting Text */}
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-text tracking-tight">
             Explore More Courses
           </h2>
-          <p className="text-xs sm:text-sm text-slate-400 font-normal mt-1 max-w-xl leading-relaxed">
+          <p className="text-xs sm:text-sm text-subtext font-normal mt-1 max-w-xl leading-relaxed">
             Expand your knowledge with top-rated live bootcamps and self-paced certifications.
           </p>
         </div>
@@ -117,13 +117,13 @@ export function RecommendedCourse({
         {/* Filter Pills, Shuffle & Explore Controls */}
         <div className="flex flex-wrap items-center gap-2.5">
           {/* Category Filter Tabs */}
-          <div className="flex items-center bg-white/[0.03] border border-white/[0.08] p-1 rounded-xl text-xs font-medium">
+          <div className="flex items-center bg-card border border-border p-1 rounded-xl text-xs font-medium">
             <button
               onClick={() => setActiveFilter("ALL")}
               className={`px-3 py-1 rounded-lg transition-colors cursor-pointer ${
                 activeFilter === "ALL"
                   ? "bg-purple-600 text-white font-bold shadow-xs"
-                  : "text-slate-400 hover:text-white"
+                  : "text-subtext hover:text-text"
               }`}
             >
               All (4)
@@ -133,7 +133,7 @@ export function RecommendedCourse({
               className={`px-3 py-1 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer ${
                 activeFilter === "LIVE"
                   ? "bg-purple-600 text-white font-bold shadow-xs"
-                  : "text-slate-400 hover:text-white"
+                  : "text-subtext hover:text-text"
               }`}
             >
               <span className="w-1.5 h-1.5 rounded-full bg-rose-400" />
@@ -144,7 +144,7 @@ export function RecommendedCourse({
               className={`px-3 py-1 rounded-lg transition-colors cursor-pointer ${
                 activeFilter === "SELF_PACED"
                   ? "bg-purple-600 text-white font-bold shadow-xs"
-                  : "text-slate-400 hover:text-white"
+                  : "text-subtext hover:text-text"
               }`}
             >
               Self-Paced
@@ -155,16 +155,16 @@ export function RecommendedCourse({
           <button
             onClick={handleShuffle}
             title="Shuffle recommendations"
-            className="text-xs font-semibold text-slate-300 hover:text-white bg-white/[0.03] hover:bg-white/[0.08] border border-white/[0.08] px-3 py-2 rounded-xl transition-all flex items-center gap-1.5 active:scale-95 group cursor-pointer"
+            className="text-xs font-semibold text-subtext hover:text-text bg-card hover:bg-card-hover border border-border px-3 py-2 rounded-xl transition-all flex items-center gap-1.5 active:scale-95 group cursor-pointer"
           >
-            <RotateCw className="w-3.5 h-3.5 text-purple-400 group-hover:rotate-180 transition-transform duration-500" />
+            <RotateCw className="w-3.5 h-3.5 text-purple-700 dark:text-purple-400 group-hover:rotate-180 transition-transform duration-500" />
             <span className="hidden sm:inline">Shuffle</span>
           </button>
 
           {/* Explore All */}
           <Link
             href="/courses"
-            className="text-xs font-semibold text-slate-300 hover:text-purple-300 transition-colors flex items-center gap-1 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/20 px-3.5 py-2 rounded-xl cursor-pointer"
+            className="text-xs font-semibold text-purple-700 dark:text-purple-400 hover:text-purple-800 dark:hover:text-purple-300 transition-colors flex items-center gap-1 bg-purple-50 dark:bg-purple-500/10 hover:bg-purple-100 dark:hover:bg-purple-500/20 border border-purple-200 dark:border-purple-500/20 px-3.5 py-2 rounded-xl cursor-pointer"
           >
             <span>Explore All</span>
             <ChevronRight className="w-3.5 h-3.5" />
@@ -190,10 +190,10 @@ export function RecommendedCourse({
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ duration: 0.3, delay: index * 0.05 }}
                 onClick={(e) => handleViewDetails(e, course)}
-                className="group relative rounded-3xl bg-[#0d121f] border border-white/[0.08] hover:border-purple-500/40 overflow-hidden shadow-xl hover:shadow-2xl hover:shadow-purple-950/40 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1.5 cursor-pointer select-none"
+                className="group relative rounded-3xl bg-card border border-border hover:border-purple-400 dark:hover:border-purple-500/40 dark:bg-[#0d121f] dark:border-white/[0.08] overflow-hidden shadow-sm dark:shadow-xl hover:shadow-md dark:hover:shadow-2xl dark:hover:shadow-purple-950/40 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1.5 cursor-pointer select-none"
               >
                 {/* Top Image Banner */}
-                <div className="h-44 sm:h-48 w-full relative overflow-hidden flex items-center justify-center border-b border-white/[0.08] bg-[#070a14]">
+                <div className="h-44 sm:h-48 w-full relative overflow-hidden flex items-center justify-center border-b border-border bg-background dark:bg-[#070a14]">
                   {course.image ? (
                     <Image
                       src={course.image}
@@ -209,11 +209,11 @@ export function RecommendedCourse({
                   )}
 
                   {/* Dark gradient overlay at bottom of image */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0d121f] via-black/30 to-transparent pointer-events-none" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-card/80 via-black/20 to-transparent dark:from-[#0d121f] dark:via-black/30 pointer-events-none" />
 
                   {/* Top Level / Difficulty Badge */}
                   <div className="absolute top-3.5 left-3.5 z-10 flex gap-2">
-                    <span className="px-3 py-1 bg-black/75 backdrop-blur-md rounded-full text-[10px] font-black text-white uppercase tracking-widest border border-white/15 shadow-lg">
+                    <span className="px-3 py-1 bg-white/80 dark:bg-black/75 backdrop-blur-md rounded-full text-[10px] font-black text-text dark:text-white uppercase tracking-widest border border-border dark:border-white/15 shadow-lg">
                       {course.level || "INTERMEDIATE"}
                     </span>
                   </div>
@@ -238,58 +238,58 @@ export function RecommendedCourse({
                 </div>
 
                 {/* Course Details Body */}
-                <div className="p-5 flex flex-col flex-1 bg-gradient-to-b from-[#0d121f] to-[#080b14]">
+                <div className="p-5 flex flex-col flex-1 bg-gradient-to-b from-card to-background dark:from-[#0d121f] dark:to-[#080b14]">
                   {/* Category & Rating */}
                   <div className="flex items-center justify-between mb-2.5">
-                    <span className="text-[11px] font-black text-purple-400 uppercase tracking-widest">
+                    <span className="text-[11px] font-black text-purple-700 dark:text-purple-400 uppercase tracking-widest">
                       {course.category || "AI ENGINEERING"}
                     </span>
-                    <div className="flex items-center gap-1 text-xs font-bold text-amber-400">
-                      <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                      <span className="text-slate-200">4.9</span>
+                    <div className="flex items-center gap-1 text-xs font-bold text-amber-500">
+                      <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
+                      <span className="text-subtext">4.9</span>
                     </div>
                   </div>
 
                   {/* Course Title */}
-                  <h3 className="text-base sm:text-[17px] font-black text-white leading-snug mb-2 group-hover:text-purple-300 transition-colors line-clamp-2 min-h-[44px]">
+                  <h3 className="text-base sm:text-[17px] font-black text-text leading-snug mb-2 group-hover:text-primary transition-colors line-clamp-2 min-h-[44px]">
                     {course.title}
                   </h3>
 
                   {/* What This Course Is (Description) */}
-                  <p className="text-xs text-slate-400 leading-relaxed line-clamp-2 min-h-[34px] mb-4">
+                  <p className="text-xs text-subtext leading-relaxed line-clamp-2 min-h-[34px] mb-4">
                     {course.description}
                   </p>
 
                   {/* Duration / Format Info */}
-                  <div className="flex items-center justify-between text-xs font-semibold text-slate-300 mt-auto mb-3.5">
-                    <span className="flex items-center gap-1.5 text-slate-300">
-                      <Clock className="w-3.5 h-3.5 text-purple-400" />
+                  <div className="flex items-center justify-between text-xs font-semibold text-subtext mt-auto mb-3.5">
+                    <span className="flex items-center gap-1.5 text-subtext">
+                      <Clock className="w-3.5 h-3.5 text-primary" />
                       {course.duration} {isLive ? "Live" : "Self-Paced"}
                     </span>
                     {isLive && course.scheduleInfo ? (
-                      <span className="text-[10px] font-bold text-amber-300 bg-amber-500/15 border border-amber-500/30 px-2 py-0.5 rounded-full">
+                      <span className="text-[10px] font-bold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-500/15 border border-amber-200 dark:border-amber-500/30 px-2 py-0.5 rounded-full">
                         {course.scheduleInfo.seatsLeft} Seats Left
                       </span>
                     ) : (
-                      <span className="text-[11px] text-emerald-400 font-medium">
+                      <span className="text-[11px] text-emerald-700 dark:text-emerald-400 font-medium">
                         {course.modulesCount} Modules
                       </span>
                     )}
                   </div>
 
                   {/* Price & Access Row */}
-                  <div className="pt-3 border-t border-white/[0.08] flex items-center justify-between mb-3.5">
-                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-purple-500/15 text-purple-300 border border-purple-500/30">
+                  <div className="pt-3 border-t border-border flex items-center justify-between mb-3.5">
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-purple-50 text-purple-700 border border-purple-200 dark:bg-purple-500/15 dark:text-purple-300 dark:border-purple-500/30">
                       {isLive ? "Live Batch" : "Full Access"}
                     </span>
 
                     <div className="flex items-baseline gap-1.5 shrink-0">
                       {originalPrice && (
-                        <span className="text-[11px] text-slate-500 line-through">
+                        <span className="text-[11px] text-subtext line-through">
                           ₹{originalPrice.toLocaleString()}
                         </span>
                       )}
-                      <span className="text-sm font-black text-emerald-400">
+                      <span className="text-sm font-black text-emerald-700 dark:text-emerald-400">
                         ₹{currentPrice.toLocaleString()}
                       </span>
                     </div>
@@ -300,9 +300,9 @@ export function RecommendedCourse({
                     <button
                       type="button"
                       onClick={(e) => handleViewDetails(e, course)}
-                      className="py-2.5 px-2 rounded-xl bg-white/[0.05] hover:bg-white/[0.12] border border-white/[0.1] hover:border-purple-500/40 text-slate-200 hover:text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-xs active:scale-[0.97]"
+                      className="py-2.5 px-2 rounded-xl bg-card hover:bg-zinc-100 dark:hover:bg-white/[0.12] border border-border hover:border-purple-400 dark:hover:border-purple-500/40 text-text font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-xs active:scale-[0.97]"
                     >
-                      <Eye className="w-3.5 h-3.5 text-purple-400" />
+                      <Eye className="w-3.5 h-3.5 text-primary" />
                       <span>View Details</span>
                     </button>
 

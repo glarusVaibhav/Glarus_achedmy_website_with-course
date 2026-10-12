@@ -2,6 +2,10 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { LiveSessionService } from "@/lib/services/liveSessionService";
+import {
+  getInstructorPermissions,
+  hasPermission
+} from "@/lib/permissions/instructorPermissions";
 
 export async function GET() {
   try {
@@ -11,6 +15,16 @@ export async function GET() {
     }
 
     const instructorId = session.id;
+    const isAdmin = session.role === "ADMIN";
+
+    // Retrieve instructor's system-level authorities granted by Admin
+    const sysPerms = isAdmin
+      ? {
+          canEditLiveClass: true,
+          canRescheduleLiveClass: true,
+          canCreateLiveClass: true
+        }
+      : await getInstructorPermissions(instructorId);
 
     // Get all assignments for this instructor
     const assignments = await prisma.sessionAssignment.findMany({
@@ -104,15 +118,15 @@ export async function GET() {
           totalSessions: lc.sessions.length,
           coursePermissions: {
             canView: true,
-            canEdit: true,
-            canEditAgenda: true,
-            canEditSchedule: true,
-            canEditResources: true,
-            canAddHomework: true,
-            canReschedule: true,
-            canCancel: true,
+            canEdit: sysPerms.canEditLiveClass,
+            canEditAgenda: sysPerms.canEditLiveClass,
+            canEditSchedule: sysPerms.canRescheduleLiveClass,
+            canEditResources: sysPerms.canEditLiveClass,
+            canAddHomework: sysPerms.canEditLiveClass,
+            canReschedule: sysPerms.canRescheduleLiveClass,
+            canCancel: isAdmin,
             canManageAttendance: true,
-            canManageRecording: true
+            canManageRecording: sysPerms.canEditLiveClass
           },
           sessions: lc.sessions.map((s) => {
             const computed = LiveSessionService.computeSessionStatus(s.date ? new Date(s.date) : null, s.startTime, s.duration);
@@ -145,15 +159,15 @@ export async function GET() {
               homework: s.homework,
               permissions: {
                 canView: true,
-                canEdit: true,
-                canEditAgenda: true,
-                canEditSchedule: true,
-                canEditResources: true,
-                canAddHomework: true,
-                canReschedule: true,
-                canCancel: true,
+                canEdit: sysPerms.canEditLiveClass,
+                canEditAgenda: sysPerms.canEditLiveClass,
+                canEditSchedule: sysPerms.canRescheduleLiveClass,
+                canEditResources: sysPerms.canEditLiveClass,
+                canAddHomework: sysPerms.canEditLiveClass,
+                canReschedule: sysPerms.canRescheduleLiveClass,
+                canCancel: isAdmin,
                 canManageAttendance: true,
-                canManageRecording: true
+                canManageRecording: sysPerms.canEditLiveClass
               }
             };
           })
@@ -176,15 +190,15 @@ export async function GET() {
           totalSessions: a.liveCourse.sessions.length,
           coursePermissions: {
             canView: a.canView,
-            canEdit: a.canEdit,
-            canEditAgenda: a.canEditAgenda,
-            canEditSchedule: a.canEditSchedule,
-            canEditResources: a.canEditResources,
-            canAddHomework: a.canAddHomework,
-            canReschedule: a.canReschedule,
+            canEdit: sysPerms.canEditLiveClass && a.canEdit,
+            canEditAgenda: sysPerms.canEditLiveClass && a.canEditAgenda,
+            canEditSchedule: sysPerms.canRescheduleLiveClass && a.canEditSchedule,
+            canEditResources: sysPerms.canEditLiveClass && a.canEditResources,
+            canAddHomework: sysPerms.canEditLiveClass && a.canAddHomework,
+            canReschedule: sysPerms.canRescheduleLiveClass && a.canReschedule,
             canCancel: a.canCancel,
             canManageAttendance: a.canManageAttendance,
-            canManageRecording: a.canManageRecording
+            canManageRecording: sysPerms.canEditLiveClass && a.canManageRecording
           },
           sessions: a.liveCourse.sessions.map((s) => {
             const sessAssign = s.assignments[0] || a;
@@ -218,15 +232,15 @@ export async function GET() {
               homework: s.homework,
               permissions: {
                 canView: sessAssign.canView,
-                canEdit: sessAssign.canEdit,
-                canEditAgenda: sessAssign.canEditAgenda,
-                canEditSchedule: sessAssign.canEditSchedule,
-                canEditResources: sessAssign.canEditResources,
-                canAddHomework: sessAssign.canAddHomework,
-                canReschedule: sessAssign.canReschedule,
+                canEdit: sysPerms.canEditLiveClass && sessAssign.canEdit,
+                canEditAgenda: sysPerms.canEditLiveClass && sessAssign.canEditAgenda,
+                canEditSchedule: sysPerms.canRescheduleLiveClass && sessAssign.canEditSchedule,
+                canEditResources: sysPerms.canEditLiveClass && sessAssign.canEditResources,
+                canAddHomework: sysPerms.canEditLiveClass && sessAssign.canAddHomework,
+                canReschedule: sysPerms.canRescheduleLiveClass && sessAssign.canReschedule,
                 canCancel: sessAssign.canCancel,
                 canManageAttendance: sessAssign.canManageAttendance,
-                canManageRecording: sessAssign.canManageRecording
+                canManageRecording: sysPerms.canEditLiveClass && sessAssign.canManageRecording
               }
             };
           })
@@ -257,15 +271,15 @@ export async function GET() {
           homework: a.session.homework,
           permissions: {
             canView: a.canView,
-            canEdit: a.canEdit,
-            canEditAgenda: a.canEditAgenda,
-            canEditSchedule: a.canEditSchedule,
-            canEditResources: a.canEditResources,
-            canAddHomework: a.canAddHomework,
-            canReschedule: a.canReschedule,
+            canEdit: sysPerms.canEditLiveClass && a.canEdit,
+            canEditAgenda: sysPerms.canEditLiveClass && a.canEditAgenda,
+            canEditSchedule: sysPerms.canRescheduleLiveClass && a.canEditSchedule,
+            canEditResources: sysPerms.canEditLiveClass && a.canEditResources,
+            canAddHomework: sysPerms.canEditLiveClass && a.canAddHomework,
+            canReschedule: sysPerms.canRescheduleLiveClass && a.canReschedule,
             canCancel: a.canCancel,
             canManageAttendance: a.canManageAttendance,
-            canManageRecording: a.canManageRecording
+            canManageRecording: sysPerms.canEditLiveClass && a.canManageRecording
           }
         });
       }
@@ -288,6 +302,18 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
+    if (session.role !== "ADMIN") {
+      const allowed = await hasPermission(session, "LIVE_CLASS_EDIT");
+      if (!allowed) {
+        return NextResponse.json(
+          {
+            error: "Permission Denied: 'Live Class Editing' authority is disabled by Administrator for your instructor profile."
+          },
+          { status: 403 }
+        );
+      }
+    }
+
     const body = await req.json();
     const { sessionId, status, meetingUrl, recordingUrl } = body;
 
@@ -304,10 +330,6 @@ export async function PATCH(req: Request) {
       where: { id: sessionId },
       data: updateData
     });
-
-    console.log(
-      `\n[Next.js Server] LiveSession Updated in Postgres DB -> ID: "${sessionId}" | recordingUrl: "${recordingUrl || '(unchanged)'}" | status: "${status || '(unchanged)'}"\n`
-    );
 
     return NextResponse.json({ session: updatedSession });
   } catch (error: any) {

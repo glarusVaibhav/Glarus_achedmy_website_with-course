@@ -267,13 +267,9 @@ function InstructorsContent() {
             });
           }
 
-          // If DB has real items, merge with mock items (avoiding id conflicts)
+          // If DB has real items, display them directly from the database
           if (loadedList.length > 0) {
-            setInstructors((prev) => {
-              const loadedIds = new Set(loadedList.map((i) => i.id));
-              const nonConflictingMock = prev.filter((m) => !loadedIds.has(m.id));
-              return [...loadedList, ...nonConflictingMock];
-            });
+            setInstructors(loadedList);
           }
         }
       } catch {

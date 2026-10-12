@@ -44,3 +44,9 @@ next-env.d.ts
 
 /src/generated/prisma
 /public/uploads/
+
+# archives & backups
+*.zip
+*.split_backup
+*.m15_backup
+temp_ai_repo/

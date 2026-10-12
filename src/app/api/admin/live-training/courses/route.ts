@@ -214,7 +214,25 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Title and description are required" }, { status: 400 });
     }
 
-    const courseSlug = slug || title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+    const courseSlug = slug || (typeof title === "string" ? title : String(title)).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+
+    const normalizedDescription = Array.isArray(description)
+      ? description.join("\n\n")
+      : typeof description === "object" && description !== null
+      ? JSON.stringify(description)
+      : String(description || "");
+
+    const normalizedShortDescription = Array.isArray(shortDescription)
+      ? shortDescription.join(" ")
+      : typeof shortDescription === "object" && shortDescription !== null
+      ? JSON.stringify(shortDescription)
+      : (shortDescription || null);
+
+    const normalizedSubtitle = Array.isArray(subtitle)
+      ? subtitle.join(" ")
+      : typeof subtitle === "object" && subtitle !== null
+      ? JSON.stringify(subtitle)
+      : (subtitle || null);
 
     const normalizedTargetAudience = Array.isArray(targetAudience)
       ? targetAudience.join(", ")
@@ -222,13 +240,19 @@ export async function POST(req: Request) {
       ? JSON.stringify(targetAudience)
       : targetAudience || null;
 
+    const normalizedCohortLeadBio = Array.isArray(cohortLeadBio)
+      ? cohortLeadBio.join("\n\n")
+      : typeof cohortLeadBio === "object" && cohortLeadBio !== null
+      ? JSON.stringify(cohortLeadBio)
+      : cohortLeadBio || null;
+
     const createdCourse = await prisma.liveCourse.create({
       data: {
-        title,
+        title: typeof title === "string" ? title : String(title),
         slug: courseSlug,
-        shortDescription: typeof shortDescription === "object" ? JSON.stringify(shortDescription) : (shortDescription || null),
-        subtitle: typeof subtitle === "object" ? JSON.stringify(subtitle) : (subtitle || null),
-        description,
+        shortDescription: normalizedShortDescription,
+        subtitle: normalizedSubtitle,
+        description: normalizedDescription,
         price: Number(price) || 14999,
         originalPrice: originalPrice ? Number(originalPrice) : 24999,
         previewVideoUrl: previewVideoUrl || null,
@@ -238,7 +262,7 @@ export async function POST(req: Request) {
         features: typeof features === "object" ? JSON.stringify(features) : (features || null),
         learningJourney: typeof learningJourney === "object" ? JSON.stringify(learningJourney) : (learningJourney || null),
         batches: typeof batches === "object" ? JSON.stringify(batches) : (batches || null),
-        cohortLeadBio: typeof cohortLeadBio === "object" ? JSON.stringify(cohortLeadBio) : (cohortLeadBio || null),
+        cohortLeadBio: normalizedCohortLeadBio,
         heroBadges: typeof heroBadges === "object" ? JSON.stringify(heroBadges) : (heroBadges || null),
         category: category || "Generative AI",
         level: level || "Intermediate",
@@ -265,14 +289,20 @@ export async function POST(req: Request) {
         visibility: visibility || "PUBLIC",
         sessions: {
           create: sessions.map((s: any, idx: number) => {
+            const sessDesc = Array.isArray(s.description)
+              ? s.description.join("\n\n")
+              : typeof s.description === "object" && s.description !== null
+              ? JSON.stringify(s.description)
+              : (s.description || "");
+
             const finalMeetingId = s.meetingId || s.zoomMeetingId || crypto.randomUUID();
             const finalPasscode = s.meetingPasscode || s.passcode || s.zoomPasscode || crypto.randomBytes(4).toString("hex").toUpperCase();
             const finalMeetingUrl = s.meetingUrl || meetingUrl || `https://zoom.us/j/${finalMeetingId}`;
 
             return {
               sessionNumber: s.sessionNumber || idx + 1,
-              title: s.title || `Session ${idx + 1}`,
-              description: s.description || "",
+              title: typeof s.title === "string" ? s.title : (s.title?.title || `Session ${idx + 1}`),
+              description: sessDesc,
               date: s.date ? new Date(s.date) : null,
               startTime: s.startTime || "07:00 PM",
               endTime: s.endTime || "09:00 PM",
@@ -282,11 +312,17 @@ export async function POST(req: Request) {
               meetingId: finalMeetingId,
               meetingPasscode: finalPasscode,
               meetingUrl: finalMeetingUrl,
+              recordingUrl: s.videoUrl || s.recordingUrl || null,
+              recordingStatus: s.recordingStatus || (s.videoUrl || s.recordingUrl ? "available" : "unavailable"),
               agenda: s.agenda?.length
                 ? {
                     create: s.agenda.map((ag: any, agIdx: number) => ({
-                      title: ag.title,
-                      description: ag.description || "",
+                      title: typeof ag === "string" ? ag : (ag.title || `Agenda item ${agIdx + 1}`),
+                      description: Array.isArray(ag.description)
+                        ? ag.description.join("\n")
+                        : typeof ag.description === "object" && ag.description !== null
+                        ? JSON.stringify(ag.description)
+                        : (ag.description || ""),
                       startTime: ag.startTime || null,
                       endTime: ag.endTime || null,
                       duration: ag.duration || "15 min",
@@ -297,8 +333,12 @@ export async function POST(req: Request) {
               topics: s.topics?.length
                 ? {
                     create: s.topics.map((tp: any, tpIdx: number) => ({
-                      title: typeof tp === "string" ? tp : tp.title,
-                      description: tp.description || "",
+                      title: typeof tp === "string" ? tp : (tp.title || tp.name || `Topic ${tpIdx + 1}`),
+                      description: Array.isArray(tp?.description)
+                        ? tp.description.join("\n")
+                        : typeof tp?.description === "object" && tp?.description !== null
+                        ? JSON.stringify(tp.description)
+                        : (tp?.description || ""),
                       order: tpIdx + 1
                     }))
                   }
@@ -306,7 +346,7 @@ export async function POST(req: Request) {
               learningOutcomes: s.learningOutcomes?.length
                 ? {
                     create: s.learningOutcomes.map((lo: any, loIdx: number) => ({
-                      title: typeof lo === "string" ? lo : lo.title,
+                      title: typeof lo === "string" ? lo : (lo.title || lo.description || lo.outcome || `Outcome ${loIdx + 1}`),
                       order: loIdx + 1
                     }))
                   }
@@ -314,8 +354,12 @@ export async function POST(req: Request) {
               activities: s.activities?.length
                 ? {
                     create: s.activities.map((ac: any, acIdx: number) => ({
-                      title: ac.title,
-                      instructions: ac.instructions || "",
+                      title: typeof ac === "string" ? ac : (ac.title || `Activity ${acIdx + 1}`),
+                      instructions: Array.isArray(ac.instructions)
+                        ? ac.instructions.join("\n")
+                        : typeof ac.instructions === "object" && ac.instructions !== null
+                        ? JSON.stringify(ac.instructions)
+                        : (ac.instructions || ""),
                       duration: ac.duration || "25 min",
                       order: acIdx + 1
                     }))
@@ -323,24 +367,62 @@ export async function POST(req: Request) {
                 : undefined,
               resources: s.resources?.length
                 ? {
-                    create: s.resources.map((res: any) => ({
-                      title: res.title,
+                    create: s.resources.filter((res: any) => res && (res.title || res.url)).map((res: any) => ({
+                      title: typeof res.title === "string" ? res.title : "Resource",
                       type: res.type || "URL",
-                      url: res.url
+                      url: res.url || "#"
                     }))
                   }
                 : undefined,
-              homework: s.homework?.title
-                ? {
-                    create: [
-                      {
-                        title: s.homework.title,
-                        description: s.homework.description || "",
-                        dueDate: s.homework.dueDate || null
-                      }
-                    ]
+              homework: (() => {
+                const homeworkList: any[] = Array.isArray(s.homework)
+                  ? s.homework
+                  : s.homework && typeof s.homework === "object"
+                  ? [s.homework]
+                  : [];
+
+                const homeworkRecords: any[] = [];
+                for (const hw of homeworkList) {
+                  if (hw && (hw.title || hw.description)) {
+                    homeworkRecords.push({
+                      title: typeof hw.title === "string" ? hw.title : "Homework",
+                      description: Array.isArray(hw.description)
+                        ? hw.description.join("\n")
+                        : typeof hw.description === "object" && hw.description !== null
+                        ? JSON.stringify(hw.description)
+                        : String(hw.description || ""),
+                      dueDate: typeof hw.dueDate === "string" ? hw.dueDate : null
+                    });
                   }
-                : undefined
+                }
+
+                if (s.assignment && (s.assignment.title || s.assignment.description || s.assignment.instructions)) {
+                  const asgnDesc = Array.isArray(s.assignment.instructions || s.assignment.description)
+                    ? (s.assignment.instructions || s.assignment.description).join("\n")
+                    : typeof (s.assignment.instructions || s.assignment.description) === "object" && (s.assignment.instructions || s.assignment.description) !== null
+                    ? JSON.stringify(s.assignment.instructions || s.assignment.description)
+                    : String(s.assignment.instructions || s.assignment.description || "");
+
+                  // Avoid exact duplicates if homework already contains this
+                  if (!homeworkRecords.some((hr) => hr.title === s.assignment.title)) {
+                    homeworkRecords.push({
+                      title: typeof s.assignment.title === "string" ? s.assignment.title : "Assignment",
+                      description: asgnDesc,
+                      dueDate: typeof s.assignment.dueDate === "string" ? s.assignment.dueDate : null
+                    });
+                  }
+                }
+
+                if (s.quizzes?.length) {
+                  homeworkRecords.push({
+                    title: `Session ${s.sessionNumber || idx + 1} Knowledge Check Quiz (${s.quizzes.length} Questions)`,
+                    description: JSON.stringify(s.quizzes),
+                    dueDate: "Post Session"
+                  });
+                }
+
+                return homeworkRecords.length ? { create: homeworkRecords } : undefined;
+              })()
             };
           })
         }
@@ -404,6 +486,58 @@ export async function POST(req: Request) {
           totalSessions: createdCourse.sessions.length,
         },
       });
+    }
+
+    // Create database Assignment records for sessions that have assignments configured
+    for (let i = 0; i < createdCourse.sessions.length; i++) {
+      const dbSess = createdCourse.sessions[i];
+      const sessInput = sessions[i];
+      const assInput = sessInput?.assignment;
+
+      if (assInput && (assInput.title || assInput.description || assInput.fileUrl)) {
+        const dueDate = assInput.dueDate
+          ? new Date(assInput.dueDate)
+          : dbSess.date
+          ? new Date(new Date(dbSess.date).getTime() + (assInput.daysAfterSession || 7) * 24 * 60 * 60 * 1000)
+          : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
+        const rawInstructions = Array.isArray(assInput.instructions)
+          ? assInput.instructions
+          : typeof assInput.instructions === "string"
+          ? [assInput.instructions]
+          : [];
+
+        const instructionsList: string[] = rawInstructions.map((inst: any) =>
+          typeof inst === "string" ? inst : JSON.stringify(inst)
+        );
+
+        if (assInput.externalStarterUrl) {
+          instructionsList.push(`Starter Repository / Colab: ${assInput.externalStarterUrl}`);
+        }
+        if (assInput.fileName) {
+          instructionsList.push(`Assignment Attachment: ${assInput.fileName}`);
+        }
+
+        const assDesc = Array.isArray(assInput.description)
+          ? assInput.description.join("\n\n")
+          : typeof assInput.description === "object" && assInput.description !== null
+          ? JSON.stringify(assInput.description)
+          : (assInput.description || "Complete the session practical assignment and submit deliverables.");
+
+        await prisma.assignment.create({
+          data: {
+            liveCourseId: createdCourse.id,
+            sessionId: dbSess.id,
+            title: typeof assInput.title === "string" ? assInput.title : `Session ${dbSess.sessionNumber} Assignment`,
+            description: assDesc,
+            moduleName: dbSess.title,
+            instructions: instructionsList,
+            totalMarks: Number(assInput.totalMarks) || 100,
+            pointsLabel: `${Number(assInput.totalMarks) || 100} Pts`,
+            dueDate
+          }
+        });
+      }
     }
 
     // Log to Audit Log

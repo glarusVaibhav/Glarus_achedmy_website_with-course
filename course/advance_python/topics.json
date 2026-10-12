@@ -1,0 +1,166 @@
+{
+  "modules": [
+    {
+      "module_id": "M01",
+      "module_title": "Advanced Data Structures and Algorithms",
+      "description": "",
+      "order": 1,
+      "topic_ids": [
+        "T01",
+        "T02",
+        "T03"
+      ]
+    },
+    {
+      "module_id": "M02",
+      "module_title": "Functional Programming Concepts",
+      "description": "",
+      "order": 2,
+      "topic_ids": [
+        "T04",
+        "T05",
+        "T06"
+      ]
+    },
+    {
+      "module_id": "M03",
+      "module_title": "Asynchronous and Concurrent Programming",
+      "description": "",
+      "order": 3,
+      "topic_ids": [
+        "T07",
+        "T08",
+        "T09"
+      ]
+    },
+    {
+      "module_id": "M04",
+      "module_title": "Web Development with Python",
+      "description": "",
+      "order": 4,
+      "topic_ids": [
+        "T10",
+        "T11"
+      ]
+    },
+    {
+      "module_id": "M05",
+      "module_title": "Data Analysis and Machine Learning",
+      "description": "",
+      "order": 5,
+      "topic_ids": [
+        "T12",
+        "T13"
+      ]
+    },
+    {
+      "module_id": "M06",
+      "module_title": "Capstone Project Development",
+      "description": "",
+      "order": 6,
+      "topic_ids": [
+        "T14"
+      ]
+    }
+  ],
+  "topics": [
+    {
+      "topic_id": "T01",
+      "topic_title": "Custom Data Structures",
+      "module_id": "M01",
+      "description": "Implement advanced data structures like B-trees and graphs",
+      "lesson_ids": []
+    },
+    {
+      "topic_id": "T02",
+      "topic_title": "Advanced Collections Module",
+      "module_id": "M01",
+      "description": "Master defaultdict, Counter, and deque for complex data manipulation",
+      "lesson_ids": []
+    },
+    {
+      "topic_id": "T03",
+      "topic_title": "Metaprogramming with Metaclasses",
+      "module_id": "M01",
+      "description": "Design dynamic class behaviors using metaclasses",
+      "lesson_ids": []
+    },
+    {
+      "topic_id": "T04",
+      "topic_title": "Decorators and Function Wrapping",
+      "module_id": "M02",
+      "description": "Create advanced decorators for code reuse and modification",
+      "lesson_ids": []
+    },
+    {
+      "topic_id": "T05",
+      "topic_title": "Generator Functions and Coroutines",
+      "module_id": "M02",
+      "description": "Build memory-efficient generators and async coroutines",
+      "lesson_ids": []
+    },
+    {
+      "topic_id": "T06",
+      "topic_title": "Context Managers and __enter__/__exit__",
+      "module_id": "M02",
+      "description": "Implement resource management with context managers",
+      "lesson_ids": []
+    },
+    {
+      "topic_id": "T07",
+      "topic_title": "Async/Await and Event Loops",
+      "module_id": "M03",
+      "description": "Develop asynchronous I/O operations using asyncio",
+      "lesson_ids": []
+    },
+    {
+      "topic_id": "T08",
+      "topic_title": "Threading vs Multiprocessing",
+      "module_id": "M03",
+      "description": "Compare concurrency models for CPU-bound vs I/O-bound tasks",
+      "lesson_ids": []
+    },
+    {
+      "topic_id": "T09",
+      "topic_title": "Thread Synchronization Techniques",
+      "module_id": "M03",
+      "description": "Use locks, semaphores, and queues for safe concurrency",
+      "lesson_ids": []
+    },
+    {
+      "topic_id": "T10",
+      "topic_title": "Flask/Django Framework Fundamentals",
+      "module_id": "M04",
+      "description": "Build REST APIs with routing, templates, and ORM",
+      "lesson_ids": []
+    },
+    {
+      "topic_id": "T11",
+      "topic_title": "Authentication and API Security",
+      "module_id": "M04",
+      "description": "Implement JWT authentication and CSRF protection",
+      "lesson_ids": []
+    },
+    {
+      "topic_id": "T12",
+      "topic_title": "Pandas for Data Manipulation",
+      "module_id": "M05",
+      "description": "Perform data cleaning and transformation with Pandas",
+      "lesson_ids": []
+    },
+    {
+      "topic_id": "T13",
+      "topic_title": "Scikit-learn Machine Learning Pipeline",
+      "module_id": "M05",
+      "description": "Build end-to-end ML models with preprocessing and evaluation",
+      "lesson_ids": []
+    },
+    {
+      "topic_id": "T14",
+      "topic_title": "Full-Stack Python Project",
+      "module_id": "M06",
+      "description": "Integrate all skills into a production-ready application",
+      "lesson_ids": []
+    }
+  ]
+}

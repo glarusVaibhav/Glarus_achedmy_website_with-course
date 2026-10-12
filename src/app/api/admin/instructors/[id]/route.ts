@@ -35,7 +35,9 @@ export async function GET(
         },
         leadLiveCourses: {
           include: {
-            sessions: true
+            sessions: {
+              orderBy: [{ date: "asc" }, { sessionNumber: "asc" }]
+            }
           }
         },
         sessionAssignments: {
@@ -54,11 +56,17 @@ export async function GET(
       }
     });
 
+    const allLiveCourses = await prisma.liveCourse.findMany({
+      select: { id: true, title: true, category: true, status: true, meetingUrl: true },
+      orderBy: { createdAt: "desc" }
+    });
+
     if (user) {
       return NextResponse.json({
         user,
         approval: user.instructorApproval,
-        courseCreationPermission: user.courseCreationPermission
+        courseCreationPermission: user.courseCreationPermission,
+        allLiveCourses
       });
     }
 

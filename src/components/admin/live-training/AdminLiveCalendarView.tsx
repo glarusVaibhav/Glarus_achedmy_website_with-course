@@ -49,7 +49,7 @@ export default function AdminLiveCalendarView() {
   const [instructors, setInstructors] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [calendarView, setCalendarView] = useState<ViewType>("MONTH");
+  const [calendarView, setCalendarView] = useState<ViewType>("WEEK");
   const [selectedSessionModal, setSelectedSessionModal] = useState<any>(null);
 
   // Filters

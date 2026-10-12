@@ -93,6 +93,18 @@ Generate the detailed overview in the exact JSON schema.`;
     const content = data.choices[0]?.message?.content || "{}";
     const parsed = JSON.parse(content);
 
+    if (parsed) {
+      if (Array.isArray(parsed.description)) {
+        parsed.description = parsed.description.join("\n\n");
+      }
+      if (Array.isArray(parsed.shortDescription)) {
+        parsed.shortDescription = parsed.shortDescription.join(" ");
+      }
+      if (Array.isArray(parsed.targetAudience)) {
+        parsed.targetAudience = parsed.targetAudience.join(", ");
+      }
+    }
+
     return NextResponse.json(parsed);
 
   } catch (error: any) {

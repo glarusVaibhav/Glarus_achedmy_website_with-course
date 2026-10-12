@@ -4,9 +4,10 @@ import {
   getInstructorCourseCreationStatus,
   requestCourseCreationPermission
 } from "@/lib/permissions/courseCreationPermission";
+import { getInstructorPermissions } from "@/lib/permissions/instructorPermissions";
 
 /**
- * GET — Return the current instructor's course creation permission status
+ * GET — Return the current instructor's full permissions status
  */
 export async function GET() {
   try {
@@ -15,18 +16,40 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
+    const isAdmin = session.role === "ADMIN";
+    const fullPermissions = await getInstructorPermissions(session.id);
     const permission = await getInstructorCourseCreationStatus(session.id);
 
+    const canCreateCourse = isAdmin ? true : Boolean(fullPermissions.canCreateCourse && permission.allowed);
+    const effectiveStatus = isAdmin
+      ? "APPROVED"
+      : canCreateCourse
+      ? "APPROVED"
+      : permission.status === "APPROVED"
+      ? "REVOKED"
+      : permission.status;
+
     return NextResponse.json({
-      status: permission.status,
-      canCreateCourse: session.role === "ADMIN" ? true : permission.canCreateCourse,
-      allowed: session.role === "ADMIN" ? true : permission.allowed,
+      status: effectiveStatus,
+      canCreateCourse: canCreateCourse,
+      canEditCourse: isAdmin ? true : fullPermissions.canEditCourse,
+      canCreateLiveClass: isAdmin ? true : fullPermissions.canCreateLiveClass,
+      canEditLiveClass: isAdmin ? true : fullPermissions.canEditLiveClass,
+      canRescheduleLiveClass: isAdmin ? true : fullPermissions.canRescheduleLiveClass,
+      permissions: {
+        COURSE_CREATE: canCreateCourse,
+        COURSE_EDIT: isAdmin ? true : fullPermissions.permissions.COURSE_EDIT,
+        LIVE_CLASS_CREATE: isAdmin ? true : fullPermissions.permissions.LIVE_CLASS_CREATE,
+        LIVE_CLASS_EDIT: isAdmin ? true : fullPermissions.permissions.LIVE_CLASS_EDIT,
+        LIVE_CLASS_RESCHEDULE: isAdmin ? true : fullPermissions.permissions.LIVE_CLASS_RESCHEDULE
+      },
+      allowed: canCreateCourse,
       requestedAt: permission.requestedAt,
       reviewedAt: permission.reviewedAt,
       rejectionReason: permission.rejectionReason,
       notes: permission.notes,
       message: permission.message,
-      isAdmin: session.role === "ADMIN"
+      isAdmin
     });
   } catch (err: any) {
     console.error("GET /api/instructor/course-creation-permission error:", err);

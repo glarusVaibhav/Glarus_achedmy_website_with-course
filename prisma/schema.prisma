@@ -31,6 +31,11 @@ enum CourseType {
   INSTRUCTOR_LED
 }
 
+enum CourseFormat {
+  VIDEO_BASED
+  INTERACTIVE_LAB
+}
+
 enum PaymentStatus {
   PENDING
   COMPLETED
@@ -67,6 +72,22 @@ enum WatchStatus {
   UNWATCHED
   IN_PROGRESS
   WATCHED
+}
+
+enum VideoStatus {
+  UPLOADING
+  UPLOADED
+  PROCESSING
+  READY
+  FAILED
+}
+
+// Storage/streaming provider for a VideoAsset.
+// Existing rows default to MINIO_LEGACY (their actual storage location).
+enum VideoProvider {
+  MINIO_LEGACY
+  BUNNY_STREAM
+  YOUTUBE
 }
 
 enum AssignmentStatus {
@@ -221,6 +242,7 @@ model Course {
   createdAt        DateTime        @default(now())
   updatedAt        DateTime        @updatedAt
   type             CourseType      @default(SELF_PACED)
+  courseFormat     CourseFormat    @default(VIDEO_BASED)
   modules          Module[]
   batches          Batch[]
   certificates     Certificate[]
@@ -228,9 +250,13 @@ model Course {
   refundRate       Float           @default(0.0)
   rating           Float           @default(4.9)
   reviewsCount     Int             @default(0)
+  displayOrder     Int?
   courseApproval   CourseApproval?
   assignments      Assignment[]    @relation("CourseAssignments")
   instructorReviews InstructorReview[] @relation("CourseInstructorReviews")
+
+  @@index([isPublished, displayOrder])
+  @@index([displayOrder])
 }
 
 model Purchase {
@@ -354,7 +380,43 @@ model Lecture {
   moduleId        String
   progress        VideoProgress[]
   notes           StudentNote[]
+  videoAsset      VideoAsset?
   order           Int
+}
+
+model VideoAsset {
+  id                String      @id @default(cuid())
+  lectureId         String?     @unique
+  courseId          String?
+  originalFilename  String?
+  originalKey       String?
+  masterPlaylistKey String?
+  thumbnailKey      String?
+  durationSeconds   Int?
+  width             Int?
+  height            Int?
+  fps               Float?
+  bitrate           BigInt?
+  fileSizeBytes     BigInt?
+  videoCodec        String?
+  audioCodec        String?
+  resolutions       Json?
+  status            VideoStatus @default(UPLOADED)
+  errorMessage      String?
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  // ── Bunny Stream provider fields (additive, nullable/defaulted) ──
+  provider          VideoProvider @default(MINIO_LEGACY)
+  providerVideoId   String?       @unique // Bunny Stream video GUID
+  providerLibraryId String?               // Bunny Stream library ID
+  encodeProgress    Int?                  // 0-100, reported by Bunny
+  uploadedById      String?               // user who created the upload session
+
+  lecture           Lecture?    @relation(fields: [lectureId], references: [id], onDelete: SetNull)
+
+  @@index([courseId])
+  @@index([status])
 }
 
 model VideoProgress {
@@ -918,16 +980,20 @@ model InstructorCoursePermission {
   instructorId    String                         @unique
   instructor      User                           @relation(fields: [instructorId], references: [id], onDelete: Cascade)
   status          CourseCreationPermissionStatus @default(NOT_REQUESTED)
-  canCreateCourse Boolean                        @default(false)
-  requestedAt     DateTime?
-  reviewedAt      DateTime?
-  reviewedById    String?
-  reviewedBy      User?                          @relation("AdminReviewedCoursePermissions", fields: [reviewedById], references: [id], onDelete: SetNull)
-  rejectionReason String?
-  notes           String?
-  requestHistory  Json?                          @default("[]")
-  createdAt       DateTime                       @default(now())
-  updatedAt       DateTime                       @updatedAt
+  canCreateCourse        Boolean                        @default(false)
+  canEditCourse          Boolean                        @default(false)
+  canCreateLiveClass     Boolean                        @default(false)
+  canEditLiveClass       Boolean                        @default(false)
+  canRescheduleLiveClass Boolean                        @default(false)
+  requestedAt            DateTime?
+  reviewedAt             DateTime?
+  reviewedById           String?
+  reviewedBy             User?                          @relation("AdminReviewedCoursePermissions", fields: [reviewedById], references: [id], onDelete: SetNull)
+  rejectionReason        String?
+  notes                  String?
+  requestHistory         Json?                          @default("[]")
+  createdAt              DateTime                       @default(now())
+  updatedAt              DateTime                       @updatedAt
 
   @@index([instructorId])
   @@index([status])
@@ -951,6 +1017,8 @@ model interactive_courses {
   course_code         String?
   course_name         String
   description         String                @default("")
+  lessonjson          String?
+  topicjson           String?
   created_at          DateTime              @default(now()) @db.Timestamptz(6)
   updated_at          DateTime              @default(now()) @db.Timestamptz(6)
   interactive_modules interactive_modules[]

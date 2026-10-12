@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   Sparkles,
   CheckCircle2,
@@ -38,8 +38,15 @@ import {
   Radio,
   Briefcase,
   Building2,
-  UploadCloud
+  UploadCloud,
+  ArrowRight,
+  ExternalLink,
+  FileCode,
+  FolderArchive,
+  Image as ImageIcon
 } from "lucide-react";
+import { createTusUpload } from "@/lib/video/tusUploader";
+import { parseYouTubeVideoId } from "@/lib/video/youtubeService";
 
 export interface AIModuleItem {
   id: string;
@@ -54,16 +61,30 @@ export interface LessonContent {
   type: "video" | "article" | "quiz" | "sandbox" | "resource";
   duration?: string;
   videoUrl?: string;
+  videoAssetId?: string;
+  videoStatus?: "UPLOADING" | "UPLOADED" | "PROCESSING" | "READY" | "FAILED";
+  thumbnailUrl?: string;
+  resolutions?: string[];
   isPreview?: boolean;
   content?: string;
+  articleContent?: string;
+  imageUrl1?: string;
+  imageUrl2?: string;
+  imageCaption?: string;
   quizQuestion?: string;
   quizOptions?: string[];
   quizCorrectIndex?: number;
   quizExplanation?: string;
   starterCode?: string;
   codeLanguage?: string;
+  starterFileName?: string;
+  starterFileUrl?: string;
+  solutionCode?: string;
   resourceFileName?: string;
   resourceUrl?: string;
+  resourceFileType?: string;
+  resourceFileSize?: string;
+  resourceDescription?: string;
 }
 
 export interface BuilderModule {
@@ -148,6 +169,19 @@ const PROMPT_SUGGESTIONS = [
 
 export default function AdminCourseCreator() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const formatParam = searchParams?.get("format");
+
+  // Format selection state: true if format was specified in URL, otherwise ask first
+  const [formatSelected, setFormatSelected] = useState<boolean>(formatParam === "self-paced");
+
+  useEffect(() => {
+    if (formatParam === "self-paced") {
+      setFormatSelected(true);
+    } else if (!formatParam) {
+      setFormatSelected(false);
+    }
+  }, [formatParam]);
 
   // Active Wizard Step (1: Basic Info, 2: AI Syllabus, 3: Content Builder, 4: Final Review & Publish)
   const [currentStep, setCurrentStep] = useState(1);
@@ -164,7 +198,7 @@ export default function AdminCourseCreator() {
     level: "All Levels",
     price: "2499",
     originalPrice: "4999",
-    duration: "36 Hours VOD",
+    duration: "36 Hours",
     previewVideoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
     isFree: false,
     courseType: "SELF_PACED",
@@ -271,13 +305,420 @@ export default function AdminCourseCreator() {
   });
 
   const [videoUploading, setVideoUploading] = useState(false);
+  const [videoUploadProgress, setVideoUploadProgress] = useState(0);
+  const [videoEncodeProgress, setVideoEncodeProgress] = useState<number>(0);
+  const [activeUploadProvider, setActiveUploadProvider] = useState<"BUNNY_STREAM" | "MINIO">("BUNNY_STREAM");
+  const [videoProcessingStatus, setVideoProcessingStatus] = useState<string>("");
+  const [videoProviderTab, setVideoProviderTab] = useState<"UPLOAD" | "YOUTUBE">("UPLOAD");
+  const [youtubeLinkInput, setYoutubeLinkInput] = useState("");
+  const [youtubeValidating, setYoutubeValidating] = useState(false);
+  const [youtubeMetadata, setYoutubeMetadata] = useState<{
+    videoId: string;
+    title: string;
+    authorName: string;
+    thumbnailUrl: string;
+    embedUrl: string;
+  } | null>(null);
+
+  const handleValidateYouTube = async () => {
+    const raw = youtubeLinkInput.trim();
+    if (!raw) {
+      showToast("Please enter a YouTube video link", "error");
+      return;
+    }
+
+    const vidId = parseYouTubeVideoId(raw);
+    if (!vidId) {
+      showToast("Invalid YouTube URL. Please check the link and try again.", "error");
+      setYoutubeMetadata(null);
+      return;
+    }
+
+    // Set immediate preview with local details for zero-latency feedback
+    setYoutubeMetadata({
+      videoId: vidId,
+      title: `YouTube Video (${vidId})`,
+      authorName: "Fetching channel details...",
+      thumbnailUrl: `https://img.youtube.com/vi/${vidId}/hqdefault.jpg`,
+      embedUrl: `https://www.youtube-nocookie.com/embed/${vidId}?rel=0&modestbranding=1`,
+    });
+
+    setYoutubeValidating(true);
+    try {
+      const res = await fetch(`/api/videos/youtube/validate?url=${encodeURIComponent(raw)}`);
+      const data = await res.json();
+      if (res.ok && data.valid) {
+        const meta = data.metadata || data;
+        setYoutubeMetadata({
+          videoId: meta.videoId || vidId,
+          title: meta.title || `YouTube Video (${vidId})`,
+          authorName: meta.authorName || "YouTube Creator",
+          thumbnailUrl: meta.thumbnailUrl || `https://img.youtube.com/vi/${vidId}/hqdefault.jpg`,
+          embedUrl: meta.embedUrl || `https://www.youtube-nocookie.com/embed/${vidId}?rel=0&modestbranding=1`,
+        });
+        showToast("✨ YouTube video verified! Click 'Attach to Lesson' below.", "success");
+      }
+    } catch {
+      // Keep local preview intact
+    } finally {
+      setYoutubeValidating(false);
+    }
+  };
+
+  const handleAttachYouTubeVideo = async () => {
+    if (!youtubeMetadata) return;
+    try {
+      const targetVideoUrl = `https://www.youtube.com/watch?v=${youtubeMetadata.videoId}`;
+      const attachRes = await fetch("/api/videos/youtube/attach", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          urlOrId: youtubeMetadata.videoId,
+          title: youtubeMetadata.title || activeLessonModal?.lesson.title,
+        }),
+      });
+      const attachData = await attachRes.json();
+      const finalAssetId = (attachRes.ok && attachData.asset?.id) ? attachData.asset.id : undefined;
+      const finalThumb = (attachRes.ok && attachData.asset?.thumbnailUrl) ? attachData.asset.thumbnailUrl : youtubeMetadata.thumbnailUrl;
+
+      setActiveLessonModal((prev) => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          lesson: {
+            ...prev.lesson,
+            videoUrl: targetVideoUrl,
+            videoAssetId: finalAssetId,
+            videoStatus: "READY",
+            thumbnailUrl: finalThumb,
+            resolutions: ["1080p (YouTube)"],
+          },
+        };
+      });
+
+      // Synchronize builderModules so Step 3 curriculum list reflects this instantly
+      setBuilderModules((prev) =>
+        prev.map((m) => {
+          if (activeLessonModal && m.id === activeLessonModal.moduleId) {
+            return {
+              ...m,
+              lessons: m.lessons.map((l) =>
+                l.id === activeLessonModal.lesson.id
+                  ? {
+                      ...l,
+                      videoUrl: targetVideoUrl,
+                      videoAssetId: finalAssetId,
+                      videoStatus: "READY",
+                      thumbnailUrl: finalThumb,
+                      resolutions: ["1080p (YouTube)"],
+                    }
+                  : l
+              ),
+            };
+          }
+          return m;
+        })
+      );
+
+      showToast("✅ YouTube video attached to lesson!", "success");
+    } catch {
+      showToast("Failed to attach YouTube video", "error");
+    }
+  };
+
+  const checkVideoStatusNow = async (videoAssetId: string) => {
+    try {
+      const res = await fetch(`/api/videos/${videoAssetId}/status`);
+      if (!res.ok) return false;
+      const data = await res.json();
+      if (!data.asset) return false;
+
+      if (typeof data.asset.encodeProgress === "number") {
+        setVideoEncodeProgress(data.asset.encodeProgress);
+      }
+
+      const durationFormatted = data.asset.durationSeconds
+        ? `${Math.floor(data.asset.durationSeconds / 60)}m ${String(data.asset.durationSeconds % 60).padStart(2, "0")}s`
+        : undefined;
+
+      if (data.asset.status === "READY") {
+        setVideoProcessingStatus("READY");
+        setActiveLessonModal((prev) => {
+          if (!prev) return null;
+          return {
+            ...prev,
+            lesson: {
+              ...prev.lesson,
+              videoAssetId: data.asset.id,
+              videoUrl: data.asset.hlsStreamUrl || `bunny://${data.asset.providerVideoId || data.asset.id}`,
+              videoStatus: "READY",
+              thumbnailUrl: data.asset.thumbnailUrl || prev.lesson.thumbnailUrl,
+              resolutions: data.asset.resolutions || prev.lesson.resolutions || ["360p", "720p", "1080p"],
+              duration: durationFormatted || prev.lesson.duration || "15m 00s",
+            },
+          };
+        });
+
+        // Also sync background builderModules state
+        setBuilderModules((prevModules) =>
+          prevModules.map((mod) => ({
+            ...mod,
+            lessons: mod.lessons.map((les) => {
+              if (les.videoAssetId === videoAssetId || (activeLessonModal && les.id === activeLessonModal.lesson.id)) {
+                return {
+                  ...les,
+                  videoAssetId: data.asset.id,
+                  videoUrl: data.asset.hlsStreamUrl || les.videoUrl || `bunny://${data.asset.providerVideoId || data.asset.id}`,
+                  videoStatus: "READY",
+                  thumbnailUrl: data.asset.thumbnailUrl || les.thumbnailUrl,
+                  resolutions: data.asset.resolutions || les.resolutions || ["360p", "720p", "1080p"],
+                  duration: durationFormatted || les.duration || "15m 00s",
+                };
+              }
+              return les;
+            }),
+          }))
+        );
+
+        showToast("✨ Video transcoding complete! Bunny Stream HLS adaptive streaming ready.", "success");
+        return true;
+      } else if (data.asset.status === "FAILED") {
+        setVideoProcessingStatus("FAILED");
+        setActiveLessonModal((prev) => {
+          if (!prev) return null;
+          return {
+            ...prev,
+            lesson: {
+              ...prev.lesson,
+              videoStatus: "FAILED",
+            },
+          };
+        });
+        showToast(`Transcoding notice: ${data.asset.errorMessage || "Processing failed"}`, "error");
+        return true;
+      } else if (data.asset.status === "PROCESSING") {
+        setVideoProcessingStatus("PROCESSING");
+      }
+      return false;
+    } catch {
+      return false;
+    }
+  };
+
+  const pollVideoStatus = (videoAssetId: string) => {
+    let attempts = 0;
+    const interval = setInterval(async () => {
+      attempts++;
+      // Allow up to 200 attempts (8+ minutes) for large multi-gigabyte videos
+      if (attempts > 200) {
+        clearInterval(interval);
+        return;
+      }
+      const isDone = await checkVideoStatusNow(videoAssetId);
+      if (isDone) {
+        clearInterval(interval);
+      }
+    }, 2500);
+  };
+
+  const handleRetryVideoTranscode = async (videoAssetId: string) => {
+    try {
+      showToast("Retrying video transcoding...", "info");
+      setVideoProcessingStatus("PROCESSING");
+      const res = await fetch(`/api/videos/${videoAssetId}/retry`, { method: "POST" });
+      if (res.ok) {
+        setActiveLessonModal((prev) => {
+          if (!prev) return null;
+          return {
+            ...prev,
+            lesson: { ...prev.lesson, videoStatus: "PROCESSING" },
+          };
+        });
+        pollVideoStatus(videoAssetId);
+      }
+    } catch {
+      showToast("Failed to retry video processing", "error");
+    }
+  };
 
   const handleAdminVideoUpload = async (file: File) => {
     setVideoUploading(true);
+    setVideoUploadProgress(0);
+    setVideoProcessingStatus("UPLOADING");
+
+    try {
+      // Step 1: Request Direct Upload Session (Bunny TUS or MinIO Presigned)
+      const sessionRes = await fetch("/api/videos/upload-session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          filename: file.name,
+          contentType: file.type || "video/mp4",
+          size: file.size,
+          title: activeLessonModal?.lesson?.title || file.name,
+        }),
+      });
+
+      const sessionData = await sessionRes.json();
+      if (!sessionRes.ok) {
+        throw new Error(sessionData.error || "Failed to obtain upload authorization");
+      }
+
+      const { videoAssetId, provider } = sessionData;
+      setActiveUploadProvider(provider === "BUNNY_STREAM" ? "BUNNY_STREAM" : "MINIO");
+
+      if (provider === "BUNNY_STREAM" && (sessionData.uploadEndpoint || sessionData.tusEndpoint)) {
+        // Bunny Stream TUS Direct Resumable Upload
+        await new Promise<void>((resolve, reject) => {
+          const tusUpload = createTusUpload(file, {
+            endpoint: sessionData.uploadEndpoint || sessionData.tusEndpoint,
+            headers: sessionData.tusHeaders || {},
+            metadata: {
+              filetype: file.type || "video/mp4",
+              title: activeLessonModal?.lesson?.title || file.name,
+            },
+            onProgress: (percent) => {
+              setVideoUploadProgress(percent);
+            },
+            onSuccess: () => {
+              resolve();
+            },
+            onError: (err) => {
+              reject(err);
+            },
+          });
+
+          tusUpload.start();
+        });
+
+        setVideoProcessingStatus("PROCESSING");
+        if (activeLessonModal) {
+          setActiveLessonModal({
+            ...activeLessonModal,
+            lesson: {
+              ...activeLessonModal.lesson,
+              videoAssetId,
+              videoStatus: "PROCESSING",
+              videoUrl: `bunny://${sessionData.providerVideoId || videoAssetId}`,
+            },
+          });
+        }
+
+        // Also update builderModules so the module state remembers this upload
+        setBuilderModules((prevModules) =>
+          prevModules.map((mod) => ({
+            ...mod,
+            lessons: mod.lessons.map((les) => {
+              if (activeLessonModal && les.id === activeLessonModal.lesson.id) {
+                return {
+                  ...les,
+                  videoAssetId,
+                  videoStatus: "PROCESSING",
+                  videoUrl: `bunny://${sessionData.providerVideoId || videoAssetId}`,
+                };
+              }
+              return les;
+            }),
+          }))
+        );
+
+        showToast(`Uploaded ${file.name}! Bunny Stream is encoding multi-resolution HLS...`, "success");
+        pollVideoStatus(videoAssetId);
+      } else {
+        // MinIO Legacy Direct Presigned PUT Upload
+        const uploadUrl = sessionData.uploadUrl;
+        const objectKey = sessionData.objectKey;
+
+        await new Promise<void>((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
+          xhr.open("PUT", uploadUrl, true);
+          xhr.setRequestHeader("Content-Type", file.type || "video/mp4");
+
+          xhr.upload.onprogress = (evt) => {
+            if (evt.lengthComputable) {
+              const percent = Math.round((evt.loaded / evt.total) * 100);
+              setVideoUploadProgress(percent);
+            }
+          };
+
+          xhr.onload = () => {
+            if (xhr.status >= 200 && xhr.status < 300) {
+              resolve();
+            } else {
+              reject(new Error(`Storage server upload failed (Status: ${xhr.status})`));
+            }
+          };
+
+          xhr.onerror = () => reject(new Error("Network error during direct MinIO upload"));
+          xhr.ontimeout = () => reject(new Error("Upload timed out"));
+          xhr.send(file);
+        });
+
+        // Trigger Background HLS Transcoding for MinIO
+        setVideoProcessingStatus("PROCESSING");
+        await fetch("/api/videos/process", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ videoAssetId }),
+        });
+
+        const fallbackProxyUrl = `/api/storage/file?key=${encodeURIComponent(objectKey || "")}`;
+
+        if (activeLessonModal) {
+          setActiveLessonModal({
+            ...activeLessonModal,
+            lesson: {
+              ...activeLessonModal.lesson,
+              videoUrl: fallbackProxyUrl,
+              videoAssetId,
+              videoStatus: "PROCESSING",
+            },
+          });
+        }
+
+        showToast(`Uploaded ${file.name}! Transcoding HLS streaming variants...`, "success");
+        pollVideoStatus(videoAssetId);
+      }
+    } catch (err: any) {
+      console.warn("Direct upload error, falling back to standard upload:", err?.message);
+      // Graceful fallback to legacy /api/upload
+      try {
+        const fd = new FormData();
+        fd.append("file", file);
+        fd.append("category", "video");
+        const res = await fetch("/api/upload", { method: "POST", body: fd });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Upload failed");
+        if (activeLessonModal) {
+          setActiveLessonModal({
+            ...activeLessonModal,
+            lesson: {
+              ...activeLessonModal.lesson,
+              videoUrl: data.url,
+              videoStatus: "READY",
+            },
+          });
+        }
+        showToast(`Uploaded ${file.name}!`, "success");
+      } catch (fallbackErr: any) {
+        showToast(fallbackErr.message || "Failed to upload video", "error");
+      }
+    } finally {
+      setVideoUploading(false);
+    }
+  };
+
+  // Material (Resource, Article, Code, Image) File Upload Handler
+  const [isUploadingMaterial, setIsUploadingMaterial] = useState(false);
+  const [materialUploadProgress, setMaterialUploadProgress] = useState<string>("");
+
+  const handleMaterialFileUpload = async (file: File, category: "resource" | "article" | "code" | "image") => {
+    setIsUploadingMaterial(true);
+    setMaterialUploadProgress(`Uploading ${file.name}...`);
     try {
       const fd = new FormData();
       fd.append("file", file);
-      fd.append("category", "video");
+      fd.append("category", category);
 
       const res = await fetch("/api/upload", {
         method: "POST",
@@ -289,17 +730,104 @@ export default function AdminCourseCreator() {
         throw new Error(data.error || "Upload failed");
       }
 
-      if (activeLessonModal) {
-        setActiveLessonModal({
-          ...activeLessonModal,
-          lesson: { ...activeLessonModal.lesson, videoUrl: data.url }
+      const fileUrl = data.url;
+      const originalFileName = file.name;
+      const fileExt = originalFileName.split(".").pop()?.toUpperCase() || "FILE";
+      const sizeFormatted = file.size > 1024 * 1024
+        ? `${(file.size / (1024 * 1024)).toFixed(1)} MB`
+        : `${(file.size / 1024).toFixed(0)} KB`;
+
+      if (category === "resource") {
+        setActiveLessonModal(prev => {
+          if (!prev) return null;
+          return {
+            ...prev,
+            lesson: {
+              ...prev.lesson,
+              resourceFileName: originalFileName,
+              resourceUrl: fileUrl,
+              resourceFileType: fileExt,
+              resourceFileSize: sizeFormatted,
+            }
+          };
         });
+        showToast(`✅ Resource "${originalFileName}" uploaded successfully!`, "success");
+      } else if (category === "article") {
+        // If it's a markdown or text file, import its text content directly into the editor
+        if (file.name.endsWith(".md") || file.name.endsWith(".txt") || file.name.endsWith(".markdown")) {
+          const text = await file.text();
+          setActiveLessonModal(prev => {
+            if (!prev) return null;
+            return {
+              ...prev,
+              lesson: {
+                ...prev.lesson,
+                content: text,
+                articleContent: text,
+              }
+            };
+          });
+          showToast(`📄 Imported article content from "${originalFileName}"!`, "success");
+        } else {
+          showToast(`✅ Article document "${originalFileName}" attached!`, "success");
+        }
+      } else if (category === "code") {
+        // If it's a code file, read its text into starterCode and detect language
+        const isTextCode = /\.(py|js|ts|tsx|jsx|cpp|c|h|java|rs|go|html|css|sql|json|yaml|yml|sh|txt|md)$/i.test(file.name);
+        if (isTextCode) {
+          const codeText = await file.text();
+          const ext = file.name.split(".").pop()?.toLowerCase() || "python";
+          const langMap: Record<string, string> = {
+            py: "python", js: "javascript", ts: "typescript", tsx: "typescript",
+            jsx: "javascript", cpp: "cpp", c: "c", java: "java", rs: "rust",
+            go: "go", html: "html", css: "css", sql: "sql", json: "json"
+          };
+          setActiveLessonModal(prev => {
+            if (!prev) return null;
+            return {
+              ...prev,
+              lesson: {
+                ...prev.lesson,
+                starterCode: codeText,
+                starterFileName: originalFileName,
+                starterFileUrl: fileUrl,
+                codeLanguage: langMap[ext] || prev.lesson.codeLanguage || "python"
+              }
+            };
+          });
+          showToast(`💻 Loaded starter code from "${originalFileName}"!`, "success");
+        } else {
+          setActiveLessonModal(prev => {
+            if (!prev) return null;
+            return {
+              ...prev,
+              lesson: {
+                ...prev.lesson,
+                starterFileName: originalFileName,
+                starterFileUrl: fileUrl
+              }
+            };
+          });
+          showToast(`📦 Starter project archive "${originalFileName}" attached!`, "success");
+        }
+      } else if (category === "image") {
+        setActiveLessonModal(prev => {
+          if (!prev) return null;
+          return {
+            ...prev,
+            lesson: {
+              ...prev.lesson,
+              imageUrl1: fileUrl
+            }
+          };
+        });
+        showToast(`🖼️ Article banner image uploaded!`, "success");
       }
-      showToast(`Uploaded ${file.name}!`, "success");
     } catch (err: any) {
-      showToast(err.message || "Failed to upload video", "error");
+      showToast(err.message || "Failed to upload file", "error");
     } finally {
-      setVideoUploading(false);
+      setIsUploadingMaterial(false);
+      setMaterialUploadProgress("");
     }
   };
 
@@ -431,6 +959,47 @@ export default function AdminCourseCreator() {
     moduleId: string;
     lesson: LessonContent;
   } | null>(null);
+
+  // Synchronize and isolate YouTube video state per lesson/module
+  useEffect(() => {
+    if (!activeLessonModal) {
+      setYoutubeLinkInput("");
+      setYoutubeMetadata(null);
+      setVideoProviderTab("UPLOAD");
+      return;
+    }
+
+    // If lesson has an attached video asset currently processing, auto-check its status
+    if (
+      activeLessonModal.lesson.videoAssetId &&
+      (activeLessonModal.lesson.videoStatus === "PROCESSING" || !activeLessonModal.lesson.videoStatus)
+    ) {
+      checkVideoStatusNow(activeLessonModal.lesson.videoAssetId);
+      pollVideoStatus(activeLessonModal.lesson.videoAssetId);
+    }
+
+    const currentUrl = activeLessonModal.lesson.videoUrl;
+    if (currentUrl) {
+      const vidId = parseYouTubeVideoId(currentUrl);
+      if (vidId) {
+        setVideoProviderTab("YOUTUBE");
+        setYoutubeLinkInput(currentUrl);
+        setYoutubeMetadata({
+          videoId: vidId,
+          title: activeLessonModal.lesson.title || `YouTube Video (${vidId})`,
+          authorName: "YouTube Channel",
+          thumbnailUrl: activeLessonModal.lesson.thumbnailUrl || `https://img.youtube.com/vi/${vidId}/hqdefault.jpg`,
+          embedUrl: `https://www.youtube-nocookie.com/embed/${vidId}?rel=0&modestbranding=1`,
+        });
+        return;
+      }
+    }
+
+    // Reset YouTube form state for lessons without a YouTube video
+    setYoutubeLinkInput("");
+    setYoutubeMetadata(null);
+    setVideoProviderTab("UPLOAD");
+  }, [activeLessonModal?.moduleId, activeLessonModal?.lesson?.id]);
 
   // AI Lesson Assistant State
   const [aiLessonPrompt, setAiLessonPrompt] = useState("");
@@ -758,9 +1327,10 @@ export default function AdminCourseCreator() {
   };
 
   // Submit / Publish Course Action
-  const handlePublishCourse = async (statusDecision: "PUBLISHED" | "DRAFT" | "PENDING_APPROVAL") => {
+  // Save / Create Course Action (Always saves as unpublished; published via Course Management)
+  const handlePublishCourse = async (statusDecision: "DRAFT" | "PENDING_APPROVAL" | "CREATE_COURSE" | "PUBLISHED" = "CREATE_COURSE") => {
     if (!formData.title.trim()) {
-      showToast("Please enter a course title before publishing.", "error");
+      showToast("Please enter a course title before saving.", "error");
       setCurrentStep(1);
       return;
     }
@@ -774,7 +1344,7 @@ export default function AdminCourseCreator() {
         description: formData.description || "Comprehensive curriculum crafted with Glarus Academy AI Architect.",
         price: formData.isFree ? 0 : parseFloat(formData.price) || 0,
         originalPrice: formData.originalPrice ? parseFloat(formData.originalPrice) : 0,
-        duration: formData.duration || "36 Hours VOD",
+        duration: formData.duration || "36 Hours",
         previewVideoUrl: formData.previewVideoUrl || null,
         category: formData.category,
         level: formData.level,
@@ -783,8 +1353,8 @@ export default function AdminCourseCreator() {
         faqs: formData.faqs,
         features: formData.features,
         learningJourney: formData.learningJourney,
-        status: statusDecision === "PUBLISHED" ? "PUBLISHED" : statusDecision === "DRAFT" ? "PENDING" : "PENDING",
-        isPublished: statusDecision === "PUBLISHED",
+        status: statusDecision === "DRAFT" ? "DRAFT" : "APPROVED",
+        isPublished: false,
         instructorId: formData.instructorId,
         modules: builderModules.length > 0 ? builderModules.map((bm, idx) => ({
           title: bm.title,
@@ -793,20 +1363,31 @@ export default function AdminCourseCreator() {
             title: l.title,
             type: l.type || "video",
             videoUrl: l.videoUrl || null,
+            videoAssetId: l.videoAssetId || null,
+            videoStatus: l.videoStatus || null,
             duration: l.duration || "15m 00s",
             description: l.description || null,
             notes: l.notes || l.description || null,
             notesContent: l.notesContent || l.notes || l.description || null,
-            articleContent: l.articleContent || null,
+            articleContent: l.articleContent || (l.type === "article" ? l.content : null) || null,
             imageUrl1: l.imageUrl1 || null,
             imageUrl2: l.imageUrl2 || null,
             imageCaption: l.imageCaption || null,
-            sandboxLang: l.sandboxLang || null,
-            sandboxCode: l.sandboxCode || null,
-            quizQuestions: l.quizQuestions || undefined,
-            resources: l.resources || (l.resourceFileUrl ? [{ id: `res-${lIdx}`, title: l.title, url: l.resourceFileUrl, type: l.fileType || "PDF" }] : undefined),
-            resourceFileUrl: l.resourceFileUrl || null,
-            fileType: l.fileType || null,
+            sandboxLang: l.codeLanguage || l.sandboxLang || null,
+            sandboxCode: l.starterCode || l.sandboxCode || null,
+            starterFileName: l.starterFileName || null,
+            starterFileUrl: l.starterFileUrl || null,
+            quizQuestions: l.quizQuestions || (l.type === "quiz" && l.quizQuestion ? [{ question: l.quizQuestion, options: l.quizOptions, correctIndex: l.quizCorrectIndex, explanation: l.quizExplanation }] : undefined),
+            resources: l.resources || (l.resourceUrl || l.resourceFileUrl ? [{
+              id: `res-${lIdx}`,
+              title: l.resourceFileName || l.title,
+              url: l.resourceUrl || l.resourceFileUrl,
+              type: l.resourceFileType || l.fileType || "PDF",
+              size: l.resourceFileSize,
+              description: l.resourceDescription
+            }] : undefined),
+            resourceFileUrl: l.resourceUrl || l.resourceFileUrl || null,
+            fileType: l.resourceFileType || l.fileType || null,
             order: lIdx + 1
           }))
         })) : aiModules.map((am, idx) => ({
@@ -827,11 +1408,9 @@ export default function AdminCourseCreator() {
 
       if (res.ok) {
         showToast(
-          statusDecision === "PUBLISHED"
-            ? "🚀 Course created and published live on Glarus Academy!"
-            : statusDecision === "DRAFT"
+          statusDecision === "DRAFT"
             ? "💾 Course saved to drafts successfully."
-            : "Course submitted for approval.",
+            : "✅ Course created! Go to Course Management to publish and position it on the landing page.",
           "success"
         );
 
@@ -840,7 +1419,7 @@ export default function AdminCourseCreator() {
         }, 1200);
       } else {
         const err = await res.json();
-        showToast(err.error || "Failed to publish course", "error");
+        showToast(err.error || "Failed to save course", "error");
       }
     } catch (e: any) {
       console.error(e);
@@ -900,7 +1479,7 @@ export default function AdminCourseCreator() {
               </div>
               <h1 className="text-xl font-extrabold text-text flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-purple-400" />
-                <span>Admin Course Architect</span>
+                <span>Create Course</span>
                 <span className="text-[10px] uppercase font-black px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">
                   AI-Powered
                 </span>
@@ -919,12 +1498,12 @@ export default function AdminCourseCreator() {
               <span>Save Draft</span>
             </button>
             <button
-              onClick={() => handlePublishCourse("PUBLISHED")}
+              onClick={() => handlePublishCourse("CREATE_COURSE")}
               disabled={isPublishing || !formData.title.trim()}
               className="px-5 py-2 rounded-xl text-xs font-black bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-lg shadow-purple-500/25 flex items-center gap-2 transition-transform active:scale-95 disabled:opacity-50"
             >
-              {isPublishing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
-              <span>Publish Live</span>
+              {isPublishing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+              <span>Save Course</span>
             </button>
           </div>
         </div>
@@ -932,92 +1511,282 @@ export default function AdminCourseCreator() {
 
       {/* MAIN CONTAINER */}
       <div className="max-w-7xl mx-auto px-6 pt-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        {!formatSelected ? (
+          <div className="max-w-4xl mx-auto py-6 space-y-8 animate-in fade-in duration-300">
+            <div className="text-center space-y-3">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-xs font-bold shadow-xs">
+                <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+                <span>Course Creation Studio</span>
+              </div>
+              <h1 className="text-2xl sm:text-4xl font-black text-text tracking-tight">
+                What type of course do you want to create?
+              </h1>
+              <p className="text-xs sm:text-sm text-subtext max-w-xl mx-auto">
+                Select your delivery model below to configure your syllabus, pricing, and learning studio.
+              </p>
+            </div>
 
-          {/* LEFT STEPPER COLUMN (4 cols) */}
-          <aside className="lg:col-span-3 space-y-6">
-            <div className="bg-card/70 border border-white/10 rounded-3xl p-6 shadow-xl sticky top-24 backdrop-blur-xl">
-              <p className="text-[10px] font-black uppercase tracking-widest text-subtext mb-4">Workflow Steps</p>
-              
-              <div className="space-y-4 relative">
-                {/* Connecting Line */}
-                <div className="absolute left-[19px] top-4 bottom-8 w-0.5 bg-white/10" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+              {/* Option 1: Self-Paced Video Course */}
+              <div
+                onClick={() => {
+                  setFormData({ ...formData, courseType: "SELF_PACED" });
+                  setFormatSelected(true);
+                  setCurrentStep(1);
+                }}
+                className="group relative p-6 sm:p-8 rounded-3xl bg-card/80 hover:bg-card border-2 border-white/10 hover:border-purple-500/60 transition-all duration-300 flex flex-col justify-between cursor-pointer hover:shadow-2xl hover:shadow-purple-500/10 hover:-translate-y-1.5 shadow-xl backdrop-blur-xl"
+              >
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="px-3 py-1 rounded-lg bg-purple-500/15 text-purple-300 border border-purple-500/30 text-[10px] font-black uppercase tracking-wider">
+                      On-Demand Video
+                    </span>
+                    <div className="w-12 h-12 rounded-2xl bg-purple-500/15 text-purple-400 flex items-center justify-center border border-purple-500/30 group-hover:scale-110 group-hover:bg-purple-600 group-hover:text-white transition-all shadow-md">
+                      <BookOpen className="w-6 h-6" />
+                    </div>
+                  </div>
 
-                {steps.map((step) => {
-                  const isActive = currentStep === step.num;
-                  const isCompleted = step.num < currentStep;
+                  <div>
+                    <h3 className="text-xl font-black text-text group-hover:text-purple-400 transition-colors">
+                      Self-Paced Course
+                    </h3>
+                    <p className="text-xs text-subtext mt-2 leading-relaxed">
+                      Upload video masterclasses, create interactive Python code sandboxes, attach technical PDF blueprints, and build modular quizzes.
+                    </p>
+                  </div>
 
-                  return (
-                    <button
-                      key={step.num}
-                      onClick={() => {
-                        if (step.num === 3 && builderModules.length === 0) {
-                          syncToBuilderModules();
-                        }
-                        setCurrentStep(step.num);
-                      }}
-                      className={`flex items-start gap-3.5 w-full text-left transition-all relative z-10 group ${
-                        isActive ? "opacity-100" : isCompleted ? "opacity-80" : "opacity-45"
-                      }`}
-                    >
-                      <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 border-2 transition-all shadow-md ${
-                        isActive
-                          ? "border-purple-500 bg-purple-500/20 text-purple-300 scale-105 ring-4 ring-purple-500/20 shadow-purple-500/20"
-                          : isCompleted
-                          ? "border-emerald-500 bg-emerald-500/15 text-emerald-400"
-                          : "border-white/10 bg-background text-subtext group-hover:border-white/20"
-                      }`}>
-                        {isCompleted ? (
-                          <Check className="w-5 h-5 font-bold" />
-                        ) : (
-                          <step.icon className={`w-4 h-4 ${isActive ? "animate-pulse" : ""}`} />
-                        )}
-                      </div>
+                  <ul className="space-y-2.5 pt-3 border-t border-white/10 text-xs text-subtext">
+                    <li className="flex items-center gap-2">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-purple-400 shrink-0" />
+                      <span>AI Copilot Syllabus & Module Generator</span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-purple-400 shrink-0" />
+                      <span>Video Lectures with Cloud Video Player</span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-purple-400 shrink-0" />
+                      <span>Live Python Code Sandbox & Diagnostics</span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-purple-400 shrink-0" />
+                      <span>Technical Blueprint PDFs & Quizzes</span>
+                    </li>
+                  </ul>
+                </div>
 
-                      <div className="pt-1 min-w-0">
-                        <span className={`text-[10px] font-black uppercase tracking-widest block ${
-                          isActive ? "text-purple-400" : isCompleted ? "text-emerald-400" : "text-subtext"
-                        }`}>
-                          Step {step.num}
-                        </span>
-                        <h4 className={`text-xs font-bold truncate ${isActive ? "text-text" : "text-subtext group-hover:text-text"}`}>
-                          {step.title}
-                        </h4>
-                        <p className="text-[10px] text-subtext/70 truncate">{step.desc}</p>
-                      </div>
-                    </button>
-                  );
-                })}
+                <div className="pt-8">
+                  <div className="w-full py-3.5 px-4 rounded-xl bg-purple-600 group-hover:bg-purple-500 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-lg shadow-purple-600/25 transition-all">
+                    <span>Build Self-Paced Course</span>
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </div>
               </div>
 
-              {/* Admin Pro-Tip Card */}
-              <div className="mt-8 p-4 bg-purple-500/10 rounded-2xl border border-purple-500/20 text-xs text-purple-300 space-y-1">
-                <div className="flex items-center gap-1.5 font-bold">
-                  <Sparkles className="w-3.5 h-3.5 text-purple-400" />
-                  <span>Admin Superpower</span>
+              {/* Option 2: Live Bootcamp / Cohort */}
+              <div
+                onClick={() => router.push("/admin/live-training/create")}
+                className="group relative p-6 sm:p-8 rounded-3xl bg-card/80 hover:bg-card border-2 border-white/10 hover:border-emerald-500/60 transition-all duration-300 flex flex-col justify-between cursor-pointer hover:shadow-2xl hover:shadow-emerald-500/10 hover:-translate-y-1.5 shadow-xl backdrop-blur-xl"
+              >
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="px-3 py-1 rounded-lg bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                      Live Cohort
+                    </span>
+                    <div className="w-12 h-12 rounded-2xl bg-emerald-500/15 text-emerald-400 flex items-center justify-center border border-emerald-500/30 group-hover:scale-110 group-hover:bg-emerald-600 group-hover:text-white transition-all shadow-md">
+                      <Radio className="w-6 h-6" />
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="text-xl font-black text-text group-hover:text-emerald-400 transition-colors">
+                      Live Bootcamp
+                    </h3>
+                    <p className="text-xs text-subtext mt-2 leading-relaxed">
+                      Launch interactive live programs with scheduled Zoom classrooms, batch rosters, attendance tracking, and live assignments.
+                    </p>
+                  </div>
+
+                  <ul className="space-y-2.5 pt-3 border-t border-white/10 text-xs text-subtext">
+                    <li className="flex items-center gap-2">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                      <span>Live Zoom & WebRTC Classrooms</span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                      <span>Cohort Schedules & Multi-Batch Rosters</span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                      <span>Automated Attendance & Recording Progress</span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                      <span>Live Mentored Homework & Defenses</span>
+                    </li>
+                  </ul>
                 </div>
-                <p className="text-[11px] text-purple-200/80 leading-relaxed">
-                  As an Administrator, publishing a course instantly deploys it to student dashboards without review bottlenecks.
-                </p>
+
+                <div className="pt-8">
+                  <div className="w-full py-3.5 px-4 rounded-xl bg-emerald-600 group-hover:bg-emerald-500 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/25 transition-all">
+                    <span>Launch Live Bootcamp</span>
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </div>
               </div>
             </div>
-          </aside>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 animate-in fade-in duration-300">
 
-          {/* RIGHT CONTENT COLUMN (9 cols) */}
-          <main className="lg:col-span-9 space-y-6">
+            {/* LEFT STEPPER COLUMN (4 cols) */}
+            <aside className="lg:col-span-3 space-y-6">
+              <div className="bg-card/70 border border-white/10 rounded-3xl p-6 shadow-xl sticky top-24 backdrop-blur-xl">
+                <div className="flex items-center justify-between mb-4">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-subtext">Workflow Steps</p>
+                  <button
+                    type="button"
+                    onClick={() => setFormatSelected(false)}
+                    className="text-[10px] font-bold text-purple-400 hover:underline cursor-pointer"
+                  >
+                    Change Format
+                  </button>
+                </div>
+                
+                <div className="space-y-4 relative">
+                  {/* Connecting Line */}
+                  <div className="absolute left-[19px] top-4 bottom-8 w-0.5 bg-white/10" />
 
-            {/* ══════════════════════════════════════════
-               STEP 1: COURSE DETAILS & ADMIN CONTROLS
-               ══════════════════════════════════════════ */}
-            {currentStep === 1 && (
-              <div className="bg-card/70 border border-white/10 rounded-3xl p-6 md:p-8 space-y-8 shadow-2xl backdrop-blur-xl animate-in fade-in duration-300">
-                <div>
-                  <span className="text-[10px] font-black uppercase tracking-widest text-purple-400">Step 1 of 4</span>
-                  <h2 className="text-2xl font-black text-text mt-1">Course Identity & Governance</h2>
-                  <p className="text-xs text-subtext">Configure catalog metadata, pricing tier, instructor attribution, and delivery mode.</p>
+                  {steps.map((step) => {
+                    const isActive = currentStep === step.num;
+                    const isCompleted = step.num < currentStep;
+
+                    return (
+                      <button
+                        key={step.num}
+                        onClick={() => {
+                          if (step.num === 3 && builderModules.length === 0) {
+                            syncToBuilderModules();
+                          }
+                          setCurrentStep(step.num);
+                        }}
+                        className={`flex items-start gap-3.5 w-full text-left transition-all relative z-10 group ${
+                          isActive ? "opacity-100" : isCompleted ? "opacity-80" : "opacity-45"
+                        }`}
+                      >
+                        <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 border-2 transition-all shadow-md ${
+                          isActive
+                            ? "border-purple-500 bg-purple-500/20 text-purple-300 scale-105 ring-4 ring-purple-500/20 shadow-purple-500/20"
+                            : isCompleted
+                            ? "border-emerald-500 bg-emerald-500/15 text-emerald-400"
+                            : "border-white/10 bg-background text-subtext group-hover:border-white/20"
+                        }`}>
+                          {isCompleted ? (
+                            <Check className="w-5 h-5 font-bold" />
+                          ) : (
+                            <step.icon className={`w-4 h-4 ${isActive ? "animate-pulse" : ""}`} />
+                          )}
+                        </div>
+
+                        <div className="pt-1 min-w-0">
+                          <span className={`text-[10px] font-black uppercase tracking-widest block ${
+                            isActive ? "text-purple-400" : isCompleted ? "text-emerald-400" : "text-subtext"
+                          }`}>
+                            Step {step.num}
+                          </span>
+                          <h4 className={`text-xs font-bold truncate ${isActive ? "text-text" : "text-subtext group-hover:text-text"}`}>
+                            {step.title}
+                          </h4>
+                          <p className="text-[10px] text-subtext/70 truncate">{step.desc}</p>
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Course Governance Workflow Card */}
+                <div className="mt-8 p-4 bg-purple-500/10 rounded-2xl border border-purple-500/20 text-xs text-purple-300 space-y-1">
+                  <div className="flex items-center gap-1.5 font-bold">
+                    <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+                    <span>Course Governance</span>
+                  </div>
+                  <p className="text-[11px] text-purple-200/80 leading-relaxed">
+                    Created courses are saved safely as unpublished in Course Management. You can review and click Publish in Course Management to make it live and assign its landing page position.
+                  </p>
+                </div>
+              </div>
+            </aside>
+
+            {/* RIGHT CONTENT COLUMN (9 cols) */}
+            <main className="lg:col-span-9 space-y-6">
+
+              {/* ══════════════════════════════════════════
+                 STEP 1: COURSE DETAILS & ADMIN CONTROLS
+                 ══════════════════════════════════════════ */}
+              {currentStep === 1 && (
+                <div className="bg-card/70 border border-white/10 rounded-3xl p-6 md:p-8 space-y-8 shadow-2xl backdrop-blur-xl animate-in fade-in duration-300">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <span className="text-[10px] font-black uppercase tracking-widest text-purple-400">Step 1 of 4</span>
+                      <h2 className="text-2xl font-black text-text mt-1">Course Details</h2>
+                      <p className="text-xs text-subtext">Basic Info & Metadata — Configure catalog metadata, pricing tier, instructor attribution, and delivery mode.</p>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setFormatSelected(false)}
+                      className="px-3 py-1.5 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-xs font-bold text-subtext hover:text-text transition-colors flex items-center gap-1.5 shrink-0"
+                    >
+                      <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+                      <span>Change Format</span>
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Delivery Format (First Option) */}
+                    <div className="md:col-span-2 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <label className="block text-xs font-bold text-text">Delivery Format</label>
+                        <button
+                          type="button"
+                          onClick={() => setFormatSelected(false)}
+                          className="text-[11px] font-bold text-purple-400 hover:text-purple-300 transition-colors"
+                        >
+                          Switch Format
+                        </button>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <button
+                          type="button"
+                          onClick={() => setFormData({ ...formData, courseType: "SELF_PACED" })}
+                          className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer ${
+                            formData.courseType === "SELF_PACED"
+                              ? "bg-purple-500/15 border-purple-500 text-purple-300 ring-2 ring-purple-500/20 shadow-md shadow-purple-500/10"
+                              : "bg-background/50 border-white/10 text-subtext hover:border-white/20"
+                          }`}
+                        >
+                          <div className="flex items-center gap-2 font-bold text-xs">
+                            <BookOpen className="w-4 h-4 text-purple-400" />
+                            <span className="text-white">Self-Paced</span>
+                          </div>
+                          <span className="text-[11px] text-subtext block mt-1">On-demand video & labs</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => router.push("/admin/live-training/create")}
+                          className="p-3.5 rounded-2xl border border-white/10 bg-background/50 hover:bg-card hover:border-emerald-500/40 text-left transition-all group cursor-pointer"
+                        >
+                          <div className="flex items-center gap-2 font-bold text-xs text-text group-hover:text-emerald-300">
+                            <Radio className="w-4 h-4 text-emerald-400 animate-pulse" />
+                            <span className="text-white group-hover:text-emerald-300">Live Bootcamp ↗</span>
+                          </div>
+                          <span className="text-[11px] text-subtext block mt-1">Cohort live classes</span>
+                        </button>
+                      </div>
+                    </div>
+
                   {/* Course Title */}
                   <div className="md:col-span-2 space-y-2">
                     <label className="block text-xs font-bold text-text">
@@ -1117,21 +1886,104 @@ export default function AdminCourseCreator() {
                     </div>
                   </div>
 
-                  {/* Duration & VOD Hours */}
+                  {/* Structured Duration Builder (Strictly Validated for Hours, Minutes, Days, Weeks, Months) */}
                   <div className="space-y-2">
-                    <label className="block text-xs font-bold text-text">Course Duration Badge</label>
-                    <input
-                      type="text"
-                      value={formData.duration}
-                      onChange={e => setFormData({ ...formData, duration: e.target.value })}
-                      placeholder="e.g. 36 Hours VOD or 6 Weeks"
-                      className="w-full bg-background border border-white/10 focus:border-purple-500 rounded-2xl px-4 py-3 text-xs font-bold text-text outline-none"
-                    />
+                    <div className="flex items-center justify-between">
+                      <label className="block text-xs font-bold text-text">Course Duration</label>
+                      <span className="text-[10px] text-purple-400 font-bold bg-purple-500/10 px-2 py-0.5 rounded-md border border-purple-500/20">
+                        {formData.duration || "0 Hours"}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-12 gap-2">
+                      {/* Numeric Value Input */}
+                      <div className="col-span-5">
+                        <input
+                          type="number"
+                          min="1"
+                          max="999"
+                          value={
+                            formData.duration
+                              ? (formData.duration.match(/\d+(\.\d+)?/)?.[0] || "")
+                              : ""
+                          }
+                          onChange={(e) => {
+                            const num = e.target.value;
+                            const currentUnit = formData.duration
+                              ? formData.duration.replace(/^\d+(\.\d+)?\s*/, "").trim() || "Hours"
+                              : "Hours";
+                            setFormData({
+                              ...formData,
+                              duration: num ? `${num} ${currentUnit}` : ""
+                            });
+                          }}
+                          placeholder="e.g. 36"
+                          className="w-full bg-background border border-white/10 focus:border-purple-500 rounded-2xl px-4 py-3 text-xs font-bold text-text outline-none"
+                        />
+                      </div>
+
+                      {/* Time Unit Dropdown */}
+                      <div className="col-span-7">
+                        <select
+                          value={(() => {
+                            if (!formData.duration) return "Hours";
+                            const unitPart = formData.duration.replace(/^\d+(\.\d+)?\s*/, "").trim();
+                            return unitPart || "Hours";
+                          })()}
+                          onChange={(e) => {
+                            const newUnit = e.target.value;
+                            const currentNum = formData.duration
+                              ? (formData.duration.match(/\d+(\.\d+)?/)?.[0] || "36")
+                              : "36";
+                            setFormData({
+                              ...formData,
+                              duration: `${currentNum} ${newUnit}`
+                            });
+                          }}
+                          className="w-full bg-background border border-white/10 focus:border-purple-500 rounded-2xl px-3 py-3 text-xs font-bold text-purple-300 outline-none cursor-pointer"
+                        >
+                          <option value="Hours">Hours (e.g. 36 Hours)</option>
+                          <option value="Minutes">Minutes (e.g. 45 Minutes)</option>
+                          <option value="Days">Days (e.g. 15 Days)</option>
+                          <option value="Weeks">Weeks (e.g. 6 Weeks)</option>
+                          <option value="Months">Months (e.g. 3 Months)</option>
+                          <option value="Live Sessions">Live Sessions (e.g. 12 Live Sessions)</option>
+                          <option value="Modules">Modules (e.g. 8 Modules)</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* Quick Preset Chips */}
+                    <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                      <span className="text-[10px] text-subtext font-bold uppercase tracking-wider">Presets:</span>
+                      {[
+                        "10 Hours",
+                        "36 Hours",
+                        "60 Hours",
+                        "4 Weeks",
+                        "6 Weeks",
+                        "30 Days",
+                        "3 Months"
+                      ].map((preset) => (
+                        <button
+                          key={preset}
+                          type="button"
+                          onClick={() => setFormData({ ...formData, duration: preset })}
+                          className={`text-[10px] px-2 py-0.5 rounded-lg border font-semibold transition-all ${
+                            formData.duration === preset
+                              ? "bg-purple-600/30 border-purple-500 text-purple-200 font-bold"
+                              : "bg-white/5 hover:bg-white/10 border-white/5 text-subtext hover:text-text"
+                          }`}
+                        >
+                          {preset}
+                        </button>
+                      ))}
+                    </div>
                   </div>
 
                   {/* Preview Video URL */}
                   <div className="space-y-2">
-                    <label className="block text-xs font-bold text-text">16:9 Preview Video URL</label>
+                    <label className="block text-xs font-bold text-text">Preview Video URL</label>
                     <input
                       type="text"
                       value={formData.previewVideoUrl}
@@ -1142,7 +1994,7 @@ export default function AdminCourseCreator() {
                   </div>
 
                   {/* Instructor Assignment (Admin Feature) */}
-                  <div className="space-y-2">
+                  <div className="md:col-span-2 space-y-2">
                     <label className="block text-xs font-bold text-text">Assigned Instructor Attribution</label>
                     <select
                       value={formData.instructorId}
@@ -1160,40 +2012,6 @@ export default function AdminCourseCreator() {
                         <option key={inst.id} value={inst.id}>{inst.name} ({inst.title})</option>
                       ))}
                     </select>
-                  </div>
-
-                  {/* Delivery Format */}
-                  <div className="space-y-2">
-                    <label className="block text-xs font-bold text-text">Delivery Format</label>
-                    <div className="grid grid-cols-2 gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setFormData({ ...formData, courseType: "SELF_PACED" })}
-                        className={`p-3 rounded-2xl border text-left transition-all ${
-                          formData.courseType === "SELF_PACED"
-                            ? "bg-purple-500/15 border-purple-500 text-purple-300 ring-2 ring-purple-500/20"
-                            : "bg-background/50 border-white/10 text-subtext"
-                        }`}
-                      >
-                        <div className="flex items-center gap-1.5 font-bold text-xs">
-                          <BookOpen className="w-3.5 h-3.5 text-purple-400" />
-                          <span>Self-Paced</span>
-                        </div>
-                        <span className="text-[10px] text-subtext block mt-0.5">On-demand video & labs</span>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => router.push("/admin/live-training/create")}
-                        className="p-3 rounded-2xl border border-white/10 bg-background/50 hover:bg-card hover:border-emerald-500/40 text-left transition-all group"
-                      >
-                        <div className="flex items-center gap-1.5 font-bold text-xs text-text group-hover:text-emerald-300">
-                          <Radio className="w-3.5 h-3.5 text-emerald-400" />
-                          <span>Live Bootcamp ↗</span>
-                        </div>
-                        <span className="text-[10px] text-subtext block mt-0.5">Cohort live classes</span>
-                      </button>
-                    </div>
                   </div>
 
                   {/* Course Description */}
@@ -2024,10 +2842,65 @@ export default function AdminCourseCreator() {
 
                                 <div className="min-w-0">
                                   <span className="font-bold text-xs text-text block truncate">{lesson.title}</span>
-                                  <div className="flex items-center gap-2 text-[10px] text-subtext">
+                                  <div className="flex items-center flex-wrap gap-2 text-[10px] text-subtext">
                                     <span className="uppercase font-semibold text-purple-400">{lesson.type}</span>
                                     <span>•</span>
                                     <span>{lesson.duration || "15m"}</span>
+                                    {lesson.type === "video" && (
+                                      <>
+                                        <span>•</span>
+                                        {lesson.videoStatus === "READY" || (lesson.videoUrl && lesson.videoStatus !== "PROCESSING") ? (
+                                          <span className="text-emerald-400 font-bold flex items-center gap-1 bg-emerald-500/15 px-1.5 py-0.5 rounded border border-emerald-500/30">
+                                            <CheckCircle2 className="w-2.5 h-2.5" />
+                                            {lesson.videoUrl?.includes("youtube") || lesson.videoUrl?.includes("youtu.be") ? "YouTube 1080p ✓" : "Bunny HLS ✓"}
+                                          </span>
+                                        ) : lesson.videoStatus === "PROCESSING" ? (
+                                          <span className="text-amber-400 font-bold flex items-center gap-1 bg-amber-500/15 px-1.5 py-0.5 rounded border border-amber-500/30 animate-pulse">
+                                            <RefreshCw className="w-2.5 h-2.5 animate-spin" /> Transcoding
+                                          </span>
+                                        ) : (
+                                          <span className="text-slate-400 font-medium">No video attached</span>
+                                        )}
+                                      </>
+                                    )}
+                                    {lesson.type === "article" && (
+                                      <>
+                                        <span>•</span>
+                                        {(lesson.content || lesson.articleContent) ? (
+                                          <span className="text-blue-300 font-bold flex items-center gap-1 bg-blue-500/15 px-1.5 py-0.5 rounded border border-blue-500/30">
+                                            <CheckCircle2 className="w-2.5 h-2.5" /> Markdown Content Ready
+                                            {lesson.imageUrl1 && <span className="text-purple-300 ml-0.5">+ Diagram</span>}
+                                          </span>
+                                        ) : (
+                                          <span className="text-slate-400 font-medium">Empty article</span>
+                                        )}
+                                      </>
+                                    )}
+                                    {lesson.type === "sandbox" && (
+                                      <>
+                                        <span>•</span>
+                                        {(lesson.starterCode || lesson.starterFileName) ? (
+                                          <span className="text-emerald-300 font-bold flex items-center gap-1 bg-emerald-500/15 px-1.5 py-0.5 rounded border border-emerald-500/30">
+                                            <CheckCircle2 className="w-2.5 h-2.5" /> {lesson.codeLanguage || "Code Lab"} Ready
+                                            {lesson.starterFileName && <span className="text-emerald-400 ml-0.5">📦 Zip</span>}
+                                          </span>
+                                        ) : (
+                                          <span className="text-slate-400 font-medium">No code template</span>
+                                        )}
+                                      </>
+                                    )}
+                                    {lesson.type === "resource" && (
+                                      <>
+                                        <span>•</span>
+                                        {(lesson.resourceUrl || lesson.resourceFileName) ? (
+                                          <span className="text-purple-300 font-bold flex items-center gap-1 bg-purple-500/15 px-1.5 py-0.5 rounded border border-purple-500/30">
+                                            <CheckCircle2 className="w-2.5 h-2.5" /> {lesson.resourceFileType || "File"} Attached
+                                          </span>
+                                        ) : (
+                                          <span className="text-slate-400 font-medium">No file attached</span>
+                                        )}
+                                      </>
+                                    )}
                                     {lesson.isPreview && (
                                       <>
                                         <span>•</span>
@@ -2147,8 +3020,8 @@ export default function AdminCourseCreator() {
                     </div>
 
                     <div className="p-3.5 bg-background/50 rounded-2xl border border-white/10">
-                      <span className="text-[10px] font-bold text-subtext uppercase block">Admin Action</span>
-                      <span className="text-sm font-black text-purple-400">Instant Deploy</span>
+                      <span className="text-[10px] font-bold text-subtext uppercase block">Course Status</span>
+                      <span className="text-sm font-black text-amber-400">Unpublished (Ready)</span>
                     </div>
                   </div>
 
@@ -2311,20 +3184,24 @@ export default function AdminCourseCreator() {
                       Save as Draft
                     </button>
                     <button
-                      onClick={() => handlePublishCourse("PUBLISHED")}
+                      onClick={() => handlePublishCourse("CREATE_COURSE")}
                       disabled={isPublishing || !formData.title.trim()}
-                      className="w-full sm:w-auto bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white px-8 py-3.5 rounded-2xl font-black text-sm shadow-xl shadow-emerald-500/25 flex items-center justify-center gap-2 transition-transform active:scale-95 disabled:opacity-50"
+                      className="w-full sm:w-auto bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white px-8 py-3.5 rounded-2xl font-black text-sm shadow-xl shadow-purple-500/25 flex items-center justify-center gap-2 transition-transform active:scale-95 disabled:opacity-50"
                     >
-                      {isPublishing ? <Loader2 className="w-5 h-5 animate-spin" /> : <Zap className="w-5 h-5" />}
-                      <span>Publish Course Live</span>
+                      {isPublishing ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
+                      <span>Save & Create Course</span>
                     </button>
                   </div>
                 </div>
+                <p className="text-[11px] text-subtext text-right pt-2">
+                  💡 Course will be saved safely as unpublished. You can review and click <strong>Publish</strong> in Course Management when ready to go live and assign its landing page position.
+                </p>
               </div>
             )}
 
           </main>
         </div>
+        )}
       </div>
 
       {/* ═════════════════════════════════════════════
@@ -2571,80 +3448,505 @@ export default function AdminCourseCreator() {
             {/* Type Specific Fields */}
             {activeLessonModal.lesson.type === "video" && (
               <div className="space-y-4">
-                {/* Video Upload Dropzone */}
-                <div className="p-5 bg-card/40 border-2 border-dashed border-purple-500/30 hover:border-purple-500/60 rounded-2xl text-center space-y-2 transition-all">
-                  <input
-                    type="file"
-                    id="admin-lesson-video-upload"
-                    accept="video/mp4,video/webm,video/quicktime,video/x-m4v,video/mkv,.mp4,.mov,.webm,.m4v,.mkv"
-                    className="hidden"
-                    onChange={async (e) => {
-                      const file = e.target.files?.[0];
-                      if (!file) return;
-                      await handleAdminVideoUpload(file);
-                    }}
-                  />
-                  <label
-                    htmlFor="admin-lesson-video-upload"
-                    className="cursor-pointer flex flex-col items-center justify-center gap-2"
+                {/* Video Provider Selector */}
+                <div className="flex items-center gap-2 p-1 bg-background rounded-xl border border-white/10">
+                  <button
+                    type="button"
+                    onClick={() => setVideoProviderTab("UPLOAD")}
+                    className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                      videoProviderTab === "UPLOAD"
+                        ? "bg-purple-600 text-white shadow-md"
+                        : "text-subtext hover:text-text"
+                    }`}
                   >
-                    {videoUploading ? (
-                      <div className="flex items-center gap-2 text-purple-400 font-bold text-xs py-3">
-                        <Loader2 className="w-5 h-5 animate-spin" /> Uploading Video File (MP4/WebM/MOV)...
+                    <UploadCloud className="w-3.5 h-3.5" />
+                    <span>Direct Video Upload (Bunny Stream HLS)</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setVideoProviderTab("YOUTUBE")}
+                    className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                      videoProviderTab === "YOUTUBE"
+                        ? "bg-red-600 text-white shadow-md"
+                        : "text-subtext hover:text-text"
+                    }`}
+                  >
+                    <Video className="w-3.5 h-3.5" />
+                    <span>YouTube Video (Unlisted Link)</span>
+                  </button>
+                </div>
+
+                {/* TAB A: DIRECT VIDEO UPLOAD */}
+                {videoProviderTab === "UPLOAD" && (
+                  <div className="space-y-3">
+                    {/* Hidden file input for upload / replace actions */}
+                    <input
+                      type="file"
+                      id="admin-lesson-video-upload"
+                      accept="video/mp4,video/webm,video/quicktime,video/x-m4v,video/mkv,.mp4,.mov,.webm,.m4v,.mkv"
+                      className="hidden"
+                      disabled={videoUploading}
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        await handleAdminVideoUpload(file);
+                      }}
+                    />
+
+                    {/* STATE 1: ACTIVE UPLOAD IN PROGRESS */}
+                    {videoUploading && (
+                      <div className="p-5 bg-gradient-to-br from-purple-950/40 via-card/90 to-indigo-950/40 border border-purple-500/40 rounded-2xl space-y-3 shadow-xl animate-in fade-in duration-200">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2.5">
+                            <div className="w-8 h-8 rounded-xl bg-purple-500/20 text-purple-300 flex items-center justify-center shrink-0 border border-purple-500/30">
+                              <Loader2 className="w-4 h-4 animate-spin text-purple-400" />
+                            </div>
+                            <div>
+                              <p className="text-xs font-bold text-white">
+                                {videoUploadProgress < 100
+                                  ? "Uploading directly to Bunny Stream CDN Edge..."
+                                  : "Finalizing Ingest & Validating Stream..."}
+                              </p>
+                              <p className="text-[10px] text-purple-300/80">
+                                High-Speed Resumable TUS Protocol · Direct to Bunny CDN Global Ingest
+                              </p>
+                            </div>
+                          </div>
+                          <span className="text-xs font-black text-purple-300 font-mono bg-purple-500/20 px-2.5 py-1 rounded-lg border border-purple-500/30">
+                            {videoUploadProgress}%
+                          </span>
+                        </div>
+
+                        <div className="w-full h-2.5 bg-background/90 rounded-full overflow-hidden border border-white/10 p-0.5">
+                          <div
+                            className="h-full bg-gradient-to-r from-purple-500 via-indigo-500 to-emerald-400 rounded-full transition-all duration-300 shadow-sm"
+                            style={{ width: `${Math.max(videoUploadProgress, 5)}%` }}
+                          />
+                        </div>
+
+                        <p className="text-[10px] text-subtext flex items-center gap-1.5">
+                          <Zap className="w-3 h-3 text-purple-400 shrink-0" />
+                          Streaming directly from your browser to global edge. Adaptive HLS auto-encodes immediately upon upload.
+                        </p>
                       </div>
-                    ) : (
-                      <>
-                        <div className="w-12 h-12 rounded-2xl bg-purple-500/15 text-purple-400 flex items-center justify-center shadow-md">
-                          <UploadCloud className="w-6 h-6" />
-                        </div>
-                        <div>
-                          <p className="text-xs font-bold text-text">Click or Drag & Drop to Upload Video File</p>
-                          <p className="text-[10px] text-subtext mt-0.5">Supports MP4, WebM, QuickTime MOV up to 500MB</p>
-                        </div>
-                      </>
                     )}
-                  </label>
-                </div>
 
-                <div className="flex items-center gap-3">
-                  <div className="h-[1px] bg-white/10 flex-1" />
-                  <span className="text-[10px] uppercase font-bold text-subtext tracking-wider">Or Paste External Video URL</span>
-                  <div className="h-[1px] bg-white/10 flex-1" />
-                </div>
+                    {/* STATE 2: CLOUD TRANSCODING IN PROGRESS */}
+                    {!videoUploading && (activeLessonModal.lesson.videoStatus === "PROCESSING" || videoProcessingStatus === "PROCESSING") && (
+                      <div className="p-5 bg-gradient-to-br from-purple-950/35 via-card/90 to-amber-950/20 border border-purple-500/40 rounded-2xl space-y-3.5 shadow-xl animate-in fade-in duration-200">
+                        <div className="flex items-center justify-between flex-wrap gap-2">
+                          <div className="flex items-center gap-2.5">
+                            <div className="w-9 h-9 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center shrink-0 border border-purple-500/30">
+                              <RefreshCw className="w-4 h-4 animate-spin text-purple-300" />
+                            </div>
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <p className="text-xs font-bold text-white">Bunny Stream Cloud Transcoding</p>
+                                <span className="flex items-center gap-1 text-[9px] font-bold text-amber-300 bg-amber-500/20 px-2 py-0.5 rounded-full border border-amber-500/30">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
+                                  In Progress
+                                </span>
+                              </div>
+                              <p className="text-[10px] text-purple-200/70 mt-0.5">
+                                Generating multi-bitrate HLS streams (1080p, 720p, 480p, 360p)
+                              </p>
+                            </div>
+                          </div>
 
-                <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-text">Video Stream / Embed URL</label>
-                  <input
-                    value={activeLessonModal.lesson.videoUrl || ""}
-                    onChange={e => setActiveLessonModal({
-                      ...activeLessonModal,
-                      lesson: { ...activeLessonModal.lesson, videoUrl: e.target.value }
-                    })}
-                    placeholder="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
-                    className="w-full bg-background border border-white/10 rounded-xl px-4 py-2.5 text-xs text-text outline-none font-mono focus:border-purple-500"
-                  />
-                </div>
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={async () => {
+                                if (activeLessonModal?.lesson?.videoAssetId) {
+                                  showToast("Checking latest status from Bunny Stream...", "info");
+                                  const isDone = await checkVideoStatusNow(activeLessonModal.lesson.videoAssetId);
+                                  if (!isDone) showToast(`Transcoding in progress (${videoEncodeProgress}%)...`, "info");
+                                }
+                              }}
+                              className="px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-text border border-white/10 text-[11px] font-bold flex items-center gap-1.5 transition-all cursor-pointer"
+                              title="Check status immediately"
+                            >
+                              <RefreshCw className="w-3 h-3" />
+                              <span>Refresh Status</span>
+                            </button>
+                            <label
+                              htmlFor="admin-lesson-video-upload"
+                              className="px-2.5 py-1.5 rounded-lg bg-purple-500/15 hover:bg-purple-500/25 text-purple-300 border border-purple-500/30 text-[11px] font-bold flex items-center gap-1.5 transition-all cursor-pointer"
+                            >
+                              <span>Replace</span>
+                            </label>
+                          </div>
+                        </div>
 
-                {activeLessonModal.lesson.videoUrl && (
-                  <div className="p-3.5 bg-purple-500/10 border border-purple-500/20 rounded-2xl space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-purple-300 flex items-center gap-1.5">
-                        <Video className="w-4 h-4 text-purple-400" /> Video Attached & Ready
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => setActiveLessonModal({
-                          ...activeLessonModal,
-                          lesson: { ...activeLessonModal.lesson, videoUrl: "" }
-                        })}
-                        className="text-[11px] text-rose-400 hover:underline cursor-pointer font-bold"
-                      >
-                        Clear Video
-                      </button>
-                    </div>
-                    <p className="text-[11px] text-subtext truncate font-mono bg-background/50 p-2 rounded-lg border border-white/5">{activeLessonModal.lesson.videoUrl}</p>
+                        {/* Encoding Progress Bar */}
+                        <div className="space-y-1.5">
+                          <div className="flex items-center justify-between text-[11px] font-semibold text-purple-200">
+                            <span>Cloud Transcoding Progress</span>
+                            <span className="font-mono font-bold text-purple-300">
+                              {videoEncodeProgress > 0 ? `${videoEncodeProgress}%` : "Auto-encoding..."}
+                            </span>
+                          </div>
+                          <div className="w-full h-2 bg-background/80 rounded-full overflow-hidden border border-white/10">
+                            {videoEncodeProgress > 0 ? (
+                              <div
+                                className="h-full bg-gradient-to-r from-purple-500 via-indigo-500 to-emerald-400 rounded-full transition-all duration-300"
+                                style={{ width: `${videoEncodeProgress}%` }}
+                              />
+                            ) : (
+                              <div className="h-full w-2/3 bg-gradient-to-r from-transparent via-purple-500/60 to-transparent rounded-full animate-pulse" />
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="p-2.5 bg-background/60 rounded-xl border border-white/5 flex items-start gap-2 text-[10px] text-subtext leading-relaxed">
+                          <Info className="w-3.5 h-3.5 text-purple-400 shrink-0 mt-0.5" />
+                          <span>
+                            <strong>Original file is saved and ready.</strong> You can save the lesson or continue editing. Bunny Stream automatically handles the adaptive bitrate processing in the cloud.
+                          </span>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* STATE 3: VIDEO READY / ATTACHED */}
+                    {!videoUploading && (activeLessonModal.lesson.videoStatus === "READY" || (activeLessonModal.lesson.videoUrl && activeLessonModal.lesson.videoStatus !== "PROCESSING" && activeLessonModal.lesson.videoStatus !== "FAILED")) && (
+                      <div className="p-4 bg-gradient-to-br from-emerald-950/20 via-card/90 to-purple-950/20 border border-emerald-500/30 rounded-2xl space-y-3.5 shadow-xl animate-in fade-in duration-200">
+                        <div className="flex items-center justify-between flex-wrap gap-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-bold text-emerald-300 flex items-center gap-1.5">
+                              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                              <span>Video Uploaded & Ready</span>
+                            </span>
+                            <span className="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 shadow-sm">
+                              Bunny Stream HLS ✓
+                            </span>
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            <label
+                              htmlFor="admin-lesson-video-upload"
+                              className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-subtext hover:text-text border border-white/10 text-[11px] font-bold flex items-center gap-1 transition-all cursor-pointer"
+                              title="Upload a different video file"
+                            >
+                              <RefreshCw className="w-3 h-3" />
+                              <span>Replace</span>
+                            </label>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setYoutubeLinkInput("");
+                                setYoutubeMetadata(null);
+                                setVideoProcessingStatus("");
+                                setActiveLessonModal({
+                                  ...activeLessonModal,
+                                  lesson: {
+                                    ...activeLessonModal.lesson,
+                                    videoUrl: "",
+                                    videoAssetId: undefined,
+                                    videoStatus: undefined,
+                                    thumbnailUrl: undefined,
+                                    resolutions: undefined,
+                                  },
+                                });
+                              }}
+                              className="px-2.5 py-1 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/20 text-[11px] font-bold flex items-center gap-1 transition-all cursor-pointer"
+                              title="Remove attached video"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                              <span>Remove</span>
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Video Preview & Specs Details */}
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3.5 p-3 bg-background/70 border border-white/5 rounded-xl">
+                          {/* Poster Thumbnail */}
+                          <div className="relative w-full sm:w-32 aspect-video rounded-lg overflow-hidden bg-black/60 border border-white/10 shrink-0 shadow-md group">
+                            {activeLessonModal.lesson.thumbnailUrl ? (
+                              <img
+                                src={activeLessonModal.lesson.thumbnailUrl}
+                                alt="Video Poster Preview"
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-purple-950/60 to-slate-900 text-purple-400">
+                                <PlayCircle className="w-6 h-6" />
+                              </div>
+                            )}
+                            <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                              <PlayCircle className="w-7 h-7 text-white drop-shadow-md" />
+                            </div>
+                            {activeLessonModal.lesson.duration && (
+                              <span className="absolute bottom-1 right-1 bg-black/80 px-1.5 py-0.5 rounded text-[9px] font-mono font-bold text-white">
+                                {activeLessonModal.lesson.duration}
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Video Metadata & Available Resolutions */}
+                          <div className="min-w-0 flex-1 space-y-1.5">
+                            <p className="text-xs font-bold text-white truncate">
+                              {activeLessonModal.lesson.title || "Lesson Video"}
+                            </p>
+
+                            {/* Available Resolutions Badges */}
+                            <div className="flex items-center flex-wrap gap-1.5">
+                              <span className="text-[10px] text-subtext font-semibold mr-1">Quality:</span>
+                              {(activeLessonModal.lesson.resolutions && activeLessonModal.lesson.resolutions.length > 0
+                                ? activeLessonModal.lesson.resolutions
+                                : ["360p", "720p", "1080p"]
+                              ).map((res) => (
+                                <span
+                                  key={res}
+                                  className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30"
+                                >
+                                  {res}
+                                </span>
+                              ))}
+                            </div>
+
+                            <p className="text-[10px] text-slate-400 flex items-center gap-1.5">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                              Encrypted adaptive HLS streaming via Bunny Stream CDN
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* STATE 4: TRANSCODING FAILED / RETRY */}
+                    {!videoUploading && activeLessonModal.lesson.videoStatus === "FAILED" && (
+                      <div className="p-4 bg-rose-950/30 border border-rose-500/40 rounded-2xl space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2 text-xs font-bold text-rose-300">
+                            <Info className="w-4 h-4 text-rose-400 shrink-0" />
+                            <span>Transcoding notice encountered. Original video is preserved.</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {activeLessonModal.lesson.videoAssetId && (
+                              <button
+                                type="button"
+                                onClick={() => handleRetryVideoTranscode(activeLessonModal.lesson.videoAssetId!)}
+                                className="px-3 py-1 bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 border border-rose-500/30 rounded-lg text-xs font-bold flex items-center gap-1 transition-all"
+                              >
+                                <RefreshCw className="w-3 h-3" /> Retry
+                              </button>
+                            )}
+                            <label
+                              htmlFor="admin-lesson-video-upload"
+                              className="px-3 py-1 bg-white/5 hover:bg-white/10 text-white rounded-lg text-xs font-bold cursor-pointer transition-all border border-white/10"
+                            >
+                              Upload New File
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* STATE 5: EMPTY DROPZONE (NO VIDEO ATTACHED YET) */}
+                    {!videoUploading &&
+                      !activeLessonModal.lesson.videoUrl &&
+                      !activeLessonModal.lesson.videoAssetId &&
+                      activeLessonModal.lesson.videoStatus !== "PROCESSING" &&
+                      activeLessonModal.lesson.videoStatus !== "FAILED" && (
+                        <div className="p-5 bg-card/40 border-2 border-dashed border-purple-500/30 hover:border-purple-500/60 rounded-2xl text-center space-y-2 transition-all">
+                          <label
+                            htmlFor="admin-lesson-video-upload"
+                            className="flex flex-col items-center justify-center gap-2 cursor-pointer"
+                          >
+                            <div className="w-12 h-12 rounded-2xl bg-purple-500/15 text-purple-400 flex items-center justify-center shadow-md">
+                              <UploadCloud className="w-6 h-6" />
+                            </div>
+                            <div>
+                              <p className="text-xs font-bold text-text">Click or Drag & Drop to Upload Video File</p>
+                              <p className="text-[10px] text-subtext mt-0.5">
+                                High-Speed Bunny Stream TUS Upload · Auto-encodes HLS (360p, 720p, 1080p) + Global CDN
+                              </p>
+                            </div>
+                          </label>
+                        </div>
+                      )}
                   </div>
                 )}
+
+                {/* TAB B: YOUTUBE LINK */}
+                {videoProviderTab === "YOUTUBE" && (() => {
+                  const isAttachedToCurrent = !!(
+                    activeLessonModal.lesson.videoUrl &&
+                    (activeLessonModal.lesson.videoUrl.includes("youtube.com") || activeLessonModal.lesson.videoUrl.includes("youtu.be"))
+                  );
+                  const attachedVidId = isAttachedToCurrent ? parseYouTubeVideoId(activeLessonModal.lesson.videoUrl!) : null;
+
+                  return (
+                    <div className="p-4 bg-red-950/20 border border-red-500/30 rounded-2xl space-y-4">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-red-300 flex items-center gap-1.5">
+                          <Video className="w-4 h-4 text-red-400" />
+                          Link Unlisted YouTube Video
+                        </span>
+                        <span className="text-[10px] font-mono text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-500/30">
+                          HD 1080p Stream
+                        </span>
+                      </div>
+
+                      {/* STATE: CURRENTLY ATTACHED YOUTUBE VIDEO CARD */}
+                      {isAttachedToCurrent && attachedVidId && (
+                        <div className="p-4 bg-emerald-950/30 border-2 border-emerald-500/60 rounded-2xl space-y-3.5 shadow-lg shadow-emerald-950/50 animate-in fade-in duration-200">
+                          <div className="flex items-center justify-between flex-wrap gap-2">
+                            <div className="flex items-center gap-2">
+                              <span className="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center border border-emerald-500/40">
+                                <CheckCircle2 className="w-4 h-4" />
+                              </span>
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-xs font-black text-emerald-300">YouTube Video Attached to Lesson</span>
+                                  <span className="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                                    Active Stream ✓
+                                  </span>
+                                </div>
+                                <p className="text-[10px] text-emerald-200/70">
+                                  Ready for student playback in 1080p · URL: <span className="font-mono text-emerald-300">{activeLessonModal.lesson.videoUrl}</span>
+                                </p>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setActiveLessonModal({
+                                    ...activeLessonModal,
+                                    lesson: {
+                                      ...activeLessonModal.lesson,
+                                      videoUrl: "",
+                                      videoAssetId: undefined,
+                                      videoStatus: undefined,
+                                      thumbnailUrl: undefined,
+                                      resolutions: undefined,
+                                    },
+                                  });
+                                  setYoutubeMetadata(null);
+                                  setYoutubeLinkInput("");
+                                  showToast("YouTube video detached from lesson.", "info");
+                                }}
+                                className="px-2.5 py-1 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/20 text-[11px] font-bold flex items-center gap-1 transition-all cursor-pointer"
+                                title="Remove video attachment"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                                <span>Detach</span>
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Playable Embed Preview */}
+                          <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-black border border-emerald-500/30 shadow-xl">
+                            <iframe
+                              src={`https://www.youtube-nocookie.com/embed/${attachedVidId}?rel=0&modestbranding=1`}
+                              className="w-full h-full"
+                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                              allowFullScreen
+                              title="Attached YouTube Video"
+                            />
+                          </div>
+                        </div>
+                      )}
+
+                      {/* URL INPUT FOR LINKING OR REPLACING */}
+                      <div className="space-y-2">
+                        <label className="block text-[11px] font-bold text-slate-300">
+                          {isAttachedToCurrent ? "Replace Video with a Different YouTube Link:" : "Enter YouTube Video URL:"}
+                        </label>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={youtubeLinkInput}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setYoutubeLinkInput(val);
+                              const vid = parseYouTubeVideoId(val.trim());
+                              if (vid && (!youtubeMetadata || youtubeMetadata.videoId !== vid)) {
+                                setYoutubeMetadata({
+                                  videoId: vid,
+                                  title: `YouTube Video (${vid})`,
+                                  authorName: "YouTube Channel",
+                                  thumbnailUrl: `https://img.youtube.com/vi/${vid}/hqdefault.jpg`,
+                                  embedUrl: `https://www.youtube-nocookie.com/embed/${vid}?rel=0&modestbranding=1`,
+                                });
+                              }
+                            }}
+                            placeholder="Paste YouTube Link (e.g. https://www.youtube.com/watch?v=... or https://youtu.be/...)"
+                            className="flex-1 bg-background border border-white/10 rounded-xl px-4 py-2.5 text-xs text-text outline-none focus:border-red-500 font-mono"
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                e.preventDefault();
+                                handleValidateYouTube();
+                              }
+                            }}
+                          />
+                          <button
+                            type="button"
+                            disabled={youtubeValidating || !youtubeLinkInput.trim()}
+                            onClick={handleValidateYouTube}
+                            className="px-5 py-2.5 bg-red-600 hover:bg-red-500 disabled:opacity-50 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 transition-all cursor-pointer shadow-md shrink-0"
+                          >
+                            {youtubeValidating ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <Check className="w-4 h-4" />
+                            )}
+                            <span>Validate</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* PREVIEW OF VALIDATED NEW YOUTUBE VIDEO */}
+                      {youtubeMetadata && (!isAttachedToCurrent || attachedVidId !== youtubeMetadata.videoId) && (
+                        <div className="p-4 bg-black/70 border border-red-500/40 rounded-2xl space-y-3 animate-in fade-in duration-300">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-bold text-emerald-400 flex items-center gap-1.5">
+                              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                              Valid YouTube Video Detected
+                            </span>
+                            <span className="text-[10px] font-mono text-slate-400 bg-white/5 px-2 py-0.5 rounded border border-white/10">
+                              ID: {youtubeMetadata.videoId}
+                            </span>
+                          </div>
+
+                          <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-black border border-white/10 shadow-xl">
+                            <iframe
+                              src={youtubeMetadata.embedUrl || `https://www.youtube-nocookie.com/embed/${youtubeMetadata.videoId}?rel=0&modestbranding=1`}
+                              className="w-full h-full"
+                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                              allowFullScreen
+                              title="YouTube Video Preview"
+                            />
+                          </div>
+
+                          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-1 border-t border-white/10">
+                            <div className="min-w-0 flex-1">
+                              <p className="text-xs font-bold text-white truncate">{youtubeMetadata.title}</p>
+                              <p className="text-[11px] text-slate-400">
+                                Channel: <strong className="text-slate-200">{youtubeMetadata.authorName}</strong>
+                              </p>
+                            </div>
+
+                            <button
+                              type="button"
+                              onClick={handleAttachYouTubeVideo}
+                              className="w-full sm:w-auto px-5 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg shadow-emerald-950/40 active:scale-95"
+                            >
+                              <CheckCircle2 className="w-4 h-4" /> Attach YouTube Video to Lesson
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                      <p className="text-[10px] text-slate-400 leading-relaxed">
+                        💡 <strong>Tip:</strong> In YouTube Studio, set video visibility to <strong>Unlisted</strong> and enable embedding. The video will be streamed crystal clear in 1080p inside the student classroom.
+                      </p>
+                    </div>
+                  );
+                })()}
+
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
                     <label className="block text-xs font-bold text-text">Duration</label>
@@ -2676,18 +3978,146 @@ export default function AdminCourseCreator() {
               </div>
             )}
 
+            {/* Hidden Material Upload Inputs */}
+            <input
+              type="file"
+              id="admin-lesson-article-md-upload"
+              accept=".md,.txt,.markdown"
+              className="hidden"
+              disabled={isUploadingMaterial}
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                await handleMaterialFileUpload(file, "article");
+              }}
+            />
+            <input
+              type="file"
+              id="admin-lesson-article-image-upload"
+              accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml"
+              className="hidden"
+              disabled={isUploadingMaterial}
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                await handleMaterialFileUpload(file, "image");
+              }}
+            />
+            <input
+              type="file"
+              id="admin-lesson-code-upload"
+              accept=".py,.js,.ts,.tsx,.cpp,.c,.h,.java,.rs,.go,.html,.css,.sql,.json,.zip,.ipynb"
+              className="hidden"
+              disabled={isUploadingMaterial}
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                await handleMaterialFileUpload(file, "code");
+              }}
+            />
+            <input
+              type="file"
+              id="admin-lesson-resource-upload"
+              accept=".pdf,.zip,.rar,.tar,.gz,.docx,.xlsx,.pptx,.csv,.json,.txt"
+              className="hidden"
+              disabled={isUploadingMaterial}
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                await handleMaterialFileUpload(file, "resource");
+              }}
+            />
+
+            {/* Material Upload Status Notification */}
+            {isUploadingMaterial && (
+              <div className="p-3 bg-purple-950/40 border border-purple-500/40 rounded-xl flex items-center gap-2 text-xs font-bold text-purple-300 animate-pulse">
+                <Loader2 className="w-4 h-4 animate-spin text-purple-400" />
+                <span>{materialUploadProgress || "Uploading file..."}</span>
+              </div>
+            )}
+
+            {/* ARTICLE TAB */}
             {activeLessonModal.lesson.type === "article" && (
-              <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-text">Markdown Article Body</label>
+              <div className="space-y-4 animate-in fade-in duration-200">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <div>
+                    <label className="block text-xs font-bold text-text">Markdown Article Body</label>
+                    <span className="text-[10px] text-subtext">Write rich markdown, include code blocks, bullet points, and math formulas</span>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <label
+                      htmlFor="admin-lesson-article-md-upload"
+                      className="px-3 py-1.5 bg-purple-500/15 hover:bg-purple-500/25 text-purple-300 border border-purple-500/30 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer"
+                      title="Import from .md or .txt file"
+                    >
+                      <UploadCloud className="w-3.5 h-3.5" />
+                      <span>Import .md / .txt File</span>
+                    </label>
+                    <label
+                      htmlFor="admin-lesson-article-image-upload"
+                      className="px-3 py-1.5 bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer"
+                      title="Attach Diagram or Banner Image"
+                    >
+                      <ImageIcon className="w-3.5 h-3.5" />
+                      <span>{activeLessonModal.lesson.imageUrl1 ? "Change Diagram" : "Add Diagram Image"}</span>
+                    </label>
+                  </div>
+                </div>
+
+                {/* Diagram / Banner Image Attached Card */}
+                {activeLessonModal.lesson.imageUrl1 && (
+                  <div className="p-3.5 bg-card/80 border border-purple-500/30 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center gap-3.5">
+                    <div className="relative w-28 h-20 rounded-xl overflow-hidden bg-black/60 border border-white/10 shrink-0">
+                      <img
+                        src={activeLessonModal.lesson.imageUrl1}
+                        alt="Article diagram"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="flex-1 space-y-1.5 min-w-0">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-xs font-bold text-purple-300 flex items-center gap-1.5">
+                          <ImageIcon className="w-3.5 h-3.5 text-purple-400" />
+                          Attached Diagram / Visual Asset
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setActiveLessonModal({
+                            ...activeLessonModal,
+                            lesson: { ...activeLessonModal.lesson, imageUrl1: undefined, imageCaption: undefined }
+                          })}
+                          className="text-rose-400 hover:text-rose-300 text-[10px] font-bold flex items-center gap-1"
+                        >
+                          <Trash2 className="w-3 h-3" /> Remove
+                        </button>
+                      </div>
+                      <input
+                        value={activeLessonModal.lesson.imageCaption || ""}
+                        onChange={e => setActiveLessonModal({
+                          ...activeLessonModal,
+                          lesson: { ...activeLessonModal.lesson, imageCaption: e.target.value }
+                        })}
+                        placeholder="Figure 1: Architectural diagram caption..."
+                        className="w-full bg-background border border-white/10 rounded-lg px-3 py-1.5 text-xs text-text outline-none focus:border-purple-500"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Markdown Editor Area */}
                 <textarea
-                  rows={8}
-                  value={activeLessonModal.lesson.content || ""}
-                  onChange={e => setActiveLessonModal({
-                    ...activeLessonModal,
-                    lesson: { ...activeLessonModal.lesson, content: e.target.value }
-                  })}
-                  placeholder="### Introduction..."
-                  className="w-full bg-background border border-white/10 rounded-xl p-3 text-xs text-text outline-none font-mono leading-relaxed focus:border-purple-500"
+                  rows={10}
+                  value={activeLessonModal.lesson.content || activeLessonModal.lesson.articleContent || ""}
+                  onChange={e => {
+                    const val = e.target.value;
+                    setActiveLessonModal({
+                      ...activeLessonModal,
+                      lesson: { ...activeLessonModal.lesson, content: val, articleContent: val }
+                    });
+                  }}
+                  placeholder="### Introduction & Key Principles&#10;&#10;Here is the step-by-step conceptual walkthrough...&#10;&#10;```python&#10;def run():&#10;    pass&#10;```"
+                  className="w-full bg-background border border-white/10 rounded-2xl p-4 text-xs text-text outline-none font-mono leading-relaxed focus:border-purple-500 min-h-[200px]"
                 />
               </div>
             )}
@@ -2776,34 +4206,225 @@ export default function AdminCourseCreator() {
               </div>
             )}
 
+            {/* CODE LAB / SANDBOX TAB */}
             {activeLessonModal.lesson.type === "sandbox" && (
-              <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-text">Starter Code</label>
-                <textarea
-                  rows={8}
-                  value={activeLessonModal.lesson.starterCode || "def agent_orchestrator(task):\n    # TODO: Implement LangGraph loop\n    pass"}
-                  onChange={e => setActiveLessonModal({
-                    ...activeLessonModal,
-                    lesson: { ...activeLessonModal.lesson, starterCode: e.target.value }
-                  })}
-                  className="w-full bg-background border border-white/10 rounded-xl p-3 text-xs text-text outline-none font-mono focus:border-purple-500"
-                />
+              <div className="space-y-4 animate-in fade-in duration-200">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  {/* Programming Language Selector */}
+                  <div className="space-y-1">
+                    <label className="block text-xs font-bold text-text">Target Programming Language</label>
+                    <select
+                      value={activeLessonModal.lesson.codeLanguage || "python"}
+                      onChange={e => setActiveLessonModal({
+                        ...activeLessonModal,
+                        lesson: { ...activeLessonModal.lesson, codeLanguage: e.target.value }
+                      })}
+                      className="bg-background border border-white/10 rounded-xl px-3.5 py-2 text-xs font-bold text-text outline-none focus:border-purple-500 cursor-pointer"
+                    >
+                      <option value="python">Python 3 (LangGraph, PyTorch, FastAPI)</option>
+                      <option value="typescript">TypeScript / Next.js (Strict Types)</option>
+                      <option value="javascript">JavaScript / Node.js</option>
+                      <option value="cpp">C++ (High Performance / CUDA)</option>
+                      <option value="c">C</option>
+                      <option value="java">Java 21</option>
+                      <option value="rust">Rust (Memory Safe / WASM)</option>
+                      <option value="go">Go (Concurrency & Microservices)</option>
+                      <option value="sql">PostgreSQL / SQL Analytics</option>
+                      <option value="html">HTML5 / CSS3 / Web UI</option>
+                      <option value="json">JSON / Config Schema</option>
+                    </select>
+                  </div>
+
+                  {/* Upload Starter Code / Project Zip Action */}
+                  <div className="flex items-center gap-2 self-end sm:self-auto">
+                    <label
+                      htmlFor="admin-lesson-code-upload"
+                      className="px-3.5 py-2 bg-gradient-to-r from-purple-600/20 to-indigo-600/20 hover:from-purple-600/30 hover:to-indigo-600/30 text-purple-300 border border-purple-500/30 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
+                      title="Upload starter code (.py, .ts, .cpp) or workspace zip (.zip, .ipynb)"
+                    >
+                      <UploadCloud className="w-3.5 h-3.5 text-purple-400" />
+                      <span>Upload Code / Project (.zip, .py, .ts)</span>
+                    </label>
+                  </div>
+                </div>
+
+                {/* Attached Starter File / Workspace Zip Badge */}
+                {activeLessonModal.lesson.starterFileName && (
+                  <div className="p-3 bg-emerald-950/20 border border-emerald-500/40 rounded-xl flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <FolderArchive className="w-4 h-4 text-emerald-400 shrink-0" />
+                      <div className="min-w-0">
+                        <p className="text-xs font-bold text-emerald-300 truncate">
+                          Attached Project File: {activeLessonModal.lesson.starterFileName}
+                        </p>
+                        <p className="text-[10px] text-emerald-200/70">
+                          Students will be able to download or clone this workspace
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      {activeLessonModal.lesson.starterFileUrl && (
+                        <a
+                          href={activeLessonModal.lesson.starterFileUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-2.5 py-1 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 rounded-lg text-[11px] font-bold flex items-center gap-1"
+                        >
+                          <ExternalLink className="w-3 h-3" /> Download
+                        </a>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => setActiveLessonModal({
+                          ...activeLessonModal,
+                          lesson: { ...activeLessonModal.lesson, starterFileName: undefined, starterFileUrl: undefined }
+                        })}
+                        className="p-1 text-rose-400 hover:text-rose-300"
+                        title="Remove attached archive"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Code Editor */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-xs font-bold text-text">Starter Code Template</label>
+                    <span className="text-[10px] font-mono text-subtext">Language: {activeLessonModal.lesson.codeLanguage || "python"}</span>
+                  </div>
+                  <textarea
+                    rows={9}
+                    value={activeLessonModal.lesson.starterCode || ""}
+                    onChange={e => setActiveLessonModal({
+                      ...activeLessonModal,
+                      lesson: { ...activeLessonModal.lesson, starterCode: e.target.value }
+                    })}
+                    placeholder="# Write starter code template for student sandbox..."
+                    className="w-full bg-background border border-white/10 rounded-2xl p-4 text-xs text-text outline-none font-mono focus:border-purple-500 leading-relaxed min-h-[180px]"
+                  />
+                </div>
               </div>
             )}
 
+            {/* RESOURCE TAB */}
             {activeLessonModal.lesson.type === "resource" && (
-              <div className="space-y-3">
-                <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-text">Resource Title & File Name</label>
-                  <input
-                    value={activeLessonModal.lesson.resourceFileName || ""}
-                    onChange={e => setActiveLessonModal({
-                      ...activeLessonModal,
-                      lesson: { ...activeLessonModal.lesson, resourceFileName: e.target.value }
-                    })}
-                    placeholder="LangGraph-Production-CheatSheet.pdf"
-                    className="w-full bg-background border border-white/10 rounded-xl px-4 py-2.5 text-xs text-text outline-none focus:border-purple-500"
-                  />
+              <div className="space-y-4 animate-in fade-in duration-200">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <div>
+                    <label className="block text-xs font-bold text-text">Downloadable Resource / Cheatsheet</label>
+                    <p className="text-[10px] text-subtext">Attach PDFs, ZIP archives, templates, datasets, or external documentation links</p>
+                  </div>
+
+                  <label
+                    htmlFor="admin-lesson-resource-upload"
+                    className="px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-md"
+                  >
+                    <UploadCloud className="w-3.5 h-3.5" />
+                    <span>Upload Resource File</span>
+                  </label>
+                </div>
+
+                {/* ATTACHED RESOURCE FILE CARD */}
+                {activeLessonModal.lesson.resourceUrl ? (
+                  <div className="p-4 bg-emerald-950/20 border-2 border-emerald-500/40 rounded-2xl space-y-3 shadow-lg shadow-emerald-950/20">
+                    <div className="flex items-center justify-between flex-wrap gap-2">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 flex items-center justify-center font-black text-xs shrink-0">
+                          {activeLessonModal.lesson.resourceFileType || "FILE"}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-xs font-bold text-white truncate">
+                            {activeLessonModal.lesson.resourceFileName || "Attached Document"}
+                          </p>
+                          <div className="flex items-center gap-2 text-[10px] text-emerald-200/70 mt-0.5">
+                            <span>{activeLessonModal.lesson.resourceFileSize || "Uploaded File"}</span>
+                            <span>•</span>
+                            <span className="text-emerald-400 font-bold">Attached & Saved ✓</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <a
+                          href={activeLessonModal.lesson.resourceUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-3 py-1.5 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 rounded-xl text-xs font-bold flex items-center gap-1 transition-all"
+                        >
+                          <ExternalLink className="w-3.5 h-3.5" /> View / Test
+                        </a>
+                        <label
+                          htmlFor="admin-lesson-resource-upload"
+                          className="px-3 py-1.5 bg-white/5 hover:bg-white/10 text-white rounded-xl text-xs font-bold flex items-center gap-1 transition-all cursor-pointer border border-white/10"
+                        >
+                          <RefreshCw className="w-3.5 h-3.5" /> Replace
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => setActiveLessonModal({
+                            ...activeLessonModal,
+                            lesson: {
+                              ...activeLessonModal.lesson,
+                              resourceUrl: undefined,
+                              resourceFileName: undefined,
+                              resourceFileType: undefined,
+                              resourceFileSize: undefined
+                            }
+                          })}
+                          className="p-1.5 text-rose-400 hover:text-rose-300 rounded-lg hover:bg-rose-500/10"
+                          title="Remove resource"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  /* EMPTY RESOURCE DROPZONE */
+                  <label
+                    htmlFor="admin-lesson-resource-upload"
+                    className="p-6 bg-card/40 border-2 border-dashed border-purple-500/30 hover:border-purple-500/60 rounded-2xl flex flex-col items-center justify-center gap-2 text-center cursor-pointer transition-all group"
+                  >
+                    <div className="w-12 h-12 rounded-2xl bg-purple-500/15 group-hover:bg-purple-500/25 text-purple-400 flex items-center justify-center transition-all shadow-md">
+                      <UploadCloud className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-text">Click or Drag & Drop to Upload Resource File</p>
+                      <p className="text-[10px] text-subtext mt-0.5">
+                        Supports .pdf, .zip, .docx, .xlsx, .pptx, .csv, .json up to 250MB
+                      </p>
+                    </div>
+                  </label>
+                )}
+
+                {/* External Link Fallback / Additional Reference URL */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-white/10">
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-bold text-text">Resource Title / Label</label>
+                    <input
+                      value={activeLessonModal.lesson.resourceFileName || ""}
+                      onChange={e => setActiveLessonModal({
+                        ...activeLessonModal,
+                        lesson: { ...activeLessonModal.lesson, resourceFileName: e.target.value }
+                      })}
+                      placeholder="e.g. LangGraph Architecture Whitepaper.pdf"
+                      className="w-full bg-background border border-white/10 rounded-xl px-4 py-2.5 text-xs text-text outline-none focus:border-purple-500"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-bold text-text">External URL (GitHub / Docs / Drive)</label>
+                    <input
+                      value={activeLessonModal.lesson.resourceUrl || ""}
+                      onChange={e => setActiveLessonModal({
+                        ...activeLessonModal,
+                        lesson: { ...activeLessonModal.lesson, resourceUrl: e.target.value }
+                      })}
+                      placeholder="https://github.com/... or https://drive.google.com/..."
+                      className="w-full bg-background border border-white/10 rounded-xl px-4 py-2.5 text-xs text-text outline-none font-mono focus:border-purple-500"
+                    />
+                  </div>
                 </div>
               </div>
             )}

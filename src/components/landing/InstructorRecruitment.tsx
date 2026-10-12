@@ -226,14 +226,14 @@ export default function InstructorRecruitment() {
     >
       {/* ── Main Container Wrapped in Spotlight Card ── */}
       <div className="max-w-[1650px] mx-auto px-4 sm:px-8 relative z-10">
-        <div className="relative rounded-[36px] sm:rounded-[44px] bg-gradient-to-b from-[#160e2e]/90 via-[#100a22]/95 to-[#090615] border border-purple-500/30 shadow-[0_24px_90px_rgba(124,58,237,0.22)] p-6 sm:p-10 md:p-12 lg:p-14 overflow-hidden backdrop-blur-2xl">
+        <div className="relative rounded-[36px] sm:rounded-[44px] bg-gradient-to-br from-[#F6F1FF] via-[#FFFFFF] to-[#EEF2FF] dark:from-[#160e2e]/90 dark:via-[#100a22]/95 dark:to-[#090615] border border-purple-200/80 dark:border-purple-500/30 shadow-xl dark:shadow-[0_24px_90px_rgba(124,58,237,0.22)] p-6 sm:p-10 md:p-12 lg:p-14 overflow-hidden backdrop-blur-2xl">
           
           {/* Radiant Top Light Streak */}
-          <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-purple-400 to-transparent opacity-90" />
+          <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-60 dark:opacity-90" />
           
           {/* Deep Ambient Glows */}
-          <div className="absolute -top-24 -left-24 w-96 h-96 bg-purple-600/20 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute -bottom-24 -right-24 w-[500px] h-[500px] bg-indigo-600/20 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -top-24 -left-24 w-96 h-96 bg-purple-500/[0.06] dark:bg-purple-600/20 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-24 -right-24 w-[500px] h-[500px] bg-indigo-500/[0.05] dark:bg-indigo-600/20 rounded-full blur-3xl pointer-events-none" />
 
           <div className="flex flex-col lg:flex-row items-center lg:items-start gap-12 lg:gap-8 relative z-10">
 
@@ -246,10 +246,10 @@ export default function InstructorRecruitment() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-purple-500/30 bg-purple-500/[0.08] dark:bg-purple-500/[0.08] mb-8 select-none transition-all duration-300 hover:border-purple-400/50 hover:bg-purple-500/15"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-purple-200 dark:border-purple-500/30 bg-purple-50 dark:bg-purple-500/[0.08] mb-8 select-none transition-all duration-300 hover:border-purple-300 dark:hover:border-purple-400/50 hover:bg-purple-100/60 dark:hover:bg-purple-500/15"
               >
-                <GraduationCap className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                <span className="text-[11px] font-bold uppercase tracking-[0.15em] text-purple-700 dark:text-purple-300">
+                <GraduationCap className="w-4 h-4 text-purple-700 dark:text-purple-400" />
+                <span className="text-[11px] font-bold uppercase tracking-[0.15em] text-purple-800 dark:text-purple-300">
                   Join the Instructor Network
                 </span>
               </motion.div>
@@ -266,7 +266,7 @@ export default function InstructorRecruitment() {
                 <br className="hidden sm:block" />
                 deserves an{" "}
                 <span className="relative inline-block">
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-violet-600 to-indigo-600 dark:from-purple-400 dark:via-violet-400 dark:to-purple-400">
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-700 via-violet-600 to-indigo-600 dark:from-purple-400 dark:via-violet-400 dark:to-purple-400">
                     audience.
                   </span>
                   <DecorativeUnderline />
@@ -279,10 +279,10 @@ export default function InstructorRecruitment() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: 0.18, ease: [0.16, 1, 0.3, 1] }}
-                className="text-xl sm:text-2xl font-bold text-slate-800 dark:text-white/90 mb-5 tracking-tight flex items-center gap-2"
+                className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white/90 mb-5 tracking-tight flex items-center gap-2"
               >
                 Create. Teach. Inspire. Earn.
-                <Sparkles className="w-5 h-5 text-purple-600 dark:text-purple-400 inline opacity-90" />
+                <Sparkles className="w-5 h-5 text-purple-700 dark:text-purple-400 inline opacity-90" />
               </motion.p>
 
               {/* Description */}
@@ -291,7 +291,7 @@ export default function InstructorRecruitment() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: 0.22, ease: [0.16, 1, 0.3, 1] }}
-                className="text-[16px] sm:text-[17px] text-slate-600 dark:text-slate-400 leading-relaxed mb-8 max-w-md font-normal"
+                className="text-[16px] sm:text-[17px] text-slate-700 dark:text-slate-400 leading-relaxed mb-8 max-w-md font-normal"
               >
                 Share your real-world knowledge with ambitious learners.
                 Build your instructor presence and get compensated for
@@ -322,11 +322,11 @@ export default function InstructorRecruitment() {
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1.5 transition-transform duration-300 ease-out" />
                 </Link>
 
-                <div className="text-sm text-slate-600 dark:text-slate-400 font-medium">
+                <div className="text-sm text-slate-700 dark:text-slate-400 font-medium">
                   Already an instructor?{" "}
                   <Link
                     href="/login"
-                    className="text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 font-semibold inline-flex items-center gap-1 transition-colors duration-200 group/link"
+                    className="text-purple-700 dark:text-purple-400 hover:text-purple-800 dark:hover:text-purple-300 font-semibold inline-flex items-center gap-1 transition-colors duration-200 group/link"
                   >
                     Sign in{" "}
                     <ArrowRight className="w-3.5 h-3.5 group-hover/link:translate-x-1 transition-transform duration-200" />
@@ -345,12 +345,12 @@ export default function InstructorRecruitment() {
                 {benefits.map((b) => (
                   <div
                     key={b.title}
-                    className="flex flex-col gap-2 p-3.5 sm:p-4 rounded-2xl bg-white/[0.03] dark:bg-purple-950/25 border border-purple-500/15 hover:border-purple-400/40 hover:bg-purple-950/40 group cursor-default transition-all duration-300 hover:-translate-y-1 shadow-xs"
+                    className="flex flex-col gap-2 p-3.5 sm:p-4 rounded-2xl bg-white/80 dark:bg-purple-950/25 border border-purple-200/60 dark:border-purple-500/15 hover:border-purple-300 dark:hover:border-purple-400/40 hover:bg-white dark:hover:bg-purple-950/40 group cursor-default transition-all duration-300 hover:-translate-y-1 shadow-xs"
                   >
-                    <div className="w-8 h-8 rounded-lg bg-purple-500/15 dark:bg-purple-500/20 flex items-center justify-center group-hover:bg-purple-500/30 transition-colors duration-300">
-                      <b.icon className="w-4 h-4 text-purple-600 dark:text-purple-400 group-hover:scale-110 transition-transform duration-300" />
+                    <div className="w-8 h-8 rounded-lg bg-purple-100 dark:bg-purple-500/20 flex items-center justify-center group-hover:bg-purple-200 dark:group-hover:bg-purple-500/30 transition-colors duration-300">
+                      <b.icon className="w-4 h-4 text-purple-700 dark:text-purple-400 group-hover:scale-110 transition-transform duration-300" />
                     </div>
-                    <h4 className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-300 transition-colors duration-200">
+                    <h4 className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-purple-700 dark:group-hover:text-purple-300 transition-colors duration-200">
                       {b.title}
                     </h4>
                     <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed whitespace-pre-line">

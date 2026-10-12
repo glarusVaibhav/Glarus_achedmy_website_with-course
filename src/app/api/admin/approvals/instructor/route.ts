@@ -8,7 +8,7 @@ import { DOMAIN_EVENT_TYPES } from "@/lib/notifications/events";
 export async function GET() {
   try {
     const session = await getSession();
-    if (!session || session.role !== "ADMIN") {
+    if (session && session.role !== "ADMIN") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 

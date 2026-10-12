@@ -1,0 +1,1837 @@
+[
+  {
+    "id": "lesson_01_01_01",
+    "title": "Introduction to Vector Spaces",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Assuming any set of vectors forms a vector space without verifying closure properties",
+          "example": "The set of all 2D vectors (x, y) forms a vector space under standard addition and scalar multiplication.",
+          "explanation": "A vector space is a collection of objects called vectors that can be added together and multiplied by scalars (real or complex numbers). Imagine a 3D coordinate system where you can stretch, shrink, and combine arrows following specific rules.",
+          "realWorldUse": "Used in computer graphics for 3D transformations and in machine learning for feature space representation",
+          "tip": "Always verify the 10 vector space axioms when proving a set is a vector space",
+          "title": "Vector Spaces Fundamentals"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "This code verifies closure properties by checking if operations preserve the z=0 constraint",
+          "hint": "A subspace must be closed under vector addition and scalar multiplication",
+          "language": "python",
+          "question": "Verify if the set of all vectors (x, y, 0) forms a subspace of ℝ³",
+          "solution": "# Both results should have z=0 to satisfy the subspace criteria\nprint(f'Addition closed: {addition_result[2] == 0}')\nprint(f'Scalar multiplication closed: {multiplication_result[2] == 0}')",
+          "starterCode": "import numpy as np\n# Define two vectors in the set\nv1 = np.array([1, 2, 0])\nv2 = np.array([3, 4, 0])\nscalar = 2\n\n# Check closure under addition\naddition_result = v1 + v2\n\n# Check closure under scalar multiplication\nmultiplication_result = scalar * v1"
+        }
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 2,
+            "explanation": "A subspace doesn't need to contain basis vectors explicitly - it just needs to satisfy closure properties and contain the zero vector",
+            "options": [
+              "Contains the zero vector",
+              "Closed under addition",
+              "Contains all basis vectors",
+              "Closed under scalar multiplication"
+            ],
+            "question": "Which of these is NOT required for a subset to be a subspace?"
+          }
+        ]
+      },
+      {
+        "type": "fill_blank",
+        "sentences": [
+          {
+            "answer": "span",
+            "text": "The ______ of a set of vectors is the set of all possible linear combinations"
+          }
+        ]
+      },
+      {
+        "type": "visual",
+        "content": {
+          "diagram": [
+            "Standard basis vectors e₁=(1,0)",
+            "e₂=(0,1)",
+            "Non-standard basis vectors v₁=(2,1)",
+            "v₂=(1,2)"
+          ],
+          "explanation": "Both sets span ℝ² but with different scaling factors - basis vectors must be linearly independent and span the space",
+          "title": "Basis Visualization"
+        }
+      },
+      {
+        "type": "reflection",
+        "prompt": "How might the concept of basis vectors apply to image compression techniques?"
+      },
+      {
+        "type": "scenario",
+        "title": "Basis Selection Challenge",
+        "description": "You need to choose a basis for a machine learning feature space. Which option would be most effective?",
+        "choices": [
+          {
+            "outcome": "Improves model interpretability and reduces multicollinearity",
+            "score": 100,
+            "text": "Orthogonal basis vectors"
+          },
+          {
+            "outcome": "May lead to poor model performance due to redundancy",
+            "score": 30,
+            "text": "Randomly selected vectors"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "lesson_01_02_01",
+    "title": "Matrix Representations of Linear Transformations",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Forgetting that matrix representation depends on the chosen basis. The same transformation has different matrices in different bases.",
+          "example": "Consider a linear transformation T: ℝ²→ℝ² that rotates vectors by θ degrees. Its matrix representation is [[cosθ, -sinθ], [sinθ, cosθ]].",
+          "explanation": "A linear transformation can be represented as a matrix that acts on vectors in a given basis. This matrix encodes how the transformation affects each basis vector. For example, a 2D rotation matrix rotates vectors around the origin while preserving linearity.",
+          "realWorldUse": "Computer graphics use transformation matrices for 3D rendering and animation.",
+          "tip": "Always verify linearity (T(u+v)=T(u)+T(v) and T(αu)=αT(u)) before attempting matrix representation.",
+          "title": "Linear Transformations as Matrices"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "This matrix scales vectors by factors of 2 and 3 along the x and y axes respectively. Matrix multiplication @ applies the transformation.",
+          "hint": "The diagonal matrix scales x and y axes independently",
+          "language": "python",
+          "question": "Implement a linear transformation matrix and apply it to a vector",
+          "solution": "import numpy as np\n# Define a linear transformation matrix (scaling by 2 in x, 3 in y)\nT = np.array([[2, 0],\n              [0, 3]])\n\n# Apply to vector v = [1, 2]\nv = np.array([1, 2])\nTv = T @ v",
+          "starterCode": "import numpy as np\n# Define a linear transformation matrix (scaling by 2 in x, 3 in y)\nT = np.array([[__, __],\n              [__, __]])\n\n# Apply to vector v = [1, 2]\nv = np.array([1, 2])\nTv = T @ v"
+        }
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 0,
+            "explanation": "Matrix multiplication AB represents applying transformation B first, then A. This mirrors function composition f(g(x)).",
+            "options": [
+              "Matrix multiplication is equivalent to transformation composition",
+              "Matrix addition corresponds to transformation composition",
+              "Matrix inversion reverses the transformation",
+              "Matrix transpose negates the transformation"
+            ],
+            "question": "What is the relationship between matrix multiplication and transformation composition?"
+          }
+        ]
+      },
+      {
+        "type": "visual",
+        "content": {
+          "diagram": [
+            "Domain Vector Space",
+            "Kernel (Null Space)",
+            "Image (Column Space)"
+          ],
+          "explanation": "The rank-nullity theorem states dim(domain) = dim(kernel) + dim(image). The diagram shows how vectors are mapped through this relationship.",
+          "title": "Rank-Nullity Theorem Visualization"
+        }
+      },
+      {
+        "type": "scenario",
+        "title": "Basis Selection Challenge",
+        "description": "You need to represent a linear transformation in a non-standard basis. Which approach would work best?",
+        "choices": [
+          {
+            "outcome": "Works but may obscure transformation properties",
+            "score": 70,
+            "text": "Use the standard basis for simplicity"
+          },
+          {
+            "outcome": "Diagonalizes the matrix for easier analysis",
+            "score": 90,
+            "text": "Choose a basis aligned with eigenvectors"
+          },
+          {
+            "outcome": "Creates a non-invertible representation",
+            "score": 40,
+            "text": "Randomly select basis vectors"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "lesson_01_03_01",
+    "title": "Computational Matrix Inverses and Determinants",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Trying to invert non-square matrices",
+          "example": "For a 2x2 matrix [[a,b],[c,d]], the inverse is (1/det(A)) * [[d,-b],[-c,a]]",
+          "explanation": "An invertible matrix A has a unique inverse A⁻¹ such that AA⁻¹ = I. This is only possible when A is square and non-singular (det(A) ≠ 0).",
+          "realWorldUse": "Used in solving linear systems, cryptography, and computer graphics transformations",
+          "tip": "Always verify AA⁻¹ = I after computation",
+          "title": "Inverse Matrix Fundamentals"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "NumPy's linalg.inv() performs this operation numerically. For manual implementation, create an augmented matrix and apply row operations until A becomes I.",
+          "hint": "Use augmented matrix [A|I] and row operations",
+          "language": "python",
+          "question": "Implement Gaussian elimination for 3x3 matrix inversion",
+          "solution": "import numpy as np\ndef invert_matrix(A):\n    return np.linalg.inv(A)\n\n# Test with\nA = np.array([[1,2,3],[0,1,4],[5,6,0]], dtype=float)",
+          "starterCode": "import numpy as np\n\ndef invert_matrix(A):\n    # Your implementation here\n    pass"
+        }
+      },
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Forgetting sign changes during row swaps",
+          "example": "For 2D vectors, determinant of [[a,b],[c,d]] = ad-bc gives the area scaling factor",
+          "explanation": "The determinant |A| represents how a linear transformation scales volumes. If |A|=0, the transformation collapses space into lower dimensions.",
+          "realWorldUse": "Critical in calculating Jacobians for change of variables in integrals",
+          "tip": "Use row operations to simplify determinant calculation",
+          "title": "Determinant as Volume Scaling"
+        }
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 1,
+            "explanation": "Non-zero determinant is both necessary and sufficient for invertibility",
+            "options": [
+              "Square matrix",
+              "Non-zero determinant",
+              "Equal number of rows and columns",
+              "All diagonal elements non-zero"
+            ],
+            "question": "Which condition guarantees matrix invertibility?"
+          }
+        ]
+      },
+      {
+        "type": "scenario",
+        "title": "Linear System Solver Dilemma",
+        "description": "You need to solve Ax=b where A is 1000x1000. Which method is most efficient: Cramer's rule, Gaussian elimination, or matrix inversion?",
+        "choices": [
+          {
+            "outcome": "Inefficient for large matrices - O(n³) complexity",
+            "score": 20,
+            "text": "Cramer's rule"
+          },
+          {
+            "outcome": "Optimal choice for large systems",
+            "score": 100,
+            "text": "Gaussian elimination"
+          },
+          {
+            "outcome": "Less efficient than direct elimination",
+            "score": 50,
+            "text": "Matrix inversion"
+          }
+        ]
+      },
+      {
+        "type": "fill_blank",
+        "sentences": [
+          {
+            "answer": "diagonal",
+            "text": "The determinant of a triangular matrix is the product of its ___ elements."
+          },
+          {
+            "answer": "singular",
+            "text": "If det(A) = 0, matrix A is ___"
+          }
+        ]
+      },
+      {
+        "type": "speed_quiz",
+        "questions": [
+          {
+            "answer": 1,
+            "options": [
+              "5",
+              "6",
+              "0",
+              "undefined"
+            ],
+            "question": "What's det([[2,0],[0,3]])?"
+          },
+          {
+            "answer": 2,
+            "options": [
+              "Row swap",
+              "Row scaling",
+              "Row addition",
+              "All change"
+            ],
+            "question": "Which operation doesn't change determinant?"
+          }
+        ]
+      },
+      {
+        "type": "reflection",
+        "prompt": "Explain how determinant relates to solution uniqueness in linear systems"
+      }
+    ]
+  },
+  {
+    "id": "lesson_02_04_01",
+    "title": "Foundations of Eigenvalues and Eigenvectors",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Confusing eigenvalues with arbitrary scalars; they must satisfy the characteristic equation",
+          "example": "Imagine stretching a rubber sheet diagonally - vectors along the stretch direction (eigenvectors) only change length (eigenvalues), while others change direction.",
+          "explanation": "Eigenvalues and eigenvectors describe how linear transformations scale vectors without changing their direction. For matrix A, a non-zero vector v is an eigenvector if Av = λv, where λ is the eigenvalue. This means the transformation only scales the vector, not rotates it.",
+          "realWorldUse": "Google's PageRank algorithm uses eigenvectors to rank web pages",
+          "tip": "Always verify Av = λv after calculation",
+          "title": "Eigenvalues and Eigenvectors Defined"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "This code computes eigenvalues for matrix [[2,1],[1,2]]. The characteristic equation |A-λI|=0 gives (2-λ)²-1=0 → λ=3 and λ=1",
+          "hint": "Use numpy.linalg.eig() function",
+          "language": "python",
+          "question": "Calculate eigenvalues for a 2x2 matrix",
+          "solution": "eigenvalues, eigenvectors = np.linalg.eig(A)\neigenvalues",
+          "starterCode": "import numpy as np\nA = np.array([[2, 1], [1, 2]])\n# Find eigenvalues and eigenvectors below\n"
+        }
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 2,
+            "explanation": "The determinant |A - λI| = 0 ensures non-trivial solutions exist for Av = λv",
+            "options": [
+              "det(A) = λ",
+              "tr(A) = λ",
+              "det(A - λI) = 0",
+              "A + λI = 0"
+            ],
+            "question": "What condition must hold for λ to be an eigenvalue of A?"
+          }
+        ]
+      },
+      {
+        "type": "visual",
+        "content": {
+          "diagram": [
+            "Original vector space",
+            "After transformation A",
+            "Eigenvectors remain aligned"
+          ],
+          "explanation": "Eigenvectors (red) maintain direction after transformation. Non-eigenvectors (blue) change direction. Scaling factors are eigenvalues.",
+          "title": "Geometric Interpretation"
+        }
+      },
+      {
+        "type": "scenario",
+        "title": "Diagonalization Decision",
+        "description": "You need to diagonalize matrix B = [[4,1],[1,4]]. Which approach is correct?",
+        "choices": [
+          {
+            "outcome": "Success: Eigenvalues are 5 and 3",
+            "score": 100,
+            "text": "Compute characteristic polynomial and find roots"
+          },
+          {
+            "outcome": "Failure: Only true for diagonal matrices",
+            "score": 0,
+            "text": "Assume diagonal entries are eigenvalues"
+          }
+        ]
+      },
+      {
+        "type": "reflection",
+        "prompt": "How might eigenvalues help in principal component analysis (PCA)?"
+      }
+    ]
+  },
+  {
+    "id": "lesson_02_04_02",
+    "title": "Advanced Eigenanalysis Techniques",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "beforeAfter": {
+            "after": "Jordan block [[λ,1],[0,λ]] for defective matrices",
+            "before": "Diagonal matrix [[λ,0],[0,λ]]"
+          },
+          "commonMistake": "Assuming Jordan blocks can be arbitrarily reordered - they must maintain chain relationships",
+          "example": "A 3x3 matrix with eigenvalue λ=2 (algebraic multiplicity 3) but only one eigenvector would have Jordan form [[2,1,0],[0,2,1],[0,0,2]]",
+          "explanation": "Jordan form generalizes diagonalization for defective matrices by grouping eigenvalues into Jordan blocks. Each block represents a chain of generalized eigenvectors.",
+          "realWorldUse": "Analyzing stability in control systems with repeated eigenvalues",
+          "tip": "Jordan form preserves key properties: trace, determinant, and eigenvalues remain unchanged from original matrix",
+          "title": "Jordan Canonical Form"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "Power iteration converges to the dominant eigenvalue by repeatedly multiplying the matrix with an initial vector, amplifying the component in the direction of the dominant eigenvector",
+          "hint": "Remember to normalize the vector at each iteration to prevent overflow",
+          "language": "python",
+          "question": "Implement power iteration to find dominant eigenvalue",
+          "solution": "import numpy as np\n\ndef power_iteration(A, num_iterations):\n    b = np.random.rand(A.shape[1])\n    for _ in range(num_iterations):\n        b = A @ b\n        b = b / np.linalg.norm(b)\n    return (A @ b)[0]/b[0]",
+          "starterCode": "import numpy as np\n\ndef power_iteration(A, num_iterations):\n    b = np.random.rand(A.shape[1])\n    for _ in range(num_iterations):\n        b = A @ b\n        b = b / np.linalg.norm(b)\n    return ___"
+        }
+      },
+      {
+        "type": "scenario",
+        "title": "Markov Chain Analysis",
+        "description": "You're modeling customer transitions between three loyalty tiers. The transition matrix is:\n[[0.7, 0.2, 0.1],\n [0.3, 0.5, 0.2],\n [0.1, 0.3, 0.6]]\nWhat's the steady-state distribution?",
+        "choices": [
+          {
+            "outcome": "Incorrect - this doesn't satisfy π = Pπ",
+            "score": 0,
+            "text": "[0.4, 0.3, 0.3]"
+          },
+          {
+            "outcome": "Close but eigenvector normalization is off",
+            "score": 50,
+            "text": "[0.35, 0.35, 0.3]"
+          },
+          {
+            "outcome": "Correct - satisfies π = Pπ and Σπ=1",
+            "score": 100,
+            "text": "[0.375, 0.325, 0.3]"
+          }
+        ]
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 2,
+            "explanation": "Defectiveness occurs when the geometric multiplicity (number of linearly independent eigenvectors) is less than the algebraic multiplicity of an eigenvalue",
+            "options": [
+              "A) It has repeated eigenvalues",
+              "B) It has complex eigenvalues",
+              "C) Geometric multiplicity < algebraic multiplicity",
+              "D) Determinant equals zero"
+            ],
+            "question": "Which condition makes a matrix defective?"
+          }
+        ]
+      },
+      {
+        "type": "visual",
+        "content": {
+          "diagram": [
+            "Eigenvalue λ: [λ,1,0]",
+            "           [0,λ,1]",
+            "           [0,0,λ]",
+            "Generalized eigenvectors form a chain"
+          ],
+          "explanation": "Each Jordan block corresponds to a single eigenvalue with a chain of generalized eigenvectors. The 1s on the superdiagonal represent the relationships between these vectors.",
+          "title": "Jordan Block Structure"
+        }
+      },
+      {
+        "type": "reflection",
+        "prompt": "Why is Jordan form considered a 'best possible' decomposition for non-diagonalizable matrices?"
+      },
+      {
+        "type": "speed_quiz",
+        "questions": [
+          {
+            "answer": 0,
+            "options": [
+              "A) Sum of diagonal entries",
+              "B) Product of eigenvalues",
+              "C) Always zero",
+              "D) Number of blocks"
+            ],
+            "question": "What's the trace of a Jordan block matrix?"
+          },
+          {
+            "answer": 1,
+            "options": [
+              "A) QR algorithm",
+              "B) Power iteration",
+              "C) Jacobi method",
+              "D) Householder transformation"
+            ],
+            "question": "Which method finds dominant eigenvalues?"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "lesson_02_05_01",
+    "title": "Singular Value Decomposition Fundamentals",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "beforeAfter": {
+            "after": "SVD: A = UΣVᵀ (works for any matrix shape)",
+            "before": "Eigen decomposition: A = QΛQ⁻¹ (square matrices only)"
+          },
+          "commonMistake": "Confusing eigenvalues (λ) with singular values (σ) - they solve different equations",
+          "example": "For a 3×2 matrix A, SVD finds U (3×3), Σ (3×2), V (2×2) such that A = UΣVᵀ",
+          "explanation": "SVD generalizes eigen decomposition to non-square matrices by decomposing A = UΣVᵀ where U/V are orthonormal and Σ is diagonal. Unlike eigenvalues which only work for square matrices, singular values work for any m×n matrix.",
+          "realWorldUse": "Image compression by truncating small singular values",
+          "tip": "Remember: Singular values are always non-negative and sorted descendingly",
+          "title": "SVD vs Eigen Decomposition"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "The svd() function returns U (m×m), singular values (vector), and Vt (n×n). The Σ matrix is implicitly represented by the vector of singular values.",
+          "hint": "Use np.linalg.svd() with the matrix A",
+          "language": "python",
+          "question": "Compute SVD for a 3x2 matrix",
+          "solution": "import numpy as np\nA = np.array([[1,2],\n              [3,4],\n              [5,6]])\nU, s, Vt = np.linalg.svd(A)\nprint('Singular values:', s)",
+          "starterCode": "import numpy as np\nA = np.array([[1,2],\n              [3,4],\n              [5,6]])\nU, s, Vt = np.linalg.svd(______)\nprint('Singular values:', ______)"
+        }
+      },
+      {
+        "type": "visual",
+        "content": {
+          "diagram": [
+            "Original Matrix A (m×n)",
+            "U (m×m) Σ (m×n) V (n×n)",
+            "Matrix reconstruction: A ≈ UΣVᵀ"
+          ],
+          "explanation": "Visualize how SVD breaks a matrix into three components: left singular vectors (U), singular values (Σ), and right singular vectors (V). Truncating small σ values compresses data while retaining most information.",
+          "title": "SVD Matrix Decomposition"
+        }
+      },
+      {
+        "type": "fill_blank",
+        "sentences": [
+          {
+            "answer": "Σ",
+            "text": "The SVD decomposition formula is A = U ___ Vᵀ"
+          },
+          {
+            "answer": "singular values",
+            "text": "The diagonal entries of Σ are called ___"
+          }
+        ]
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 1,
+            "explanation": "Singular values are non-negative real numbers sorted in descending order. They represent scaling factors in different directions.",
+            "options": [
+              "They can be negative",
+              "They are always real numbers",
+              "They represent rotation components",
+              "They are unordered"
+            ],
+            "question": "Which property is TRUE for singular values?"
+          }
+        ]
+      },
+      {
+        "type": "scenario",
+        "title": "Image Compression Challenge",
+        "description": "You're tasked with compressing a 1000×800 image matrix. How would you apply SVD?",
+        "choices": [
+          {
+            "outcome": "No compression achieved",
+            "score": 20,
+            "text": "Keep all singular values"
+          },
+          {
+            "outcome": "Balances quality and compression",
+            "score": 90,
+            "text": "Truncate after 50 singular values"
+          },
+          {
+            "outcome": "Severe quality loss but max compression",
+            "score": 50,
+            "text": "Only keep largest singular value"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "lesson_02_05_02",
+    "title": "SVD Applications in Data Science",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "beforeAfter": {
+            "after": "Dense user-factor and movie-factor matrices with reduced dimensionality",
+            "before": "Raw user-movie ratings matrix (noisy, sparse)"
+          },
+          "commonMistake": "Confusing SVD with eigenvalue decomposition - SVD works on non-square matrices",
+          "example": "In recommendation systems, SVD identifies user-movie latent factors by decomposing the rating matrix into user factors, movie factors, and singular values.",
+          "explanation": "SVD decomposes matrices into orthogonal components to reveal latent patterns. Unlike PCA which focuses on covariance matrices, SVD works directly on data matrices. This makes it ideal for tasks like noise reduction and collaborative filtering.",
+          "realWorldUse": "Netflix Prize used SVD for movie recommendation matrix completion",
+          "tip": "Always normalize data before SVD to prevent scale-dependent results",
+          "title": "Core Theory of SVD Applications"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "This implementation reduces 784-dimensional MNIST images to 50 principal components. The reconstruction error measures how well we can recreate original data from compressed representation - lower error means better information retention.",
+          "hint": "Remember to normalize pixel values between 0-1 first. Check the shape of your transformed data.",
+          "language": "python",
+          "question": "Implement SVD for dimensionality reduction on the MNIST dataset",
+          "solution": "from sklearn.decomposition import TruncatedSVD\nfrom sklearn.datasets import fetch_openml\nimport numpy as np\n\n# Load dataset\ndigits = fetch_openml('mnist_784', version=1)\nX = digits.data / 255.0  # Normalize\n\n# Apply TruncatedSVD\nsvd = TruncatedSVD(n_components=50)\nX_reduced = svd.fit_transform(X)\n\n# Calculate reconstruction error\nreconstructed = svd.inverse_transform(X_reduced)\nerror = np.mean((X - reconstructed)**2)\nprint(f'Reconstruction error: {error:.4f}')",
+          "starterCode": "from sklearn.decomposition import TruncatedSVD\nfrom sklearn.datasets import fetch_openml\n\n# Load dataset\ndigits = fetch_openml('mnist_784', version=1)\nX = digits.data\n\n# TODO: Apply TruncatedSVD to reduce to 50 dimensions\nsvd = TruncatedSVD(n_components=___)\nX_reduced = svd.fit_transform(X)\n\n# TODO: Calculate reconstruction error\nreconstructed = svd.inverse_transform(X_reduced)\nerror = np.mean((X - reconstructed)**2)"
+        }
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 1,
+            "explanation": "SVD can decompose any m×n matrix while PCA computes eigenvalues of the covariance matrix (n×n). This makes SVD more flexible for rectangular data matrices common in real-world datasets.",
+            "options": [
+              "PCA uses eigenvalues of covariance matrix",
+              "SVD works on non-square matrices",
+              "PCA is non-linear",
+              "SVD requires square matrices"
+            ],
+            "question": "What's the key mathematical difference between SVD and PCA?"
+          }
+        ]
+      },
+      {
+        "type": "reflection",
+        "prompt": "Think about a real-world application where SVD's noise reduction capabilities would be critical. Explain why SVD might outperform other methods in this scenario."
+      },
+      {
+        "type": "speed_quiz",
+        "questions": [
+          {
+            "answer": 0,
+            "options": [
+              "Most variance direction",
+              "Noise floor",
+              "Number of components",
+              "Reconstruction error"
+            ],
+            "question": "What does the largest singular value represent?"
+          },
+          {
+            "answer": 2,
+            "options": [
+              "U matrix",
+              "Σ matrix",
+              "V* matrix",
+              "None"
+            ],
+            "question": "Which SVD component stores the principal features?"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "lesson_02_06_01",
+    "title": "Spectral Theorem and Symmetric Matrices",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Assuming non-symmetric matrices follow the same diagonalization rules",
+          "example": "For matrix A = [[3, 1], [1, 3]], eigenvalues λ₁=4 and λ₂=2 with orthogonal eigenvectors v₁=[1,1] and v₂=[-1,1] satisfy A = QΛQᵀ where Q is orthogonal.",
+          "explanation": "The Spectral Theorem states that every symmetric matrix can be diagonalized by an orthogonal matrix. This means symmetric matrices have real eigenvalues and orthogonal eigenvectors, forming a complete basis for vector spaces.",
+          "realWorldUse": "Used in principal component analysis (PCA) for dimensionality reduction in machine learning",
+          "tip": "Focus on symmetry patterns in matrices - this guarantees real eigenvalues and orthogonal eigenvectors",
+          "title": "Spectral Theorem Foundations"
+        }
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 3,
+            "explanation": "Self-adjointness (A = Aᵀ) ensures eigenvalues are real through the inner product properties of symmetric operators",
+            "options": [
+              "Determinant positivity",
+              "Trace symmetry",
+              "Orthogonal eigenvectors",
+              "Self-adjointness"
+            ],
+            "question": "What property guarantees a symmetric matrix has real eigenvalues?"
+          }
+        ]
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "The np.linalg.eigh() function computes eigenvalues and orthonormal eigenvectors specifically for symmetric (Hermitian) matrices",
+          "hint": "Use np.linalg.eigh() for symmetric matrices which guarantees orthogonal eigenvectors",
+          "language": "python",
+          "question": "Implement spectral decomposition for a symmetric matrix",
+          "solution": "import numpy as np\nA = np.array([[4, 1, -2], [1, 5, 3], [-2, 3, 10]])\nevals, evecs = np.linalg.eigh(A)\nQ = evecs\nLambda = np.diag(evals)\nreconstructed = Q @ Lambda @ Q.T\nprint('Original:', A, '\\\\nReconstructed:', reconstructed)",
+          "starterCode": "import numpy as np\nA = np.array([[4, 1, -2], [1, 5, 3], [-2, 3, 10]])\n# Compute eigenvalues and eigenvectors\n# Normalize eigenvectors to form orthogonal matrix Q\n# Reconstruct A using QΛQᵀ"
+        }
+      },
+      {
+        "type": "visual",
+        "content": {
+          "diagram": [
+            "Original Matrix A",
+            "Eigenvalues Λ",
+            "Eigenvectors Q",
+            "Reconstructed A = QΛQᵀ"
+          ],
+          "explanation": "The diagram shows how symmetric matrices decompose into eigenvalues (diagonal matrix) and orthogonal eigenvectors (Q matrix) that reconstruct the original matrix through matrix multiplication",
+          "title": "Spectral Decomposition Visualization"
+        }
+      },
+      {
+        "type": "scenario",
+        "title": "Spectral Clustering Application",
+        "description": "You're analyzing customer data with 3 distinct segments. Your similarity matrix S is symmetric but has negative eigenvalues. What should you do before applying spectral clustering?",
+        "choices": [
+          {
+            "outcome": "Improves numerical stability but may distort cluster structure",
+            "score": 70,
+            "text": "Add identity matrix to make all eigenvalues positive"
+          },
+          {
+            "outcome": "Destroys meaningful distance relationships",
+            "score": 30,
+            "text": "Use absolute values of eigenvalues"
+          },
+          {
+            "outcome": "Loses important structural information",
+            "score": 40,
+            "text": "Discard negative eigenvalues and corresponding eigenvectors"
+          },
+          {
+            "outcome": "Prevents scale issues but doesn't address negative eigenvalues",
+            "score": 60,
+            "text": "Normalize data before computing similarity matrix"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "lesson_03_07_01",
+    "title": "Geometric Derivation of Least Squares",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "beforeAfter": {
+            "after": "Geometric approach: Calculate exact orthogonal projection using normal equations",
+            "before": "Naive approach: Pick random points in column space until finding closest one"
+          },
+          "commonMistake": "Confusing orthogonal projection with closest point in Euclidean space - they're only equivalent in subspaces",
+          "example": "In 3D space, if your data matrix A defines a plane and b is a point off the plane, the least squares solution x̂ satisfies A x̂ = projection of b onto A's column space",
+          "explanation": "Least squares solutions emerge from finding the closest possible vector in a subspace to the target vector. Imagine shining a light perpendicular to a plane - the shadow of your target vector on this plane is the optimal least squares solution.",
+          "realWorldUse": "GPS triangulation uses least squares to find the optimal position when signals arrive with measurement errors",
+          "tip": "Remember: The residual vector (b - A x̂) must be orthogonal to the column space of A",
+          "title": "Orthogonal Projection Intuition"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "This computes the projection of b onto A's column space by solving AᵀAx̂ = Aᵀb",
+          "hint": "Use matrix multiplication @ operator and np.linalg.inv()",
+          "language": "python",
+          "question": "Implement normal equations for A= [[1,2],[3,4],[5,6]] and b=[[7],[8],[9]]",
+          "solution": "# Solution\nimport numpy as np\nA = np.array([[1,2],[3,4],[5,6]])\nb = np.array([[7],[8],[9]])\nx_hat = np.linalg.inv(A.T @ A) @ A.T @ b\nx_hat",
+          "starterCode": "# Your code here\nimport numpy as np\nA = np.array([[1,2],[3,4],[5,6]])\nb = np.array([[7],[8],[9]])\n# Compute x_hat = "
+        }
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 1,
+            "explanation": "Normal equations find x̂ that minimizes ||b - Ax||² by ensuring the residual is orthogonal to the column space",
+            "options": [
+              "They guarantee exact solutions",
+              "They minimize residual error",
+              "They use eigenvalues for optimization",
+              "They maximize determinant"
+            ],
+            "question": "Why do normal equations work for overdetermined systems?"
+          }
+        ]
+      },
+      {
+        "type": "reflection",
+        "prompt": "How would you explain least squares projections to a colleague using a real-world analogy?"
+      },
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Assuming the solution gives exact agreement with all measurements",
+          "example": "GPS receiver gets 4 distance measurements (equations) but only needs 3 unknowns (x,y,z). Least squares finds the position that minimizes total error across all measurements",
+          "explanation": "When you have more equations than variables (m > n), the system is typically inconsistent. The normal equations find the x that makes Ax the closest possible vector to b in the column space.",
+          "realWorldUse": "Economic forecasting models with more historical data points than variables",
+          "tip": "Remember: The normal equations work when A has full column rank",
+          "title": "Overdetermined Systems Geometry"
+        }
+      },
+      {
+        "type": "fill_blank",
+        "sentences": [
+          {
+            "answer": "x",
+            "text": "The normal equations formula is (AᵀA)___ = Aᵀb"
+          }
+        ]
+      },
+      {
+        "type": "speed_quiz",
+        "questions": [
+          {
+            "answer": 1,
+            "options": [
+              "Parallel to columns of A",
+              "Orthogonal to column space",
+              "Equal to b",
+              "Zero vector"
+            ],
+            "question": "What property does the residual vector have?"
+          }
+        ]
+      },
+      {
+        "type": "case_study",
+        "questions": [
+          {
+            "expectedAnswer": "5x3 matrix with 5 equations and 3 unknowns",
+            "question": "What matrix dimensions would you expect?"
+          },
+          {
+            "expectedAnswer": "The optimal sensor correction factors that minimize total squared error",
+            "question": "How does the solution interpret physically?"
+          }
+        ],
+        "title": "Sensor Calibration Problem"
+      }
+    ]
+  },
+  {
+    "id": "lesson_03_07_02",
+    "title": "Numerical Stability and QR Decomposition",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Assuming all least squares problems require normal equations",
+          "example": "Solving Ax=b with a near-singular A matrix causes catastrophic cancellation in normal equations",
+          "explanation": "Numerical stability determines how sensitive an algorithm is to small input perturbations. Ill-conditioned problems amplify errors exponentially during computation.",
+          "realWorldUse": "QR decomposition is used in GPS signal processing to handle noisy measurements",
+          "tip": "Always check condition number before solving linear systems",
+          "title": "Numerical Stability Fundamentals"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "QR decomposition orthogonalizes A's columns, avoiding the A^TA conditioning problem",
+          "hint": "Use back-substitution on upper triangular R matrix",
+          "language": "python",
+          "question": "Implement QR decomposition for least squares",
+          "solution": "import numpy as np\nA = np.array([[1,2],[3,4],[5,6]], dtype=float)\nb = np.array([1,2,3], dtype=float)\nQ, R = np.linalg.qr(A)\nx = np.linalg.solve(R, Q.T @ b)",
+          "starterCode": "import numpy as np\nA = np.array([[1,2],[3,4],[5,6]], dtype=float)\nb = np.array([1,2,3], dtype=float)\nQ, R = np.linalg.qr(A)\nx = ... # Solve Rx=Q^Tb"
+        }
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 1,
+            "explanation": "QR decomposition uses orthogonal transformations that preserve numerical precision",
+            "options": [
+              "Normal equations",
+              "QR decomposition",
+              "Both equally stable",
+              "Depends on matrix shape"
+            ],
+            "question": "Which method has better numerical stability for ill-conditioned problems?"
+          }
+        ]
+      },
+      {
+        "type": "visual",
+        "content": {
+          "diagram": [
+            "Original Matrix A: [a1 a2 ... an]",
+            "QR Decomposition: A = Q * R",
+            "Q: m×n orthonormal matrix",
+            "R: n×n upper triangular matrix"
+          ],
+          "explanation": "The QR factorization decomposes A into an orthogonal matrix Q and upper triangular R, enabling stable back-substitution",
+          "title": "QR Factorization Process"
+        }
+      },
+      {
+        "type": "scenario",
+        "title": "Method Selection Challenge",
+        "description": "You're optimizing a 1000×100 matrix for a real-time control system. The matrix has high condition number (1e15). Should you use normal equations or QR?",
+        "choices": [
+          {
+            "outcome": "Your solution will be numerically unstable with large errors",
+            "score": 30,
+            "text": "Normal equations for speed"
+          },
+          {
+            "outcome": "Your solution will be reliable but slightly slower (2x more FLOPs)",
+            "score": 90,
+            "text": "QR decomposition for stability"
+          }
+        ]
+      },
+      {
+        "type": "fill_blank",
+        "sentences": [
+          {
+            "answer": "original",
+            "text": "The QR method avoids squaring the condition number by working directly with the ___ matrix instead of A^TA"
+          },
+          {
+            "answer": "upper",
+            "text": "For full rank rectangular matrices, QR decomposition produces a ___ triangular matrix"
+          }
+        ]
+      },
+      {
+        "type": "reflection",
+        "prompt": "When would you prefer normal equations over QR decomposition despite the numerical risks?"
+      },
+      {
+        "type": "speed_quiz",
+        "questions": [
+          {
+            "answer": 0,
+            "options": [
+              "O(n^3)",
+              "O(n^2)",
+              "O(n)",
+              "O(1)"
+            ],
+            "question": "What's the time complexity of QR decomposition?"
+          },
+          {
+            "answer": 1,
+            "options": [
+              "LU",
+              "QR",
+              "Cholesky",
+              "SVD"
+            ],
+            "question": "Which decomposition is most stable for least squares?"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "lesson_03_08_01",
+    "title": "Lagrangian Multipliers for Constraints",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "beforeAfter": {
+            "after": "Solve ∇L = ∇f + λ∇g = 0",
+            "before": "Maximize f(x) subject to g(x)=0"
+          },
+          "commonMistake": "Forgetting to normalize constraints before combining with the objective function",
+          "example": "Imagine optimizing a factory's output (objective) while respecting budget limits (constraint). The Lagrangian combines these into a single equation: L(x,λ) = f(x) + λ(g(x) - c)",
+          "explanation": "Lagrangian multipliers transform constrained optimization problems into unconstrained ones by introducing auxiliary variables (λ) that encode constraint violations. This creates a saddle-point problem where we simultaneously minimize the objective and maximize constraint satisfaction.",
+          "realWorldUse": "Portfolio optimization in finance where returns are maximized under risk constraints",
+          "tip": "Visualize λ as a 'shadow price' that quantifies constraint tightness",
+          "title": "Lagrangian Formulation Basics"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "This code demonstrates quadratic programming where we minimize residuals subject to linear equality constraints. The Lagrange multiplier method automatically handles the constraint during optimization.",
+          "hint": "Use scipy.optimize.minimize with SLSQP method and define equality constraints",
+          "language": "python",
+          "question": "Implement a constrained least squares solver using Lagrange multipliers",
+          "solution": "# Complete implementation with Lagrange multipliers\ncons = ({'type': 'eq', 'fun': constraint})\nx0 = np.zeros(3)\nres = minimize(objective, x0, constraints=cons, method='SLSQP')\nprint('Optimal solution:', res.x)",
+          "starterCode": "import numpy as np\nfrom scipy.optimize import minimize\n\nA = np.random.randn(10,3)\nb = np.random.randn(10)\nC = np.array([[1,1,1]])\nd = np.array([1])\n\n# Define Lagrangian here\n\ndef objective(x):\n    return 0.5*np.linalg.norm(A@x - b)**2\n\ndef constraint(x):\n    return C@x - d\n\n# Solve using SLSQP method"
+        }
+      },
+      {
+        "type": "scenario",
+        "title": "Structural Engineering Optimization",
+        "description": "You're designing a bridge truss system with weight constraints. Which approach would best handle the material stress limits?",
+        "choices": [
+          {
+            "outcome": "Design will likely fail safety checks due to unmet constraints",
+            "score": 20,
+            "text": "Ignore constraints and use standard least squares"
+          },
+          {
+            "outcome": "May violate constraints if penalty weights are improperly chosen",
+            "score": 50,
+            "text": "Add penalty terms to the objective function"
+          },
+          {
+            "outcome": "Guarantees constraint satisfaction while minimizing material usage",
+            "score": 100,
+            "text": "Formulate Lagrangian with equality constraints"
+          }
+        ]
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 2,
+            "explanation": "The KKT conditions require ∇f(x*) = λ∇g(x*) for equality constraints, meaning gradients are parallel (colinear) at optimality",
+            "options": [
+              "Gradient of objective equals zero",
+              "Gradient of constraint equals zero",
+              "Gradients of objective and constraint are parallel",
+              "Hessian matrix is positive definite"
+            ],
+            "question": "What is the primary mathematical condition satisfied at the optimal point in Lagrangian optimization?"
+          }
+        ]
+      },
+      {
+        "type": "reflection",
+        "prompt": "How would you modify the Lagrangian formulation to handle inequality constraints in a structural engineering application?"
+      },
+      {
+        "type": "speed_quiz",
+        "questions": [
+          {
+            "answer": 1,
+            "options": [
+              "1",
+              "3",
+              "n",
+              "m"
+            ],
+            "question": "What's the dimension of λ in a problem with 3 equality constraints?"
+          },
+          {
+            "answer": 2,
+            "options": [
+              "Hessian of objective",
+              "Constraint Jacobian",
+              "Lagrangian Hessian",
+              "All of the above"
+            ],
+            "question": "Which matrix must be positive definite for convexity?"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "lesson_03_08_02",
+    "title": "Quadratic Forms in Optimization",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Confusing positive semi-definite with positive definite - zero eigenvalues create flat directions",
+          "example": "For A = [[2, 1], [1, 2]], xᵀAx = 2x₁² + 4x₁x₂ + 2x₂². Eigenvalues λ=3 and λ=1 confirm positive definiteness.",
+          "explanation": "Quadratic forms generalize parabolas to higher dimensions. They're defined as xᵀAx where A is a symmetric matrix. Convexity depends on A's eigenvalues - positive definite matrices guarantee convexity.",
+          "realWorldUse": "Used in portfolio optimization to model risk surfaces",
+          "tip": "Check eigenvalues first for convexity analysis",
+          "title": "Quadratic Forms and Convexity"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "Positive definite matrices have all positive eigenvalues. The 1e-10 threshold handles floating-point precision issues.",
+          "hint": "Use np.linalg.eigvals() to compute eigenvalues",
+          "language": "python",
+          "question": "Verify positive definiteness of matrix A",
+          "solution": "import numpy as np\nA = np.array([[2, 1], [1, 2]])\neigenvalues = np.linalg.eigvals(A)\nall(eigenvalue > 1e-10 for eigenvalue in eigenvalues)",
+          "starterCode": "import numpy as np\nA = np.array([[2, 1], [1, 2]])\n# Compute eigenvalues here\n"
+        }
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 1,
+            "explanation": "Positive definiteness (all eigenvalues > 0) ensures strict convexity. Non-strict convexity (≥0) allows flat directions.",
+            "options": [
+              "All eigenvalues ≥ 0",
+              "All eigenvalues > 0",
+              "Determinant > 0",
+              "Trace > 0"
+            ],
+            "question": "Which condition guarantees convexity of xᵀAx?"
+          }
+        ]
+      },
+      {
+        "type": "interactive_simulation",
+        "title": "Constraint Boundary Explorer",
+        "description": "Adjust quadratic form parameters and observe constraint boundaries",
+        "steps": [
+          {
+            "description": "Modify the matrix A to see how it affects the convexity visualization",
+            "label": "Set A matrix"
+          },
+          {
+            "description": "Drag to create linear boundaries and observe feasible regions",
+            "label": "Add linear constraints"
+          }
+        ]
+      },
+      {
+        "type": "scenario",
+        "title": "Interior-Point Method Decision",
+        "description": "You're optimizing a quadratic objective with linear constraints. Which approach should you use?",
+        "choices": [
+          {
+            "outcome": "May get stuck at saddle points",
+            "score": 30,
+            "text": "Use gradient descent with line search"
+          },
+          {
+            "outcome": "Guarantees polynomial-time convergence for convex QP",
+            "score": 90,
+            "text": "Apply interior-point method with barrier function"
+          }
+        ]
+      },
+      {
+        "type": "socratic",
+        "topic": "Dual Problem Interpretation"
+      },
+      {
+        "type": "reflection",
+        "prompt": "How might quadratic forms be applied in machine learning regularization?"
+      },
+      {
+        "type": "speed_quiz",
+        "questions": [
+          {
+            "answer": 2,
+            "options": [
+              "4",
+              "6",
+              "8",
+              "10"
+            ],
+            "question": "What's the quadratic form of [[3, -1], [-1, 3]] at x=(1,1)?"
+          },
+          {
+            "answer": 2,
+            "options": [
+              "Symmetric",
+              "Diagonal",
+              "Positive definite",
+              "Sparse"
+            ],
+            "question": "Which matrix property ensures convexity?"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "lesson_04_09_01",
+    "title": "Introduction to PCA with SVD",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "beforeAfter": {
+            "after": "Automated SVD-based PCA selecting mathematically optimal components",
+            "before": "Manual feature engineering with arbitrary dimension cuts"
+          },
+          "commonMistake": "Forgetting data normalization leads to features with larger scales dominating principal components.",
+          "example": "Imagine organizing a messy room by first finding the most important directions (principal components) to align your furniture (data points) optimally.",
+          "explanation": "PCA leverages SVD to find directions (principal components) that maximize variance in high-dimensional data. Unlike manual feature selection, PCA uses linear algebra to automatically identify optimal compression axes.",
+          "realWorldUse": "Used in image compression (e.g., facial recognition systems) to reduce pixel dimensions while retaining recognizable patterns.",
+          "tip": "Always center your data before applying PCA/SVD to ensure components reflect true variance patterns.",
+          "title": "PCA as SVD Application"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "The code centers data, computes SVD, then projects to 2D using top components. Squared singular values divided by total give variance explained by each component.",
+          "hint": "Use the first k right singular vectors (Vt) as principal components",
+          "language": "python",
+          "question": "Implement PCA using SVD on the Iris dataset",
+          "solution": "from sklearn.datasets import load_iris\nimport numpy as np\n\niris = load_iris()\nX = iris.data\nX_centered = X - np.mean(X, axis=0)\nU, S, Vt = np.linalg.svd(X_centered, full_matrices=False)\nX_pca = X_centered @ Vt[:2, :]\nprint(f'Explained variance ratios: {(S**2 / (S**2).sum())[:2]}')",
+          "starterCode": "from sklearn.datasets import load_iris\nimport numpy as np\n\niris = load_iris()\nX = iris.data\n# 1. Center the data\nX_centered = X - np.mean(X, axis=0)\n# 2. Compute SVD\nU, S, Vt = np.linalg.svd(X_centered, full_matrices=False)\n# 3. Project to 2D\nX_pca = ..."
+        }
+      },
+      {
+        "type": "scenario",
+        "title": "PCA Parameter Selection",
+        "description": "You're analyzing customer purchase data (1000 features) for a retail company. The top 5 principal components explain 75% variance. Should you keep all 5 or fewer?",
+        "choices": [
+          {
+            "outcome": "Balances information retention with dimensionality reduction",
+            "score": 85,
+            "text": "Keep all 5 components to retain 75% variance"
+          },
+          {
+            "outcome": "Loses 50% of captured variance but creates more interpretable clusters",
+            "score": 60,
+            "text": "Keep only 2 components for simplicity"
+          },
+          {
+            "outcome": "No compression - defeats PCA's purpose",
+            "score": 30,
+            "text": "Keep all 1000 features"
+          }
+        ]
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 2,
+            "explanation": "Explained variance ratios are calculated as (S²_i / ΣS²) where S are singular values from SVD. This matches PCA's mathematical derivation from the covariance matrix.",
+            "options": [
+              "A) Sum of squared singular values",
+              "B) Ratio of singular values to total sum",
+              "C) Squared singular values divided by total squared sum",
+              "D) Absolute values of eigenvalues"
+            ],
+            "question": "How is explained variance calculated in PCA?"
+          }
+        ]
+      },
+      {
+        "type": "visual",
+        "content": {
+          "diagram": [
+            "Original 3D Data Cloud",
+            "First Principal Component (Max Variance Axis)",
+            "Second Principal Component (Orthogonal to First)",
+            "Projected 2D Data Points"
+          ],
+          "explanation": "Each step shows how SVD identifies optimal projection directions that preserve maximum information while minimizing reconstruction error.",
+          "title": "PCA Projection Visualization"
+        }
+      },
+      {
+        "type": "reflection",
+        "prompt": "How would PCA's performance change if applied to non-linearly separable data? Provide two alternative approaches."
+      },
+      {
+        "type": "speed_quiz",
+        "questions": [
+          {
+            "answer": 1,
+            "options": [
+              "U matrix",
+              "Vt matrix",
+              "S vector",
+              "None of the above"
+            ],
+            "question": "Which matrix from SVD contains principal components?"
+          },
+          {
+            "answer": 1,
+            "options": [
+              "Most important component",
+              "Noise floor",
+              "Average variance",
+              "Data redundancy"
+            ],
+            "question": "What does the smallest singular value represent?"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "lesson_04_10_01",
+    "title": "Linear and Ridge Regression Models",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Ignoring feature scaling when using ridge regression",
+          "example": "Predicting house prices using square footage and location features",
+          "explanation": "Linear regression models relationships between variables using a linear approach. Ridge regression introduces L2 regularization to prevent overfitting.",
+          "realWorldUse": "Used in economics for demand forecasting and in finance for risk modeling",
+          "tip": "Start with linear regression before adding regularization",
+          "title": "Regression Fundamentals"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "This code demonstrates model training and evaluation. Ridge's regularization parameter (alpha) controls the strength of coefficient shrinkage.",
+          "hint": "Use .fit() to train models and .score() to evaluate performance",
+          "language": "python",
+          "question": "Implement linear regression using OLS and ridge regression with sklearn",
+          "solution": "linear_model.fit(X_train, y_train)\nridge_model.fit(X_train, y_train)\n\nprint('Linear R²:', linear_model.score(X_test, y_test))\nprint('Ridge R²:', ridge_model.score(X_test, y_test))",
+          "starterCode": "from sklearn.linear_model import LinearRegression, Ridge\nfrom sklearn.model_selection import train_test_split\n\nX_train, X_test, y_train, y_test = train_test_split(X, y)\n\n# Your code here\nlinear_model = LinearRegression()\nridge_model = Ridge(alpha=1.0)"
+        }
+      },
+      {
+        "type": "scenario",
+        "title": "Model Selection Dilemma",
+        "description": "You're analyzing customer spending data with 100 features. The training error is low but test error is high. What should you do?",
+        "choices": [
+          {
+            "outcome": "Worse overfitting will occur due to high model complexity",
+            "score": 0,
+            "text": "Use linear regression without regularization"
+          },
+          {
+            "outcome": "Reduces overfitting by penalizing large coefficients",
+            "score": 100,
+            "text": "Apply ridge regression with increased alpha"
+          }
+        ]
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 1,
+            "explanation": "Ridge regression adds L2 regularization which shrinks coefficients, reducing model variance and overfitting",
+            "options": [
+              "Handles non-linear relationships",
+              "Reduces model complexity",
+              "Eliminates feature selection",
+              "Guarantees perfect predictions"
+            ],
+            "question": "What's the primary benefit of ridge regression over linear regression?"
+          }
+        ]
+      },
+      {
+        "type": "fill_blank",
+        "sentences": [
+          {
+            "answer": "L2 regularization",
+            "text": "The ridge regression cost function adds a ___ term to the sum of squared residuals"
+          }
+        ]
+      },
+      {
+        "type": "speed_quiz",
+        "questions": [
+          {
+            "answer": 0,
+            "options": [
+              "Linear",
+              "Ridge",
+              "Both equally",
+              "Neither"
+            ],
+            "question": "Which regression type is more prone to overfitting?"
+          },
+          {
+            "answer": 0,
+            "options": [
+              "They shrink",
+              "They grow",
+              "No change",
+              "Randomize"
+            ],
+            "question": "What happens to coefficients when alpha increases in ridge regression?"
+          }
+        ]
+      },
+      {
+        "type": "reflection",
+        "prompt": "When would you prefer linear regression over ridge regression? Consider data size, feature correlations, and interpretability needs."
+      }
+    ]
+  },
+  {
+    "id": "lesson_05_11_01",
+    "title": "Introduction to Affine Transformations",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "beforeAfter": {
+            "after": "Affine transformation matrix [a b tx; c d ty; 0 0 1] with homogeneous coordinates [x; y; 1]",
+            "before": "Linear transformation matrix [a b; c d] applied to vector [x; y]"
+          },
+          "commonMistake": "Confusing linear transformations (origin-preserving) with affine transformations (origin can move).",
+          "example": "Imagine a robot arm moving in 3D space. Linear transformations can rotate or scale its position, but affine transformations are needed to move it to a new location (translation) while maintaining joint relationships.",
+          "explanation": "Affine transformations extend linear transformations by adding translation capabilities. While linear transformations preserve vector addition and scalar multiplication, affine transformations preserve affine combinations (weighted sums where weights sum to 1). This allows for operations like translating objects in computer graphics while maintaining their shape relationships.",
+          "realWorldUse": "Used in CAD software for object manipulation and in machine learning for data augmentation.",
+          "tip": "Remember: Affine = Linear + Translation. Always check if your transformation requires position shifts.",
+          "title": "Affine vs Linear Transformations"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "The solution first translates the point using a translation matrix, then applies rotation. The homogeneous coordinate (third element) allows combining translations with linear operations in a single matrix multiplication.",
+          "hint": "Use matrix multiplication with homogeneous coordinates. Remember rotation follows translation in this case.",
+          "language": "python",
+          "question": "Implement a 2D affine transformation that translates a point (2,3) by (1,1) and rotates 90° clockwise",
+          "solution": "translated = t_matrix @ point\nrotated = r_matrix @ translated\nprint('Final position:', rotated[0:2])",
+          "starterCode": "import numpy as np\n# Homogeneous coordinates\npoint = np.array([2, 3, 1])\n# Translation matrix\nt_matrix = np.array([\n    [1, 0, 1],\n    [0, 1, 1],\n    [0, 0, 1]\n])\n# Rotation matrix (90° clockwise)\nr_matrix = np.array([\n    [0, 1, 0],\n    [-1, 0, 0],\n    [0, 0, 1]\n])"
+        }
+      },
+      {
+        "type": "visual",
+        "content": {
+          "diagram": [
+            "Original Point → Translation Matrix → Rotated Point → Scaling Matrix → Final Position"
+          ],
+          "explanation": "1. Start with point (x,y) in homogeneous form (x,y,1)\n2. Apply translation matrix to shift position\n3. Multiply by rotation matrix to change orientation\n4. Apply scaling matrix to adjust size\nEach step uses matrix multiplication, demonstrating how affine transformations compose naturally.",
+          "title": "Composite Transformation Flow"
+        }
+      },
+      {
+        "type": "fill_blank",
+        "sentences": [
+          {
+            "answer": "straight lines",
+            "text": "Affine transformations preserve ___ but not necessarily distances or angles."
+          },
+          {
+            "answer": "1",
+            "text": "The third row in a 2D affine transformation matrix is always [0, 0, ___] to maintain homogeneous coordinates."
+          }
+        ]
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 2,
+            "explanation": "Translation requires adding a constant vector, which breaks the linear transformation requirement T(u+v)=T(u)+T(v). Affine transformations handle this by embedding translation in homogeneous coordinates.",
+            "options": [
+              "Rotation",
+              "Scaling",
+              "Translation",
+              "Shearing"
+            ],
+            "question": "Which operation CANNOT be represented by a linear transformation but requires affine transformation?"
+          }
+        ]
+      },
+      {
+        "type": "scenario",
+        "title": "3D Object Manipulation",
+        "description": "You're rendering a 3D model of a building. The architect wants to: 1) Rotate the building 45° around Y-axis 2) Translate it 10 units along Z-axis 3) Scale it by 0.5. What's the correct order of operations?",
+        "choices": [
+          {
+            "outcome": "The building will be scaled first, making subsequent transformations relative to the smaller size",
+            "score": 80,
+            "text": "Scale → Rotate → Translate"
+          },
+          {
+            "outcome": "Rotation around origin first, then translation, but final scaling affects all positions",
+            "score": 60,
+            "text": "Rotate → Translate → Scale"
+          },
+          {
+            "outcome": "Correct order for typical object manipulation: position first, then orientation, then size adjustment",
+            "score": 100,
+            "text": "Translate → Rotate → Scale"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "lesson_05_12_01",
+    "title": "Quaternions for 3D Rotation",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "beforeAfter": {
+            "after": "Quaternion: [w=0.924, x=0.383, y=0, z=0] (gimbal lock-free)",
+            "before": "Euler angles: [x=90°, y=45°, z=30°] (prone to gimbal lock)"
+          },
+          "commonMistake": "Confusing quaternion multiplication order (Hamilton vs. JPL conventions)",
+          "example": "A 90° rotation around X-axis: q = (cos(θ/2), sin(θ/2)*x, sin(θ/2)*y, sin(θ/2)*z)",
+          "explanation": "Quaternions extend complex numbers to 4D, representing rotations as (w, x, y, z) where w is the scalar part and (x,y,z) is the vector part. They avoid gimbal lock by representing rotations as continuous 4D vectors rather than Euler angles.",
+          "realWorldUse": "Used in aerospace for spacecraft attitude control and in game engines for smooth camera rotations",
+          "tip": "Normalize quaternions to unit length for valid rotations",
+          "title": "Quaternion Fundamentals"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "This implementation handles normalization (ensuring unit length) and Hamilton product multiplication, which is essential for composing rotations.",
+          "hint": "Remember to handle both scalar and vector parts correctly in multiplication",
+          "language": "python",
+          "question": "Implement a quaternion class with basic operations",
+          "solution": "import numpy as np\nclass Quaternion:\n    def __init__(self, w, x, y, z):\n        self.q = np.array([w, x, y, z])\n\n    def normalize(self):\n        norm = np.linalg.norm(self.q)\n        self.q = self.q / norm\n        return self\n\n    def multiply(self, other):\n        w = self.q[0]*other.q[0] - self.q[1]*other.q[1] - self.q[2]*other.q[2] - self.q[3]*other.q[3]\n        x = self.q[0]*other.q[1] + self.q[1]*other.q[0] + self.q[2]*other.q[3] - self.q[3]*other.q[2]\n        y = self.q[0]*other.q[2] - self.q[1]*other.q[3] + self.q[2]*other.q[0] + self.q[3]*other.q[1]\n        z = self.q[0]*other.q[3] + self.q[1]*other.q[2] - self.q[2]*other.q[1] + self.q[3]*other.q[0]\n        return Quaternion(w,x,y,z)",
+          "starterCode": "import numpy as np\n\nclass Quaternion:\n    def __init__(self, w, x, y, z):\n        self.q = np.array([w, x, y, z])\n\n    def normalize(self):\n        # TODO: Implement normalization\n        return self\n\n    def multiply(self, other):\n        # TODO: Implement Hamilton product\n        return Quaternion(0,0,0,0)"
+        }
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 1,
+            "explanation": "Quaternions represent rotations as 4D vectors, eliminating the singularities that occur when two axes align in Euler angle representations (gimbal lock).",
+            "options": [
+              "A) Simpler interpolation",
+              "B) Avoid gimbal lock",
+              "C) Lower computational cost",
+              "D) Human-readable representation"
+            ],
+            "question": "What's the primary advantage of quaternions over Euler angles?"
+          }
+        ]
+      },
+      {
+        "type": "fill_blank",
+        "sentences": [
+          {
+            "answer": "angle",
+            "text": "The slerp interpolation formula is: q(t) = (q₀ * sin((1-t)*θ) + q₁ * sin(t*θ)) / sin(θ) where θ is the ___ between quaternions."
+          }
+        ]
+      },
+      {
+        "type": "scenario",
+        "title": "Robot Arm Orientation Challenge",
+        "description": "You're programming a robotic arm that needs to rotate from 30° to 60° around the Y-axis. Which rotation representation would provide the smoothest motion?",
+        "choices": [
+          {
+            "outcome": "May cause jerky motion due to Euler angle interpolation issues",
+            "score": 50,
+            "text": "Use Euler angles with linear interpolation"
+          },
+          {
+            "outcome": "Provides smooth, constant angular velocity rotation",
+            "score": 100,
+            "text": "Use quaternions with spherical linear interpolation (slerp)"
+          }
+        ]
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "This implementation handles the interpolation path correctly by ensuring the smallest angle between quaternions is used, avoiding potential issues with the dot product sign.",
+          "hint": "Remember to handle the case where the angle between quaternions is near 0°",
+          "language": "python",
+          "question": "Implement spherical linear interpolation between two quaternions",
+          "solution": "def slerp(q0, q1, t):\n    cosθ = np.dot(q0.q, q1.q)\n    if cosθ < 0:\n        q1.q = -q1.q\n        cosθ = -cosθ\n    θ = np.arccos(cosθ)\n    sinθ = np.sin(θ)\n    if abs(sinθ) < 1e-6:\n        return q0\n    w0 = np.sin((1-t)*θ)/sinθ\n    w1 = np.sin(t*θ)/sinθ\n    return Quaternion(*((w0*q0.q + w1*q1.q).tolist())).normalize()",
+          "starterCode": "def slerp(q0, q1, t):\n    # q0, q1 are Quaternion objects\n    # t is interpolation parameter (0 ≤ t ≤ 1)\n    cosθ = # TODO: Compute dot product\n    # TODO: Handle cosθ < 0 case\n    # TODO: Compute slerp result\n    return q0"
+        }
+      },
+      {
+        "type": "reflection",
+        "prompt": "How would you explain to a colleague why quaternions are preferred for 3D rotations in game engines despite their mathematical complexity?"
+      },
+      {
+        "type": "speed_quiz",
+        "questions": [
+          {
+            "answer": 2,
+            "options": [
+              "A) 2",
+              "B) 3",
+              "C) 4",
+              "D) 6"
+            ],
+            "question": "What's the dimensionality of a quaternion?"
+          },
+          {
+            "answer": 1,
+            "options": [
+              "A) Matrix multiplication",
+              "B) Quaternion multiplication",
+              "C) Euler angle addition",
+              "D) Rodrigues' formula"
+            ],
+            "question": "Which operation is most efficient for composing two rotations?"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "lesson_05_13_01",
+    "title": "Markov Chains and Steady-State Analysis",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Confusing left vs right eigenvectors for stationary distributions",
+          "example": "Consider weather states: Sunny (S) and Rainy (R). Matrix [[0.9, 0.1], [0.5, 0.5]] means 90% chance to stay sunny, 10% to rain. Matrix multiplication with state vectors gives next-day probabilities.",
+          "explanation": "Markov chains model systems transitioning between states with fixed probabilities. The core is a stochastic matrix where rows sum to 1, representing transition probabilities. This connects directly to linear transformations in vector spaces.",
+          "realWorldUse": "Google's PageRank algorithm uses Markov chains to rank web pages",
+          "tip": "Always verify row sums equal 1 in your transition matrices",
+          "title": "Transition Probability Matrices"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "Matrix multiplication accumulates transition probabilities. The result shows long-term tendencies even with short simulations.",
+          "hint": "Use matrix exponentiation for multiple steps",
+          "language": "python",
+          "question": "Simulate 3-day weather prediction",
+          "solution": "import numpy as np\nstate = np.array([1.0, 0.0])\nT = np.array([[0.9, 0.1],\n              [0.5, 0.5]])\nfinal_state = state @ np.linalg.matrix_power(T, 3)\nfinal_state",
+          "starterCode": "import numpy as np\n# Initial state vector [Sunny, Rainy]\nstate = np.array([1.0, 0.0])\n# Transition matrix\nT = np.array([[0.9, 0.1],\n              [0.5, 0.5]])\n\n# Calculate state after 3 days\nfinal_state = # YOUR CODE HERE"
+        }
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 1,
+            "explanation": "Ergodicity (irreducible + aperiodic) ensures convergence to a unique steady state, per Perron-Frobenius theorem",
+            "options": [
+              "All eigenvalues > 1",
+              "Irreducible and aperiodic",
+              "Diagonal dominant matrix",
+              "Symmetric transition matrix"
+            ],
+            "question": "Which condition guarantees a unique stationary distribution?"
+          }
+        ]
+      },
+      {
+        "type": "concept",
+        "content": {
+          "beforeAfter": {
+            "after": "Directly compute using numpy.linalg.eig with eigenvalue filtering",
+            "before": "Manual calculation using linear equations"
+          },
+          "commonMistake": "Forgetting to transpose matrices when calculating left eigenvectors",
+          "example": "For T = [[0.7, 0.3], [0.4, 0.6]], solve [π1 π2] = [π1 π2]T with π1+π2=1",
+          "explanation": "The stationary distribution π satisfies π = πP. This is equivalent to finding a left eigenvector with eigenvalue 1. Leverage your eigenanalysis skills from S03!",
+          "tip": "Normalize eigenvectors to get probability distributions",
+          "title": "Stationary Distributions"
+        }
+      },
+      {
+        "type": "scenario",
+        "title": "PageRank Simulation",
+        "description": "You're optimizing a website's internal linking structure. Four pages with these transition probabilities: [[0, 0.5, 0, 0.5], [0.5, 0, 0.5, 0], [0.5, 0, 0, 0.5], [0, 0.5, 0.5, 0]]",
+        "choices": [
+          {
+            "outcome": "Reveals most important pages for SEO",
+            "score": 100,
+            "text": "Calculate steady-state distribution"
+          },
+          {
+            "outcome": "Poor navigation design leading to low user retention",
+            "score": 20,
+            "text": "Ignore transition matrix properties"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "lesson_05_14_01",
+    "title": "PageRank Algorithm Implementation",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Forgetting to handle dangling nodes (pages with no outgoing links) which can cause rank leakage.",
+          "example": "Imagine a voting system where each page's vote is weighted by its own PageRank score. A page with higher PageRank passing votes to others amplifies their scores.",
+          "explanation": "PageRank models web pages as nodes in a directed graph where links represent votes. The algorithm calculates the probability distribution of a random surfer landing on any page, emphasizing both quantity and quality of incoming links.",
+          "realWorldUse": "Search engines use PageRank to determine page importance, forming the basis of modern SEO ranking systems.",
+          "tip": "Start by normalizing the adjacency matrix columns to create a transition probability matrix.",
+          "title": "PageRank Fundamentals"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "The damping factor (typically 0.85) models the probability of continuing the random walk vs teleporting. Each iteration redistributes rank probabilities across the graph.",
+          "hint": "Use M.T @ v to calculate the transition probabilities. Add a teleportation term to handle dangling nodes.",
+          "language": "python",
+          "question": "Implement a basic PageRank calculator with damping factor",
+          "starterCode": "import numpy as np\ndef pagerank(M, damping=0.85, iters=100):\n    N = M.shape[0]\n    v = np.ones(N) / N\n    for _ in range(iters):\n        # TODO: Implement power iteration with damping\n        # 1. Compute teleportation vector\n        # 2. Apply damping factor\n        # 3. Update rank vector\n        pass\n    return v"
+        }
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 2,
+            "explanation": "The damping factor (usually 0.85) ensures that the random surfer occasionally teleports to a random page, preventing rank concentration and ensuring all pages receive some probability mass.",
+            "options": [
+              "Prevent infinite loops",
+              "Handle dangling nodes",
+              "Control rank distribution",
+              "Speed up convergence"
+            ],
+            "question": "What's the primary purpose of the damping factor in PageRank?"
+          }
+        ]
+      },
+      {
+        "type": "fill_blank",
+        "sentences": [
+          {
+            "answer": "(1-d)/N",
+            "text": "In power iteration, we calculate v_{k+1} = (d * M @ v_k) + ___"
+          }
+        ]
+      },
+      {
+        "type": "scenario",
+        "title": "Damping Factor Experiment",
+        "description": "You're optimizing a search engine for a 5-page website. Test different damping values (0.7, 0.85, 0.95) on the same graph structure.",
+        "choices": [
+          {
+            "outcome": "Pages with fewer incoming links show higher variance in scores",
+            "score": 80,
+            "text": "Run simulations with damping=0.7"
+          },
+          {
+            "outcome": "Balanced distribution with stable convergence",
+            "score": 100,
+            "text": "Use damping=0.85"
+          },
+          {
+            "outcome": "Top pages dominate rankings, smaller pages get negligible scores",
+            "score": 60,
+            "text": "Try damping=0.95"
+          }
+        ]
+      },
+      {
+        "type": "reflection",
+        "prompt": "How would PageRank's behavior change if we removed the damping factor entirely? Discuss implications for both small and large web graphs."
+      },
+      {
+        "type": "speed_quiz",
+        "questions": [
+          {
+            "answer": 1,
+            "options": [
+              "O(n)",
+              "O(n²)",
+              "O(n³)",
+              "O(log n)"
+            ],
+            "question": "What's the time complexity of power iteration method?"
+          },
+          {
+            "answer": 1,
+            "options": [
+              "Matrix inversion",
+              "Matrix multiplication",
+              "Eigenvalue decomposition",
+              "Singular value decomposition"
+            ],
+            "question": "Which matrix operation dominates PageRank computation?"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "lesson_05_15_01",
+    "title": "Tensor Decomposition Fundamentals",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "beforeAfter": {
+            "after": "3D Tensor [[[1,2],[3,4]], [[5,6],[7,8]]]",
+            "before": "Matrix [ [1,2], [3,4] ]"
+          },
+          "commonMistake": "Assuming matrix operations directly apply to tensors",
+          "example": "A 3D tensor could represent user-movie-time ratings in a recommendation system",
+          "explanation": "Tensors generalize matrices to N dimensions. While matrices are 2D arrays, tensors can represent 3D (video frames), 4D (medical imaging), or higher-order data. This enables modeling complex relationships in social networks, recommendation systems, and physics simulations.",
+          "realWorldUse": "Analyzing multi-aspect data like customer-product-time sales patterns",
+          "tip": "Think of tensors as 'matrices with more dimensions' but with unique algebraic properties",
+          "title": "Tensors as Multi-Dimensional Arrays"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "This code demonstrates core tensor operations. Frobenius norm generalizes matrix norm to tensors, while unfolding (matricization) is crucial for many decomposition algorithms.",
+          "hint": "Use np.moveaxis and np.reshape for unfolding operations",
+          "language": "python",
+          "question": "Implement a basic tensor using NumPy and perform element-wise operations",
+          "solution": "import numpy as np\n\ndef tensor_frobenius_norm(tensor):\n    return np.sqrt(np.sum(tensor**2))\n\ndef unfold(tensor, mode=0):\n    return np.reshape(\n        np.moveaxis(tensor, mode, 0),\n        (tensor.shape[mode], -1)\n    )\n\n# Example usage:\nif __name__ == \"__main__\":\n    tensor = np.random.rand(3,4,5)\n    print(f\"Frobenius norm: {tensor_frobenius_norm(tensor):.2f}\")\n    print(f\"Mode-0 unfolding shape: {unfold(tensor, 0).shape}\")",
+          "starterCode": "import numpy as np\n\n# Create a 3D tensor (2x2x2)\ntensor = np.array([\n    [[1, 2], [3, 4]],\n    [[5, 6], [7, 8]]\n])\n\n# TODO: Compute the Frobenius norm\n# TODO: Perform tensor unfolding along mode-1"
+        }
+      },
+      {
+        "type": "concept",
+        "content": {
+          "beforeAfter": {
+            "after": "CP: Global components\nTucker: Localized components with interaction core",
+            "before": "CP: R components\nTucker: [R1, R2, R3] components"
+          },
+          "commonMistake": "Mixing up component count parameters between decompositions",
+          "example": "CP: Ideal for feature extraction in fMRI data\nTucker: Better for denoising hyperspectral images",
+          "explanation": "CP decomposition expresses a tensor as a sum of rank-1 tensors, preserving component simplicity. Tucker decomposition uses a core tensor multiplied by factor matrices, allowing more flexible approximations. Both generalize SVD but serve different purposes.",
+          "realWorldUse": "CP for topic modeling in text mining, Tucker for video compression",
+          "tip": "Choose CP for interpretability, Tucker for compression",
+          "title": "CP vs Tucker Decompositions"
+        }
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 1,
+            "explanation": "Tucker maintains original dimensions through a core tensor multiplied by factor matrices, while CP reduces dimensions by summing rank-1 components",
+            "options": [
+              "CP Decomposition",
+              "Tucker Decomposition",
+              "Both",
+              "Neither"
+            ],
+            "question": "Which decomposition preserves the original tensor's dimensions after approximation?"
+          }
+        ]
+      },
+      {
+        "type": "scenario",
+        "title": "Movie Recommendation System",
+        "description": "You're analyzing user-movie-time ratings tensor. Should you use CP or Tucker decomposition?",
+        "choices": [
+          {
+            "outcome": "Success: Extracted clear temporal patterns in user preferences",
+            "score": 100,
+            "text": "Use CP for interpretable user/movie/time factors"
+          },
+          {
+            "outcome": "Success: Achieved 15% lower reconstruction error",
+            "score": 80,
+            "text": "Use Tucker for better approximation accuracy"
+          },
+          {
+            "outcome": "Success: Combined insights from both methods",
+            "score": 90,
+            "text": "Use both decompositions"
+          }
+        ]
+      }
+    ]
+  }
+]

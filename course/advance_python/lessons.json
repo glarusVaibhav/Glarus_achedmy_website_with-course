@@ -1,0 +1,2879 @@
+[
+  {
+    "id": "lesson_01_01_01",
+    "title": "Implementing B-Trees from Scratch",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Confusing B-Tree order with binary tree depth. Remember: order defines node capacity, not tree height.",
+          "example": "Imagine a library where each shelf (node) holds multiple books (keys) and points to other shelves. When a shelf gets too full, we split it into two.",
+          "explanation": "B-Trees are self-balancing tree data structures that maintain sorted data and allow searches, sequential access, insertions, and deletions in logarithmic time. Unlike binary trees, B-Trees can have multiple keys per node, making them ideal for systems that read/write large blocks of data (like databases and filesystems).",
+          "realWorldUse": "B-Trees are used in MongoDB, MySQL, and filesystems like NTFS to optimize disk block access.",
+          "tip": "The 'order' of a B-Tree determines the maximum number of children per node. Always start by defining the order when implementing.",
+          "title": "B-Tree Fundamentals"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "hint": "Remember that a node of order 't' can have at most 2t-1 keys and 2t children",
+          "language": "python",
+          "question": "Implement a B-Tree node class with splitting logic",
+          "solution": "class BTreeNode:\n    def __init__(self, order):\n        self.order = order\n        self.keys = []\n        self.children = []\n        self.leaf = True\n\n    def is_full(self):\n        return len(self.keys) >= 2*self.order - 1\n\n    def split(self):\n        mid = len(self.keys) // 2\n        left = BTreeNode(self.order)\n        left.keys = self.keys[:mid]\n        left.children = self.children[:mid+1]\n        right = BTreeNode(self.order)\n        right.keys = self.keys[mid+1:]\n        right.children = self.children[mid+1:]\n        self.keys = [self.keys[mid]]\n        self.children = [left, right]\n        return self\n\nclass BTree:\n    def __init__(self, order):\n        self.root = BTreeNode(order)\n\n    def insert(self, key):\n        # Implementation omitted for brevity\n        pass",
+          "starterCode": "class BTreeNode:\n    def __init__(self, order):\n        self.order = order\n        self.keys = []\n        self.children = []\n        self.leaf = True\n\n    def is_full(self):\n        return len(self.keys) >= ______\n\n    def split(self):\n        mid = len(self.keys) // 2\n        left = BTreeNode(self.order)\n        left.keys = self.keys[:mid]\n        left.children = self.children[:mid+1]\n        right = BTreeNode(self.order)\n        right.keys = self.keys[mid+1:]\n        right.children = self.children[mid+1:]\n        self.keys = [self.keys[mid]]\n        self.children = [left, right]\n        return self\n\n# Implement BTree class with insert()"
+        }
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 3,
+            "explanation": "In a B-Tree of order 't', non-root nodes must have at least ⌈t/2⌉ - 1 keys. This ensures balanced tree growth and efficient disk access.",
+            "options": [
+              "A) Order of the tree",
+              "B) Height of the tree",
+              "C) Floor(order/2)",
+              "D) Ceiling(order/2) - 1"
+            ],
+            "question": "What determines the minimum number of keys in a non-root B-Tree node?"
+          }
+        ]
+      },
+      {
+        "type": "fill_blank",
+        "sentences": [
+          {
+            "answer": "middle",
+            "text": "When a B-Tree node splits, the ______ key becomes the parent's separator key"
+          },
+          {
+            "answer": "splitting",
+            "text": "B-Tree insertion maintains balance by ______ nodes before insertion"
+          }
+        ]
+      },
+      {
+        "type": "scenario",
+        "title": "Disk Block Optimization",
+        "description": "You're designing a database system that reads 4KB disk blocks. Each B-Tree node should fit within one block. How would you determine the optimal B-Tree order?",
+        "choices": [
+          {
+            "outcome": "Correct! The order should maximize keys per node while staying under 4KB",
+            "score": 100,
+            "text": "Calculate based on key size and pointer size"
+          },
+          {
+            "outcome": "Suboptimal - doesn't consider actual storage constraints",
+            "score": 30,
+            "text": "Use fixed order=3 for simplicity"
+          }
+        ]
+      },
+      {
+        "type": "interactive_simulation",
+        "title": "B-Tree Insertion Demo",
+        "description": "Step through inserting keys 10, 20, 5, 6 into a B-Tree with order=3",
+        "steps": [
+          {
+            "description": "Root node is empty. Insert 10 as the first key",
+            "label": "Step 1"
+          },
+          {
+            "description": "Insert 20 into the root (now has [10, 20])",
+            "label": "Step 2"
+          },
+          {
+            "description": "Insert 5: split root into two nodes, create new root",
+            "label": "Step 3"
+          }
+        ]
+      },
+      {
+        "type": "reflection",
+        "prompt": "Compare B-Trees with binary search trees for disk-based storage. What tradeoffs exist?"
+      },
+      {
+        "type": "speed_quiz",
+        "questions": [
+          {
+            "answer": 1,
+            "options": [
+              "O(n)",
+              "O(log n)",
+              "O(1)",
+              "O(n log n)"
+            ],
+            "question": "What's the time complexity for B-Tree search?"
+          },
+          {
+            "answer": 0,
+            "options": [
+              "Insertion",
+              "Search",
+              "Deletion",
+              "All of the above"
+            ],
+            "question": "Which operation requires parent node updates?"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "lesson_01_01_02",
+    "title": "Graph Representations and Traversal Algorithms",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Confusing adjacency matrix space complexity (O(V²)) with adjacency list (O(V+E)).",
+          "example": "In a city map, intersections are nodes and roads are edges. A delivery service uses this to find the shortest path between warehouses.",
+          "explanation": "Graphs model relationships between entities using nodes (vertices) and connections (edges). Think of social networks where each person is a node and friendships are edges. Graphs solve real-world problems like route optimization, dependency resolution, and recommendation systems.",
+          "realWorldUse": "Google Maps uses graph traversal to calculate driving directions.",
+          "tip": "Start with adjacency list for sparse graphs (few edges) and adjacency matrix for dense graphs (many edges).",
+          "title": "Graph Fundamentals"
+        }
+      },
+      {
+        "type": "visual",
+        "content": {
+          "diagram": [
+            "Start at root node",
+            "BFS explores level by level",
+            "DFS dives deep first"
+          ],
+          "explanation": "Breadth-First Search (BFS) explores all neighbors at current depth before moving deeper. Depth-First Search (DFS) explores as far as possible along a branch before backtracking. BFS uses a queue, DFS uses a stack.",
+          "title": "BFS vs DFS Visualization"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "This implementation creates a dictionary where each key is a node storing a list of connected nodes. The add_edge method ensures both nodes are added to each other's adjacency lists for undirected graphs.",
+          "hint": "Each node needs to track its neighbors",
+          "language": "python",
+          "question": "Implement an adjacency list for an undirected graph",
+          "solution": "class Graph:\n    def __init__(self):\n        self.adj_list = {}\n    \n    def add_edge(self, u, v):\n        if u not in self.adj_list:\n            self.adj_list[u] = []\n        if v not in self.adj_list:\n            self.adj_list[v] = []\n        self.adj_list[u].append(v)\n        self.adj_list[v].append(u)",
+          "starterCode": "class Graph:\n    def __init__(self):\n        self.adj_list = {}\n    \n    def add_edge(self, u, v):\n        # Complete this method\n        pass"
+        }
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 1,
+            "explanation": "Adjacency List uses O(V+E) space while Matrix uses O(V²). For sparse graphs where E << V², the list is more efficient",
+            "options": [
+              "Adjacency Matrix",
+              "Adjacency List",
+              "Both are equally efficient",
+              "Incidence Matrix"
+            ],
+            "question": "Which representation is more space-efficient for sparse graphs?"
+          }
+        ]
+      },
+      {
+        "type": "scenario",
+        "title": "Social Network Design",
+        "description": "You're building a social media platform with 10 million users. Most users have <1000 connections. Choose the optimal graph representation:",
+        "choices": [
+          {
+            "outcome": "High memory usage will cause performance issues",
+            "score": 30,
+            "text": "Adjacency Matrix"
+          },
+          {
+            "outcome": "Efficient memory usage for sparse connections",
+            "score": 100,
+            "text": "Adjacency List"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "lesson_01_02_01",
+    "title": "Mastering defaultdict and Counter",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Forgetting that defaultdict doesn't require .get() - you can directly access keys and they'll be created automatically.",
+          "example": "from collections import defaultdict\n\n# Count word frequencies in a list\nwords = ['apple', 'banana', 'apple', 'orange']\nword_counts = defaultdict(int)\nfor word in words:\n    word_counts[word] += 1",
+          "explanation": "defaultdict is a subclass of Python's dict that automatically initializes missing keys with a default value. This eliminates the need to check if a key exists before assigning a value. It's particularly useful for grouping operations and counting items without manual initialization.",
+          "realWorldUse": "Analyzing website clickstream data where you need to track user navigation paths without predefining all possible routes.",
+          "tip": "Always specify the default factory function (like int, list, or a lambda) when creating defaultdict.",
+          "title": "Understanding defaultdict"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "This solution uses defaultdict(int) which automatically initializes missing characters with 0. Each character in the input text increments its count naturally without needing .get() checks.",
+          "hint": "The default factory function should increment counts starting from 0",
+          "language": "python",
+          "question": "Use defaultdict to count occurrences of each character in the given string",
+          "solution": "from collections import defaultdict\nimport sys\n\ndef count_characters(text):\n    counts = defaultdict(int)\n    for char in text:\n        counts[char] += 1\n    return dict(counts)\n\nprint(count_characters(sys.stdin.read()))",
+          "starterCode": "from collections import defaultdict\nimport sys\n\ndef count_characters(text):\n    counts = defaultdict(___)\n    for char in text:\n        ___\n    return dict(counts)\n\nprint(count_characters(sys.stdin.read()))"
+        }
+      },
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Trying to create a Counter from non-hashable types like lists or dictionaries",
+          "example": "from collections import Counter\n\n# Analyze letter frequency in a text\ntext = 'abracadabra'\nletter_counts = Counter(text)\nprint(letter_counts.most_common(3))  # Outputs [('a', 5), ('b', 2), ('r', 2)]",
+          "explanation": "Counter is a specialized dictionary for counting hashable objects. It's optimized for scenarios where you need to tally elements in a dataset. The most_common() method provides quick access to the most frequent elements.",
+          "realWorldUse": "Analyzing customer purchase patterns in e-commerce by counting product co-occurrences in orders",
+          "tip": "Use Counter.update() to merge multiple counting operations efficiently.",
+          "title": "Mastering Counter"
+        }
+      },
+      {
+        "type": "fill_blank",
+        "sentences": [
+          {
+            "answer": "list_name",
+            "text": "To create a Counter from a list, use Counter(____)"
+          },
+          {
+            "answer": "most_common",
+            "text": "The ______ method returns the most common elements in a Counter"
+          }
+        ]
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 0,
+            "explanation": "Counter behaves like a regular dict when accessing existing keys. Since 'c' was explicitly set to 0, it returns 0. Unlike defaultdict, Counter doesn't have automatic default values unless using the .get() method.",
+            "options": [
+              "A) 0",
+              "B) 1",
+              "C) KeyError",
+              "D) None"
+            ],
+            "question": "What will this code output?\nfrom collections import Counter\nc = Counter({'a': 4, 'b': 2})\nc['c'] = 0\nprint(c['c'])"
+          }
+        ]
+      },
+      {
+        "type": "scenario",
+        "title": "Frequency Analysis Challenge",
+        "description": "You're analyzing a dataset of customer support tickets. Each ticket has a category. Which approach would be most efficient for finding the top 5 categories by volume?",
+        "choices": [
+          {
+            "outcome": "Works but requires more boilerplate code",
+            "score": 70,
+            "text": "Use defaultdict(int) with manual counting"
+          },
+          {
+            "outcome": "Most efficient and concise solution",
+            "score": 100,
+            "text": "Use Counter with list of categories"
+          },
+          {
+            "outcome": "Works but requires explicit key existence checks",
+            "score": 60,
+            "text": "Use regular dict with .get() checks"
+          }
+        ]
+      },
+      {
+        "type": "reflection",
+        "prompt": "When would you prefer defaultdict over Counter for counting operations? Consider memory usage and performance implications in your response."
+      }
+    ]
+  },
+  {
+    "id": "lesson_01_02_02",
+    "title": "Advanced Deque Operations and Use Cases",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Using lists for queue operations (causes O(n) performance degradation)",
+          "example": "Imagine a buffet line where people join at the end and leave from either end. Deques handle this dynamic efficiently.",
+          "explanation": "A deque (double-ended queue) allows efficient additions/removals from both ends. Unlike lists, deques use linked lists internally, avoiding O(n) shifts during insertions. They're ideal for thread-safe queues and sliding window algorithms.",
+          "realWorldUse": "Implementing task queues in web servers or stock order matching systems",
+          "tip": "Use deque for FIFO/LIFO operations with concurrent access",
+          "title": "Double-Ended Queue Mechanics"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "The lock ensures atomic operations. Without synchronization, race conditions could corrupt the deque's internal state.",
+          "hint": "Use threading.Lock() to synchronize access",
+          "language": "python",
+          "question": "Implement a thread-safe deque that allows concurrent additions from multiple threads",
+          "solution": "from collections import deque\nimport threading\n\ndq = deque()\nlock = threading.Lock()\n\n# Thread-safe append\nwith lock:\n    dq.append('item')\n\n# Thread-safe pop\nwith lock:\n    dq.popleft()",
+          "starterCode": "from collections import deque\nimport threading\n\ndq = deque()\nlock = threading.Lock()\n\n# Your code here"
+        }
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 2,
+            "explanation": "popleft() and pop() maintain O(1) performance, unlike list.pop(0) which is O(n)",
+            "options": [
+              "append()",
+              "extend()",
+              "popleft()",
+              "remove()"
+            ],
+            "question": "Which deque method provides O(1) time complexity for both ends?"
+          }
+        ]
+      },
+      {
+        "type": "scenario",
+        "title": "Queue System Design",
+        "description": "You're building a ride-sharing dispatch system. Should you use deque or list for matching drivers?",
+        "choices": [
+          {
+            "outcome": "Optimal choice: Deques allow O(1) operations for matching nearest drivers",
+            "score": 100,
+            "text": "Use deque for efficient driver removal from both ends"
+          },
+          {
+            "outcome": "Poor choice: Lists cause O(n) shifts during driver removal",
+            "score": 30,
+            "text": "Use list for simpler implementation"
+          }
+        ]
+      },
+      {
+        "type": "speed_quiz",
+        "questions": [
+          {
+            "answer": 0,
+            "options": [
+              "Deque",
+              "List",
+              "Tuple",
+              "Array"
+            ],
+            "question": "Which is more memory-efficient for 100k items?"
+          },
+          {
+            "answer": 0,
+            "options": [
+              "O(1)",
+              "O(log n)",
+              "O(n)",
+              "O(n log n)"
+            ],
+            "question": "What's the time complexity of deque.appendleft()?"
+          }
+        ]
+      },
+      {
+        "type": "reflection",
+        "prompt": "How would you modify a deque to implement a circular buffer for streaming data?"
+      }
+    ]
+  },
+  {
+    "id": "lesson_01_03_01",
+    "title": "Metaclass Fundamentals and Class Customization",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Confusing metaclasses with regular classes - metaclasses manipulate class creation itself.",
+          "example": "Just as a house blueprint dictates how houses are built, a metaclass dictates how classes are built.",
+          "explanation": "Metaclasses are 'classes of classes' that control class creation. They act like blueprints for classes, defining how classes behave when created. Think of them as factory templates for class definitions.",
+          "realWorldUse": "Implementing design patterns like Singleton or enforcing coding standards across projects.",
+          "tip": "Use metaclasses for global class modifications, not one-off changes.",
+          "title": "What Are Metaclasses?"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "The __new__ method in metaclasses controls class creation. By overriding it, we can inject custom behavior during class definition.",
+          "hint": "Override the __new__ method in your metaclass",
+          "language": "python",
+          "question": "Create a metaclass that prints a message when a class is created",
+          "solution": "class MyMeta(type):\n    def __new__(cls, name, bases, attrs):\n        print(f\"Creating class {name}\")\n        return super().__new__(cls, name, bases, attrs)",
+          "starterCode": "# Your metaclass here\n\nclass MyMeta(type):\n    pass\n\nclass MyClass(metaclass=MyMeta):\n    pass"
+        }
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 1,
+            "explanation": "type() serves as Python's default metaclass. When you create a class normally, Python uses type() to create it. Custom metaclasses inherit from type() to extend its behavior.",
+            "options": [
+              "type() is a built-in function unrelated to metaclasses",
+              "type() is the default metaclass in Python",
+              "Metaclasses replace type() completely",
+              "Metaclasses are instances of type()"
+            ],
+            "question": "What is the relationship between type() and metaclasses?"
+          }
+        ]
+      },
+      {
+        "type": "scenario",
+        "title": "Singleton Pattern Implementation",
+        "description": "You need to create a configuration manager class that must have only one instance. Implement a metaclass to enforce this.",
+        "choices": [
+          {
+            "outcome": "Success: You've implemented a singleton pattern using a metaclass",
+            "score": 100,
+            "text": "Create a metaclass that checks instance count"
+          },
+          {
+            "outcome": "Failure: This doesn't prevent subclassing or multiple instances",
+            "score": 0,
+            "text": "Use a regular class with private constructor"
+          }
+        ]
+      },
+      {
+        "type": "reflection",
+        "prompt": "When would you prefer using a metaclass over a class decorator for custom class behavior?"
+      },
+      {
+        "type": "speed_quiz",
+        "questions": [
+          {
+            "answer": 1,
+            "options": [
+              "__init__",
+              "__new__",
+              "__call__",
+              "__create__"
+            ],
+            "question": "Which method in a metaclass controls class creation?"
+          },
+          {
+            "answer": 2,
+            "options": [
+              "Instance",
+              "Class",
+              "Metaclass itself",
+              "Base class"
+            ],
+            "question": "What does the first argument to a metaclass __new__ method represent?"
+          }
+        ]
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "This metaclass enforces single inheritance by inspecting the base classes during class creation. If multiple bases are detected, it raises an error.",
+          "hint": "Check the length of the bases tuple in __new__",
+          "language": "python",
+          "question": "Implement a metaclass that prevents multiple inheritance",
+          "solution": "class SingleInheritMeta(type):\n    def __new__(cls, name, bases, attrs):\n        if len(bases) > 1:\n            raise TypeError(f\"Class {name} cannot inherit from multiple classes\")\n        return super().__new__(cls, name, bases, attrs)",
+          "starterCode": "class SingleInheritMeta(type):\n    def __new__(cls, name, bases, attrs):\n        # Check if more than one base class\n        if len(bases) > 1:\n            raise TypeError(\"Multiple inheritance not allowed\")\n        return super().__new__(cls, name, bases, attrs)"
+        }
+      }
+    ]
+  },
+  {
+    "id": "lesson_01_03_02",
+    "title": "Dynamic Class Behavior with Metaclasses",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Overusing metaclasses for simple tasks that could be handled with decorators or mix-ins.",
+          "example": "A Django model metaclass automatically converts fields into database columns during class creation.",
+          "explanation": "Metaclasses are classes that create and control other classes. They allow you to intercept class creation, modify attributes, and enforce design patterns. Think of them as the 'blueprint' for classes themselves.",
+          "realWorldUse": "ORM frameworks like SQLAlchemy use metaclasses to map Python classes to database tables.",
+          "tip": "Use metaclasses for framework design when you need to enforce consistent interfaces across many classes.",
+          "title": "Metaclass Fundamentals"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "This metaclass intercepts class creation and enforces the presence of a required attribute, similar to how Django models enforce field definitions.",
+          "hint": "Check if 'required' exists in the attrs dictionary in __new__",
+          "language": "python",
+          "question": "Create a metaclass that validates all subclasses have a 'required' attribute",
+          "solution": "class ValidatorMeta(type):\n    def __new__(cls, name, bases, attrs):\n        if 'required' not in attrs:\n            raise AttributeError(f\"{name} missing required attribute\")\n        return super().__new__(cls, name, bases, attrs)",
+          "starterCode": "class ValidatorMeta(type):\n    def __new__(cls, name, bases, attrs):\n        # Your code here\n        return super().__new__(cls, name, bases, attrs)\n\nclass MyConfig(metaclass=ValidatorMeta):\n    pass"
+        }
+      },
+      {
+        "type": "scenario",
+        "title": "Attribute Registration System",
+        "description": "You're building a configuration framework. Create a metaclass that automatically registers all subclasses with a registry. What approach would you take?",
+        "choices": [
+          {
+            "outcome": "Registry will miss classes if instances are created directly",
+            "score": 50,
+            "text": "Use __init__ to add to registry"
+          },
+          {
+            "outcome": "Classes are automatically registered at definition time",
+            "score": 100,
+            "text": "Use __new__ to add to registry"
+          }
+        ]
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 0,
+            "explanation": "__new__ creates the class object, __init__ just initializes it - similar to object creation in regular classes",
+            "options": [
+              "__new__",
+              "__init__",
+              "__call__",
+              "__metaclass__"
+            ],
+            "question": "Which metaclass method is called first during class creation?"
+          }
+        ]
+      },
+      {
+        "type": "reflection",
+        "prompt": "When would you prefer metaclasses over class decorators for framework design?"
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "This demonstrates attribute interception during class creation, useful for framework APIs that require specific naming conventions.",
+          "hint": "Iterate through attrs and modify keys while preserving private attributes",
+          "language": "python",
+          "question": "Implement a metaclass that automatically converts snake_case attributes to camelCase",
+          "solution": "class CaseConverterMeta(type):\n    def __new__(cls, name, bases, attrs):\n        new_attrs = {}\n        for k, v in attrs.items():\n            if k.startswith('_'):\n                new_attrs[k] = v\n            else:\n                new_attrs[k.replace('_', ' ').title().replace(' ', '')] = v\n        return super().__new__(cls, name, bases, new_attrs)",
+          "starterCode": "class CaseConverterMeta(type):\n    def __new__(cls, name, bases, attrs):\n        # Convert attributes here\n        return super().__new__(cls, name, bases, attrs)"
+        }
+      },
+      {
+        "type": "project",
+        "content": {
+          "description": "Create a metaclass-based plugin system that:\n1. Registers all subclasses in a central registry\n2. Validates each plugin implements required methods\n3. Provides version compatibility checking",
+          "steps": [
+            "Create a base PluginMeta metaclass",
+            "Implement registry access methods",
+            "Add method validation logic",
+            "Test with sample plugin classes"
+          ],
+          "title": "Framework Design Challenge"
+        }
+      }
+    ]
+  },
+  {
+    "id": "lesson_02_04_01",
+    "title": "Introduction to Decorators and Function Wrapping",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Forgetting that decorators execute when the function is defined, not when it's called",
+          "example": "@timer\n@debug\n@decorator\n@decorator\n@decorator\ndef my_function():\n    pass",
+          "explanation": "Decorators are functions that wrap other functions to extend their behavior without modifying their code. They're like gift wrappers - you keep the original gift (function) but add extra layers (functionality) around it.",
+          "realWorldUse": "Used in web frameworks like Flask for routing, in testing for mocking, and in performance analysis",
+          "tip": "Use decorators when you want to apply the same functionality to multiple functions cleanly",
+          "title": "What Are Python Decorators?"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "This decorator wraps the target function, executes it, and prints the duration. The *args and **kwargs ensure it works with any function signature.",
+          "hint": "Use time.time() to capture timestamps before and after function execution",
+          "language": "python",
+          "question": "Create a timer decorator that measures function execution time",
+          "solution": "import time\n\ndef timer(func):\n    def wrapper(*args, **kwargs):\n        start = time.time()\n        result = func(*args, **kwargs)\n        duration = time.time() - start\n        print(f'Executed in {duration:.4f}s')\n        return result\n    return wrapper\n\n@timer\ndef calculate_sum(n):\n    return sum(range(n))\n\ncalculate_sum(100000)",
+          "starterCode": "import time\n\ndef timer(func):\n    def wrapper(*args, **kwargs):\n        start = time.time()\n        result = func(*args, **kwargs)\n        duration = time.time() - start\n        print(f'Executed in {duration:.4f}s')\n        return result\n    return wrapper\n\n@timer\ndef calculate_sum(n):\n    return sum(range(n))\n\ncalculate_sum(100000)"
+        }
+      },
+      {
+        "type": "fill_blank",
+        "sentences": [
+          {
+            "answer": "@",
+            "text": "The ___ syntax is used to apply a decorator to a function"
+          },
+          {
+            "answer": "function",
+            "text": "A decorator function must return a ___"
+          }
+        ]
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 1,
+            "explanation": "Decorators execute in reverse order from how they're written. @d1\n@d2\ndef f(): is equivalent to f = d1(d2(f))",
+            "options": [
+              "They execute in the order they're written",
+              "They execute in reverse order",
+              "Only the first decorator runs",
+              "Only the last decorator runs"
+            ],
+            "question": "What happens when you stack multiple decorators?"
+          }
+        ]
+      },
+      {
+        "type": "scenario",
+        "title": "Logging Decorator Decision",
+        "description": "You need to add logging to multiple API endpoints. Which approach is better?",
+        "choices": [
+          {
+            "outcome": "This creates reusable logging functionality across all endpoints",
+            "score": 100,
+            "text": "Create a @logger decorator that prints function name and arguments"
+          },
+          {
+            "outcome": "This creates duplicated code that's hard to maintain",
+            "score": 20,
+            "text": "Add print statements inside each function"
+          }
+        ]
+      },
+      {
+        "type": "reflection",
+        "prompt": "When would you prefer using a decorator over inheritance for extending functionality?"
+      }
+    ]
+  },
+  {
+    "id": "lesson_02_04_02",
+    "title": "Advanced Decorator Patterns",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Forgetting to return the actual decorator function",
+          "example": "@decorator_factory(arg1)\ndef my_function():\n    pass",
+          "explanation": "Decorator factories allow creating decorators that accept arguments. They return a decorator function that wraps the target function. Think of it as a factory that produces custom decorator tools based on input parameters.",
+          "realWorldUse": "Creating logging decorators that accept log levels or formatting options",
+          "tip": "Always return a decorator function from your factory",
+          "title": "Decorator Factories with Arguments"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "This decorator factory creates a logging decorator that prefixes messages. The outer function accepts configuration, the middle function is the actual decorator, and the inner function wraps the target function.",
+          "hint": "Use nested functions and *args/**kwargs for flexibility",
+          "language": "python",
+          "question": "Implement a decorator factory that logs function calls with a specified prefix",
+          "solution": "def log_prefix(prefix):\n    def decorator(func):\n        def wrapper(*args, **kwargs):\n            print(f\"{prefix} Calling {func.__name__}\")\n            return func(*args, **kwargs)\n        return wrapper\n    return decorator\n\n@log_prefix(\"[DEBUG]\")\ndef say_hello():\n    return \"Hello!\"",
+          "starterCode": "def log_prefix(prefix):\n    def decorator(func):\n        def wrapper(*args, **kwargs):\n            # Add logging with prefix\n            return func(*args, **kwargs)\n        return wrapper\n    return decorator\n\n@log_prefix(\"[DEBUG]\")\ndef say_hello():\n    return \"Hello!\""
+        }
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 2,
+            "explanation": "A decorator factory returns a decorator function that will be applied to the target function. This allows parameterized decorators that can customize their behavior based on input arguments.",
+            "options": [
+              "A raw function",
+              "A class instance",
+              "A decorator function",
+              "The decorated function"
+            ],
+            "question": "What does a decorator factory return?"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "lesson_02_05_01",
+    "title": "Generator Fundamentals",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Trying to reuse a generator after it's exhausted - you must recreate it",
+          "example": "def count_up(n):\n    for i in range(n):\n        yield i\n\nfor num in count_up(5):\n    print(num)",
+          "explanation": "Generators enable lazy evaluation by producing items one at a time. Unlike lists that store all values in memory, generators calculate values on demand. This is like a factory assembly line that produces items sequentially rather than storing the entire inventory.",
+          "realWorldUse": "Processing large datasets (e.g., 10GB file) without loading everything into memory",
+          "tip": "Use generator expressions ( (x*x for x in range(10)) ) for single-use sequences to save memory",
+          "title": "Lazy Evaluation and Generators"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "This generator calculates even numbers on demand. For n=10, it would yield 0,2,4,6,8,10 without creating a full list",
+          "hint": "Use modulo operator to check evenness",
+          "language": "python",
+          "question": "Implement a generator that yields even numbers up to n",
+          "solution": "def even_numbers(n):\n    for i in range(n+1):\n        if i % 2 == 0:\n            yield i",
+          "starterCode": "def even_numbers(n):\n    # Your code here"
+        }
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 1,
+            "explanation": "Generators use lazy evaluation, calculating each value only when needed rather than storing the entire sequence in memory",
+            "options": [
+              "They store all elements in memory",
+              "They calculate elements on demand",
+              "They require more RAM",
+              "They duplicate data for faster access"
+            ],
+            "question": "What's the key memory advantage of generators over lists?"
+          }
+        ]
+      },
+      {
+        "type": "scenario",
+        "title": "Big Data Processing Dilemma",
+        "description": "You need to process a 5GB CSV file. Should you read it into a list or use a generator?",
+        "choices": [
+          {
+            "outcome": "Your program will likely crash due to memory overload",
+            "score": 30,
+            "text": "Use a list for faster random access"
+          },
+          {
+            "outcome": "You'll process the file smoothly with low memory usage",
+            "score": 100,
+            "text": "Use a generator for memory efficiency"
+          }
+        ]
+      },
+      {
+        "type": "reflection",
+        "prompt": "Think of three real-world scenarios where generators would be more efficient than lists. Explain your reasoning."
+      },
+      {
+        "type": "speed_quiz",
+        "questions": [
+          {
+            "answer": 0,
+            "options": [
+              "Returns a value and pauses execution",
+              "Immediately exits the function",
+              "Creates a list",
+              "Stores all values in memory"
+            ],
+            "question": "What does the yield keyword do?"
+          },
+          {
+            "answer": 1,
+            "options": [
+              "List comprehension",
+              "Generator expression",
+              "Regular function",
+              "Class instance"
+            ],
+            "question": "Which is more memory efficient for large datasets?"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "lesson_02_05_02",
+    "title": "Coroutines and Async Generators",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Forgetting to await the generator's __anext__() method directly",
+          "example": "async def fetch_data_stream(urls):\n    async with aiohttp.ClientSession() as session:\n        for url in urls:\n            async with session.get(url) as response:\n                yield await response.json()",
+          "explanation": "Async generators combine async/await with yield to process streams of asynchronous data. They're ideal for handling real-time data from APIs or sensors. Think of them as pipelines that produce values over time while maintaining state between yields.",
+          "realWorldUse": "Streaming real-time stock market data from multiple sources",
+          "tip": "Use async for to consume async generators in clean, readable code",
+          "title": "Async Generators and Coroutines"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "This async generator connects to a TCP stream and yields each line as a string. The await keyword ensures non-blocking I/O while reading from the network.",
+          "hint": "Use the reader object to get lines and decode bytes to strings",
+          "language": "python",
+          "question": "Implement an async generator that yields lines from a network stream",
+          "solution": "import asyncio\n\nasync def stream_lines(host, port):\n    reader, _ = await asyncio.open_connection(host, port)\n    while True:\n        line = await reader.readline()\n        if not line:\n            break\n        yield line.decode().strip()",
+          "starterCode": "import asyncio\n\nasync def stream_lines(host, port):\n    reader, _ = await asyncio.open_connection(host, port)\n    while True:\n        line = await reader.readline()\n        if not line:\n            break\n        yield ______"
+        }
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 1,
+            "explanation": "Async generators are specifically designed for asynchronous data streams where I/O operations would block regular generators. They allow non-blocking processing of data as it arrives.",
+            "options": [
+              "A) When processing CPU-bound tasks",
+              "B) When handling asynchronous data streams",
+              "C) For small in-memory datasets",
+              "D) When maximum performance is required"
+            ],
+            "question": "When should you use an async generator instead of a regular generator?"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "lesson_02_06_01",
+    "title": "Context Manager Implementation",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Forgetting to return self in __enter__() prevents accessing the context manager instance inside the 'with' block.",
+          "example": "# File context manager example\nwith open('data.txt', 'r') as file:\n    content = file.read()\n    # File automatically closes after block",
+          "explanation": "Context managers are Python objects that manage resources during a block of code execution. They ensure resources are properly acquired and released, even if errors occur. The core idea is to simplify resource management using the 'with' statement, which automatically handles setup and teardown operations. Think of it like a parking garage gate: it opens when you enter and closes securely when you leave.",
+          "realWorldUse": "Database connections, file operations, and thread locks all benefit from context managers to prevent resource leaks.",
+          "tip": "Always implement __exit__() to handle exceptions and guarantee resource cleanup. Use contextlib.contextmanager for decorator-based context managers.",
+          "title": "Understanding Context Managers"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "This context manager records start time in __enter__ and calculates execution duration in __exit__. The with block automatically measures how long the contained operations take.",
+          "hint": "Use time.time() in __enter__ and __exit__ to calculate duration",
+          "language": "python",
+          "question": "Implement a context manager that tracks execution time",
+          "solution": "import time\n\nclass Timer:\n    def __enter__(self):\n        self.start = time.time()\n        return self\n\n    def __exit__(self, exc_type, exc_val, exc_tb):\n        self.end = time.time()\n        print(f'Execution time: {self.end - self.start:.4f}s')\n\nwith Timer():\n    [x**2 for x in range(10000)]",
+          "starterCode": "import time\n\nclass Timer:\n    def __enter__(self):\n        self.start = time.time()\n        return self\n\n    def __exit__(self, exc_type, exc_val, exc_tb):\n        self.end = time.time()\n        print(f'Execution time: {self.end - self.start:.4f}s')"
+        }
+      },
+      {
+        "type": "scenario",
+        "content": {
+          "choices": [
+            {
+              "outcome": "Works but requires boilerplate code in every call site",
+              "score": 50,
+              "text": "Use try/finally with manual connection.close()"
+            },
+            {
+              "outcome": "Ensures consistent resource management across the codebase",
+              "score": 100,
+              "text": "Create a context manager class with __enter__ and __exit__"
+            },
+            {
+              "outcome": "Creates potential for resource leaks and race conditions",
+              "score": 20,
+              "text": "Use a global connection object"
+            }
+          ],
+          "description": "You need to create a context manager for a database connection. What's the best approach?",
+          "title": "Database Connection Management"
+        }
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 2,
+            "explanation": "When __exit__ raises an exception, it becomes the new exception that's propagated. The original exception is chained to it using __context__ unless the __exit__ returns True to suppress it.",
+            "options": [
+              "A) The original exception is suppressed",
+              "B) The new exception becomes the main error",
+              "C) Both exceptions are chained",
+              "D) The program crashes immediately"
+            ],
+            "question": "What happens if __exit__ raises an exception?"
+          }
+        ]
+      },
+      {
+        "type": "fill_blank",
+        "sentences": [
+          {
+            "answer": "exc_tb",
+            "text": "The __exit__ method receives three arguments: exc_type, exc_val, and ___"
+          },
+          {
+            "answer": "True",
+            "text": "To suppress exceptions in a context manager, __exit__ should return ___"
+          }
+        ]
+      },
+      {
+        "type": "reflection",
+        "prompt": "Describe a scenario where nested context managers would be beneficial"
+      },
+      {
+        "type": "speed_quiz",
+        "questions": [
+          {
+            "answer": 0,
+            "options": [
+              "with",
+              "as",
+              "using",
+              "context"
+            ],
+            "question": "Which keyword is used with context managers?"
+          },
+          {
+            "answer": 0,
+            "options": [
+              "Acquire resources",
+              "Release resources",
+              "Handle exceptions",
+              "Log execution"
+            ],
+            "question": "What's the primary purpose of __enter__?"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "lesson_02_06_02",
+    "title": "Advanced Context Manager Patterns",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Mixing async and sync context managers in the same resource management flow",
+          "example": "class AsyncDatabaseConnection:\n    async def __aenter__(self):\n        self.conn = await async_connect()\n        return self.conn\n    async def __aexit__(self, *exc):\n        await self.conn.close()",
+          "explanation": "Asynchronous context managers handle I/O-bound operations in async code. They use __aenter__ and __aexit__ methods instead of their sync counterparts. Imagine them as traffic controllers for asynchronous traffic lights.",
+          "realWorldUse": "Managing WebSocket connections in async web servers",
+          "tip": "Use async with to ensure proper exception handling in async contexts",
+          "title": "Async Context Managers"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "This context manager measures how long the code inside the with block takes to execute. The yield statement is where your code runs between setup and cleanup.",
+          "hint": "Use time.time() to capture start and end times",
+          "language": "python",
+          "question": "Implement a context manager decorator that logs execution time",
+          "solution": "from contextlib import contextmanager\nimport time\n\n@contextmanager\ndef timer():\n    start = time.time()\n    yield\n    print(f'Execution time: {time.time() - start:.4f} seconds')",
+          "starterCode": "from contextlib import contextmanager\nimport time\n\n@contextmanager\ndef timer():\n    # Your code here\n    yield\n"
+        }
+      },
+      {
+        "type": "scenario",
+        "title": "Context Manager Selection",
+        "description": "You need to implement a context manager for a Redis connection pool. Which approach should you use?",
+        "choices": [
+          {
+            "outcome": "Best choice for async I/O bound operations",
+            "score": 100,
+            "text": "Async context manager with connection pooling"
+          },
+          {
+            "outcome": "Good for thread safety but not async",
+            "score": 70,
+            "text": "Thread-local storage context manager"
+          },
+          {
+            "outcome": "Lacks necessary pooling functionality",
+            "score": 40,
+            "text": "Simple function-based context manager"
+          }
+        ]
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 1,
+            "explanation": "__aexit__ handles asynchronous cleanup and exception management in async context managers. It's crucial for proper resource release in async workflows.",
+            "options": [
+              "Handle synchronous cleanup",
+              "Manage asynchronous exceptions",
+              "Initialize async resources",
+              "Cancel pending futures"
+            ],
+            "question": "What is the primary purpose of __aexit__ in async context managers?"
+          }
+        ]
+      },
+      {
+        "type": "fill_blank",
+        "sentences": [
+          {
+            "answer": "coroutine",
+            "text": "In an async context manager, the __aenter__ method returns a ___ to the managed resource"
+          }
+        ]
+      },
+      {
+        "type": "reflection",
+        "prompt": "Compare the trade-offs between decorator-based and class-based context managers for thread safety"
+      },
+      {
+        "type": "case_study",
+        "questions": [
+          {
+            "expectedAnswer": "HTTP client and rate limiter",
+            "question": "Which components require async management?"
+          },
+          {
+            "expectedAnswer": "Use ThreadLocal storage for session objects",
+            "question": "How would you implement thread safety?"
+          }
+        ],
+        "title": "Web Scraper Context Manager"
+      }
+    ]
+  },
+  {
+    "id": "lesson_03_07_01",
+    "title": "Introduction to Async/Await and Event Loops",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Forgetting to await coroutines, which turns them into pending futures instead of executing them.",
+          "example": "Imagine downloading 10 files from the web. Synchronous code would download them one after another. Async code would start all downloads simultaneously, saving time.",
+          "explanation": "Async/await is Python's syntax for writing asynchronous code. It allows you to write non-blocking code that handles I/O operations efficiently without freezing the program. Think of it like a restaurant kitchen where chefs (event loop) manage multiple orders (tasks) without waiting for each to finish before starting the next.",
+          "realWorldUse": "Web scrapers, real-time data processing, and API servers handling thousands of requests.",
+          "tip": "Use async/await with libraries like aiohttp or asyncpg for maximum performance gains.",
+          "title": "Understanding Async/Await Fundamentals"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "This code demonstrates how async/await allows concurrent execution. The two fetch_data() calls run simultaneously, completing in ~2s total instead of 4s.",
+          "hint": "Use asyncio.sleep() to simulate non-blocking delays",
+          "language": "python",
+          "question": "Implement an async function that simulates downloading data from an API",
+          "solution": "import asyncio\n\nasync def fetch_data():\n    await asyncio.sleep(2)  # Simulate network delay\n    return {'data': 'success'}\n\nasync def main():\n    results = await asyncio.gather(fetch_data(), fetch_data())\n    print(results)\n\nasyncio.run(main())",
+          "starterCode": "import asyncio\n\nasync def fetch_data():\n    # TODO: Simulate 2s network delay\n    pass\n\nasync def main():\n    results = await asyncio.gather(fetch_data(), fetch_data())\n    print(results)\n\nasyncio.run(main())"
+        }
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 1,
+            "explanation": "The event loop acts as the central scheduler for async operations, tracking which coroutines are ready to run and when they should be resumed.",
+            "options": [
+              "Manages memory allocation",
+              "Coordinates async task execution",
+              "Handles CPU-intensive computations",
+              "Controls garbage collection"
+            ],
+            "question": "What is the primary role of an event loop in Python?"
+          }
+        ]
+      },
+      {
+        "type": "scenario",
+        "title": "Choosing the Right Approach",
+        "description": "You need to process 1000 image files from an S3 bucket. Each file takes 50ms to download and 100ms to process. What approach should you use?",
+        "choices": [
+          {
+            "outcome": "Total time ~150s (1000 * 150ms). Simple but inefficient.",
+            "score": 50,
+            "text": "Synchronous processing with for loop"
+          },
+          {
+            "outcome": "Total time ~15s (parallelizing 100 downloads + sequential processing). Much faster.",
+            "score": 90,
+            "text": "Async/await with 100 concurrent downloads"
+          }
+        ]
+      },
+      {
+        "type": "visual",
+        "content": {
+          "diagram": [
+            "1. Register tasks",
+            "2. Run until complete",
+            "3. Handle callbacks",
+            "4. Clean up resources"
+          ],
+          "explanation": "The event loop follows this sequence: 1) Tasks are registered, 2) The loop runs until all tasks complete, 3) Callbacks are executed for completed tasks, and 4) Resources are released.",
+          "title": "Event Loop Lifecycle"
+        }
+      },
+      {
+        "type": "speed_quiz",
+        "questions": [
+          {
+            "answer": 0,
+            "options": [
+              "async",
+              "await",
+              "yield",
+              "def"
+            ],
+            "question": "Which keyword defines a coroutine function?"
+          },
+          {
+            "answer": 0,
+            "options": [
+              "Blocks execution until result is ready",
+              "Creates a new thread",
+              "Adds to the event loop queue",
+              "Returns a future object"
+            ],
+            "question": "What does await do?"
+          }
+        ]
+      },
+      {
+        "type": "reflection",
+        "prompt": "Describe a real-world project where async programming would provide significant performance benefits. Explain why."
+      },
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Calling async functions without await, which returns coroutines instead of results",
+          "example": "Bad: await time.sleep(1)\nGood: await asyncio.sleep(1)",
+          "explanation": "Avoid mixing blocking and async code. For example, using time.sleep() in async functions blocks the entire event loop. Instead, use asyncio.sleep() which is non-blocking.",
+          "realWorldUse": "Web servers like FastAPI use async to handle thousands of simultaneous connections",
+          "tip": "Use async context managers (async with) for resource management in async code",
+          "title": "Common Async Anti-Patterns"
+        }
+      }
+    ]
+  },
+  {
+    "id": "lesson_03_07_02",
+    "title": "Advanced AsyncIO Patterns",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Forgetting to await tasks inside gather() leads to unexecuted coroutines",
+          "example": "import asyncio\nasync def fetch_data(id):\n    await asyncio.sleep(1)\n    return f'Data {id}'\nasyncio.run(asyncio.gather(fetch_data(1), fetch_data(2)))",
+          "explanation": "asyncio.gather() allows running multiple async tasks concurrently while maintaining order. It's like a traffic conductor coordinating multiple asynchronous vehicles to reach their destinations efficiently.",
+          "realWorldUse": "Fetching data from multiple APIs simultaneously in web scrapers",
+          "tip": "Use return_exceptions=True to collect errors as regular values instead of propagating them",
+          "title": "Task Grouping with asyncio.gather"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "This solution demonstrates concurrent processing with error containment using gather() and return_exceptions parameter to handle failures gracefully",
+          "hint": "Use asyncio.gather() with return_exceptions=True parameter",
+          "language": "python",
+          "question": "Implement a concurrent data fetcher with error handling",
+          "solution": "import asyncio\nasync def process_item(item):\n    try:\n        await asyncio.sleep(1)\n        return f'Processed {item}'\n    except Exception as e:\n        return f'Error: {str(e)}'\n\nasync def main():\n    items = [\"A\", \"B\", \"C\"]\n    results = await asyncio.gather(*[process_item(i) for i in items])\n    print(results)\n\nasyncio.run(main())",
+          "starterCode": "import asyncio\nasync def process_item(item):\n    \nasync def main():\n    items = [\"A\", \"B\", \"C\"]\n    \nasyncio.run(main())"
+        }
+      },
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Assuming exceptions propagate automatically across await statements",
+          "example": "async def faulty_task():\n    raise ValueError(\"Critical error\")\n\nasyncio.run(faulty_task())  # Will terminate the event loop",
+          "explanation": "Errors in async workflows propagate differently than synchronous code. Like a broken gear in a machine, an unhandled exception in one task can halt the entire async workflow unless properly managed.",
+          "realWorldUse": "Handling API rate limiting errors in concurrent network requests",
+          "tip": "Wrap async calls in try/except blocks at the task level first",
+          "title": "Async Error Propagation"
+        }
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 2,
+            "explanation": "When using asyncio.gather(), exceptions propagate to the gather() call unless return_exceptions=True is specified. This allows centralized error handling while maintaining concurrency.",
+            "options": [
+              "A) The exception is silently ignored",
+              "B) All tasks are canceled immediately",
+              "C) The exception propagates to the gather() call",
+              "D) Only the failing task's result is affected"
+            ],
+            "question": "What happens when an exception occurs in a task managed by asyncio.gather()?"
+          }
+        ]
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "This demonstrates low-level event loop customization using selectors, essential for integrating AsyncIO with specific OS-level I/O patterns or legacy systems",
+          "hint": "Use SelectorEventLoop with SelectSelector for custom I/O multiplexing",
+          "language": "python",
+          "question": "Create a custom event loop policy using selectors",
+          "solution": "import asyncio\nimport selectors\n\n# Create selector event loop\nselector = selectors.SelectSelector()\nloop = asyncio.SelectorEventLoop(selector)\nasyncio.set_event_loop(loop)\n\nasync def main():\n    print(f'Running on {loop.__class__.__name__}')\n\nasyncio.run(main())",
+          "starterCode": "import asyncio\nimport selectors\n\nloop = asyncio.\n\nasync def main():\n    pass\n\nasyncio.run(main())"
+        }
+      },
+      {
+        "type": "scenario",
+        "title": "Async Exception Handling Dilemma",
+        "description": "You're processing 100 concurrent API requests. Suddenly, one API returns a 500 error. What's your response?",
+        "choices": [
+          {
+            "outcome": "All active tasks terminate abruptly",
+            "score": 0,
+            "text": "Let the exception crash the entire process"
+          },
+          {
+            "outcome": "Failed requests are marked as errors but others complete successfully",
+            "score": 100,
+            "text": "Use return_exceptions=True to isolate errors"
+          }
+        ]
+      },
+      {
+        "type": "reflection",
+        "prompt": "How would you optimize AsyncIO for a real-time stock trading platform requiring sub-millisecond latency?"
+      },
+      {
+        "type": "speed_quiz",
+        "questions": [
+          {
+            "answer": 1,
+            "options": [
+              "asyncio.wait()",
+              "asyncio.gather()",
+              "asyncio.create_task()",
+              "asyncio.run()"
+            ],
+            "question": "Which AsyncIO function groups multiple tasks with error containment?"
+          },
+          {
+            "answer": 1,
+            "options": [
+              "Database connection pooling",
+              "Custom I/O multiplexing",
+              "Thread synchronization",
+              "Memory management"
+            ],
+            "question": "What's the primary purpose of SelectorEventLoop?"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "lesson_03_08_01",
+    "title": "Threading Model Analysis",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Assuming threading will speed up CPU-bound tasks due to the GIL's limitations.",
+          "example": "When using threading.Thread in Python, all threads share the same memory space but execute sequentially due to the GIL.",
+          "explanation": "Threads in Python follow a lifecycle that includes creation, execution, and termination. The Global Interpreter Lock (GIL) ensures only one thread executes Python bytecode at a time, which affects true parallelism. Think of the GIL as a traffic cop at a single-lane bridge—cars (threads) must wait their turn even if multiple lanes exist.",
+          "realWorldUse": "Web servers handling multiple client requests simultaneously using thread pools.",
+          "tip": "Use thread pools for I/O-bound tasks where waiting for external resources is common.",
+          "title": "Understanding Thread Lifecycle"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "The Lock ensures only one thread can modify the counter at a time, preventing race conditions. This is critical for maintaining data integrity in multi-threaded applications.",
+          "hint": "Use a context manager (with statement) to handle locking automatically",
+          "language": "python",
+          "question": "Implement a thread-safe counter using Lock from threading module",
+          "solution": "import threading\n\ncounter = 0\nlock = threading.Lock()\n\ndef increment():\n    global counter\n    with lock:\n        counter += 1",
+          "starterCode": "import threading\n\ncounter = 0\nlock = threading.Lock()\n\ndef increment():\n    global counter\n    # Add lock here\n    counter += 1\n    # Add unlock here"
+        }
+      },
+      {
+        "type": "scenario",
+        "title": "Choosing Between Threading and Multiprocessing",
+        "description": "You're optimizing a Python script that downloads 1000 files from the internet. Should you use threading or multiprocessing?",
+        "choices": [
+          {
+            "outcome": "Improved performance due to non-blocking I/O operations",
+            "score": 100,
+            "text": "Use threading for I/O-bound tasks"
+          },
+          {
+            "outcome": "No significant gain since the GIL would still block CPU-bound operations",
+            "score": 30,
+            "text": "Use multiprocessing for CPU-bound tasks"
+          },
+          {
+            "outcome": "Better I/O handling but requires rewriting the codebase",
+            "score": 80,
+            "text": "Use async/await with asyncio"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "lesson_03_08_02",
+    "title": "Multiprocessing Architecture",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Using fork with thread-unsafe libraries causing segmentation faults",
+          "example": "In Python, multiprocessing.Process() uses spawn by default on macOS. Fork is used in Unix systems for quick process duplication.",
+          "explanation": "Spawn creates a new, independent process with its own memory space, while fork duplicates the existing process. Spawn is safer for complex applications but slower, while fork is faster but risks shared memory issues. Think of spawn as ordering a new pizza versus fork splitting a slice - same recipe but separate ingredients.",
+          "realWorldUse": "Spawn is ideal for distributed computing clusters while fork excels in Unix server process management",
+          "tip": "Prefer spawn when working with limited resources or complex object graphs to avoid memory leaks",
+          "title": "Spawn vs Fork in Multiprocessing"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "This demonstrates the core multiprocessing pattern: define a task function, create Process objects, and manage execution lifecycle. The spawn method is safer for complex applications while fork is more efficient for simple tasks.",
+          "hint": "Use Process.start() and Process.join() for both implementations",
+          "language": "python",
+          "question": "Implement a parallel factorial calculator using both spawn and fork methods",
+          "solution": "import multiprocessing\n\ndef factorial(n):\n    result = 1\n    for i in range(1, n+1):\n        result *= i\n    return result\n\nif __name__ == '__main__':\n    # Spawn method\n    spawn_proc = multiprocessing.Process(target=factorial, args=(5,))\n    spawn_proc.start()\n    spawn_proc.join()\n\n    # Fork method\n    fork_proc = multiprocessing.Process(target=factorial, args=(5,))\n    fork_proc.start()\n    fork_proc.join()",
+          "starterCode": "import multiprocessing\n\ndef factorial(n):\n    # Your implementation here\n\nif __name__ == '__main__':\n    # Spawn implementation\n    # Fork implementation"
+        }
+      },
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Assuming shared memory is automatically synchronized between processes",
+          "example": "Using multiprocessing.Value() and multiprocessing.Array() in Python to share data between processes",
+          "explanation": "Shared memory allows multiple processes to access common memory regions. It's like a whiteboard in a meeting room - all participants can read/write but need coordination. Requires explicit synchronization to prevent race conditions.",
+          "realWorldUse": "Real-time financial trading systems use shared memory for low-latency data exchange between processes",
+          "tip": "Always use locks when writing to shared memory to prevent data corruption",
+          "title": "Shared Memory Architecture"
+        }
+      },
+      {
+        "type": "scenario",
+        "title": "IPC Decision Matrix",
+        "description": "You're optimizing a video rendering pipeline. Should you use shared memory or message passing for frame data exchange?",
+        "choices": [
+          {
+            "outcome": "Achieved 40% performance gain but increased memory usage",
+            "score": 85,
+            "text": "Use shared memory with locks for maximum speed"
+          },
+          {
+            "outcome": "Stable implementation with moderate performance",
+            "score": 70,
+            "text": "Use message passing with queues for safety"
+          },
+          {
+            "outcome": "Balanced solution with good performance and reliability",
+            "score": 90,
+            "text": "Use hybrid approach with memory-mapped files"
+          }
+        ]
+      },
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Forgetting to release locks after critical sections",
+          "example": "Using multiprocessing.Lock() to protect shared counter variables",
+          "explanation": "Synchronization prevents race conditions through locks, semaphores, and barriers. Like traffic lights controlling intersection flow, these mechanisms coordinate process access to shared resources.",
+          "realWorldUse": "Database transaction systems use sophisticated locking to maintain ACID properties",
+          "tip": "Always acquire locks in consistent order to prevent deadlock",
+          "title": "Process Synchronization Mechanisms"
+        }
+      },
+      {
+        "type": "fill_blank",
+        "sentences": [
+          {
+            "answer": "release",
+            "text": "The ___() method releases a lock in Python multiprocessing"
+          },
+          {
+            "answer": "semaphore",
+            "text": "A ___ is a synchronization primitive that counts the number of available resources"
+          }
+        ]
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 2,
+            "explanation": "Counting semaphores allow multiple processes to access resources up to a specified limit, unlike binary semaphores/mutexes which only allow one process at a time.",
+            "options": [
+              "Binary Semaphore",
+              "Mutex",
+              "Counting Semaphore",
+              "Lock"
+            ],
+            "question": "Which synchronization mechanism allows multiple processes to access a resource simultaneously?"
+          }
+        ]
+      },
+      {
+        "type": "reflection",
+        "prompt": "Compare the memory model implications of using multiprocessing versus threading in your own projects. What tradeoffs would you make for a CPU-bound image processing application?"
+      }
+    ]
+  },
+  {
+    "id": "lesson_03_09_01",
+    "title": "Thread Synchronization Fundamentals",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Not releasing the mutex after critical section",
+          "example": "counter = 0\nlock = threading.Lock()\ndef increment():\n    global counter\n    with lock:\n        counter += 1",
+          "explanation": "Mutexes act like traffic cops for threads. Imagine a single-lane bridge where cars (threads) need permission to cross. The mutex ensures only one thread accesses shared resources at a time. Common mistake: Forgetting to release the mutex leads to deadlocks. Expert tip: Always use context managers (with statements) for automatic release.",
+          "realWorldUse": "Banking transactions to prevent double-spending",
+          "tip": "Use context managers to prevent deadlocks",
+          "title": "Mutex Operations Explained"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "The lock ensures only one thread can increment the counter at a time, preventing race conditions where threads overwrite each other's changes",
+          "hint": "Add a lock around the counter increment operation",
+          "language": "python",
+          "question": "Fix this race condition in the counter implementation",
+          "solution": "import threading\n\ncounter = 0\nlock = threading.Lock()\n\ndef increment():\n    global counter\n    for _ in range(100000):\n        with lock:\n            counter += 1\n\ndef main():\n    threads = []\n    for i in range(10):\n        t = threading.Thread(target=increment)\n        threads.append(t)\n        t.start()\n    \n    for t in threads:\n        t.join()\n\nif __name__ == \"__main__\":\n    main()\n    print(f'Final counter: {counter}')",
+          "starterCode": "import threading\n\ncounter = 0\n\ndef increment():\n    global counter\n    for _ in range(100000):\n        counter += 1\n\ndef main():\n    threads = []\n    for i in range(10):\n        t = threading.Thread(target=increment)\n        threads.append(t)\n        t.start()\n    \n    for t in threads:\n        t.join()\n\nif __name__ == \"__main__\":\n    main()\n    print(f'Final counter: {counter}')"
+        }
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 0,
+            "explanation": "Semaphores act like bouncers at a nightclub with limited capacity. They track how many threads are using a resource and block new threads when the limit is reached",
+            "options": [
+              "Limit the number of threads accessing a resource",
+              "Suspend thread execution indefinitely",
+              "Create atomic variables",
+              "Manage thread priorities"
+            ],
+            "question": "What is the primary purpose of a semaphore?"
+          }
+        ]
+      },
+      {
+        "type": "visual",
+        "content": {
+          "diagram": [
+            "Semaphore initialized with 3 permits",
+            "Thread 1 acquires permit (2 remaining)",
+            "Thread 2 acquires permit (1 remaining)",
+            "Thread 3 acquires permit (0 remaining)",
+            "Thread 4 waits for release",
+            "Thread 1 releases permit (1 remaining)",
+            "Thread 4 acquires permit"
+          ],
+          "explanation": "This visual shows how semaphores control access to a resource pool with fixed capacity, similar to a restroom with limited stalls",
+          "title": "Semaphore Operation Flow"
+        }
+      },
+      {
+        "type": "scenario",
+        "title": "Database Connection Pool Design",
+        "description": "You need to implement a connection pool that limits simultaneous database connections to 5. Which synchronization primitive should you use?",
+        "choices": [
+          {
+            "outcome": "This creates a race condition when multiple threads check the counter simultaneously",
+            "score": 30,
+            "text": "Use a mutex with a counter variable"
+          },
+          {
+            "outcome": "Correct approach - the semaphore will automatically track available connections",
+            "score": 100,
+            "text": "Use a BoundedSemaphore with value 5"
+          },
+          {
+            "outcome": "Possible but error-prone implementation",
+            "score": 50,
+            "text": "Use a Condition variable with manual tracking"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "lesson_03_09_02",
+    "title": "Advanced Synchronization Patterns",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Forgetting to acquire locks before accessing shared data",
+          "example": "Imagine a coffee shop where baristas (threads) need to coordinate with the coffee machine (shared resource). A queue ensures orders are processed in sequence without collisions.",
+          "explanation": "Synchronization patterns coordinate threads to prevent race conditions. Like traffic lights controlling vehicles, they ensure threads access shared resources safely. Key patterns include producer-consumer queues and condition variable coordination.",
+          "realWorldUse": "Database connection pooling in web applications",
+          "tip": "Always pair locks with try-finally blocks to guarantee release",
+          "title": "Synchronization Fundamentals"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "The Queue's maxsize parameter enforces backpressure. When full, producers block until space becomes available. This pattern prevents memory overflow in high-throughput systems.",
+          "hint": "Use Queue's blocking put/get methods",
+          "language": "python",
+          "question": "Implement a bounded producer-consumer queue",
+          "solution": "import threading\nfrom queue import Queue\n\ndef producer(queue):\n    for i in range(10):\n        queue.put(i)  # Blocks when queue is full\n        print(f'Produced {i}')\n\ndef consumer(queue):\n    while True:\n        item = queue.get()  # Blocks when queue is empty\n        print(f'Consumed {item}')\n        queue.task_done()\n\nqueue = Queue(maxsize=3)\n\n# Create and start threads\nproducer_thread = threading.Thread(target=producer, args=(queue,), daemon=True)\nconsumer_thread = threading.Thread(target=consumer, args=(queue,), daemon=True)\n\nproducer_thread.start()\nconsumer_thread.start()\nproducer_thread.join()",
+          "starterCode": "import threading\nfrom queue import Queue\n\ndef producer(queue):\n    for i in range(10):\n        queue.put(i)\n        print(f'Produced {i}')\n\ndef consumer(queue):\n    while True:\n        item = queue.get()\n        print(f'Consumed {item}')\n        queue.task_done()\n\nqueue = Queue(maxsize=3)"
+        }
+      },
+      {
+        "type": "scenario",
+        "title": "Thread-Safe Data Structure Design",
+        "description": "You need to implement a thread-safe priority queue for a hospital triage system. Which synchronization strategy would you use?",
+        "choices": [
+          {
+            "outcome": "Simple but may cause contention under high load",
+            "score": 50,
+            "text": "Use a regular list with a global lock"
+          },
+          {
+            "outcome": "Efficient with wait/notify pattern for priority changes",
+            "score": 90,
+            "text": "Use a ConditionVariable with state checks"
+          },
+          {
+            "outcome": "Only works for async code, not traditional threads",
+            "score": 30,
+            "text": "Use asyncio.Queue with async/await"
+          }
+        ]
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 0,
+            "explanation": "The wait() method atomically releases the lock and suspends the thread until another thread notifies it. This prevents busy waiting and ensures proper synchronization.",
+            "options": [
+              "A) Release the lock and wait for notification",
+              "B) Check if a condition is true",
+              "C) Signal all waiting threads",
+              "D) Acquire the lock immediately"
+            ],
+            "question": "What is the primary purpose of condition variable wait() method?"
+          }
+        ]
+      },
+      {
+        "type": "reflection",
+        "prompt": "Describe a real-world system where reentrant locks would be more appropriate than regular locks. Explain why."
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "Reentrant locks allow the same thread to acquire the lock multiple times. This is crucial for methods that call other locked methods (like a decrement method calling get_value).",
+          "hint": "Use RLock for nested locking scenarios",
+          "language": "python",
+          "question": "Implement a thread-safe counter with reentrant lock",
+          "solution": "import threading\n\nclass ThreadSafeCounter:\n    def __init__(self):\n        self.count = 0\n        self.lock = threading.RLock()\n\n    def increment(self):\n        with self.lock:\n            self.count += 1\n\n    def decrement(self):\n        with self.lock:\n            self.count -= 1\n\n    def get_value(self):\n        with self.lock:\n            return self.count",
+          "starterCode": "import threading\n\nclass ThreadSafeCounter:\n    def __init__(self):\n        self.count = 0\n        self.lock = threading.\n\n    def increment(self):\n        \n    def decrement(self):\n        \n    def get_value(self):\n        return self.count"
+        }
+      }
+    ]
+  },
+  {
+    "id": "lesson_04_10_01",
+    "title": "Introduction to Flask/Django Routing and Templates",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Putting database queries directly in templates instead of using the Model layer.",
+          "example": "In Flask, a route function acts as the Controller, a template is the View, and a database query is the Model.",
+          "explanation": "MVC (Model-View-Controller) separates application logic into three interconnected components. The Model handles data, the View manages UI, and the Controller processes input. Think of it like a restaurant: the chef (Model) prepares food, the waiter (Controller) takes orders, and the dining area (View) serves the meal. This separation makes code easier to maintain and scale.",
+          "realWorldUse": "E-commerce sites use MVC to separate product data (Model), shopping cart UI (View), and order processing (Controller).",
+          "tip": "Always keep business logic in the Model layer to avoid mixing it with presentation code.",
+          "title": "Understanding MVC Architecture"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "This route dynamically handles URLs like /post/123 by extracting the post ID as an integer. The <int:converter> ensures type safety for numerical parameters.",
+          "hint": "Use <int:post_id> to capture integer parameters in the URL",
+          "language": "python",
+          "question": "Create a Flask route with dynamic parameters for a blog post",
+          "solution": "from flask import Flask\napp = Flask(__name__)\n\n@app.route('/post/<int:post_id>')\ndef show_post(post_id):\n    return f'Post ID: {post_id}'\n\nif __name__ == '__main__':\n    app.run()",
+          "starterCode": "from flask import Flask\napp = Flask(__name__)\n\n@app.route('/post/<int:post_id>')\ndef show_post(post_id):\n    return f'Post ID: {post_id}'\n\nif __name__ == '__main__':\n    app.run()"
+        }
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 0,
+            "explanation": "Flask's int converter will raise a 404 Not Found error because 'abc' cannot be converted to an integer. Type converters enforce strict type validation for route parameters.",
+            "options": [
+              "A. Returns 404 error",
+              "B. Converts abc to 0",
+              "C. Converts abc to ASCII code",
+              "D. Returns 500 server error"
+            ],
+            "question": "What happens when you request /post/abc with the route /post/<int:post_id>?"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "lesson_04_10_02",
+    "title": "Database Integration with ORM",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Forgetting to run migrations after model changes. Always use 'makemigrations' and 'migrate' after modifying models.",
+          "example": "class Book(models.Model):\n    title = models.CharField(max_length=200)\n    author = models.ForeignKey(Author, on_delete=models.CASCADE)\n    published = models.DateField()",
+          "explanation": "Django models define your database schema using Python classes. Each model maps to a database table, with fields representing columns. This abstraction lets you interact with databases using Python objects instead of raw SQL.",
+          "realWorldUse": "E-commerce platforms use models to manage products, orders, and customers without writing raw SQL queries.",
+          "tip": "Always add Meta classes for ordering and verbose names. Use __str__ methods for human-readable representations.",
+          "title": "Django ORM Model Definition"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "This model defines a Book with proper relationships and metadata. The Meta class controls default ordering, and the save() method allows custom logic during saves.",
+          "hint": "Don't forget to add related_name and on_delete parameters for ForeignKey fields",
+          "language": "python",
+          "question": "Create a Book model with title (CharField), author (ForeignKey), and publication_date (DateField). Add Meta class for ordering by newest first.",
+          "solution": "from django.db import models\n\nclass Book(models.Model):\n    title = models.CharField(max_length=200)\n    author = models.ForeignKey('Author', on_delete=models.CASCADE)\n    publication_date = models.DateField()\n\n    class Meta:\n        ordering = ['-publication_date']\n\n    def __str__(self):\n        return f\"{self.title} by {self.author}\"\n\n    def save(self, *args, **kwargs):\n        # Custom save logic\n        super().save(*args, **kwargs)",
+          "starterCode": "from django.db import models\n\nclass Book(models.Model):\n    title = \n    author = \n    publication_date = "
+        }
+      },
+      {
+        "type": "scenario",
+        "title": "Query Optimization Challenge",
+        "description": "You need to display a list of books with their authors. How would you optimize this query to avoid the N+1 problem?",
+        "choices": [
+          {
+            "outcome": "Optimal solution - joins the author table in one query",
+            "score": 100,
+            "text": "Use select_related('author')"
+          },
+          {
+            "outcome": "Alternative solution - works for many-to-many relationships",
+            "score": 80,
+            "text": "Use prefetch_related('author')"
+          },
+          {
+            "outcome": "Inefficient - creates N+1 queries",
+            "score": 20,
+            "text": "Loop and fetch each author separately"
+          }
+        ]
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 1,
+            "explanation": "get() returns a single object or raises exceptions, while filter() always returns a queryset. Use get() when you expect exactly one result, filter() for multiple results.",
+            "options": [
+              "A) get() returns a queryset, filter() returns a single object",
+              "B) get() may raise MultipleObjectsReturned",
+              "C) filter() is faster than get()",
+              "D) get() returns None if no results"
+            ],
+            "question": "What's the main difference between Model.objects.get() and Model.objects.filter()?"
+          }
+        ]
+      },
+      {
+        "type": "fill_blank",
+        "sentences": [
+          {
+            "answer": "update",
+            "text": "To update multiple records efficiently, use QuerySet.______()"
+          }
+        ]
+      },
+      {
+        "type": "speed_quiz",
+        "questions": [
+          {
+            "answer": 0,
+            "options": [
+              "A) create()",
+              "B) get_or_create()",
+              "C) bulk_create()",
+              "D) all()"
+            ],
+            "question": "Which method creates and returns a new object?"
+          }
+        ]
+      },
+      {
+        "type": "reflection",
+        "prompt": "Explain when you would use select_related vs prefetch_related in a Django queryset. Provide a concrete example scenario for each."
+      },
+      {
+        "type": "case_study",
+        "questions": [
+          {
+            "expectedAnswer": "class Book(models.Model):\n    title = models.CharField(...)\n    authors = models.ManyToManyField(Author)\n    \nclass Author(models.Model):\n    name = ...\n    \nclass Patron(models.Model):\n    name = ...\n    borrowed_books = models.ManyToManyField(Book, through='BorrowRecord')\n    \nclass BorrowRecord(models.Model):\n    book = models.ForeignKey(Book)\n    patron = models.ForeignKey(Patron)\n    due_date = models.DateField()",
+            "question": "Show your model definitions with proper relationships"
+          }
+        ],
+        "title": "Library System Design"
+      }
+    ]
+  },
+  {
+    "id": "lesson_04_11_01",
+    "title": "JWT Authentication Implementation",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Storing sensitive data in the payload. JWTs are signed, not encrypted—anyone with the token can read the payload.",
+          "example": "A user logs in → server generates JWT → client stores it → subsequent requests include the token for authentication.",
+          "explanation": "JWT (JSON Web Token) is a compact, URL-safe token format for securely transmitting information between parties. It's like a digital passport: once issued, it contains claims (user data) and is signed to prevent tampering. The token has three parts: header (algorithm), payload (claims), and signature (header+payload signed with a secret).",
+          "realWorldUse": "Securing APIs in microservices architectures, implementing single sign-on (SSO), and mobile app authentication.",
+          "tip": "Always use HTTPS to prevent token interception. For high-security systems, prefer asymmetric signing (private/public keys) over symmetric (shared secret).",
+          "title": "JWT Fundamentals"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "This creates a signed token with username and expiration claim. The HS256 algorithm uses a shared secret for signing. The 'exp' claim ensures the token auto-expires after 1 hour.",
+          "hint": "Use jwt.encode() with payload, secret key, and HS256 algorithm. Don't forget to install PyJWT library.",
+          "language": "python",
+          "question": "Generate a JWT token with username 'admin' and 1-hour expiration",
+          "solution": "import jwt\nfrom datetime import datetime, timedelta\n\nSECRET_KEY = 'your-secret-key'\n\npayload = {\n    'username': 'admin',\n    'exp': datetime.utcnow() + timedelta(hours=1)\n}\n\ntoken = jwt.encode(payload, SECRET_KEY, algorithm='HS256')\nprint(f'Generated token: {token}')",
+          "starterCode": "import jwt\nfrom datetime import datetime, timedelta\n\nSECRET_KEY = 'your-secret-key'\n\npayload = {\n    'username': 'admin',\n    'exp': datetime.utcnow() + timedelta(hours=1)\n}\n\ntoken = jwt.encode(...)"
+        }
+      },
+      {
+        "type": "scenario",
+        "title": "API Endpoint Protection",
+        "description": "You're securing a /dashboard endpoint. The client sends an Authorization header with 'Bearer <token>'. How should you validate the token?",
+        "choices": [
+          {
+            "outcome": "Correct approach: Prevents tampering and expired tokens",
+            "score": 100,
+            "text": "Check token format, verify signature, validate expiration"
+          },
+          {
+            "outcome": "Incorrect: JWT is stateless by design. This creates unnecessary database load",
+            "score": 0,
+            "text": "Store tokens in database and check existence"
+          },
+          {
+            "outcome": "Incorrect: Fails to verify authenticity and expiration",
+            "score": 0,
+            "text": "Only check token length"
+          }
+        ]
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 1,
+            "explanation": "Symmetric keys use a shared secret. If this is exposed, attackers can forge tokens. Asymmetric keys (public/private) mitigate this risk by keeping the private key secure.",
+            "options": [
+              "A) Slower performance",
+              "B) Key exposure if compromised",
+              "C) Larger token size",
+              "D) Incompatible with refresh tokens"
+            ],
+            "question": "What's the primary security risk of using symmetric signing keys?"
+          }
+        ]
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "This function verifies the token's signature and checks claims like expiration. Proper error handling ensures users receive meaningful feedback about authentication failures.",
+          "hint": "Use jwt.decode() with the same secret key and algorithm as when encoding. Handle specific exceptions for clear error messages.",
+          "language": "python",
+          "question": "Implement token validation middleware",
+          "solution": "def validate_token(token):\n    try:\n        payload = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])\n        return payload\n    except jwt.ExpiredSignatureError:\n        return {'error': 'Token expired'}\n    except jwt.InvalidTokenError:\n        return {'error': 'Invalid token'}",
+          "starterCode": "def validate_token(token):\n    try:\n        payload = jwt.decode(...)\n        return payload\n    except jwt.ExpiredSignatureError:\n        return {'error': 'Token expired'}\n    except jwt.InvalidTokenError:\n        return {'error': 'Invalid token'}"
+        }
+      },
+      {
+        "type": "reflection",
+        "prompt": "How would you modify this implementation to add refresh tokens? Consider security trade-offs."
+      },
+      {
+        "type": "speed_quiz",
+        "questions": [
+          {
+            "answer": 2,
+            "options": [
+              "A) iat",
+              "B) nbf",
+              "C) exp",
+              "D) iss"
+            ],
+            "question": "Which JWT claim is mandatory for expiration?"
+          },
+          {
+            "answer": 3,
+            "options": [
+              "A) Cookies",
+              "B) LocalStorage",
+              "C) SessionStorage",
+              "D) Memory"
+            ],
+            "question": "What's the recommended storage for JWTs in browsers?"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "lesson_04_11_02",
+    "title": "CSRF Protection and Session Security",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Forgetting to include CSRF tokens in AJAX requests",
+          "example": "A user logged into their email service visits a malicious link that sends a request to change their email password. The browser includes the session cookie automatically.",
+          "explanation": "CSRF (Cross-Site Request Forgery) tricks users into performing unintended actions on a web application. Imagine a bank that lets you transfer money by clicking a button. If an attacker creates a malicious website with a hidden form that submits to the bank's transfer endpoint, a logged-in user visiting this site could unknowingly send money.",
+          "realWorldUse": "Online banking systems use CSRF protection to prevent unauthorized transactions",
+          "tip": "Always use anti-CSRF tokens for state-changing requests.",
+          "title": "Understanding CSRF Attacks"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "The CSRF token acts as a unique challenge that must be returned with each request. Django's middleware validates this token against the session-stored value.",
+          "hint": "Django automatically adds CSRF tokens to forms, but you can explicitly include them for custom validation",
+          "language": "python",
+          "question": "Implement CSRF token validation in a Django form",
+          "solution": "# forms.py\nfrom django import forms\nclass TransferForm(forms.Form):\n    amount = forms.DecimalField()\n    csrfmiddlewaretoken = forms.CharField(widget=forms.HiddenInput)",
+          "starterCode": "# forms.py\nfrom django import forms\nclass TransferForm(forms.Form):\n    amount = forms.DecimalField()\n    # TODO: Add CSRF token field"
+        }
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 0,
+            "explanation": "GET requests are often used for data retrieval and don't modify state, making them less vulnerable. However, when used for state-changing operations, they become CSRF risks.",
+            "options": [
+              "GET",
+              "POST",
+              "PUT",
+              "DELETE"
+            ],
+            "question": "Which HTTP method is most vulnerable to CSRF attacks?"
+          }
+        ]
+      },
+      {
+        "type": "visual",
+        "content": {
+          "diagram": [
+            "User visits site",
+            "Browser sends cookies",
+            "Server checks SameSite attribute",
+            "Blocks cross-site requests if SameSite=Strict"
+          ],
+          "explanation": "SameSite=Strict blocks all cross-site requests. Lax allows safe GET requests (like page navigation). None requires Secure attribute for cookies sent over HTTPS.",
+          "title": "SameSite Cookie Attribute Flow"
+        }
+      },
+      {
+        "type": "scenario",
+        "title": "Session Fixation Vulnerability",
+        "description": "You're reviewing code for a login system. The session ID remains the same before and after authentication. What's the risk?",
+        "choices": [
+          {
+            "outcome": "Incorrect. Session fixation is a separate vulnerability where an attacker forces a user to use a known session ID",
+            "score": 0,
+            "text": "CSRF vulnerability"
+          },
+          {
+            "outcome": "Correct! This allows attackers to hijack sessions by predicting or forcing session IDs",
+            "score": 100,
+            "text": "Session fixation vulnerability"
+          }
+        ]
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "Strict mode prevents cookies from being sent in cross-site requests, mitigating CSRF risks. Always use Secure attribute with SameSite=Strict.",
+          "hint": "Django provides built-in settings for cookie security attributes",
+          "language": "python",
+          "question": "Configure SameSite=Strict for Django cookies",
+          "solution": "# settings.py\nSESSION_COOKIE_SAMESITE = 'Strict'\nSESSION_COOKIE_SECURE = True",
+          "starterCode": "# settings.py\nSESSION_COOKIE_SAMESITE = None"
+        }
+      },
+      {
+        "type": "reflection",
+        "prompt": "How would you explain the relationship between CSRF tokens and SameSite cookies to a junior developer?"
+      },
+      {
+        "type": "speed_quiz",
+        "questions": [
+          {
+            "answer": 0,
+            "options": [
+              "Cross-Site Request Forgery",
+              "Cross-Site Resource Fetch",
+              "Cross-Server Request Forgery",
+              "Cross-Session Request Fraud"
+            ],
+            "question": "What does CSRF stand for?"
+          },
+          {
+            "answer": 2,
+            "options": [
+              "HttpOnly",
+              "Secure",
+              "SameSite",
+              "Domain"
+            ],
+            "question": "Which cookie attribute prevents cross-site cookie leakage?"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "lesson_05_12_01",
+    "title": "Introduction to Pandas Data Structures",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Confusing Series with Python lists - Series have labeled indexes and enforce single data type per column",
+          "example": "pd.DataFrame({'Name': ['Alice', 'Bob'], 'Age': [25, 30]}) creates a table with 2 rows and 2 columns",
+          "explanation": "Pandas builds on NumPy with two core data structures: Series (1D labeled array) and DataFrame (2D table). Think of a DataFrame as an Excel spreadsheet with rows/columns, and Series as a single column. They enable labeled data manipulation, handling heterogeneous types, and seamless integration with other Python libraries.",
+          "realWorldUse": "Financial data analysis where rows represent transactions and columns represent attributes like date, amount, category",
+          "tip": "Always check .dtypes to verify column data types after loading data",
+          "title": "DataFrame and Series Fundamentals"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "This demonstrates basic DataFrame creation and inspection. The head() method is essential for quickly verifying data structure after loading.",
+          "hint": "Use pd.DataFrame() with column dictionaries, then .head()",
+          "language": "python",
+          "question": "Create a DataFrame from a dictionary and display its first 3 rows",
+          "solution": "import pandas as pd\n\n# Create DataFrame from dictionary\ndf = pd.DataFrame({'Product': ['A', 'B', 'C'],\n                   'Price': [10, 20, 30],\n                   'Stock': [100, 50, 75]})\n\n# Display first 3 rows\ndf.head(3)",
+          "starterCode": "import pandas as pd\n\n# Create DataFrame from dictionary\n# YOUR CODE HERE\n\n# Display first 3 rows\n# YOUR CODE HERE"
+        }
+      },
+      {
+        "type": "scenario",
+        "title": "Data Inspection Challenge",
+        "description": "You've loaded a sales dataset but need to verify its structure. What steps would you take to understand the data?",
+        "choices": [
+          {
+            "outcome": "Reveals column names, data types, and sample values",
+            "score": 100,
+            "text": "Check first 5 rows with .head()"
+          },
+          {
+            "outcome": "Shows number of rows and columns",
+            "score": 90,
+            "text": "Print .shape attribute"
+          },
+          {
+            "outcome": "Displays memory usage, data types, and missing values",
+            "score": 100,
+            "text": "Use .info() method"
+          },
+          {
+            "outcome": "Generates summary statistics for numerical columns",
+            "score": 95,
+            "text": "Call .describe() method"
+          }
+        ]
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 1,
+            "explanation": "The .dtypes property returns a pandas Series showing the data type of each column, which is crucial for ensuring numerical operations will work correctly.",
+            "options": [
+              ".dtype",
+              ".dtypes",
+              ".type",
+              ".types"
+            ],
+            "question": "Which method returns the data types of each column?"
+          }
+        ]
+      },
+      {
+        "type": "fill_blank",
+        "sentences": [
+          {
+            "answer": "loc[:, 'Price']",
+            "text": "To select the 'Price' column from a DataFrame df, use df['Price'] or df.____"
+          }
+        ]
+      },
+      {
+        "type": "reflection",
+        "prompt": "Think about a real-world dataset you've worked with. How might the structure of that data map to a pandas DataFrame? What would be your primary index?"
+      },
+      {
+        "type": "speed_quiz",
+        "questions": [
+          {
+            "answer": 2,
+            "options": [
+              "'index'",
+              "'row'",
+              "None",
+              "'id'"
+            ],
+            "question": "What's the default index name for new DataFrames?"
+          },
+          {
+            "answer": 1,
+            "options": [
+              "DataFrame",
+              "Series",
+              "Panel",
+              "Array"
+            ],
+            "question": "Which data structure is 1-dimensional?"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "lesson_05_12_02",
+    "title": "Advanced Data Cleaning Techniques",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Using interpolation on categorical data without encoding",
+          "example": "pd.DataFrame({'A': [1, 2, None, 4]}).interpolate()  # Fills NaN with 3.0",
+          "explanation": "Interpolation fills missing values using statistical patterns in your data. Unlike simple mean imputation, it considers data trends. Think of it like filling gaps in a road by looking at the surrounding pavement patterns.",
+          "realWorldUse": "Financial time-series analysis where missing stock prices need reconstruction",
+          "tip": "Use 'time' interpolation for time-series data with irregular intervals",
+          "title": "NaN Handling with Interpolation"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "The interpolate() method calculates the missing value by linear interpolation between the known values 2 and 8.",
+          "hint": "Check the DataFrame's structure first",
+          "language": "python",
+          "question": "Interpolate missing values in this DataFrame: [[1, 2], [4, None], [7, 8]]",
+          "solution": "df.interpolate()",
+          "starterCode": "import pandas as pd\n\ndf = pd.DataFrame([[1, 2], [4, None], [7, 8]])\n# YOUR CODE HERE\n"
+        }
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 1,
+            "explanation": "Interpolation preserves data patterns by calculating values based on surrounding data points, making it ideal for time-series or sequential data with clear trends.",
+            "options": [
+              "A) When you need simple value replacement",
+              "B) When data has clear sequential patterns",
+              "C) When memory usage is critical",
+              "D) When working with categorical data"
+            ],
+            "question": "When should you prefer interpolation over fillna()?"
+          }
+        ]
+      },
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Ignoring case sensitivity in string comparisons",
+          "example": "df.duplicated()  # Returns boolean mask of duplicate rows",
+          "explanation": "Duplicates can skew analysis results by creating false patterns. Pandas' detect_duplicates() identifies exact row matches. Imagine finding identical customer records in a CRM system that should be merged.",
+          "realWorldUse": "Detecting duplicate transaction records in banking systems",
+          "tip": "Use subset=[] to focus on specific columns for duplicate detection",
+          "title": "Duplicate Detection Patterns"
+        }
+      },
+      {
+        "type": "scenario",
+        "title": "Duplicate Crisis",
+        "description": "You're analyzing customer purchase data where 15% of records are duplicates. What's your first action?",
+        "choices": [
+          {
+            "outcome": "Risk losing valid data if duplicates represent real transactions",
+            "score": 50,
+            "text": "Delete all duplicates immediately"
+          },
+          {
+            "outcome": "Identify root cause (e.g., system error vs. valid repeat purchases)",
+            "score": 100,
+            "text": "Investigate duplicate patterns"
+          }
+        ]
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "Converting to categorical reduces memory usage and enables ordered value handling for analysis.",
+          "hint": "Use astype() with 'category' parameter",
+          "language": "python",
+          "question": "Convert 'price' column to categorical type",
+          "solution": "df['price'] = df['price'].astype('category')",
+          "starterCode": "import pandas as pd\n\ndf = pd.DataFrame({'price': [100, 200, 100, 300]})\n# Convert to categorical\n"
+        }
+      },
+      {
+        "type": "speed_quiz",
+        "questions": [
+          {
+            "answer": 1,
+            "options": [
+              "dropna()",
+              "drop_duplicates()",
+              "fillna()",
+              "interpolate()"
+            ],
+            "question": "Which method removes duplicate rows?"
+          },
+          {
+            "answer": 0,
+            "options": [
+              "Not a Number",
+              "New Analysis Node",
+              "Neural Analysis Network",
+              "None Available Now"
+            ],
+            "question": "What does NaN stand for?"
+          }
+        ]
+      },
+      {
+        "type": "reflection",
+        "prompt": "Describe a scenario where type conversion improved your analysis efficiency. What tradeoffs did you consider?"
+      }
+    ]
+  },
+  {
+    "id": "lesson_05_12_03",
+    "title": "Data Transformation Workflows",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Forgetting to reset indexes after filtering, leading to misaligned data",
+          "example": "Imagine a sales dataset with missing values and inconsistent categories. We might fill gaps with imputation, convert categorical columns to numerical codes, and create new features like 'total_sales' by aggregating daily records.",
+          "explanation": "Data transformation is the process of converting raw data into a structured format suitable for analysis or modeling. Think of it like baking: you need to measure, mix, and prepare ingredients (raw data) before creating the final product (insights or predictions). This involves cleaning, reshaping, and feature engineering.",
+          "realWorldUse": "E-commerce companies transform transaction logs into customer segmentation models",
+          "tip": "Always start with .info() and .describe() to understand your data's structure before transforming",
+          "title": "Advanced Data Transformation Fundamentals"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "This solution demonstrates key advanced techniques: rolling window calculations for time series features, categorical dtype conversion for memory efficiency, and group-based feature engineering. The convert_dtypes() method automatically selects optimal data types.",
+          "hint": "Use .rolling() for time series features and .astype('category') for memory optimization",
+          "language": "python",
+          "question": "Implement a feature engineering pipeline that creates rolling averages and optimizes memory usage",
+          "solution": "import pandas as pd\n\ndef transform_data(df):\n    # 1. Create 7-day rolling average\n    df['rolling_avg'] = df['sales'].rolling(7).mean()\n    \n    # 2. Convert object columns to category dtype\n    for col in df.select_dtypes(include='object').columns:\n        df[col] = df[col].astype('category')\n    \n    # 3. Add 'total_sales' feature\n    df['total_sales'] = df.groupby('product_id')['sales'].transform('sum')\n    \n    # 4. Optimize memory\n    df = df.convert_dtypes()\n    return df\n\ndf = pd.read_csv('sales_data.csv')\ntransformed_df = transform_data(df)",
+          "starterCode": "import pandas as pd\n\ndef transform_data(df):\n    # 1. Create 7-day rolling average\n    # 2. Convert object columns to category dtype\n    # 3. Add 'total_sales' feature\n    return df\n\ndf = pd.read_csv('sales_data.csv')\ntransformed_df = transform_data(df)"
+        }
+      },
+      {
+        "type": "visual",
+        "content": {
+          "diagram": [
+            "Raw Data → [Imputation] → [Feature Engineering] → [Type Optimization] → [Model Ready Data]",
+            "→ [Window Functions] → [Categorical Encoding] → [Memory Optimization]"
+          ],
+          "explanation": "This visual represents the typical workflow: starting with raw data, we first clean and impute missing values, then engineer new features using techniques like rolling averages, convert data types for efficiency, and finally prepare the dataset for modeling.",
+          "title": "Data Transformation Pipeline Flow"
+        }
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 0,
+            "explanation": "pd.melt() is used to transform wide datasets into long format by unpivoting columns into rows, making it easier to work with time series or multi-dimensional data. pd.pivot() does the opposite - it spreads data from long to wide format.",
+            "options": [
+              "A) When converting wide format to long format",
+              "B) When creating cross-tabulations",
+              "C) When aggregating time series data",
+              "D) When reducing memory usage"
+            ],
+            "question": "When would you use pd.melt() instead of pd.pivot()?"
+          }
+        ]
+      },
+      {
+        "type": "scenario",
+        "title": "Categorical Encoding Decision",
+        "description": "You have a 'product_category' column with 100 unique categories. Your model is struggling with high memory usage and overfitting.",
+        "choices": [
+          {
+            "outcome": "Reduces dimensionality slightly but may still cause overfitting",
+            "score": 70,
+            "text": "Use One-Hot Encoding with drop_first=True"
+          },
+          {
+            "outcome": "Preserves memory but creates artificial ordering assumptions",
+            "score": 50,
+            "text": "Convert to ordinal integers"
+          },
+          {
+            "outcome": "Reduces dimensionality and handles rare categories but requires careful validation",
+            "score": 85,
+            "text": "Use Target Encoding with smoothing"
+          },
+          {
+            "outcome": "Simplifies data but may lose important patterns",
+            "score": 65,
+            "text": "Group infrequent categories into 'Other'"
+          }
+        ]
+      },
+      {
+        "type": "reflection",
+        "prompt": "Describe a real-world dataset you've worked with that required complex transformation. What were the biggest challenges and how did you overcome them?"
+      },
+      {
+        "type": "speed_quiz",
+        "questions": [
+          {
+            "answer": 1,
+            "options": [
+              "A) .astype()",
+              "B) .convert_dtypes()",
+              "C) .factorize()",
+              "D) .replace()"
+            ],
+            "question": "Which Pandas method can reduce memory usage by 40-80% for categorical data?"
+          },
+          {
+            "answer": 2,
+            "options": [
+              "A) Data aggregation",
+              "B) Memory optimization",
+              "C) Creating time-based features",
+              "D) Data validation"
+            ],
+            "question": "What's the primary benefit of using window functions?"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "lesson_05_13_01",
+    "title": "ML Pipeline Architecture Design",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Fitting transformers on the full dataset before cross-validation",
+          "example": "Imagine a pizza-making line: dough preparation → sauce application → topping assembly → baking. Each step depends on the previous one and can be optimized independently.",
+          "explanation": "An ML pipeline is like a manufacturing assembly line where each stage transforms data systematically. Components include transformers (data cleaners/normalizers) and estimators (models). Pipelines prevent data leakage by ensuring transformations are fit only on training data.",
+          "realWorldUse": "Production ML systems use pipelines to maintain consistency between training and inference",
+          "tip": "Use named_steps to access pipeline components for debugging",
+          "title": "Pipeline Architecture Fundamentals"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "This pipeline first scales features to zero mean and unit variance, then trains a logistic regression model. The fit() method applies both steps sequentially.",
+          "hint": "Use the fit() method after importing the necessary modules",
+          "language": "python",
+          "question": "Create a pipeline with StandardScaler and LogisticRegression",
+          "solution": "pipeline = Pipeline([\n    ('scaler', StandardScaler()),\n    ('classifier', LogisticRegression())\n])\npipeline.fit(X_train, y_train)",
+          "starterCode": "from sklearn.pipeline import Pipeline\nfrom sklearn.preprocessing import StandardScaler\nfrom sklearn.linear_model import LogisticRegression\n\npipeline = Pipeline([\n    ('scaler', StandardScaler()),\n    ('classifier', LogisticRegression())\n])"
+        }
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 1,
+            "explanation": "ColumnTransformer allows applying different transformations to different feature subsets, crucial for handling mixed data types (numerical vs categorical)",
+            "options": [
+              "A) Parallel processing",
+              "B) Handling heterogeneous data types",
+              "C) Automatic hyperparameter tuning",
+              "D) Model interpretation"
+            ],
+            "question": "What's the primary benefit of using ColumnTransformer?"
+          }
+        ]
+      },
+      {
+        "type": "scenario",
+        "title": "Pipeline Debugging Challenge",
+        "description": "Your pipeline is throwing a 'ValueError: Input contains NaN' during prediction. What's the most likely cause?",
+        "choices": [
+          {
+            "outcome": "Correct! Pipelines require consistent preprocessing for all data phases",
+            "score": 100,
+            "text": "Missing values in test data not handled during preprocessing"
+          },
+          {
+            "outcome": "Incorrect. Model parameters wouldn't affect data integrity checks",
+            "score": 0,
+            "text": "Incorrect model parameter configuration"
+          }
+        ]
+      },
+      {
+        "type": "speed_quiz",
+        "questions": [
+          {
+            "answer": 0,
+            "options": [
+              "A) fit()",
+              "B) transform()",
+              "C) predict()",
+              "D) score()"
+            ],
+            "question": "Which pipeline method fits all transformers and the final estimator?"
+          },
+          {
+            "answer": 3,
+            "options": [
+              "A) KFold",
+              "B) TimeSeriesSplit",
+              "C) PipelineCV",
+              "D) All standard CV methods work"
+            ],
+            "question": "What's the correct cross-validation method for pipelines?"
+          }
+        ]
+      },
+      {
+        "type": "reflection",
+        "prompt": "Describe how you would modify this pipeline for imbalanced classification tasks"
+      }
+    ]
+  },
+  {
+    "id": "lesson_05_13_02",
+    "title": "Model Training and Evaluation",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Using the same data for training and evaluation leads to overfitting - your model will perform well on training data but fail in real-world scenarios.",
+          "example": "For a classification task, you might compare Logistic Regression, Random Forest, and SVM using accuracy, precision, and recall metrics.",
+          "explanation": "Model selection involves choosing the right algorithm and hyperparameters for your data. Evaluation ensures your model generalizes well to unseen data. Think of it like selecting the right tool for a job - you need to test different options and measure their effectiveness.",
+          "realWorldUse": "In healthcare diagnostics, proper evaluation prevents false positive/negative rates that could impact patient outcomes.",
+          "tip": "Always split your data into train/test sets before training to avoid data leakage.",
+          "title": "Model Selection and Evaluation Fundamentals"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "This code creates a pipeline with a random forest classifier and performs grid search with 5-fold cross-validation to find the best hyperparameters. The parameter grid tests different combinations of n_estimators and max_depth values.",
+          "hint": "Remember to import all required classes and ensure the pipeline is properly configured with the parameter grid",
+          "language": "python",
+          "question": "Implement a pipeline with GridSearchCV for hyperparameter tuning",
+          "solution": "from sklearn.pipeline import Pipeline\nfrom sklearn.model_selection import GridSearchCV\nfrom sklearn.ensemble import RandomForestClassifier\n\npipeline = Pipeline([\n    ('classifier', RandomForestClassifier())\n])\n\nparameters = {\n    'classifier__n_estimators': [10, 50],\n    'classifier__max_depth': [None, 5]\n}\n\ngrid_search = GridSearchCV(\n    estimator=pipeline,\n    param_grid=parameters,\n    cv=5,\n    scoring='accuracy'\n)\n\ngrid_search.fit(X_train, y_train)",
+          "starterCode": "from sklearn.pipeline import Pipeline\nfrom sklearn.model_selection import GridSearchCV\nfrom sklearn.ensemble import RandomForestClassifier\n\npipeline = Pipeline([\n    ('classifier', RandomForestClassifier())\n])\n\nparameters = {\n    'classifier__n_estimators': [10, 50],\n    'classifier__max_depth': [None, 5]\n}\n\ngrid_search = GridSearchCV(\n    estimator=______,\n    param_grid=______,\n    cv=______,\n    scoring='accuracy'\n)\n\ngrid_search.fit(X_train, y_train)"
+        }
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 0,
+            "explanation": "K-fold cross-validation reduces variance by averaging results across multiple splits, providing a more reliable estimate of model performance than a single train/test split.",
+            "options": [
+              "Reduces variance in model evaluation",
+              "Increases computational efficiency",
+              "Guarantees better model performance",
+              "Eliminates overfitting completely"
+            ],
+            "question": "What is the primary advantage of k-fold cross-validation over a single train/test split?"
+          }
+        ]
+      },
+      {
+        "type": "scenario",
+        "title": "Evaluation Metric Selection",
+        "description": "You're developing a medical diagnosis model where false negatives are 10x more costly than false positives. Which evaluation metric should you prioritize?",
+        "choices": [
+          {
+            "outcome": "Accuracy is misleading in imbalanced scenarios. This choice would lead to poor real-world performance.",
+            "score": 30,
+            "text": "Accuracy"
+          },
+          {
+            "outcome": "F1-score balances precision and recall but doesn't account for the specific cost ratio mentioned.",
+            "score": 70,
+            "text": "F1-score"
+          },
+          {
+            "outcome": "Precision focuses on minimizing false positives but ignores the higher cost of false negatives.",
+            "score": 50,
+            "text": "Precision"
+          },
+          {
+            "outcome": "Recall prioritizes minimizing false negatives, aligning with the scenario's cost constraints.",
+            "score": 100,
+            "text": "Recall"
+          }
+        ]
+      },
+      {
+        "type": "reflection",
+        "prompt": "Explain how model complexity affects training vs validation performance. What trade-offs should you consider when selecting a model?"
+      },
+      {
+        "type": "speed_quiz",
+        "questions": [
+          {
+            "answer": 0,
+            "options": [
+              "Precision",
+              "Recall",
+              "Accuracy",
+              "F1-score"
+            ],
+            "question": "Which metric measures the ratio of true positives to all positive predictions?"
+          },
+          {
+            "answer": 1,
+            "options": [
+              "Model calibration",
+              "Ranking ability",
+              "Computational efficiency",
+              "Feature importance"
+            ],
+            "question": "What does AUC-ROC measure in classification tasks?"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "lesson_05_13_03",
+    "title": "End-to-End ML Project Implementation",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Forgetting to include preprocessing steps in the pipeline when making predictions on new data",
+          "example": "Imagine building a pipeline for predicting housing prices. You'd chain steps like handling missing values → scaling features → training a Random Forest model → outputting predictions.",
+          "explanation": "An end-to-end ML pipeline integrates data preprocessing, feature engineering, model training, and post-processing into a single reproducible workflow. This ensures consistency between development and production environments.",
+          "realWorldUse": "Production systems at companies like Netflix use similar pipelines for recommendation engines",
+          "tip": "Use scikit-learn's Pipeline and ColumnTransformer for modular, versionable components",
+          "title": "Production-Grade ML Pipelines"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "This pipeline first scales features to have zero mean and unit variance, then trains a random forest classifier. The Pipeline object ensures these steps are applied consistently during training and prediction.",
+          "hint": "Remember to include both preprocessing and model steps in the pipeline",
+          "language": "python",
+          "question": "Create a pipeline with preprocessing and model training",
+          "solution": "# Complete pipeline with proper comments\npipeline = Pipeline([\n    ('scaler', StandardScaler()),  # Normalizes feature distribution\n    ('classifier', RandomForestClassifier(n_estimators=100))  # Ensemble model\n])\n\n# Train the model\npipeline.fit(X_train, y_train)",
+          "starterCode": "from sklearn.pipeline import Pipeline\nfrom sklearn.ensemble import RandomForestClassifier\nfrom sklearn.preprocessing import StandardScaler\n\npipeline = Pipeline([\n    ('scaler', StandardScaler()),\n    ('classifier', RandomForestClassifier())\n])"
+        }
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 1,
+            "explanation": "ColumnTransformer allows applying different preprocessing steps to different groups of features. For example, you might scale numerical columns while one-hot encoding categorical columns.",
+            "options": [
+              "A) It automatically handles missing values",
+              "B) It applies different transformations to different feature subsets",
+              "C) It optimizes model hyperparameters",
+              "D) It visualizes feature importance"
+            ],
+            "question": "What is the primary benefit of using ColumnTransformer?"
+          }
+        ]
+      },
+      {
+        "type": "scenario",
+        "title": "Production Pipeline Debugging",
+        "description": "Your deployed model's performance has dropped significantly. What should you check first?",
+        "choices": [
+          {
+            "outcome": "This is the correct approach. Changes in preprocessing can significantly impact model performance",
+            "score": 100,
+            "text": "Check if the data pipeline is still applying the same preprocessing steps"
+          },
+          {
+            "outcome": "This might not address the root cause if the issue is in preprocessing or data drift",
+            "score": 30,
+            "text": "Immediately retrain the model with more data"
+          }
+        ]
+      },
+      {
+        "type": "reflection",
+        "prompt": "Explain how version control practices differ for ML pipelines compared to traditional software"
+      },
+      {
+        "type": "speed_quiz",
+        "questions": [
+          {
+            "answer": 0,
+            "options": [
+              "Pipeline",
+              "Model",
+              "Transformer",
+              "Evaluator"
+            ],
+            "question": "Which scikit-learn class helps create sequential ML workflows?"
+          },
+          {
+            "answer": 1,
+            "options": [
+              "Preprocess → Split data → Train model",
+              "Split data → Preprocess → Train model",
+              "Train model → Preprocess → Evaluate",
+              "Preprocess → Train model → Split data"
+            ],
+            "question": "What's the correct order of steps in a typical ML pipeline?"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "lesson_06_14_01",
+    "title": "Project Planning and Architecture Design",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Forgetting to document non-functional requirements like scalability or security.",
+          "example": "For a social media app, scope might include user profiles, posts, and messaging, but exclude video conferencing.",
+          "explanation": "Project scope defines what your system will and won't do. Think of it like planning a house: you decide how many rooms, what utilities, and special features before construction. Requirements are the 'must-have' features that make your project valuable.",
+          "realWorldUse": "Tech companies use scope documents to align stakeholders and avoid feature creep.",
+          "tip": "Start with user stories: 'As a user, I want to upload photos so I can share memories.'",
+          "title": "Defining Project Scope and Requirements"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "This structure helps organize requirements in a machine-readable format for later processing.",
+          "hint": "Include both functional features and system constraints",
+          "language": "json",
+          "question": "Create a JSON structure for project requirements",
+          "solution": "{\n  \"features\": [\n    \"User authentication\",\n    \"Real-time notifications\",\n    \"Data analytics dashboard\"\n  ],\n  \"non_functional\": {\n    \"response_time\": \"<200ms\",\n    \"availability\": \"99.9%\"\n  }\n}",
+          "starterCode": "{\n  \"features\": [],\n  \"non_functional\": {}\n}"
+        }
+      },
+      {
+        "type": "scenario",
+        "title": "Architecture Pattern Decision",
+        "description": "You're building an e-commerce platform. Should you use monolithic architecture or microservices?",
+        "choices": [
+          {
+            "outcome": "Easier to develop initially but harder to scale later",
+            "score": 50,
+            "text": "Monolithic for simplicity"
+          },
+          {
+            "outcome": "More complex but allows independent scaling of components",
+            "score": 85,
+            "text": "Microservices for scalability"
+          }
+        ]
+      },
+      {
+        "type": "visual",
+        "content": {
+          "diagram": [
+            "Source Code → Dockerfile → Build → Container → Docker Hub",
+            "Container → Host OS → Virtual Network → Load Balancer"
+          ],
+          "explanation": "This shows how Docker containers encapsulate applications with their dependencies, enabling consistent deployment across environments.",
+          "title": "Docker Architecture Diagram"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "This Dockerfile sets up a production-ready environment for a Python web application using Gunicorn.",
+          "hint": "Use multi-stage builds for production",
+          "language": "dockerfile",
+          "question": "Write a Dockerfile for a Python app",
+          "solution": "FROM python:3.9\nWORKDIR /app\nCOPY requirements.txt .\nRUN pip install --no-cache-dir -r requirements.txt\nCOPY . .\nCMD [\"gunicorn\", \"-b\", \"0.0.0.0:8000\", \"app:app\"]",
+          "starterCode": "FROM python:3.9\nWORKDIR /app\nCOPY requirements.txt .\nRUN pip install -r requirements.txt\nCOPY . .\nCMD [\"python\", \"app.py\"]"
+        }
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 1,
+            "explanation": "Domain-driven design focuses on creating software that directly addresses business needs through strategic modeling.",
+            "options": [
+              "A) Faster initial development",
+              "B) Better alignment with business goals",
+              "C) Reduced testing requirements",
+              "D) Smaller codebases"
+            ],
+            "question": "What's the primary benefit of domain-driven design?"
+          }
+        ]
+      },
+      {
+        "type": "reflection",
+        "prompt": "How would you prioritize requirements for a project with tight deadlines?"
+      },
+      {
+        "type": "speed_quiz",
+        "questions": [
+          {
+            "answer": 0,
+            "options": [
+              "Domain-Driven Design",
+              "Data-Driven Development",
+              "Dynamic Dependency Diagram",
+              "Distributed Data Delivery"
+            ],
+            "question": "What does DDD stand for?"
+          },
+          {
+            "answer": 1,
+            "options": [
+              "Docker",
+              "Kubernetes",
+              "VirtualBox",
+              "Vagrant"
+            ],
+            "question": "Which tool is best for container orchestration?"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "lesson_06_14_02",
+    "title": "Backend Development with Flask/Django",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Forgetting to deprecate old versions properly, leading to maintenance nightmares",
+          "example": "@app.route('/v1/users')\ndef get_users_v1():\n    return {'version': '1.0'}\n\n@app.route('/v2/users')\ndef get_users_v2():\n    return {'version': '2.0', 'new_feature': True}",
+          "explanation": "API versioning ensures backward compatibility when introducing changes. It's like road maps with different versions - you need to know which version your driver (client) supports. Common strategies include URL prefixes (/v1/resource), header parameters, or custom request headers.",
+          "realWorldUse": "Netflix uses API versioning to manage thousands of client applications with different capabilities",
+          "tip": "Use URL versioning for clear separation but consider content negotiation for cleaner URLs in production systems.",
+          "title": "API Versioning Strategies"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "This solution implements two key patterns: versioning through request headers and authentication via a decorator. The decorators form a pipeline that processes requests before reaching the core logic.",
+          "hint": "Create decorators that check request headers for version and authentication tokens",
+          "language": "python",
+          "question": "Implement an API endpoint with versioning and authentication decorator",
+          "solution": "from flask import Flask, request\napp = Flask(__name__)\n\ndef api_version(version):\n    def decorator(f):\n        def wrapped(*args, **kwargs):\n            if request.headers.get('Accept-Version') != version:\n                return {'error': 'Unsupported version'}, 406\n            return f(*args, **kwargs)\n        return wrapped\n\ndef require_auth(f):\n    def wrapped(*args, **kwargs):\n        token = request.headers.get('Authorization')\n        if not token:\n            return {'error': 'Missing token'}, 401\n        return f(*args, **kwargs)\n    return f\n\n@app.route('/v1/users')\n@api_version('1.0')\n@require_auth\ndef get_users_v1():\n    return {'version': '1.0', 'users': []}\n\n@app.route('/v2/users')\n@api_version('2.0')\n@require_auth\ndef get_users_v2():\n    return {'version': '2.0', 'users': [], 'new_feature': True}",
+          "starterCode": "from flask import Flask\napp = Flask(__name__)\n\n# TODO: Add versioning decorator\n# TODO: Add authentication decorator\n@app.route('/users')\ndef get_users():\n    return {'users': []}"
+        }
+      },
+      {
+        "type": "scenario",
+        "title": "Authentication Strategy Selection",
+        "description": "You're building an API for a healthcare application. Which authentication strategy should you implement?",
+        "choices": [
+          {
+            "outcome": "Provides secure, stateless authentication with token refresh capabilities",
+            "score": 100,
+            "text": "JWT Tokens with refresh tokens"
+          },
+          {
+            "outcome": "Suitable for machine-to-machine communication but less ideal for user authentication",
+            "score": 60,
+            "text": "OAuth 2.0 with client credentials"
+          },
+          {
+            "outcome": "Insecure for production use due to lack of encryption and token expiration",
+            "score": 30,
+            "text": "Basic Authentication"
+          }
+        ]
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 2,
+            "explanation": "Connection pooling maintains a cache of database connections that can be reused, preventing the overhead of creating new connections for each request. This is critical for async operations where many simultaneous connections are common.",
+            "options": [
+              "A) Reduces memory usage",
+              "B) Increases query execution speed",
+              "C) Prevents database connection exhaustion",
+              "D) Simplifies transaction management"
+            ],
+            "question": "What is the primary benefit of connection pooling in async database operations?"
+          }
+        ]
+      },
+      {
+        "type": "fill_blank",
+        "sentences": [
+          {
+            "answer": "async def",
+            "text": "The ___ keyword in Python is used to define asynchronous functions that can be awaited."
+          },
+          {
+            "answer": "asyncio.gather",
+            "text": "To execute multiple async queries concurrently, use the ___ function from the asyncio module."
+          }
+        ]
+      },
+      {
+        "type": "reflection",
+        "prompt": "How would you apply API versioning strategies to a legacy system migration project?"
+      },
+      {
+        "type": "speed_quiz",
+        "questions": [
+          {
+            "answer": 0,
+            "options": [
+              "POST",
+              "GET",
+              "PUT",
+              "DELETE"
+            ],
+            "question": "Which HTTP method is used for creating resources in RESTful APIs?"
+          },
+          {
+            "answer": 2,
+            "options": [
+              "@app.route",
+              "@async.route",
+              "@app.async_route",
+              "@app.task"
+            ],
+            "question": "What decorator is used to handle async routes in Flask?"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "lesson_06_14_03",
+    "title": "Machine Learning Integration and Deployment",
+    "stages": [
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Using Python's native `pickle` without security checks",
+          "example": "Using `joblib` to save a scikit-learn model: `joblib.dump(model, 'model.pkl')`",
+          "explanation": "Model serialization converts trained models into storable/transportable formats. Think of it like packaging a cake for delivery - you need the right container to preserve quality.",
+          "realWorldUse": "Enables model deployment in APIs, mobile apps, and cloud services",
+          "tip": "Always use secure, versioned formats like ONNX for production deployment",
+          "title": "Model Serialization Formats"
+        }
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "This creates a portable model file that can be loaded later for inference",
+          "hint": "Use the same library we discussed in the concept",
+          "language": "python",
+          "question": "Implement model serialization for a trained classifier",
+          "solution": "joblib.dump(model, 'model.pkl')",
+          "starterCode": "from sklearn.ensemble import RandomForestClassifier\nimport joblib\n\n# Train model\nmodel = RandomForestClassifier()\nmodel.fit(X_train, y_train)\n\n# Save model\njoblib.dump(____, '____')"
+        }
+      },
+      {
+        "type": "concept",
+        "content": {
+          "commonMistake": "Ignoring concept drift in production data",
+          "example": "Monitoring API response times with Prometheus metrics",
+          "explanation": "Production monitoring tracks model performance over time. Like a car's dashboard, it shows vital signs like latency, error rates, and data drift.",
+          "realWorldUse": "Prevents model degradation in financial fraud detection systems",
+          "tip": "Implement drift detection using statistical tests like Kolmogorov-Smirnov",
+          "title": "Production Monitoring Metrics"
+        }
+      },
+      {
+        "type": "scenario",
+        "title": "Production Monitoring Strategy",
+        "description": "You've deployed a customer churn prediction model. Choose the best monitoring approach:",
+        "choices": [
+          {
+            "outcome": "May miss data drift and distribution changes",
+            "score": 30,
+            "text": "Track only prediction accuracy"
+          },
+          {
+            "outcome": "Provides comprehensive health insights",
+            "score": 90,
+            "text": "Monitor feature distributions and error rates"
+          },
+          {
+            "outcome": "Leads to undetected model degradation",
+            "score": 10,
+            "text": "Ignore monitoring until customer complaints arise"
+          }
+        ]
+      },
+      {
+        "type": "code",
+        "challenge": {
+          "explanation": "This GitHub Actions workflow automates testing and deployment when code changes",
+          "hint": "Include testing and deployment steps",
+          "language": "yaml",
+          "question": "Create a basic CI/CD pipeline for model deployment",
+          "solution": "      - name: Install dependencies\n        run: |\n          pip install -r requirements.txt\n      - name: Run tests\n        run: pytest\n      - name: Deploy model\n        run: python deploy.py",
+          "starterCode": "name: ML Pipeline\non: [push]\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - name: Checkout code\n        uses: actions/checkout@v2\n      - name: Set up Python\n        uses: actions/setup-python@v2\n        with:\n          python-version: '3.9'\n      - name: Install dependencies\n        run: |"
+        }
+      },
+      {
+        "type": "mcq",
+        "questions": [
+          {
+            "answer": 0,
+            "explanation": "Round Robin distributes requests evenly across servers, ideal for stateless services where each request is independent",
+            "options": [
+              "Round Robin",
+              "Least Connections",
+              "IP Hash",
+              "Session Affinity"
+            ],
+            "question": "Which load balancing strategy is best for stateless ML APIs?"
+          }
+        ]
+      },
+      {
+        "type": "reflection",
+        "prompt": "How would you modify this deployment strategy for a real-time recommendation system with low latency requirements?"
+      },
+      {
+        "type": "case_study",
+        "questions": [
+          {
+            "expectedAnswer": "Feature drift metrics and prediction error rates",
+            "question": "What monitoring metrics would have detected this issue early?"
+          },
+          {
+            "expectedAnswer": "Implement canary deployments with A/B testing",
+            "question": "How should they update the model without downtime?"
+          }
+        ],
+        "title": "Model Deployment at Scale"
+      }
+    ]
+  }
+]

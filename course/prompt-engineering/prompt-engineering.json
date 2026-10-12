@@ -1,0 +1,304 @@
+{
+  "courseId": "prompt-engineering",
+  "title": "Prompt Engineering",
+  "theme": {
+    "primary": "#8b5cf6",
+    "accent": "#06b6d4"
+  },
+  "lessons": [
+    {
+      "id": "tcf-framework",
+      "title": "The TCF Framework (Task, Context, Format)",
+      "stages": [
+        {
+          "type": "concept",
+          "content": {
+            "title": "The TCF Framework",
+            "explanation": "AI models are not search engines. They need a clear Task (what to do), Context (background information), and Format (how the answer should look).\n\nThink of it like giving instructions to a human intern — they need to know exactly what to do, what background info is relevant, and how you want the result formatted.",
+            "example": "Write a welcome email [Task] to new subscribers of a coffee newsletter [Context]. Use a friendly, casual tone and keep it under 3 paragraphs [Format].",
+            "beforeAfter": {
+              "before": "Write an email for a coffee newsletter.",
+              "after": "Act as a community manager. Write a 3-paragraph welcome email to new subscribers of our specialty coffee newsletter. Use a warm, energetic tone. Include a call-to-action to use the discount code 'BEANS10'."
+            },
+            "tip": "Always ask yourself: 'If I gave this instruction to a human intern, would they know exactly what to do?'",
+            "warning": "Being too brief or assuming the AI 'knows what you mean' is the #1 beginner mistake."
+          }
+        },
+        {
+          "type": "mcq",
+          "questions": [
+            {
+              "question": "Which of the following is a primary objective when using the TCF Framework?",
+              "options": [
+                "To provide vague, open-ended sentences to the AI.",
+                "To enforce strict guidelines and structure.",
+                "To reduce token constraints by deleting punctuation.",
+                "To bypass security guardrails."
+              ],
+              "answer": 1,
+              "explanation": "Strict guidelines and structure ensure the AI understands its parameters precisely."
+            },
+            {
+              "question": "What is the most common beginner mistake?",
+              "options": [
+                "Assuming the AI has human-like contextual intuition.",
+                "Writing excessively long prompt chains.",
+                "Using too many Markdown formatting blocks.",
+                "Always asking the AI to self-criticize."
+              ],
+              "answer": 0,
+              "explanation": "AI requires explicit instruction; assuming it 'knows what you mean' causes hallucination and errors."
+            }
+          ]
+        },
+        {
+          "type": "fill_blank",
+          "sentences": [
+            {
+              "text": "The three parts of the TCF Framework are Task, Context, and ___.",
+              "answer": "Format"
+            },
+            {
+              "text": "AI models are not search ___.",
+              "answer": "engines",
+              "hint": "Think about what most beginners confuse AI with."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "act-as-technique",
+      "title": "The 'Act As...' Technique",
+      "stages": [
+        {
+          "type": "concept",
+          "content": {
+            "title": "Persona Adoption",
+            "explanation": "By telling the AI to adopt a specific persona, you activate a specific cluster of knowledge and vocabulary within its neural network, leading to highly specialized outputs.\n\nThe more specific the persona, the better the results.",
+            "example": "Act as a Senior SEO Specialist. Audit the following blog post title for keyword optimization and click-through-rate potential...",
+            "beforeAfter": {
+              "before": "Make this title better: 'How to fix a sink.'",
+              "after": "Act as a master copywriter. Rewrite the title 'How to fix a sink' to be highly engaging, click-worthy, and optimized for DIY home repair audiences."
+            },
+            "tip": "Combine the persona with their typical level of expertise and tone (e.g., 'Act as a cynical but brilliant software engineer').",
+            "warning": "Giving a persona but not giving a specific task is a common mistake."
+          }
+        },
+        {
+          "type": "mcq",
+          "questions": [
+            {
+              "question": "Why does the 'Act As...' technique improve AI output quality?",
+              "options": [
+                "It makes the AI use fewer tokens.",
+                "It activates specialized knowledge clusters in the model.",
+                "It bypasses content filters.",
+                "It forces the AI to search the internet."
+              ],
+              "answer": 1,
+              "explanation": "Personas activate specific vocabulary and knowledge domains within the neural network."
+            }
+          ]
+        },
+        {
+          "type": "flashcard",
+          "cards": [
+            {
+              "front": "What does 'Act As...' activate in the AI?",
+              "back": "It activates a specific cluster of knowledge and vocabulary within the neural network."
+            },
+            {
+              "front": "What's the biggest mistake with persona prompting?",
+              "back": "Being too generic (e.g., 'Act as a writer') instead of specific (e.g., 'Act as a B2B SaaS copywriter')."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "xml-tags-delimiters",
+      "title": "XML Tags and Markdown Fences",
+      "stages": [
+        {
+          "type": "concept",
+          "content": {
+            "title": "Using Delimiters for Clarity",
+            "explanation": "Using symbols like ###, triple-quotes, or <tag></tag> to separate instructions from the data the AI needs to process. This prevents the AI from getting confused between what is a rule and what is the source text.",
+            "beforeAfter": {
+              "before": "Summarize this article and make it a table: [Article text mixed with prompt].",
+              "after": "Task: Create a comparison table from the provided text.\n\nText to analyze:\n<article>\n[Article text]\n</article>\n\nFormat requirements:\n- Column 1: Feature\n- Column 2: Pros\n- Column 3: Cons"
+            },
+            "tip": "When using Claude, heavily rely on <tags>. When using ChatGPT, Markdown (###) works perfectly.",
+            "warning": "Pasting massive blocks of text without any visual separation from the prompt instructions causes the AI to mix up rules and data."
+          }
+        },
+        {
+          "type": "mcq",
+          "questions": [
+            {
+              "question": "Why should you use delimiters in prompts?",
+              "options": [
+                "To make the prompt look prettier.",
+                "To separate instructions from the data the AI processes.",
+                "To increase the token count.",
+                "To bypass rate limits."
+              ],
+              "answer": 1,
+              "explanation": "Delimiters prevent the AI from confusing rules with source text."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "chain-of-thought",
+      "title": "Chain-of-Thought (CoT) Prompting",
+      "stages": [
+        {
+          "type": "concept",
+          "content": {
+            "title": "Step-by-Step Reasoning",
+            "explanation": "Forcing the AI to explain its step-by-step reasoning BEFORE giving the final answer. This uses the generation process itself as a 'scratchpad', significantly reducing logic errors and math mistakes.",
+            "example": "Determine if the following customer review is positive, negative, or neutral. Before answering, break down the emotional keywords used in the review step-by-step.",
+            "beforeAfter": {
+              "before": "Solve this math word problem: [Problem].",
+              "after": "Solve this math word problem. Let's think step-by-step. First, identify the variables. Second, formulate the equation. Finally, solve it."
+            },
+            "tip": "Add 'Think step-by-step' or 'Show your work before providing the final output' to any analytical prompt.",
+            "warning": "Don't use CoT for simple creative tasks where step-by-step logic ruins the creative flow."
+          }
+        },
+        {
+          "type": "mcq",
+          "questions": [
+            {
+              "question": "What does Chain-of-Thought prompting reduce?",
+              "options": ["Token usage", "Logic errors and math mistakes", "Response time", "Model size"],
+              "answer": 1,
+              "explanation": "CoT uses the generation process as a scratchpad, significantly reducing logic errors."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "prompt-chaining",
+      "title": "The Generator-Evaluator Loop",
+      "stages": [
+        {
+          "type": "concept",
+          "content": {
+            "title": "Prompt Chaining",
+            "explanation": "Instead of asking for a perfect final product in one prompt, you use one prompt to generate ideas, a second prompt to critique those ideas, and a third prompt to refine the best one.\n\nRule of thumb: 1 Prompt = 1 Cognitive Task.",
+            "beforeAfter": {
+              "before": "Write a highly successful, SEO-optimized e-book from scratch in one go.",
+              "after": "Step 1: Outline the chapters. (Wait for output). Step 2: Expand Chapter 1 using the outline. (Wait for output). Step 3: Review Chapter 1 for tone."
+            },
+            "tip": "1 Prompt = 1 Cognitive Task. Break complex workflows into atomic operations.",
+            "warning": "Asking an LLM to perform 10 complex analytical steps in a single prompt causes Context Window Degradation."
+          }
+        },
+        {
+          "type": "mcq",
+          "questions": [
+            {
+              "question": "What is the rule of thumb for prompt chaining?",
+              "options": ["Use as many prompts as possible.", "1 Prompt = 1 Cognitive Task.", "Always use a single, long prompt.", "Chain at least 10 prompts together."],
+              "answer": 1,
+              "explanation": "Each prompt should handle exactly one cognitive task to prevent context degradation."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "hallucination-mitigation",
+      "title": "Grounding and 'I Don't Know' Permissions",
+      "stages": [
+        {
+          "type": "concept",
+          "content": {
+            "title": "Mitigating Hallucinations",
+            "explanation": "LLMs are designed to please you. If they don't know an answer, they will invent one (hallucinate). You must explicitly give them permission to say 'I don't know' and ground them strictly in provided text.",
+            "example": "Answer the question based ONLY on the provided text. If the answer is not contained in the text, reply strictly with 'INFORMATION NOT FOUND'.",
+            "warning": "Asking the AI leading questions ('Why did company X fail in 2023?' when company X didn't fail) triggers hallucinations."
+          }
+        },
+        {
+          "type": "mcq",
+          "questions": [
+            {
+              "question": "Why do LLMs hallucinate?",
+              "options": ["They are designed to refuse answers.", "They are designed to please and will invent answers rather than admit ignorance.", "They run out of memory.", "They have bugs in their code."],
+              "answer": 1,
+              "explanation": "LLMs are optimized to generate plausible text, which means they'll fabricate rather than say 'I don't know'."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "prompt-injection",
+      "title": "Prompt Injection & Jailbreaking",
+      "stages": [
+        {
+          "type": "concept",
+          "content": {
+            "title": "Adversarial Prompting",
+            "explanation": "Prompt injection occurs when a user inputs text that tricks the AI into ignoring its original instructions. Jailbreaking is specifically bypassing safety filters.\n\nUse the 'Sandwich Method': Put system instructions at the top, the untrusted user data in the middle, and a reminder of the rules at the very bottom.",
+            "tip": "Use the 'Sandwich Method': System rules at top, untrusted data in middle, rule reminder at bottom.",
+            "warning": "Passing raw user inputs directly into the prompt without sanitization or clear delimiters is a critical security vulnerability."
+          }
+        },
+        {
+          "type": "mcq",
+          "questions": [
+            {
+              "question": "What is prompt injection?",
+              "options": ["A way to speed up AI responses.", "When user input tricks the AI into ignoring its original instructions.", "A method to reduce token costs.", "A debugging technique."],
+              "answer": 1,
+              "explanation": "Prompt injection exploits the AI's instruction-following nature by embedding malicious instructions in user input."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "system-prompts",
+      "title": "Designing the Ultimate System Prompt",
+      "stages": [
+        {
+          "type": "concept",
+          "content": {
+            "title": "System-Level Architecture",
+            "explanation": "A System Prompt dictates the core behavior, boundaries, and default formatting for an AI across an entire conversation. It is the 'brain' of a Custom GPT.\n\nOrganize system prompts using clear headings like [ROLE], [OBJECTIVE], [CONSTRAINTS], and [TONE].",
+            "beforeAfter": {
+              "before": "Be a helpful coding assistant.",
+              "after": "[Role]: CodeMentor. [Goal]: Teach via Socratic method. [Constraints]: Never provide >10 lines of code. Always ask a follow-up question. [Format]: Markdown with syntax highlighting."
+            },
+            "tip": "Organize system prompts using clear headings like [ROLE], [OBJECTIVE], [CONSTRAINTS], and [TONE]."
+          }
+        },
+        {
+          "type": "mcq",
+          "questions": [
+            {
+              "question": "What is a System Prompt?",
+              "options": ["A one-time user message.", "The core behavior instructions that persist across an entire conversation.", "A way to delete chat history.", "An API authentication token."],
+              "answer": 1,
+              "explanation": "System prompts define the AI's persistent behavior, boundaries, and formatting defaults."
+            }
+          ]
+        },
+        {
+          "type": "flashcard",
+          "cards": [
+            {"front": "What are the 4 key sections of a system prompt?", "back": "[ROLE], [OBJECTIVE], [CONSTRAINTS], [TONE/FORMAT]"},
+            {"front": "What happens if a system prompt is too long?", "back": "The AI forgets the instructions at the bottom of the prompt."}
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import NotificationCenter from "@/components/admin/NotificationCenter";
 import GlobalSearchModal from "@/components/admin/GlobalSearchModal";
+import { CreateCourseTypeModal } from "@/components/admin/CreateCourseTypeModal";
 import { useAuth } from "@/context/AuthContext";
 
 interface PageMeta {
@@ -124,6 +125,7 @@ export default function AdminHeader({ onToggleSidebar }: AdminHeaderProps) {
   const { user, logout } = useAuth();
   const [searchOpen, setSearchOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const [createModalOpen, setCreateModalOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
 
   const adminInitials = user?.name
@@ -176,13 +178,13 @@ export default function AdminHeader({ onToggleSidebar }: AdminHeaderProps) {
 
   return (
     <>
-      <header className="sticky top-0 z-30 h-16 bg-card/85 backdrop-blur-xl border-b border-white/10 px-4 sm:px-6 flex items-center justify-between gap-4 flex-nowrap transition-all">
+      <header className="sticky top-0 z-30 h-16 bg-card/85 backdrop-blur-xl border-b border-border px-4 sm:px-6 flex items-center justify-between gap-4 flex-nowrap transition-all">
         {/* Left: Mobile Toggle + Page Title */}
         <div className="flex items-center gap-3 min-w-0">
           {onToggleSidebar && (
             <button
               onClick={onToggleSidebar}
-              className="lg:hidden p-2 rounded-lg text-subtext hover:text-text hover:bg-white/5 transition-colors"
+              className="lg:hidden p-2 rounded-lg text-subtext hover:text-text hover:bg-muted transition-colors"
               title="Toggle Menu"
             >
               <Menu className="w-5 h-5" />
@@ -190,8 +192,8 @@ export default function AdminHeader({ onToggleSidebar }: AdminHeaderProps) {
           )}
 
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className="hidden sm:flex w-8 h-8 rounded-lg bg-purple-500/10 border border-purple-500/20 items-center justify-center shrink-0">
-              <PageIcon className="w-4 h-4 text-purple-400" />
+            <div className="hidden sm:flex w-8 h-8 rounded-lg bg-purple-50 border border-purple-200 text-purple-700 dark:bg-purple-500/10 dark:border-purple-500/20 dark:text-purple-400 items-center justify-center shrink-0">
+              <PageIcon className="w-4 h-4" />
             </div>
             <div className="min-w-0">
               <h1 className="text-sm sm:text-base font-bold text-text tracking-tight truncate leading-tight">
@@ -209,13 +211,13 @@ export default function AdminHeader({ onToggleSidebar }: AdminHeaderProps) {
           {/* Global Search (⌘K) */}
           <button
             onClick={() => setSearchOpen(true)}
-            className="hidden md:flex items-center gap-2.5 h-9 pl-3 pr-2 rounded-lg border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] hover:border-white/20 text-subtext hover:text-text transition-all w-52 lg:w-64"
+            className="hidden md:flex items-center gap-2.5 h-9 pl-3 pr-2 rounded-lg border border-border bg-background hover:bg-muted hover:border-purple-300 text-subtext hover:text-text transition-all w-52 lg:w-64"
           >
-            <Search className="w-4 h-4 text-purple-400 shrink-0" />
+            <Search className="w-4 h-4 text-purple-700 dark:text-purple-400 shrink-0" />
             <span className="text-xs font-medium truncate flex-1 text-left">
               Search anything...
             </span>
-            <span className="flex items-center gap-0.5 text-[10px] font-bold text-subtext/70 bg-white/5 px-1.5 py-0.5 rounded border border-white/10 shrink-0">
+            <span className="flex items-center gap-0.5 text-[10px] font-bold text-subtext bg-muted px-1.5 py-0.5 rounded border border-border shrink-0">
               <Command className="w-2.5 h-2.5" />
               <span>K</span>
             </span>
@@ -223,42 +225,44 @@ export default function AdminHeader({ onToggleSidebar }: AdminHeaderProps) {
           {/* Compact search icon for small screens */}
           <button
             onClick={() => setSearchOpen(true)}
-            className="md:hidden p-2 rounded-lg text-subtext hover:text-text hover:bg-white/5 transition-colors"
+            className="md:hidden p-2 rounded-lg text-subtext hover:text-text hover:bg-muted transition-colors"
             title="Search (⌘K)"
           >
             <Search className="w-4.5 h-4.5" />
           </button>
 
           {/* Create Course Button */}
-          {pathname !== "/admin/create" && (
-            <Link
-              href="/admin/create"
-              className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 border border-purple-500/40 hover:border-purple-500/60 shadow-sm transition-all hover:scale-105"
-            >
-              <Sparkles className="w-3.5 h-3.5 text-purple-400" />
-              <span>+ Create Course</span>
-            </Link>
-          )}
+          <button
+            type="button"
+            onClick={() => setCreateModalOpen(true)}
+            className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100 dark:bg-purple-600/20 dark:hover:bg-purple-600/30 dark:text-purple-300 dark:border-purple-500/40 shadow-xs transition-all hover:scale-105 cursor-pointer"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-purple-700 dark:text-purple-400" />
+            <span>+ Create Course</span>
+          </button>
 
           {/* Notification Bell */}
           <NotificationCenter />
 
           {/* Divider */}
-          <div className="w-px h-6 bg-white/10 mx-1 hidden sm:block" />
+          <div className="w-px h-6 bg-border mx-1 hidden sm:block" />
 
           {/* Admin Profile Dropdown */}
           <div className="relative" ref={profileRef}>
             <button
               onClick={() => setProfileMenuOpen(!profileMenuOpen)}
-              className="flex items-center gap-2.5 h-11 px-1.5 sm:px-2 rounded-lg hover:bg-white/5 transition-colors focus:outline-none"
+              className="flex items-center gap-2.5 h-11 px-1.5 sm:px-2 rounded-lg hover:bg-muted transition-colors focus:outline-none"
               aria-expanded={profileMenuOpen}
             >
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-600 to-indigo-700 flex items-center justify-center text-white font-bold text-xs border border-white/10 shrink-0">
+              <div
+                suppressHydrationWarning
+                className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-600 to-indigo-700 flex items-center justify-center text-white font-bold text-xs border border-white/10 shrink-0"
+              >
                 {adminInitials}
               </div>
               <div className="hidden md:block text-left leading-tight">
-                <p className="text-xs font-semibold text-text">{adminName}</p>
-                <p className="text-[11px] text-subtext hidden lg:block">{adminEmail}</p>
+                <p suppressHydrationWarning className="text-xs font-semibold text-text">{adminName}</p>
+                <p suppressHydrationWarning className="text-[11px] text-subtext hidden lg:block">{adminEmail}</p>
               </div>
               <ChevronDown
                 className={`w-3.5 h-3.5 text-subtext hidden md:block transition-transform duration-200 ${
@@ -269,8 +273,8 @@ export default function AdminHeader({ onToggleSidebar }: AdminHeaderProps) {
 
             {/* Profile Menu Popover */}
             {profileMenuOpen && (
-              <div className="absolute right-0 mt-2 w-56 bg-card border border-white/10 rounded-xl shadow-2xl z-50 overflow-hidden py-1.5 animate-in fade-in zoom-in-95 duration-150">
-                <div className="px-4 py-2.5 border-b border-white/5">
+              <div className="absolute right-0 mt-2 w-56 bg-card border border-border rounded-xl shadow-xl z-50 overflow-hidden py-1.5 animate-in fade-in zoom-in-95 duration-150">
+                <div className="px-4 py-2.5 border-b border-border">
                   <p className="text-xs font-bold text-text">{adminName}</p>
                   <p className="text-[11px] text-subtext truncate">{adminEmail}</p>
                 </div>
@@ -279,27 +283,27 @@ export default function AdminHeader({ onToggleSidebar }: AdminHeaderProps) {
                   <Link
                     href="/settings"
                     onClick={() => setProfileMenuOpen(false)}
-                    className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-subtext hover:text-text hover:bg-white/5 transition-colors"
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-subtext hover:text-text hover:bg-muted transition-colors"
                   >
-                    <User className="w-4 h-4 text-purple-400" />
+                    <User className="w-4 h-4 text-purple-700 dark:text-purple-400" />
                     <span>Profile</span>
                   </Link>
 
                   <Link
                     href="/admin/settings"
                     onClick={() => setProfileMenuOpen(false)}
-                    className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-subtext hover:text-text hover:bg-white/5 transition-colors"
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-subtext hover:text-text hover:bg-muted transition-colors"
                   >
-                    <Settings className="w-4 h-4 text-purple-400" />
+                    <Settings className="w-4 h-4 text-purple-700 dark:text-purple-400" />
                     <span>Settings</span>
                   </Link>
                 </div>
 
-                <div className="p-1 border-t border-white/5">
+                <div className="p-1 border-t border-border">
                   <button
                     type="button"
                     onClick={handleLogout}
-                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors text-xs font-semibold text-left"
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-red-600 dark:text-red-400 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors text-xs font-semibold text-left cursor-pointer"
                   >
                     <LogOut className="w-4 h-4" />
                     <span>Logout</span>
@@ -313,6 +317,13 @@ export default function AdminHeader({ onToggleSidebar }: AdminHeaderProps) {
 
       {/* Global Search Dialog Modal */}
       <GlobalSearchModal isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
+
+      {/* Course Type Selector Modal (Self-Paced vs Live Bootcamp) */}
+      <CreateCourseTypeModal
+        isOpen={createModalOpen}
+        onClose={() => setCreateModalOpen(false)}
+        baseRole="admin"
+      />
     </>
   );
 }

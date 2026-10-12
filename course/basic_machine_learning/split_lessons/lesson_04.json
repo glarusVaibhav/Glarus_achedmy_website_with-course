@@ -1,0 +1,244 @@
+{
+    "id": "lesson_03_classification",
+    "title": "Classification Models",
+    "stages": [
+        {
+            "type": "concept",
+            "content": {
+                "title": "Logistic Regression & The Sigmoid Function",
+                "explanation": "\u2022 Beginner-friendly explanation.\n\u2022 Despite its misleading name, Logistic Regression is actually a classification algorithm, not a regression one.\n\u2022 It answers Yes/No questions: Is this email spam?\n\u2022 Will this customer churn?\n\u2022 Does this patient have diabetes?"
+            }
+        },
+        {
+            "type": "visual",
+            "content": {
+                "title": "The Sigmoid Curve",
+                "explanation": "This is the 'giant squasher' we talked about. Notice how it takes any extreme value and gracefully bends it so it never crosses 0% or 100%.",
+                "image": "images/sigmoid_curve_1779772566725.png"
+            }
+        },
+        {
+            "type": "fill_blank",
+            "sentences": [
+                {
+                    "text": "The mathematical function that maps any real value into a probability between 0 and 1 is called the ______ function.",
+                    "answer": "sigmoid"
+                },
+                {
+                    "text": "The dividing line that separates different classes in the feature space is known as the decision ______.",
+                    "answer": "boundary"
+                }
+            ]
+        },
+        {
+            "type": "concept",
+            "content": {
+                "title": "Decision Trees: The Architecture of Logic",
+                "explanation": "\u2022 Beginner-friendly explanation.\n\u2022 A Decision Tree is simply an automated flowchart.\n\u2022 Real-world intuition.\n\u2022 Think of playing '20 Questions' with a friend.\n\u2022 A Decision Tree does the exact same thing with data."
+            }
+        },
+        {
+            "type": "visual",
+            "content": {
+                "title": "Decision Trees",
+                "explanation": "Here is the flowchart logic in action. The model starts at the root question and simply follows the True/False branches down to the final prediction.",
+                "image": "images/decision_tree_1779772583153.png"
+            }
+        },
+        {
+            "type": "socratic",
+            "content": {
+                "prompt": "We just learned that Decision Trees can grow too deep and memorize the training data. This is called Overfitting. If a tree just memorizes the specific practice data, what will happen when we give it brand new, unseen data to predict in the real world?",
+                "expectedConcepts": [
+                    "fail",
+                    "bad",
+                    "poor accuracy",
+                    "memorize",
+                    "generalize",
+                    "wrong"
+                ]
+            }
+        },
+        {
+            "type": "case_study",
+            "title": "Evaluating Classification: Beyond Accuracy",
+            "questions": [
+                {
+                    "question": "In a dataset of 1,000 transactions, only 10 are fraudulent. A model simply predicts 'Not Fraud' for everything. What is its Accuracy?",
+                    "expectedAnswer": "99% (990/1000). This proves why Accuracy is a terrible metric for highly imbalanced datasets."
+                },
+                {
+                    "question": "If you want to ensure you catch EVERY single fraudulent transaction, even if it means falsely flagging some normal ones, which metric should you optimize: Precision or Recall?",
+                    "expectedAnswer": "Recall. Optimizing Recall minimizes False Negatives (missed frauds)."
+                }
+            ]
+        },
+        {
+            "type": "concept",
+            "content": {
+                "title": "Understanding Classification Metrics",
+                "explanation": "\u2022 Beginner-friendly explanation.\n\u2022 Classification metrics are the report cards for your model.\n\u2022 \u2022 Precision: Of everything the model CLAIMED was positive, how many actually were?\n\u2022 \u2022 F1 Score: The harmonic mean that balances Precision and Recall into a single number.\n\u2022 Real-world intuition."
+            }
+        },
+        {
+            "type": "visual",
+            "content": {
+                "title": "The Confusion Matrix",
+                "explanation": "This 2x2 grid summarizes exactly where the model succeeded and where it failed, making it much more detailed and useful than just a single 'Accuracy' score.",
+                "image": "images/confusion_matrix_1779772598503.png"
+            }
+        },
+        {
+            "type": "concept",
+            "content": {
+                "title": "Precision vs Recall",
+                "explanation": ""
+            }
+        },
+        {
+            "type": "visual",
+            "content": {
+                "title": "Precision vs Recall",
+                "explanation": "The sniper (Precision) only fires when 100% certain, avoiding false alarms but missing some targets. The massive net (Recall) catches every single target, but hauls in a bunch of garbage (false alarms) too.",
+                "image": "images/precision_recall.png"
+            }
+        },
+        {
+            "type": "scenario",
+            "content": {
+                "scenario": "The Hospital Dilemma",
+                "question": "You are designing an AI for a hospital to detect a deadly, highly contagious virus. A False Positive means a healthy person gets quarantined for a day. A False Negative means an infected person goes to a concert and infects thousands. Which metric should you optimize?",
+                "options": [
+                    {
+                        "text": "Precision (Minimize False Positives)",
+                        "isCorrect": false,
+                        "feedback": "Wrong! If you optimize Precision, the AI will only flag people it's 100% sure about, meaning it will miss mild cases (False Negatives) who will go out and infect the city!"
+                    },
+                    {
+                        "text": "Recall (Minimize False Negatives)",
+                        "isCorrect": true,
+                        "feedback": "Exactly! In a deadly pandemic, you want a 'massive net' (High Recall). It's better to accidentally quarantine a few healthy people than to let a deadly virus escape."
+                    }
+                ]
+            }
+        },
+        {
+            "type": "code",
+            "challenge": {
+                "explanation": "This code demonstrates calculating core classification metrics using scikit-learn. The model achieves 80% accuracy but has higher precision and recall for the positive class. The F1 score shows a balanced performance between precision and recall.",
+                "hint": "Remember that scikit-learn's functions automatically calculate these metrics when given true and predicted labels. The output will show how well the model performed across different metrics.",
+                "language": "python",
+                "question": "Calculate metrics for a sample confusion matrix",
+                "solution": "# Calculated values\n# Accuracy: 0.80\n# Precision: 0.83\n# Recall: 0.86\n# F1 Score: 0.85",
+                "starterCode": "from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score\n\n# Sample predictions and true labels\ny_true = [1, 0, 1, 1, 0, 0, 1, 1, 1, 0]  # 1 = positive class\ny_pred = [1, 0, 1, 0, 0, 1, 1, 1, 1, 0]\n\n# Calculate metrics\naccuracy = accuracy_score(y_true, y_pred)\nprecision = precision_score(y_true, y_pred)\nrecall = recall_score(y_true, y_pred)\nf1 = f1_score(y_true, y_pred)\n\n# Print results\nprint(f'Accuracy: {accuracy:.2f}')\nprint(f'Precision: {precision:.2f}')\nprint(f'Recall: {recall:.2f}')\nprint(f'F1 Score: {f1:.2f}')"
+            }
+        },
+        {
+            "type": "fill_blank",
+            "sentences": [
+                {
+                    "answer": "recall",
+                    "text": "In a confusion matrix, the ______ rate is calculated as TP/(TP+FN)"
+                },
+                {
+                    "answer": "accuracy",
+                    "text": "The ______ metric measures the proportion of true negatives plus true positives over the total observations"
+                }
+            ]
+        },
+        {
+            "type": "mcq",
+            "questions": [
+                {
+                    "answer": 2,
+                    "explanation": "Recall is crucial in medical diagnosis because we want to catch as many actual positive cases as possible, even if it means getting more false positives. Missing a true positive (false negative) in cancer detection could be life-threatening.",
+                    "options": [
+                        "Accuracy",
+                        "Precision",
+                        "Recall",
+                        "F1 Score"
+                    ],
+                    "question": "Which metric is most important when predicting rare but critical events like cancer detection?"
+                },
+                {
+                    "answer": 1,
+                    "explanation": "Accuracy can be misleading when classes are imbalanced. For example, if 99% of emails are non-spam, a model that always predicts 'not spam' would have 99% accuracy but completely fail to detect any spam.",
+                    "options": [
+                        "It's computationally expensive",
+                        "It can be misleadingly high",
+                        "It requires more memory",
+                        "It only works with binary classification"
+                    ],
+                    "question": "What's the main disadvantage of using accuracy for imbalanced datasets?"
+                }
+            ]
+        },
+        {
+            "type": "scenario",
+            "title": "Model Evaluation Dilemma",
+            "description": "You're evaluating two models for a fraud detection system. Model A has 95% accuracy but 60% recall. Model B has 85% accuracy but 90% recall. Which model would you choose and why?",
+            "choices": [
+                {
+                    "outcome": "You might miss many actual fraud cases (low recall) even though overall accuracy is high",
+                    "score": 50,
+                    "text": "Choose Model A for higher accuracy"
+                },
+                {
+                    "outcome": "You'll catch more actual fraud cases at the cost of slightly lower overall accuracy",
+                    "score": 90,
+                    "text": "Choose Model B for better recall"
+                },
+                {
+                    "outcome": "This could result in a balanced approach but might not optimize for either metric effectively",
+                    "score": 70,
+                    "text": "Average both models"
+                }
+            ]
+        },
+        {
+            "type": "concept",
+            "content": {
+                "title": "Random Forest: The Wisdom of Crowds",
+                "explanation": "\u2022 Beginner-friendly explanation.\n\u2022 Real-world intuition.\n\u2022 Why the concept matters.\n\u2022 Random Forests are the Swiss Army Knife of Machine Learning.\n\u2022 They are the default 'first algorithm' that most data scientists reach for in industry."
+            }
+        },
+        {
+            "type": "visual",
+            "content": {
+                "title": "Random Forest: The Wisdom of Crowds",
+                "explanation": "Each tree sees a different random subset of data and features. Their individual predictions may be imperfect, but the aggregated majority vote is remarkably accurate and stable\u2014this is the power of Ensemble Learning.",
+                "image": "images/random_forest.png"
+            }
+        },
+        {
+            "type": "concept",
+            "content": {
+                "title": "Support Vector Machines (SVM): Maximizing the Margin",
+                "explanation": "\u2022 Beginner-friendly explanation.\n\u2022 The wider the margin, the more confident the model is about its classification.\n\u2022 Real-world intuition.\n\u2022 Imagine you are building a fence between a dog park and a cat park.\n\u2022 SVM builds the widest possible fence."
+            }
+        },
+        {
+            "type": "visual",
+            "content": {
+                "title": "Support Vector Machines (SVM): Maximizing the Margin",
+                "explanation": "Notice the wide gap (margin) between the two classes. The data points sitting exactly on the dotted margin lines are the Support Vectors\u2014they define the boundary. SVM maximizes this gap for the most confident possible classification.",
+                "image": "images/svm.png"
+            }
+        },
+        {
+            "type": "concept",
+            "content": {
+                "title": "ROC & AUC: The Ultimate Balancer",
+                "explanation": "\u2022 Beginner-friendly explanation.\n\u2022 AUC = 0.5 means the model is guessing randomly (worthless).\n\u2022 AUC = 1.0 means it is a perfect classifier.\n\u2022 Real-world intuition.\n\u2022 Imagine you are tuning a metal detector at the airport."
+            }
+        },
+        {
+            "type": "visual",
+            "content": {
+                "title": "ROC and AUC",
+                "explanation": "This curve visualizes the exact tradeoff we discussed. A perfect model hugs the top left, while the diagonal line represents completely random guessing.",
+                "image": "images/roc_auc_1779772611418.png"
+            }
+        }
+    ]
+}

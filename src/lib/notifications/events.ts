@@ -45,11 +45,12 @@ export const DOMAIN_EVENT_TYPES = {
   TASK_CANCELLED: "TASK_CANCELLED",
   ADMIN_INSTRUCTION: "ADMIN_INSTRUCTION",
 
-  // Course Creation Permission Events
+  // Course Creation & Edit Permission Events
   COURSE_CREATION_PERMISSION_REQUESTED: "COURSE_CREATION_PERMISSION_REQUESTED",
   COURSE_CREATION_PERMISSION_APPROVED: "COURSE_CREATION_PERMISSION_APPROVED",
   COURSE_CREATION_PERMISSION_REJECTED: "COURSE_CREATION_PERMISSION_REJECTED",
   COURSE_CREATION_PERMISSION_REVOKED: "COURSE_CREATION_PERMISSION_REVOKED",
+  LIVE_SESSION_EDIT_REQUESTED: "LIVE_SESSION_EDIT_REQUESTED",
 
   // Instructor Verification Events
   VERIFICATION_SUBMITTED: "VERIFICATION_SUBMITTED",
@@ -287,5 +288,17 @@ export interface CourseCreationPermissionDecisionPayload {
   feedback?: string | null;
   adminId?: string;
   adminName?: string;
+}
+
+export interface LiveSessionEditRequestedPayload {
+  instructorId: string;
+  instructorName?: string;
+  instructorEmail?: string;
+  sessionId: string;
+  sessionCode?: string;
+  sessionTitle?: string;
+  courseId?: string;
+  courseName?: string;
+  notes?: string | null;
 }
 

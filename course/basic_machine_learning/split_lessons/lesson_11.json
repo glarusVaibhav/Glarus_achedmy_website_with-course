@@ -1,0 +1,24 @@
+{
+    "id": "lesson_09_real_world_projects",
+    "title": "Real-world ML Projects",
+    "stages": [
+        {
+            "type": "concept",
+            "content": {
+                "title": "The End-to-End ML Lifecycle",
+                "explanation": "\u2022 In the real world, training the model is only 10% of the work.\n\u2022 The full lifecycle involves:  1.\n\u2022 Business Understanding: What problem are we actually solving?\n\u2022 2.\n\u2022 Data Acquisition & Engineering: Gathering, cleaning, and formatting data."
+            }
+        },
+        {
+            "type": "code",
+            "challenge": {
+                "language": "python",
+                "question": "End-to-End Challenge: Train a Decision Tree classifier to predict if a customer will churn.",
+                "starterCode": "import pandas as pd\nfrom sklearn.model_selection import train_test_split\nfrom sklearn.tree import DecisionTreeClassifier\nfrom sklearn.metrics import accuracy_score\n\n# 1. Load Data\ndata = pd.DataFrame({'age': [25, 45, 35, 50, 23], 'spend': [100, 500, 200, 600, 50], 'churn': [1, 0, 1, 0, 1]})\nX = data[['age', 'spend']]\ny = data['churn']\n\n# TODO: 2. Split data (test_size=0.2, random_state=42)\nX_train, X_test, y_train, y_test = \n\n# TODO: 3. Initialize and train a DecisionTreeClassifier(random_state=42)\nmodel = \n\n\n# TODO: 4. Predict on X_test and calculate accuracy\npredictions = \naccuracy = ",
+                "solution": "import pandas as pd\nfrom sklearn.model_selection import train_test_split\nfrom sklearn.tree import DecisionTreeClassifier\nfrom sklearn.metrics import accuracy_score\n\ndata = pd.DataFrame({'age': [25, 45, 35, 50, 23], 'spend': [100, 500, 200, 600, 50], 'churn': [1, 0, 1, 0, 1]})\nX = data[['age', 'spend']]\ny = data['churn']\n\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\nmodel = DecisionTreeClassifier(random_state=42)\nmodel.fit(X_train, y_train)\npredictions = model.predict(X_test)\naccuracy = accuracy_score(y_test, predictions)",
+                "hint": "Combine your knowledge of train_test_split, model.fit(), and accuracy_score()",
+                "explanation": "You have just executed a complete, albeit mini, machine learning pipeline from raw data to evaluation!"
+            }
+        }
+    ]
+}

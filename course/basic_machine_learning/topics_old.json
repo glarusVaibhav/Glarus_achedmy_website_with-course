@@ -1,0 +1,428 @@
+[
+  {
+    "id": "M000",
+    "title": "AI & ML Foundations",
+    "topics": [
+      {
+        "id": "M000-what-exactly-is-machine-learning",
+        "title": "What exactly is Machine Learning?"
+      },
+      {
+        "id": "M000-ai-vs-ml-vs-deep-learning",
+        "title": "AI vs ML vs Deep Learning"
+      },
+      {
+        "id": "M000-types-of-machine-learning",
+        "title": "Types of Machine Learning"
+      },
+      {
+        "id": "M000-type-1-supervised-learning",
+        "title": "Type 1: Supervised Learning"
+      },
+      {
+        "id": "M000-type-2-unsupervised-learning",
+        "title": "Type 2: Unsupervised Learning"
+      },
+      {
+        "id": "M000-type-3-reinforcement-learning",
+        "title": "Type 3: Reinforcement Learning"
+      },
+      {
+        "id": "M000-why-we-need-all-three-pillars",
+        "title": "Why We Need All Three Pillars"
+      },
+      {
+        "id": "M000-training-vs-inference",
+        "title": "Training vs Inference"
+      }
+    ]
+  },
+  {
+    "id": "M001",
+    "title": "ML & Data Foundations",
+    "topics": [
+      {
+        "id": "M001-features-vs-labels",
+        "title": "Features vs Labels"
+      },
+      {
+        "id": "M001-structured-vs-unstructured-data",
+        "title": "Structured vs Unstructured Data"
+      },
+      {
+        "id": "M001-exploratory-data-analysis-eda",
+        "title": "Exploratory Data Analysis (EDA)"
+      },
+      {
+        "id": "M001-eda-overview",
+        "title": "EDA Overview"
+      },
+      {
+        "id": "M001-why-split-data",
+        "title": "Why Split Data?"
+      },
+      {
+        "id": "M001-train-test-split-strategy",
+        "title": "Train/Test Split Strategy"
+      },
+      {
+        "id": "M001-how-to-split-data-in-python",
+        "title": "How to Split Data in Python"
+      },
+      {
+        "id": "M001-meet-your-ml-toolbelt",
+        "title": "Meet Your ML Toolbelt"
+      },
+      {
+        "id": "M001-what-is-feature-engineering",
+        "title": "What is Feature Engineering?"
+      },
+      {
+        "id": "M001-the-data-cleaning-workflow",
+        "title": "The Data Cleaning Workflow"
+      },
+      {
+        "id": "M001-handling-missing-data-imputation-strategies",
+        "title": "Handling Missing Data: Imputation Strategies"
+      },
+      {
+        "id": "M001-feature-scaling-leveling-the-playing-field",
+        "title": "Feature Scaling: Leveling the Playing Field"
+      },
+      {
+        "id": "M001-min-max-scaling-vs-standardization-z-score",
+        "title": "Min-Max Scaling vs Standardization (Z-Score)"
+      },
+      {
+        "id": "M001-robust-scaling-vs-maxabs-scaling",
+        "title": "Robust Scaling vs MaxAbs Scaling"
+      },
+      {
+        "id": "M001-log-transformation-vs-power-transformation",
+        "title": "Log Transformation vs Power Transformation"
+      },
+      {
+        "id": "M001-when-to-use-which-scaler-the-decision-guide",
+        "title": "When to Use Which Scaler: The Decision Guide"
+      },
+      {
+        "id": "M001-quantile-transformation",
+        "title": "Quantile Transformation"
+      },
+      {
+        "id": "M001-unit-vector-scaling-normalizer-vs-decimal-scaling",
+        "title": "Unit Vector Scaling (Normalizer) vs Decimal Scaling"
+      },
+      {
+        "id": "M001-mean-normalization-binning-discretization",
+        "title": "Mean Normalization & Binning (Discretization)"
+      },
+      {
+        "id": "M001-normal-distributions-vs-skewed-data",
+        "title": "Normal Distributions vs Skewed Data"
+      },
+      {
+        "id": "M001-outlier-detection-handling",
+        "title": "Outlier Detection & Handling"
+      },
+      {
+        "id": "M001-encoding-categorical-variables",
+        "title": "Encoding Categorical Variables"
+      },
+      {
+        "id": "M001-date-time-features",
+        "title": "Date & Time Features"
+      },
+      {
+        "id": "M001-text-data-bag-of-words-vs-tf-idf",
+        "title": "Text Data: Bag of Words vs TF-IDF"
+      },
+      {
+        "id": "M001-deep-embeddings-text-images",
+        "title": "Deep Embeddings (Text & Images)"
+      },
+      {
+        "id": "M001-feature-selection-dropping-the-dead-weight",
+        "title": "Feature Selection: Dropping the Dead Weight"
+      },
+      {
+        "id": "M001-model-explainability",
+        "title": "Model Explainability"
+      }
+    ]
+  },
+  {
+    "id": "M002",
+    "title": "Linear Regression",
+    "topics": [
+      {
+        "id": "M002-the-mechanics-of-linear-regression",
+        "title": "The Mechanics of Linear Regression"
+      },
+      {
+        "id": "M002-line-of-best-fit",
+        "title": "Line of Best Fit"
+      },
+      {
+        "id": "M002-what-is-loss-the-cost-of-being-wrong",
+        "title": "What is Loss? The Cost of Being Wrong"
+      },
+      {
+        "id": "M002-the-loss-function",
+        "title": "The Loss Function"
+      },
+      {
+        "id": "M002-hyperparameters-vs-parameters",
+        "title": "Hyperparameters vs Parameters"
+      },
+      {
+        "id": "M002-optimization-gradient-descent",
+        "title": "Optimization: Gradient Descent"
+      },
+      {
+        "id": "M002-gradient-descent-optimization",
+        "title": "Gradient Descent Optimization"
+      }
+    ]
+  },
+  {
+    "id": "M003",
+    "title": "Classification Models",
+    "topics": [
+      {
+        "id": "M003-logistic-regression-the-sigmoid-function",
+        "title": "Logistic Regression & The Sigmoid Function"
+      },
+      {
+        "id": "M003-the-sigmoid-curve",
+        "title": "The Sigmoid Curve"
+      },
+      {
+        "id": "M003-decision-trees-the-architecture-of-logic",
+        "title": "Decision Trees: The Architecture of Logic"
+      },
+      {
+        "id": "M003-decision-trees",
+        "title": "Decision Trees"
+      },
+      {
+        "id": "M003-understanding-classification-metrics",
+        "title": "Understanding Classification Metrics"
+      },
+      {
+        "id": "M003-the-confusion-matrix",
+        "title": "The Confusion Matrix"
+      },
+      {
+        "id": "M003-precision-vs-recall",
+        "title": "Precision vs Recall"
+      },
+      {
+        "id": "M003-random-forest-the-wisdom-of-crowds",
+        "title": "Random Forest: The Wisdom of Crowds"
+      },
+      {
+        "id": "M003-support-vector-machines-svm-maximizing-the-margin",
+        "title": "Support Vector Machines (SVM): Maximizing the Margin"
+      },
+      {
+        "id": "M003-roc-auc-the-ultimate-balancer",
+        "title": "ROC & AUC: The Ultimate Balancer"
+      },
+      {
+        "id": "M003-roc-and-auc",
+        "title": "ROC and AUC"
+      }
+    ]
+  },
+  {
+    "id": "M004",
+    "title": "Unsupervised Learning",
+    "topics": [
+      {
+        "id": "M004-k-means-clustering-finding-tribes",
+        "title": "K-Means Clustering: Finding Tribes"
+      },
+      {
+        "id": "M004-dimensionality-reduction-pca",
+        "title": "Dimensionality Reduction: PCA"
+      },
+      {
+        "id": "M004-pca-principal-component-analysis",
+        "title": "PCA (Principal Component Analysis)"
+      },
+      {
+        "id": "M004-understanding-t-sne",
+        "title": "Understanding t-SNE"
+      },
+      {
+        "id": "M004-t-sne-visualization",
+        "title": "t-SNE Visualization"
+      },
+      {
+        "id": "M004-dbscan-density-based-clustering",
+        "title": "DBSCAN: Density-Based Clustering"
+      },
+      {
+        "id": "M004-anomaly-detection-spotting-the-outliers",
+        "title": "Anomaly Detection: Spotting the Outliers"
+      }
+    ]
+  },
+  {
+    "id": "M005",
+    "title": "Evaluation & Tuning",
+    "topics": [
+      {
+        "id": "M005-the-bias-variance-tradeoff",
+        "title": "The Bias-Variance Tradeoff"
+      },
+      {
+        "id": "M005-overfitting-vs-underfitting",
+        "title": "Overfitting vs Underfitting"
+      },
+      {
+        "id": "M005-regularization-taming-the-beast",
+        "title": "Regularization: Taming the Beast"
+      },
+      {
+        "id": "M005-types-of-regularization-l1-vs-l2",
+        "title": "Types of Regularization: L1 vs L2"
+      },
+      {
+        "id": "M005-the-silent-killer-data-leakage",
+        "title": "The Silent Killer: Data Leakage"
+      },
+      {
+        "id": "M005-data-leakage-workflow",
+        "title": "Data Leakage Workflow"
+      },
+      {
+        "id": "M005-k-fold-cross-validation",
+        "title": "K-Fold Cross Validation"
+      },
+      {
+        "id": "M005-ml-pipeline-integration",
+        "title": "ML Pipeline Integration"
+      },
+      {
+        "id": "M005-the-scikit-learn-workflow",
+        "title": "The Scikit-Learn Workflow"
+      },
+      {
+        "id": "M005-pipeline-workflow",
+        "title": "Pipeline Workflow"
+      },
+      {
+        "id": "M005-roc-curves-auc-the-ultimate-metric",
+        "title": "ROC Curves & AUC: The Ultimate Metric"
+      }
+    ]
+  },
+  {
+    "id": "M006",
+    "title": "Intro to Neural Networks",
+    "topics": [
+      {
+        "id": "M006-how-images-become-numbers-tensors",
+        "title": "How Images Become Numbers (Tensors)"
+      },
+      {
+        "id": "M006-image-to-tensors",
+        "title": "Image to Tensors"
+      },
+      {
+        "id": "M006-batch-vs-epoch",
+        "title": "Batch vs Epoch"
+      },
+      {
+        "id": "M006-the-anatomy-of-a-perceptron",
+        "title": "The Anatomy of a Perceptron"
+      },
+      {
+        "id": "M006-neural-network-architecture",
+        "title": "Neural Network Architecture"
+      },
+      {
+        "id": "M006-activation-functions-injecting-reality",
+        "title": "Activation Functions: Injecting Reality"
+      },
+      {
+        "id": "M006-activation-functions-in-code",
+        "title": "Activation Functions in Code"
+      },
+      {
+        "id": "M006-mlp-architecture-fundamentals",
+        "title": "MLP Architecture Fundamentals"
+      }
+    ]
+  },
+  {
+    "id": "M008",
+    "title": "Modern AI Concepts",
+    "topics": [
+      {
+        "id": "M008-the-transformer-revolution",
+        "title": "The Transformer Revolution"
+      },
+      {
+        "id": "M008-transformer-self-attention",
+        "title": "Transformer Self-Attention"
+      },
+      {
+        "id": "M008-large-language-models-llms",
+        "title": "Large Language Models (LLMs)"
+      }
+    ]
+  },
+  {
+    "id": "M009",
+    "title": "Responsible AI",
+    "topics": [
+      {
+        "id": "M009-the-danger-of-bias",
+        "title": "The Danger of Bias"
+      },
+      {
+        "id": "M009-explainable-ai-xai",
+        "title": "Explainable AI (XAI)"
+      }
+    ]
+  },
+  {
+    "id": "M007",
+    "title": "Model Deployment",
+    "topics": [
+      {
+        "id": "M007-pipeline-thinking-ml-workflows",
+        "title": "Pipeline Thinking & ML Workflows"
+      },
+      {
+        "id": "M007-pipeline-workflow",
+        "title": "Pipeline Workflow"
+      },
+      {
+        "id": "M007-what-is-model-deployment",
+        "title": "What is Model Deployment?"
+      },
+      {
+        "id": "M007-serialization-pickling",
+        "title": "Serialization (Pickling)"
+      },
+      {
+        "id": "M007-model-deployment-from-lab-to-production",
+        "title": "Model Deployment: From Lab to Production"
+      }
+    ]
+  },
+  {
+    "id": "M010",
+    "title": "Real-world ML Projects",
+    "topics": [
+      {
+        "id": "M010-the-end-to-end-ml-lifecycle",
+        "title": "The End-to-End ML Lifecycle"
+      }
+    ]
+  }
+]

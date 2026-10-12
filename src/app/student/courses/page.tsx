@@ -41,6 +41,9 @@ interface SelfPacedCourse {
   category?: string;
   level?: string;
   duration?: string;
+  courseType?: "JSON_GAMIFIED" | "VIDEO_STUDIO" | "LIVE_COHORT";
+  badgeText?: string;
+  curriculumType?: string;
 }
 
 export default function SelfPacedCoursesPage() {
@@ -243,6 +246,7 @@ export default function SelfPacedCoursesPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredCourses.map((course) => {
               const isCompleted = course.progress >= 100 || course.status === "COMPLETED";
+              const isJsonGamified = course.courseType === "JSON_GAMIFIED";
               const thumbnailSrc =
                 course.thumbnail ||
                 "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=60";
@@ -265,8 +269,12 @@ export default function SelfPacedCoursesPage() {
 
                       {/* Top Badges */}
                       <div className="absolute top-3 left-3 z-10 flex items-center gap-1.5">
-                        <span className="px-2.5 py-1 rounded-lg bg-black/70 backdrop-blur-md text-[10px] font-black text-amber-300 border border-amber-500/30 uppercase tracking-wider">
-                          {course.category || "SELF-PACED"}
+                        <span className={`px-2.5 py-1 rounded-lg backdrop-blur-md text-[10px] font-black border uppercase tracking-wider ${
+                          isJsonGamified
+                            ? "bg-purple-950/80 text-purple-300 border-purple-500/40"
+                            : "bg-black/70 text-amber-300 border-amber-500/30"
+                        }`}>
+                          {isJsonGamified ? "GAMIFIED LABS" : (course.category || "SELF-PACED")}
                         </span>
                       </div>
 
@@ -285,8 +293,12 @@ export default function SelfPacedCoursesPage() {
                       {/* Bottom Lectures Bar */}
                       <div className="absolute bottom-3 left-3 right-3 z-10 flex items-center justify-between text-white text-xs font-bold drop-shadow">
                         <span className="flex items-center gap-1.5">
-                          <PlayCircle className="w-3.5 h-3.5 text-amber-400" />
-                          {course.completedLectures}/{course.totalLectures} Lectures
+                          {isJsonGamified ? (
+                            <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+                          ) : (
+                            <PlayCircle className="w-3.5 h-3.5 text-amber-400" />
+                          )}
+                          {course.completedLectures}/{course.totalLectures} {isJsonGamified ? "Interactive Lessons" : "Lectures"}
                         </span>
                         {course.duration && (
                           <span className="text-[11px] text-white/80">{course.duration}</span>
@@ -297,8 +309,10 @@ export default function SelfPacedCoursesPage() {
                     {/* Card Content */}
                     <div className="p-5 space-y-3">
                       <div>
-                        <span className="text-[10px] font-extrabold text-primary uppercase tracking-wider block mb-1">
-                          On-Demand Video Curriculum
+                        <span className={`text-[10px] font-extrabold uppercase tracking-wider block mb-1 ${
+                          isJsonGamified ? "text-purple-400" : "text-primary"
+                        }`}>
+                          {course.curriculumType || (isJsonGamified ? "Interactive Gamified Curriculum" : "On-Demand Video Curriculum")}
                         </span>
                         <h3 className="font-black text-base text-text group-hover:text-primary transition-colors line-clamp-2 leading-snug" title={course.title}>
                           {course.title}
@@ -309,7 +323,7 @@ export default function SelfPacedCoursesPage() {
                         </p>
                       </div>
 
-                      {/* Last Watched Lecture Snippet */}
+                      {/* Last Watched / Active Lesson Snippet */}
                       {course.lastWatchedLecture && (
                         <div className="p-2.5 rounded-xl bg-background/60 border border-card text-xs flex items-center gap-2">
                           <Sparkles className="w-3.5 h-3.5 text-primary shrink-0" />
@@ -323,7 +337,7 @@ export default function SelfPacedCoursesPage() {
                       <div className="space-y-1.5 pt-1">
                         <div className="flex justify-between text-[11px] font-bold">
                           <span className={isCompleted ? "text-emerald-400" : "text-subtext"}>
-                            {isCompleted ? "All Lectures Completed" : `${course.completedLectures} of ${course.totalLectures} Completed`}
+                            {isCompleted ? "All Modules Completed" : `${course.completedLectures} of ${course.totalLectures} Completed`}
                           </span>
                           <span className="text-text font-black">{course.progress}%</span>
                         </div>
@@ -332,6 +346,8 @@ export default function SelfPacedCoursesPage() {
                             className={`h-full rounded-full transition-all duration-700 ${
                               isCompleted
                                 ? "bg-emerald-500"
+                                : isJsonGamified
+                                ? "bg-gradient-to-r from-purple-500 via-indigo-500 to-cyan-500"
                                 : "bg-gradient-to-r from-amber-500 via-primary to-blue-500"
                             }`}
                             style={{ width: `${course.progress}%` }}
@@ -347,9 +363,11 @@ export default function SelfPacedCoursesPage() {
                       <button className={`w-full py-2.5 rounded-xl font-extrabold transition-all flex items-center justify-center gap-2 text-xs cursor-pointer shadow-md ${
                         isCompleted
                           ? "bg-emerald-600/20 hover:bg-emerald-600 text-emerald-300 hover:text-white border border-emerald-500/30"
+                          : isJsonGamified
+                          ? "bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-purple-900/30"
                           : "bg-primary hover:bg-primary/90 text-white shadow-primary/20"
                       }`}>
-                        <PlayCircle className="w-4 h-4" />
+                        {isJsonGamified ? <Sparkles className="w-4 h-4" /> : <PlayCircle className="w-4 h-4" />}
                         <span>{course.progress === 0 ? "Start Course" : isCompleted ? "Review Material & Cert" : "Continue Learning"}</span>
                       </button>
                     </Link>

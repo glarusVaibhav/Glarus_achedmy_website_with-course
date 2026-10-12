@@ -251,6 +251,15 @@ export async function getObjectStream(objectKey: string) {
 }
 
 /**
+ * Get a partial object stream (for HTTP 206 Byte Range requests / video seeking).
+ */
+export async function getPartialObjectStream(objectKey: string, offset: number, length?: number) {
+  const client = getMinioClient();
+  const bucket = getCourseBucketName();
+  return await withTimeout(client.getPartialObject(bucket, objectKey, offset, length), 5000);
+}
+
+/**
  * Get object metadata stats.
  */
 export async function getObjectStats(objectKey: string) {
@@ -258,4 +267,5 @@ export async function getObjectStats(objectKey: string) {
   const bucket = getCourseBucketName();
   return await withTimeout(client.statObject(bucket, objectKey), 4000);
 }
+
 

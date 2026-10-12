@@ -38,7 +38,7 @@ const FLOATING_CARDS = [
     title: "Live Training",
     desc: "Interactive Sessions",
     position: "top-[4%] left-[-4%] sm:left-[0%]",
-    iconBg: "bg-purple-600/30 text-purple-400 border-purple-500/40",
+    iconBg: "bg-purple-50 dark:bg-purple-600/30 text-purple-700 dark:text-purple-400 border-purple-200 dark:border-purple-500/40",
     cardBorder: "border-purple-500/40 shadow-[0_0_25px_rgba(168,85,247,0.25)]",
     floatDelay: 0
   },
@@ -47,7 +47,7 @@ const FLOATING_CARDS = [
     title: "Real Projects",
     desc: "Build • Deploy • Showcase",
     position: "top-[-6%] right-[2%] sm:right-[6%]",
-    iconBg: "bg-blue-600/30 text-cyan-400 border-blue-500/40",
+    iconBg: "bg-blue-50 dark:bg-blue-600/30 text-cyan-700 dark:text-cyan-400 border-blue-200 dark:border-blue-500/40",
     cardBorder: "border-blue-500/40 shadow-[0_0_25px_rgba(59,130,246,0.25)]",
     floatDelay: 1.2
   },
@@ -56,7 +56,7 @@ const FLOATING_CARDS = [
     title: "Internship",
     desc: "Gain Industry Experience",
     position: "top-[38%] right-[-6%] sm:right-[-4%]",
-    iconBg: "bg-emerald-600/30 text-emerald-400 border-emerald-500/40",
+    iconBg: "bg-emerald-50 dark:bg-emerald-600/30 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/40",
     cardBorder: "border-emerald-500/40 shadow-[0_0_25px_rgba(16,185,129,0.25)]",
     floatDelay: 2.4
   },
@@ -65,7 +65,7 @@ const FLOATING_CARDS = [
     title: "Expert Mentors",
     desc: "1:1 Guidance",
     position: "bottom-[24%] left-[-4%] sm:left-[-2%]",
-    iconBg: "bg-blue-600/30 text-blue-400 border-blue-500/40",
+    iconBg: "bg-blue-50 dark:bg-blue-600/30 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-500/40",
     cardBorder: "border-blue-500/40 shadow-[0_0_25px_rgba(59,130,246,0.25)]",
     floatDelay: 3.6
   },
@@ -74,7 +74,7 @@ const FLOATING_CARDS = [
     title: "Career Support",
     desc: "Resume, Interview & Placement",
     position: "bottom-[-2%] right-[2%] sm:right-[6%]",
-    iconBg: "bg-indigo-600/30 text-indigo-400 border-indigo-500/40",
+    iconBg: "bg-indigo-50 dark:bg-indigo-600/30 text-indigo-700 dark:text-indigo-400 border-indigo-200 dark:border-indigo-500/40",
     cardBorder: "border-indigo-500/40 shadow-[0_0_25px_rgba(99,102,241,0.25)]",
     floatDelay: 1.8
   }
@@ -84,11 +84,11 @@ const FLOATING_CARDS = [
    5 Bottom Feature Bar Pillars
    ═══════════════════════════════════════════════════════════════ */
 const HERO_PILLARS = [
-  { icon: Target, title: "Job-Oriented", desc: "Industry-aligned curriculum designed to get you hired", color: "text-purple-400", bg: "bg-purple-500/10 border-purple-500/20" },
-  { icon: Radio, title: "Live Learning", desc: "Interactive live classes with experts", color: "text-indigo-400", bg: "bg-indigo-500/10 border-indigo-500/20" },
-  { icon: Code2, title: "Real-World Projects", desc: "Build production-grade projects for your portfolio", color: "text-cyan-400", bg: "bg-cyan-500/10 border-cyan-500/20" },
-  { icon: Briefcase, title: "Internships", desc: "Work on real projects and gain industry experience", color: "text-emerald-400", bg: "bg-emerald-500/10 border-emerald-500/20" },
-  { icon: Users, title: "100% Career Support", desc: "End-to-end support till you land your dream role", color: "text-blue-400", bg: "bg-blue-500/10 border-blue-500/20" }
+  { icon: Target, title: "Job-Oriented", desc: "Industry-aligned curriculum designed to get you hired", color: "text-purple-700 dark:text-purple-400", bg: "bg-purple-50 dark:bg-purple-500/10 border-purple-200 dark:border-purple-500/20" },
+  { icon: Radio, title: "Live Learning", desc: "Interactive live classes with experts", color: "text-indigo-700 dark:text-indigo-400", bg: "bg-indigo-50 dark:bg-indigo-500/10 border-indigo-200 dark:border-indigo-500/20" },
+  { icon: Code2, title: "Real-World Projects", desc: "Build production-grade projects for your portfolio", color: "text-cyan-700 dark:text-cyan-400", bg: "bg-cyan-50 dark:bg-cyan-500/10 border-cyan-200 dark:border-cyan-500/20" },
+  { icon: Briefcase, title: "Internships", desc: "Work on real projects and gain industry experience", color: "text-emerald-700 dark:text-emerald-400", bg: "bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/20" },
+  { icon: Users, title: "100% Career Support", desc: "End-to-end support till you land your dream role", color: "text-blue-700 dark:text-blue-400", bg: "bg-blue-50 dark:bg-blue-500/10 border-blue-200 dark:border-blue-500/20" }
 ];
 
 /* ═══════════════════════════════════════════════════════════════
@@ -233,11 +233,11 @@ export default function HeroAdvanced() {
         }}
       />
       {/* Background Dot Grid */}
-      <div className="absolute inset-0 bg-[radial-gradient(#ffffff_0.6px,transparent_0.6px)] [background-size:32px_32px] opacity-[0.025] pointer-events-none z-0" />
+      <div className="absolute inset-0 bg-[radial-gradient(rgba(15,23,42,0.06)_0.75px,transparent_0.75px)] dark:bg-[radial-gradient(#ffffff_0.6px,transparent_0.6px)] [background-size:32px_32px] opacity-100 dark:opacity-[0.025] pointer-events-none z-0" />
 
       {/* Cyberpunk Grid/Circuit Lines Overlay */}
       <div 
-        className="absolute inset-0 pointer-events-none z-0 opacity-[0.035]"
+        className="absolute inset-0 pointer-events-none z-0 opacity-[0.025] dark:opacity-[0.035]"
         style={{
           backgroundImage: `
             linear-gradient(90deg, rgba(147,51,234,0.4) 1px, transparent 1px),
@@ -261,10 +261,10 @@ export default function HeroAdvanced() {
               initial={{ opacity: 0, y: -16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-purple-500/40 bg-purple-500/10 dark:bg-[#0d0922]/80 backdrop-blur-xl shadow-[0_0_20px_rgba(147,51,234,0.2)] mb-6"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-purple-200 dark:border-purple-500/40 bg-purple-50 dark:bg-[#0d0922]/80 backdrop-blur-xl shadow-xs dark:shadow-[0_0_20px_rgba(147,51,234,0.2)] mb-6"
             >
-              <Zap className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400 fill-purple-600 dark:fill-purple-400 animate-pulse" />
-              <span className="text-[11px] sm:text-[12px] font-black tracking-wider text-purple-950 dark:text-white uppercase">
+              <Zap className="w-3.5 h-3.5 text-purple-700 dark:text-purple-400 fill-purple-700 dark:fill-purple-400 animate-pulse" />
+              <span className="text-[11px] sm:text-[12px] font-black tracking-wider text-purple-900 dark:text-white uppercase">
                 ⚡ JOB-ORIENTED AI PROGRAMS • LIVE CLASSES • INTERNSHIPS • PROJECTS
               </span>
             </motion.div>
@@ -274,7 +274,7 @@ export default function HeroAdvanced() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.08 }}
-              className="text-xs sm:text-sm font-black uppercase tracking-[0.25em] text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-cyan-600 to-blue-600 dark:from-purple-400 dark:via-cyan-400 dark:to-blue-400 mb-4"
+              className="text-xs sm:text-sm font-black uppercase tracking-[0.25em] text-transparent bg-clip-text bg-gradient-to-r from-purple-700 via-cyan-700 to-blue-700 dark:from-purple-400 dark:via-cyan-400 dark:to-blue-400 mb-4"
             >
               LEARN. PRACTICE. BUILD. GET HIRED.
             </motion.p>
@@ -287,12 +287,12 @@ export default function HeroAdvanced() {
               className="text-[52px] sm:text-[74px] lg:text-[84px] xl:text-[96px] 2xl:text-[104px] font-[900] text-slate-900 dark:text-white tracking-tight leading-[0.94] mb-6 max-w-[820px]"
             >
               Job-Oriented<br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 dark:from-purple-400 dark:via-indigo-300 dark:to-blue-400">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-700 via-indigo-600 to-blue-700 dark:from-purple-400 dark:via-indigo-300 dark:to-blue-400">
                 AI Programs
               </span>
               <br />
               with{" "}
-              <span className="relative inline-flex items-center text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 dark:from-emerald-400 dark:via-teal-300 dark:to-cyan-300">
+              <span className="relative inline-flex items-center text-transparent bg-clip-text bg-gradient-to-r from-emerald-700 via-teal-700 to-cyan-700 dark:from-emerald-400 dark:via-teal-300 dark:to-cyan-300">
                 Internships
                 <span 
                   onClick={() => setShowCriteria(!showCriteria)}
@@ -311,10 +311,10 @@ export default function HeroAdvanced() {
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
                       onMouseLeave={() => setShowCriteria(false)}
-                      className="absolute top-full left-0 mt-3 w-[330px] sm:w-[380px] p-5 rounded-2xl bg-white/95 dark:bg-[#0d0926]/95 border border-amber-400/40 backdrop-blur-2xl shadow-[0_10px_40px_rgba(0,0,0,0.3)] dark:shadow-[0_10px_40px_rgba(0,0,0,0.8)] z-50 text-left normal-case tracking-normal"
+                      className="absolute top-full left-0 mt-3 w-[330px] sm:w-[380px] p-5 rounded-2xl bg-white dark:bg-[#0d0926]/95 border border-zinc-200 dark:border-amber-400/40 backdrop-blur-2xl shadow-xl dark:shadow-[0_10px_40px_rgba(0,0,0,0.8)] z-50 text-left normal-case tracking-normal"
                     >
                       <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400 font-black text-sm uppercase tracking-wider">
+                        <div className="flex items-center gap-2 text-amber-700 dark:text-amber-400 font-black text-sm uppercase tracking-wider">
                           <Sparkles className="w-4 h-4" />
                           <span>Internship Eligibility Criteria *</span>
                         </div>
@@ -330,15 +330,15 @@ export default function HeroAdvanced() {
                       </div>
                       <ol className="space-y-2.5 text-xs sm:text-sm text-slate-800 dark:text-slate-200 font-medium">
                         <li className="flex items-start gap-2">
-                          <span className="flex items-center justify-center w-5 h-5 rounded-full bg-purple-500/20 text-purple-600 dark:text-purple-400 font-bold text-xs shrink-0 mt-0.5">1</span>
+                          <span className="flex items-center justify-center w-5 h-5 rounded-full bg-purple-100 dark:bg-purple-500/20 text-purple-700 dark:text-purple-400 font-bold text-xs shrink-0 mt-0.5">1</span>
                           <span><strong>Selected Courses Only:</strong> Available exclusively on designated flagship programs &amp; live bootcamps.</span>
                         </li>
                         <li className="flex items-start gap-2">
-                          <span className="flex items-center justify-center w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-bold text-xs shrink-0 mt-0.5">2</span>
+                          <span className="flex items-center justify-center w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 font-bold text-xs shrink-0 mt-0.5">2</span>
                           <span><strong>Complete Course:</strong> Finish 100% of curriculum, practical labs &amp; capstone projects.</span>
                         </li>
                         <li className="flex items-start gap-2">
-                          <span className="flex items-center justify-center w-5 h-5 rounded-full bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 font-bold text-xs shrink-0 mt-0.5">3</span>
+                          <span className="flex items-center justify-center w-5 h-5 rounded-full bg-cyan-100 dark:bg-cyan-500/20 text-cyan-700 dark:text-cyan-400 font-bold text-xs shrink-0 mt-0.5">3</span>
                           <span><strong>Pass Internal Interview:</strong> Clear the technical assessment &amp; mock evaluation interview.</span>
                         </li>
                       </ol>
@@ -364,7 +364,7 @@ export default function HeroAdvanced() {
               </p>
               <p className="text-slate-900 dark:text-white font-semibold">
                 Build your portfolio. Gain experience.{" "}
-                <span className="text-emerald-600 dark:text-emerald-400 font-bold">
+                <span className="text-emerald-700 dark:text-emerald-400 font-bold">
                   Land your dream job.
                 </span>
               </p>
@@ -386,10 +386,10 @@ export default function HeroAdvanced() {
               </Link>
               <Link
                 href="/courses?type=live"
-                className="h-[60px] px-9 rounded-full border border-purple-500/40 bg-white/80 dark:bg-[#0e0a26]/60 backdrop-blur-xl text-slate-900 dark:text-white font-bold text-[16px] hover:bg-purple-50 dark:hover:bg-purple-900/30 hover:border-purple-400/60 transition-all flex items-center justify-center gap-2.5 shadow-md dark:shadow-none"
+                className="h-[60px] px-9 rounded-full border border-zinc-200 dark:border-purple-500/40 bg-white dark:bg-[#0e0a26]/60 backdrop-blur-xl text-zinc-900 dark:text-white font-bold text-[16px] hover:bg-zinc-50 dark:hover:bg-purple-900/30 hover:border-zinc-300 dark:hover:border-purple-400/60 transition-all flex items-center justify-center gap-2.5 shadow-sm dark:shadow-none"
               >
                 View Live Classes
-                <Calendar className="w-4.5 h-4.5 text-purple-600 dark:text-purple-400" />
+                <Calendar className="w-4.5 h-4.5 text-purple-700 dark:text-purple-400" />
               </Link>
             </motion.div>
           </div>
@@ -451,7 +451,7 @@ export default function HeroAdvanced() {
                     animate={{ y: [-4, 4, -4] }}
                     transition={{ repeat: Infinity, duration: 5, ease: "easeInOut", delay: card.floatDelay }}
                     whileHover={{ scale: 1.05, y: -4 }}
-                    className={`p-2.5 sm:p-3 rounded-2xl bg-white/90 dark:bg-[#0b081e]/95 backdrop-blur-2xl border ${card.cardBorder} flex items-center gap-2.5 transition-all cursor-pointer shadow-xl`}
+                    className={`p-2.5 sm:p-3 rounded-2xl bg-white dark:bg-[#0b081e]/95 backdrop-blur-2xl border border-zinc-200 dark:${card.cardBorder} flex items-center gap-2.5 transition-all cursor-pointer shadow-sm dark:shadow-xl`}
                   >
                     <div className={`p-2 rounded-xl border ${card.iconBg} shrink-0`}>
                       <card.icon className="w-3.5 h-3.5" />
@@ -480,10 +480,10 @@ export default function HeroAdvanced() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5 p-7 sm:p-8 rounded-[28px] border border-purple-500/30 shadow-xl dark:shadow-[0_20px_60px_rgba(0,0,0,0.7)] bg-white/90 dark:bg-[#0b081e]/85 backdrop-blur-2xl"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5 p-7 sm:p-8 rounded-[28px] border border-zinc-200 dark:border-purple-500/30 shadow-sm dark:shadow-[0_20px_60px_rgba(0,0,0,0.7)] bg-white dark:bg-[#0b081e]/85 backdrop-blur-2xl"
         >
           {HERO_PILLARS.map((p, i) => (
-            <div key={i} className="flex items-start gap-4 p-3.5 rounded-2xl hover:bg-slate-100/60 dark:hover:bg-white/[0.05] transition-colors">
+            <div key={i} className="flex items-start gap-4 p-3.5 rounded-2xl hover:bg-zinc-50 dark:hover:bg-white/[0.05] transition-colors">
               <div className={`p-3 rounded-2xl ${p.bg} border ${p.color} shrink-0 mt-0.5`}>
                 <p.icon className="w-6 h-6" />
               </div>
@@ -513,12 +513,12 @@ export default function HeroAdvanced() {
             transition={{ duration: 0.6 }} 
             className="text-center max-w-3xl mx-auto mb-16"
           >
-            <span className="px-4 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-700 dark:text-purple-300 text-xs font-black uppercase tracking-widest inline-block mb-3">
+            <span className="px-4 py-1.5 rounded-full bg-purple-50 dark:bg-purple-500/10 border border-purple-200 dark:border-purple-500/30 text-purple-700 dark:text-purple-300 text-xs font-black uppercase tracking-widest inline-block mb-3">
               🚀 ENGINEERED FOR JOB READINESS
             </span>
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tight mb-4 leading-tight">
               Don&apos;t Just Learn AI. <br className="hidden sm:inline" />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-700 via-indigo-600 to-cyan-600 dark:from-purple-400 dark:via-indigo-300 dark:to-cyan-400">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-700 via-indigo-600 to-cyan-700 dark:from-purple-400 dark:via-indigo-300 dark:to-cyan-400">
                 Become a Hirable AI Engineer.
               </span>
             </h2>
@@ -537,20 +537,20 @@ export default function HeroAdvanced() {
               viewport={{ once: true }} 
               transition={{ duration: 0.5 }} 
               whileHover={{ y: -6 }}
-              className="md:col-span-2 p-8 rounded-3xl bg-white dark:bg-[#0c0922]/85 border border-purple-200 dark:border-purple-500/30 hover:border-purple-500/60 shadow-xl dark:shadow-[0_20px_60px_rgba(0,0,0,0.6)] backdrop-blur-xl relative overflow-hidden group transition-all flex flex-col justify-between cursor-pointer"
+              className="md:col-span-2 p-8 rounded-3xl bg-white dark:bg-[#0c0922]/85 border border-[#E4E4E7] dark:border-purple-500/30 hover:border-purple-300 dark:hover:border-purple-500/60 shadow-sm dark:shadow-[0_20px_60px_rgba(0,0,0,0.6)] backdrop-blur-xl relative overflow-hidden group transition-all flex flex-col justify-between cursor-pointer"
             >
               <Link href="/courses?type=live" className="absolute inset-0 z-20" aria-label="Explore Live Classes" />
-              <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-purple-600/15 rounded-full blur-[100px] pointer-events-none group-hover:bg-purple-600/25 transition-all" />
+              <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-purple-500/[0.06] dark:bg-purple-600/15 rounded-full blur-[100px] pointer-events-none group-hover:bg-purple-500/10 dark:group-hover:bg-purple-600/25 transition-all" />
               <div>
                 <div className="flex items-center justify-between mb-6">
-                  <div className="p-3.5 rounded-2xl bg-purple-500/10 border border-purple-500/30 text-purple-600 dark:text-purple-400">
+                  <div className="p-3.5 rounded-2xl bg-purple-50 dark:bg-purple-500/10 border border-purple-200 dark:border-purple-500/30 text-purple-700 dark:text-purple-400">
                     <Radio className="w-7 h-7" />
                   </div>
-                  <span className="px-3.5 py-1 rounded-full bg-purple-500/10 border border-purple-500/30 text-xs font-black text-purple-700 dark:text-purple-300 uppercase tracking-wider">
+                  <span className="px-3.5 py-1 rounded-full bg-purple-50 dark:bg-purple-500/10 border border-purple-200 dark:border-purple-500/30 text-xs font-black text-purple-800 dark:text-purple-300 uppercase tracking-wider">
                     ⚡ 100% Live &amp; Interactive
                   </span>
                 </div>
-                <h3 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white mb-3 group-hover:text-purple-600 dark:group-hover:text-purple-300 transition-colors">
+                <h3 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white mb-3 group-hover:text-purple-700 dark:group-hover:text-purple-300 transition-colors">
                   Learn Directly From FAANG &amp; Top AI Industry Architects
                 </h3>
                 <p className="text-base text-slate-700 dark:text-slate-300/80 font-medium leading-relaxed max-w-xl">
@@ -558,7 +558,7 @@ export default function HeroAdvanced() {
                 </p>
               </div>
 
-              <div className="mt-8 pt-6 border-t border-slate-200 dark:border-white/10 flex flex-wrap items-center justify-between gap-4 text-xs font-bold text-slate-600 dark:text-slate-400 relative z-10">
+              <div className="mt-8 pt-6 border-t border-zinc-200 dark:border-white/10 flex flex-wrap items-center justify-between gap-4 text-xs font-bold text-slate-600 dark:text-slate-400 relative z-10">
                 <div className="flex items-center gap-4">
                   <span className="flex items-center gap-1.5 text-slate-900 dark:text-white">
                     <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> Live Q&amp;A Every Session
@@ -579,15 +579,15 @@ export default function HeroAdvanced() {
               whileInView={{ opacity: 1, y: 0 }} 
               viewport={{ once: true }} 
               transition={{ duration: 0.5, delay: 0.1 }} 
-              className="p-8 rounded-3xl bg-white dark:bg-[#0c0922]/85 border border-cyan-200 dark:border-cyan-500/30 shadow-xl dark:shadow-[0_20px_60px_rgba(0,0,0,0.6)] backdrop-blur-xl relative overflow-hidden flex flex-col justify-between"
+              className="p-8 rounded-3xl bg-white dark:bg-[#0c0922]/85 border border-[#E4E4E7] dark:border-cyan-500/30 shadow-sm dark:shadow-[0_20px_60px_rgba(0,0,0,0.6)] backdrop-blur-xl relative overflow-hidden flex flex-col justify-between"
             >
-              <div className="absolute top-0 right-0 w-[200px] h-[200px] bg-cyan-500/10 rounded-full blur-[80px] pointer-events-none" />
+              <div className="absolute top-0 right-0 w-[200px] h-[200px] bg-cyan-500/[0.06] dark:bg-cyan-500/10 rounded-full blur-[80px] pointer-events-none" />
               <div>
                 <div className="flex items-center justify-between mb-6">
-                  <div className="p-3.5 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-600 dark:text-cyan-400">
+                  <div className="p-3.5 rounded-2xl bg-cyan-50 dark:bg-cyan-500/10 border border-cyan-200 dark:border-cyan-500/30 text-cyan-700 dark:text-cyan-400">
                     <Code2 className="w-7 h-7" />
                   </div>
-                  <span className="px-3.5 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-xs font-black text-cyan-700 dark:text-cyan-300 uppercase tracking-wider">
+                  <span className="px-3.5 py-1 rounded-full bg-cyan-50 dark:bg-cyan-500/10 border border-cyan-200 dark:border-cyan-500/30 text-xs font-black text-cyan-800 dark:text-cyan-300 uppercase tracking-wider">
                     🛠️ Production Code
                   </span>
                 </div>
@@ -599,11 +599,11 @@ export default function HeroAdvanced() {
                 </p>
               </div>
 
-              <div className="mt-8 pt-6 border-t border-slate-200 dark:border-white/10 flex items-center justify-between text-xs font-bold text-slate-600 dark:text-slate-400 relative z-10">
-                <span className="text-cyan-700 dark:text-cyan-400 font-extrabold flex items-center gap-1.5">
+              <div className="mt-8 pt-6 border-t border-zinc-200 dark:border-white/10 flex items-center justify-between text-xs font-bold text-slate-600 dark:text-slate-400 relative z-10">
+                <span className="text-cyan-800 dark:text-cyan-400 font-extrabold flex items-center gap-1.5">
                   <CheckCircle2 className="w-4 h-4 text-cyan-600 dark:text-cyan-400" /> Verified GitHub Portfolio
                 </span>
-                <span className="text-[11px] font-mono text-cyan-700 dark:text-cyan-400 font-bold bg-cyan-500/10 px-2.5 py-0.5 rounded-full border border-cyan-500/20">
+                <span className="text-[11px] font-mono text-cyan-800 dark:text-cyan-400 font-bold bg-cyan-50 dark:bg-cyan-500/10 px-2.5 py-0.5 rounded-full border border-cyan-200 dark:border-cyan-500/20">
                   Included
                 </span>
               </div>
@@ -615,15 +615,15 @@ export default function HeroAdvanced() {
               whileInView={{ opacity: 1, y: 0 }} 
               viewport={{ once: true }} 
               transition={{ duration: 0.5, delay: 0.2 }} 
-              className="p-8 rounded-3xl bg-white dark:bg-[#0c0922]/85 border border-emerald-200 dark:border-emerald-500/30 shadow-xl dark:shadow-[0_20px_60px_rgba(0,0,0,0.6)] backdrop-blur-xl relative overflow-hidden flex flex-col justify-between"
+              className="p-8 rounded-3xl bg-white dark:bg-[#0c0922]/85 border border-[#E4E4E7] dark:border-emerald-500/30 shadow-sm dark:shadow-[0_20px_60px_rgba(0,0,0,0.6)] backdrop-blur-xl relative overflow-hidden flex flex-col justify-between"
             >
-              <div className="absolute top-0 right-0 w-[200px] h-[200px] bg-emerald-500/10 rounded-full blur-[80px] pointer-events-none" />
+              <div className="absolute top-0 right-0 w-[200px] h-[200px] bg-emerald-500/[0.06] dark:bg-emerald-500/10 rounded-full blur-[80px] pointer-events-none" />
               <div>
                 <div className="flex items-center justify-between mb-6">
-                  <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400">
+                  <div className="p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 text-emerald-700 dark:text-emerald-400">
                     <Briefcase className="w-7 h-7" />
                   </div>
-                  <span className="px-3.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-xs font-black text-emerald-700 dark:text-emerald-300 uppercase tracking-wider">
+                  <span className="px-3.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 text-xs font-black text-emerald-800 dark:text-emerald-300 uppercase tracking-wider">
                     💼 Real Experience
                   </span>
                 </div>
@@ -635,11 +635,11 @@ export default function HeroAdvanced() {
                 </p>
               </div>
 
-              <div className="mt-8 pt-6 border-t border-slate-200 dark:border-white/10 flex items-center justify-between text-xs font-bold text-slate-600 dark:text-slate-400 relative z-10">
-                <span className="text-emerald-700 dark:text-emerald-400 font-extrabold flex items-center gap-1.5">
+              <div className="mt-8 pt-6 border-t border-zinc-200 dark:border-white/10 flex items-center justify-between text-xs font-bold text-slate-600 dark:text-slate-400 relative z-10">
+                <span className="text-emerald-800 dark:text-emerald-400 font-extrabold flex items-center gap-1.5">
                   <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> Real-world Project Work
                 </span>
-                <span className="text-[11px] font-mono text-emerald-700 dark:text-emerald-400 font-bold bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
+                <span className="text-[11px] font-mono text-emerald-800 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-500/20">
                   Included
                 </span>
               </div>
@@ -652,20 +652,20 @@ export default function HeroAdvanced() {
               viewport={{ once: true }} 
               transition={{ duration: 0.5, delay: 0.3 }} 
               whileHover={{ y: -6 }}
-              className="md:col-span-2 p-8 rounded-3xl bg-white dark:bg-[#0c0922]/85 border border-indigo-200 dark:border-indigo-500/30 hover:border-indigo-500/60 shadow-xl dark:shadow-[0_20px_60px_rgba(0,0,0,0.6)] backdrop-blur-xl relative overflow-hidden group transition-all flex flex-col justify-between cursor-pointer"
+              className="md:col-span-2 p-8 rounded-3xl bg-white dark:bg-[#0c0922]/85 border border-[#E4E4E7] dark:border-indigo-500/30 hover:border-indigo-300 dark:hover:border-indigo-500/60 shadow-sm dark:shadow-[0_20px_60px_rgba(0,0,0,0.6)] backdrop-blur-xl relative overflow-hidden group transition-all flex flex-col justify-between cursor-pointer"
             >
               <Link href="/courses?type=self-paced" className="absolute inset-0 z-20" aria-label="Explore Self-Paced Courses" />
-              <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-indigo-600/15 rounded-full blur-[100px] pointer-events-none group-hover:bg-indigo-600/25 transition-all" />
+              <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-indigo-500/[0.06] dark:bg-indigo-600/15 rounded-full blur-[100px] pointer-events-none group-hover:bg-indigo-500/10 dark:group-hover:bg-indigo-600/25 transition-all" />
               <div>
                 <div className="flex items-center justify-between mb-6">
-                  <div className="p-3.5 rounded-2xl bg-indigo-500/10 border border-indigo-500/30 text-indigo-600 dark:text-indigo-400">
+                  <div className="p-3.5 rounded-2xl bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/30 text-indigo-700 dark:text-indigo-400">
                     <Video className="w-7 h-7" />
                   </div>
-                  <span className="px-3.5 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-xs font-black text-indigo-700 dark:text-indigo-300 uppercase tracking-wider">
+                  <span className="px-3.5 py-1 rounded-full bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/30 text-xs font-black text-indigo-800 dark:text-indigo-300 uppercase tracking-wider">
                     ⚡ FLEXIBLE SELF-PACED LEARNING
                   </span>
                 </div>
-                <h3 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white mb-3 group-hover:text-indigo-600 dark:group-hover:text-indigo-300 transition-colors">
+                <h3 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white mb-3 group-hover:text-indigo-700 dark:group-hover:text-indigo-300 transition-colors">
                   Learn At Your Own Pace With Lifetime Access &amp; 24/7 AI Assistance
                 </h3>
                 <p className="text-base text-slate-700 dark:text-slate-300/80 font-medium leading-relaxed max-w-xl">
@@ -673,7 +673,7 @@ export default function HeroAdvanced() {
                 </p>
               </div>
 
-              <div className="mt-8 pt-6 border-t border-slate-200 dark:border-white/10 flex flex-wrap items-center justify-between gap-4 text-xs font-bold text-slate-600 dark:text-slate-400 relative z-10">
+              <div className="mt-8 pt-6 border-t border-zinc-200 dark:border-white/10 flex flex-wrap items-center justify-between gap-4 text-xs font-bold text-slate-600 dark:text-slate-400 relative z-10">
                 <div className="flex items-center gap-4">
                   <span className="flex items-center gap-1.5 text-slate-900 dark:text-white">
                     <CheckCircle2 className="w-4 h-4 text-indigo-600 dark:text-indigo-400" /> 24/7 AI Tutor Guidance
@@ -692,15 +692,15 @@ export default function HeroAdvanced() {
         </div>
 
         {/* Why Choose GlarusAcademy */}
-        <div className="mb-24 p-8 sm:p-10 rounded-3xl border border-purple-200 dark:border-purple-500/25 bg-white dark:bg-card backdrop-blur-xl shadow-lg">
+        <div className="mb-24 p-8 sm:p-10 rounded-3xl border border-zinc-200 dark:border-purple-500/25 bg-white dark:bg-card backdrop-blur-xl shadow-sm">
           <div className="text-center max-w-2xl mx-auto mb-8">
             <h3 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white mb-2">Why Choose GlarusAcademy?</h3>
             <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">Built specifically to replace outdated courses with real engineering experience.</p>
           </div>
           <div className="flex flex-wrap justify-center gap-3">
             {WHY_CHOOSE_CHIPS.map((chip, i) => (
-              <div key={i} className="px-5 py-3 rounded-full bg-slate-100 dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 text-sm font-bold text-slate-800 dark:text-white flex items-center gap-2 hover:bg-purple-600/10 hover:border-purple-500/40 transition-all cursor-default shadow-sm">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" /><span>{chip}</span>
+              <div key={i} className="px-5 py-3 rounded-full bg-zinc-50 dark:bg-white/[0.04] border border-zinc-200 dark:border-white/10 text-sm font-bold text-zinc-800 dark:text-white flex items-center gap-2 hover:bg-purple-50 dark:hover:bg-purple-600/10 hover:border-purple-200 dark:hover:border-purple-500/40 transition-all cursor-default shadow-xs">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" /><span>{chip}</span>
               </div>
             ))}
           </div>

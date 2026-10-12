@@ -1,0 +1,285 @@
+{
+  "courseId": "sql-mastery",
+  "title": "SQL Mastery & Data Design",
+  "theme": {
+    "primary": "#0ea5e9",
+    "accent": "#f59e0b"
+  },
+  "lessons": [
+    {
+      "id": "lesson-1-fundamentals",
+      "title": "Data Fundamentals",
+      "stages": [
+        {
+          "type": "concept",
+          "content": {
+            "title": "What is SQL?",
+            "explanation": "Structured Query Language (SQL) is the standard language for dealing with Relational Databases. It allows you to create, read, update, and delete data (CRUD).",
+            "example": "SELECT * FROM users WHERE active = true;",
+            "tip": "Think of a database like a highly-organized Excel spreadsheet where sheets are linked together."
+          }
+        },
+        {
+          "type": "drag_drop",
+          "instruction": "Arrange the SQL query execution order (how the database engine actually processes the query):",
+          "items": [
+            "SELECT",
+            "FROM",
+            "WHERE",
+            "GROUP BY"
+          ],
+          "correctOrder": [
+            "FROM",
+            "WHERE",
+            "GROUP BY",
+            "SELECT"
+          ]
+        },
+        {
+          "type": "socratic",
+          "topic": "Why Relational Databases?",
+          "seedQuestion": "If we can just save data in a JSON file, why do we need databases?",
+          "guidingQuestions": [
+            "What happens if two users try to edit the JSON file at the exact same millisecond?",
+            "How do you quickly find a specific user among 10 million records?",
+            "What if the server crashes right in the middle of a write operation?"
+          ],
+          "expectedInsight": "Databases provide ACID guarantees (Atomicity, Consistency, Isolation, Durability), efficient indexing, and concurrent access control that flat files cannot offer."
+        },
+        {
+          "type": "recall",
+          "prompt": "Recall the four core operations of database interaction (the acronym). What does each letter stand for?",
+          "expectedKeywords": [
+            "create",
+            "read",
+            "update",
+            "delete",
+            "crud"
+          ],
+          "difficulty": 2,
+          "timeLimit": 45
+        }
+      ]
+    },
+    {
+      "id": "lesson-2-querying",
+      "title": "Advanced Querying",
+      "stages": [
+        {
+          "type": "speed_quiz",
+          "timePerQuestion": 10,
+          "questions": [
+            {
+              "question": "Which keyword is used to sort the result set?",
+              "options": [
+                "SORT BY",
+                "ORDER BY",
+                "GROUP BY",
+                "ALIGN"
+              ],
+              "answer": 1
+            },
+            {
+              "question": "Which SQL statement is used to extract data from a database?",
+              "options": [
+                "EXTRACT",
+                "PULL",
+                "GET",
+                "SELECT"
+              ],
+              "answer": 3
+            },
+            {
+              "question": "How do you select all columns from a table named 'Persons'?",
+              "options": [
+                "SELECT * FROM Persons",
+                "SELECT Persons",
+                "SELECT [all] FROM Persons",
+                "EXTRACT * FROM Persons"
+              ],
+              "answer": 0
+            }
+          ]
+        },
+        {
+          "type": "interactive_simulation",
+          "title": "Query Execution Pipeline",
+          "description": "Step through how a database engine processes a SELECT query.",
+          "steps": [
+            {
+              "label": "Parse",
+              "action": "parse",
+              "description": "Check syntax and parse query into a tree."
+            },
+            {
+              "label": "Analyze",
+              "action": "analyze",
+              "description": "Check tables/columns exist and permissions are valid."
+            },
+            {
+              "label": "Optimize",
+              "action": "optimize",
+              "description": "Generate execution plans and pick the most efficient one based on indexes."
+            },
+            {
+              "label": "Execute",
+              "action": "execute",
+              "description": "Fetch data from disk/memory and return results."
+            }
+          ],
+          "goalDescription": "Understand the lifecycle of a query"
+        },
+        {
+          "type": "code",
+          "challenge": {
+            "question": "Write a query to select the 'first_name' and 'last_name' of all employees whose salary is greater than 50000.",
+            "starterCode": "-- Write your query here\n",
+            "solution": "SELECT first_name, last_name FROM employees WHERE salary > 50000;",
+            "language": "sql",
+            "hint": "Use the SELECT, FROM, and WHERE keywords."
+          }
+        },
+        {
+          "type": "ai_conversation",
+          "topic": "SQL Joins Explained",
+          "systemPrompt": "You are a database expert. Explain the concept of SQL JOINS to a beginner. Start by asking them if they know what a Venn Diagram is.",
+          "context": "Teaching SQL INNER, LEFT, RIGHT, and FULL joins.",
+          "minTurns": 2
+        }
+      ]
+    },
+    {
+      "id": "lesson-3-design",
+      "title": "System Architecture",
+      "stages": [
+        {
+          "type": "system_design",
+          "title": "E-Commerce Database",
+          "scenario": "Connect the primary entities in a simple e-commerce system.",
+          "components": [
+            "Users",
+            "Orders",
+            "Products",
+            "Order_Items"
+          ],
+          "expectedConnections": [
+            {
+              "from": "Users",
+              "to": "Orders",
+              "label": "1:N"
+            },
+            {
+              "from": "Orders",
+              "to": "Order_Items",
+              "label": "1:N"
+            },
+            {
+              "from": "Products",
+              "to": "Order_Items",
+              "label": "1:N"
+            }
+          ],
+          "hint": "Orders belong to Users. Order_Items link Orders and Products together."
+        },
+        {
+          "type": "case_study",
+          "title": "The Slow Dashboard",
+          "context": "Your company's analytics dashboard takes 45 seconds to load. It runs a massive query aggregating data across 5 tables with millions of rows. Users are complaining.",
+          "questions": [
+            {
+              "question": "What is the first thing you should check to diagnose the slow query?",
+              "expectedAnswer": "execution plan explain index"
+            },
+            {
+              "question": "If the tables are already indexed, what architectural changes could speed up the dashboard?",
+              "expectedAnswer": "caching redis materialized view denormalization"
+            }
+          ]
+        },
+        {
+          "type": "ai_feedback",
+          "prompt": "Explain the difference between a Clustered Index and a Non-Clustered Index.",
+          "expectedAnswer": "clustered physical sorting order table non-clustered separate structure pointers logical"
+        },
+        {
+          "type": "scenario",
+          "title": "Scaling the Database",
+          "description": "Your PostgreSQL database is hitting 100% CPU utilization during peak hours due to heavy read traffic. What do you do?",
+          "choices": [
+            {
+              "text": "Add a Read Replica and route SELECT queries to it.",
+              "outcome": "Correct! Read replicas handle read-heavy traffic and offload pressure from the primary master node.",
+              "score": 100
+            },
+            {
+              "text": "Increase the CPU size of the primary node (Vertical Scaling).",
+              "outcome": "This works temporarily, but is expensive and has a hard ceiling. Not the most scalable approach.",
+              "score": 60
+            },
+            {
+              "text": "Sharding (Horizontal Partitioning).",
+              "outcome": "Sharding is extremely complex and usually overkill unless data volume exceeds a single machine's capacity. Read replicas are the first step.",
+              "score": 40
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lesson-4-ai",
+      "title": "AI & Prompting with SQL",
+      "stages": [
+        {
+          "type": "debug_ai",
+          "context": "You asked an AI to write a query to find the 2nd highest salary, but it gave a generic broken response.",
+          "brokenOutput": "SELECT MAX(salary) FROM employees WHERE salary < MAX(salary);",
+          "correctOutput": "SELECT MAX(salary) FROM employees WHERE salary < (SELECT MAX(salary) FROM employees);",
+          "hint": "You cannot use MAX() inside a WHERE clause directly without a subquery."
+        },
+        {
+          "type": "prompt_builder",
+          "objective": "Build a prompt to generate a PostgreSQL schema for a blog.",
+          "components": [
+            "Role",
+            "Task",
+            "Constraints",
+            "Format"
+          ],
+          "exampleOutput": "CREATE TABLE posts (...);"
+        },
+        {
+          "type": "ai_evaluator",
+          "prompt": "Write a single sentence explaining what a Foreign Key is.",
+          "expectedAnswer": "foreign key table refers primary another relational integrity link",
+          "scoringCriteria": [
+            "Mentions linking tables",
+            "Mentions referential integrity or primary key"
+          ]
+        },
+        {
+          "type": "project",
+          "project": {
+            "title": "Schema Definition",
+            "description": "Define a basic schema for a library system.",
+            "requirements": [
+              "Create a 'Books' table",
+              "Create an 'Authors' table",
+              "Link Books to Authors using a Foreign Key"
+            ],
+            "starterCode": "-- Write your CREATE TABLE statements\n"
+          }
+        },
+        {
+          "type": "reflection",
+          "prompt": "Reflect on what you've learned about databases. How will this change how you build backend systems?",
+          "minWords": 15,
+          "guidingPoints": [
+            "Data integrity",
+            "Performance bottlenecks",
+            "System architecture"
+          ]
+        }
+      ]
+    }
+  ]
+}

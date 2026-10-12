@@ -1,0 +1,555 @@
+[
+  {
+    "id": "M001",
+    "title": "Agentic AI Foundations",
+    "topics": [
+      {
+        "id": "M001-what-is-agentic-ai",
+        "title": "What is Agentic AI?"
+      },
+      {
+        "id": "M001-agent-vs-chatbot-vs-workflow",
+        "title": "Agent vs. Chatbot vs. Workflow"
+      },
+      {
+        "id": "M001-evolution-of-ai-systems",
+        "title": "Evolution of AI Systems"
+      },
+      {
+        "id": "M001-agent-vs-automation",
+        "title": "Agent vs. Automation"
+      },
+      {
+        "id": "M001-the-modern-agent-ecosystem",
+        "title": "The Modern Agent Ecosystem"
+      },
+      {
+        "id": "M001-the-brain-foundation-models",
+        "title": "The Brain: Foundation Models"
+      },
+      {
+        "id": "M001-the-frameworks-orchestration",
+        "title": "The Frameworks: Orchestration"
+      },
+      {
+        "id": "M001-the-memory-vector-databases",
+        "title": "The Memory: Vector Databases"
+      },
+      {
+        "id": "M001-the-senses-hands-tools-apis",
+        "title": "The Senses & Hands: Tools & APIs"
+      },
+      {
+        "id": "M001-the-protocols-connectivity",
+        "title": "The Protocols: Connectivity"
+      },
+      {
+        "id": "M001-the-watchdogs-observability",
+        "title": "The Watchdogs: Observability"
+      },
+      {
+        "id": "M001-enterprise-perspective",
+        "title": "Enterprise Perspective"
+      },
+      {
+        "id": "M001-real-world-agent-use-cases",
+        "title": "Real-World Agent Use Cases"
+      }
+    ]
+  },
+  {
+    "id": "M002",
+    "title": "LLM Foundations for Agents",
+    "topics": [
+      {
+        "id": "M002-tokens-and-context-windows",
+        "title": "Tokens and Context Windows"
+      },
+      {
+        "id": "M002-embeddings-semantic-space",
+        "title": "Embeddings & Semantic Space"
+      },
+      {
+        "id": "M002-agentic-prompt-engineering",
+        "title": "Agentic Prompt Engineering"
+      },
+      {
+        "id": "M002-structured-output-json-mode",
+        "title": "Structured Output & JSON Mode"
+      },
+      {
+        "id": "M002-model-selection-behavior",
+        "title": "Model Selection & Behavior"
+      },
+      {
+        "id": "M002-reasoning-vs-tool-using",
+        "title": "Reasoning Models vs. Tool-Using Models"
+      },
+      {
+        "id": "M002-hallucinations-mitigation",
+        "title": "Hallucinations & Mitigation Strategy"
+      }
+    ]
+  },
+  {
+    "id": "M003",
+    "title": "Core Agent Architecture",
+    "topics": [
+      {
+        "id": "M003-agent-components-lifecycle",
+        "title": "Agent Components & Lifecycle"
+      },
+      {
+        "id": "M003-the-planning-module",
+        "title": "The Planning Module"
+      },
+      {
+        "id": "M003-memory-architecture-in-practice",
+        "title": "Memory Architecture in Practice"
+      },
+      {
+        "id": "M003-tool-binding-execution",
+        "title": "Tool Binding & Execution"
+      },
+      {
+        "id": "M003-the-react-pattern",
+        "title": "The ReAct Pattern (Reason + Act)"
+      },
+      {
+        "id": "M003-reflection-self-correction",
+        "title": "Reflection & Self-Correction"
+      },
+      {
+        "id": "M003-human-in-the-loop-architecture",
+        "title": "Human-in-the-Loop (HITL) Architecture"
+      }
+    ]
+  },
+  {
+    "id": "M004",
+    "title": "Agent Design Patterns",
+    "topics": [
+      {
+        "id": "M004-the-router-pattern",
+        "title": "The Router Pattern"
+      },
+      {
+        "id": "M004-the-planner-executor-pattern",
+        "title": "The Planner-Executor Pattern"
+      },
+      {
+        "id": "M004-the-supervisor-worker-pattern",
+        "title": "The Supervisor-Worker Pattern"
+      },
+      {
+        "id": "M004-critic-reflection-patterns",
+        "title": "The Critic & Reflection Patterns"
+      },
+      {
+        "id": "M004-orchestrator-vs-autonomous",
+        "title": "Orchestrator vs Autonomous Agents"
+      },
+      {
+        "id": "M004-event-driven-background-agents",
+        "title": "Event-Driven & Background Agents"
+      },
+      {
+        "id": "M004-pattern-selection-guide",
+        "title": "Pattern Selection Guide"
+      }
+    ]
+  },
+  {
+    "id": "M005",
+    "title": "Tool Calling Systems",
+    "topics": [
+      {
+        "id": "M005-json-schemas-tool-definitions",
+        "title": "JSON Schemas & Tool Definitions"
+      },
+      {
+        "id": "M005-native-function-calling",
+        "title": "Native Function Calling"
+      },
+      {
+        "id": "M005-parallel-chained-tool-calls",
+        "title": "Parallel & Chained Tool Calls"
+      },
+      {
+        "id": "M005-sandboxed-code-execution",
+        "title": "Sandboxed Code Execution"
+      },
+      {
+        "id": "M005-browser-computer-use-agents",
+        "title": "Browser & Computer Use Agents"
+      },
+      {
+        "id": "M005-tool-routing-discovery",
+        "title": "Tool Routing & Discovery"
+      },
+      {
+        "id": "M005-tool-governance-security",
+        "title": "Tool Governance & Security"
+      }
+    ]
+  },
+  {
+    "id": "M006",
+    "title": "Memory Systems",
+    "topics": [
+      {
+        "id": "M006-the-agent-memory-taxonomy",
+        "title": "The Agent Memory Taxonomy"
+      },
+      {
+        "id": "M006-short-term-memory-context",
+        "title": "Short-Term Memory (Context Window)"
+      },
+      {
+        "id": "M006-long-term-memory-vector",
+        "title": "Long-Term Memory (Vector DBs)"
+      },
+      {
+        "id": "M006-entity-memory-graphs",
+        "title": "Entity Memory (Knowledge Graphs)"
+      },
+      {
+        "id": "M006-memory-management-strategies",
+        "title": "Memory Management Strategies"
+      },
+      {
+        "id": "M006-state-persistence",
+        "title": "State Persistence (Checkpointers)"
+      },
+      {
+        "id": "M006-memory-as-a-tool",
+        "title": "Memory as a Tool (Self-Managed)"
+      }
+    ]
+  },
+  {
+    "id": "M007",
+    "title": "Knowledge Systems & RAG",
+    "topics": [
+      {
+        "id": "M007-the-rag-paradigm",
+        "title": "The RAG Paradigm"
+      },
+      {
+        "id": "M007-standard-rag-pipeline",
+        "title": "The Standard RAG Pipeline"
+      },
+      {
+        "id": "M007-advanced-chunking",
+        "title": "Advanced Chunking Strategies"
+      },
+      {
+        "id": "M007-vector-embeddings-deep-dive",
+        "title": "Vector Embeddings Deep Dive"
+      },
+      {
+        "id": "M007-query-transformation",
+        "title": "Query Transformation & Expansion"
+      },
+      {
+        "id": "M007-advanced-retrieval-filtering",
+        "title": "Advanced Retrieval & Filtering"
+      },
+      {
+        "id": "M007-reranking",
+        "title": "Re-ranking (Cross-Encoders)"
+      },
+      {
+        "id": "M007-evaluation-metrics",
+        "title": "RAG Evaluation & Metrics"
+      },
+      {
+        "id": "M007-agentic-rag",
+        "title": "Agentic RAG"
+      },
+      {
+        "id": "M007-graph-rag",
+        "title": "GraphRAG"
+      }
+    ]
+  },
+  {
+    "id": "M008",
+    "title": "Workflow Orchestration",
+    "topics": [
+      {
+        "id": "M008-the-orchestration-problem",
+        "title": "The Orchestration Problem"
+      },
+      {
+        "id": "M008-state-machines-vs-dags",
+        "title": "State Machines vs DAGs"
+      },
+      {
+        "id": "M008-nodes-edges-state",
+        "title": "Nodes, Edges, and State"
+      },
+      {
+        "id": "M008-conditional-edges",
+        "title": "Conditional Edges (Routing)"
+      },
+      {
+        "id": "M008-hitl-orchestration",
+        "title": "Human-in-the-Loop Orchestration"
+      },
+      {
+        "id": "M008-error-handling",
+        "title": "Error Handling & Fallbacks"
+      },
+      {
+        "id": "M008-choreography-vs-autonomy",
+        "title": "Choreography vs Autonomy"
+      }
+    ]
+  },
+  {
+    "id": "M009",
+    "title": "Frameworks — LangGraph",
+    "topics": [
+      {
+        "id": "M009-intro-langgraph",
+        "title": "Introduction to LangGraph"
+      },
+      {
+        "id": "M009-stategraph-object",
+        "title": "The StateGraph Object"
+      },
+      {
+        "id": "M009-adding-nodes",
+        "title": "Adding Nodes"
+      },
+      {
+        "id": "M009-adding-edges",
+        "title": "Adding Edges"
+      },
+      {
+        "id": "M009-conditional-routing",
+        "title": "Conditional Routing"
+      },
+      {
+        "id": "M009-compiling",
+        "title": "Compiling the Graph"
+      },
+      {
+        "id": "M009-streaming-execution",
+        "title": "Streaming Execution"
+      },
+      {
+        "id": "M009-memory-checkpointers",
+        "title": "Memory & Checkpointers"
+      },
+      {
+        "id": "M009-time-travel",
+        "title": "Time Travel (State Modification)"
+      },
+      {
+        "id": "M009-prebuilt-agents",
+        "title": "Prebuilt Agents (create_react_agent)"
+      }
+    ]
+  },
+  {
+    "id": "M010",
+    "title": "Multi-Agent Systems",
+    "topics": [
+      {
+        "id": "M010-need-for-multi-agent",
+        "title": "The Need for Multi-Agent Systems"
+      },
+      {
+        "id": "M010-supervisor-pattern",
+        "title": "The Supervisor Pattern"
+      },
+      {
+        "id": "M010-hierarchical-team-pattern",
+        "title": "The Hierarchical Team Pattern"
+      },
+      {
+        "id": "M010-network-flat-pattern",
+        "title": "The Network / Flat Pattern"
+      },
+      {
+        "id": "M010-agent-state-sharing",
+        "title": "Agent State Sharing"
+      },
+      {
+        "id": "M010-swarm-intelligence",
+        "title": "Swarm Intelligence"
+      },
+      {
+        "id": "M010-multi-agent-chat",
+        "title": "Multi-Agent Chat (Speaker Selection)"
+      },
+      {
+        "id": "M010-framework-crewai",
+        "title": "Framework Spotlight: CrewAI"
+      },
+      {
+        "id": "M010-framework-autogen",
+        "title": "Framework Spotlight: AutoGen"
+      },
+      {
+        "id": "M010-multi-agent-evaluation",
+        "title": "Multi-Agent Evaluation & Debugging"
+      }
+    ]
+  },
+  {
+    "id": "M011",
+    "title": "Model Context Protocol (MCP)",
+    "topics": [
+      {
+        "id": "M011-introduction-to-mcp",
+        "title": "Introduction to MCP"
+      }
+    ]
+  },
+  {
+    "id": "M012",
+    "title": "Agent Security",
+    "topics": [
+      {
+        "id": "M012-what-is-mcp",
+        "title": "What is MCP?"
+      },
+      {
+        "id": "M012-n-plus-1-integration",
+        "title": "The N+1 Integration Problem"
+      },
+      {
+        "id": "M012-architecture-overview",
+        "title": "MCP Architecture Overview"
+      },
+      {
+        "id": "M012-primitive-resources",
+        "title": "Primitive 1: Resources"
+      },
+      {
+        "id": "M012-primitive-prompts",
+        "title": "Primitive 2: Prompts"
+      },
+      {
+        "id": "M012-primitive-tools",
+        "title": "Primitive 3: Tools"
+      },
+      {
+        "id": "M012-transports",
+        "title": "Transports: stdio vs SSE"
+      },
+      {
+        "id": "M012-building-mcp-server",
+        "title": "Building an MCP Server"
+      },
+      {
+        "id": "M012-connecting-mcp-client",
+        "title": "Connecting an MCP Client"
+      },
+      {
+        "id": "M012-open-source-ecosystem",
+        "title": "The Open-Source Ecosystem"
+      }
+    ]
+  },
+  {
+    "id": "M013",
+    "title": "Production Agent Systems",
+    "topics": []
+  },
+  {
+    "id": "M016",
+    "title": "Agent Security",
+    "topics": [
+      {
+        "id": "M016-unique-risks",
+        "title": "The Unique Risks of Agentic AI"
+      },
+      {
+        "id": "M016-prompt-injection",
+        "title": "Prompt Injection"
+      },
+      {
+        "id": "M016-indirect-injection",
+        "title": "Indirect Prompt Injection"
+      },
+      {
+        "id": "M016-data-exfiltration",
+        "title": "Data Exfiltration"
+      },
+      {
+        "id": "M016-jailbreaking",
+        "title": "Jailbreaking"
+      },
+      {
+        "id": "M016-tool-abuse",
+        "title": "Tool Abuse & Least Privilege"
+      },
+      {
+        "id": "M016-sandboxing",
+        "title": "Sandboxing Environments"
+      },
+      {
+        "id": "M016-hitl-control",
+        "title": "Human-in-the-Loop as a Control"
+      },
+      {
+        "id": "M016-rbac",
+        "title": "Role-Based Access Control (RBAC)"
+      },
+      {
+        "id": "M016-red-teaming",
+        "title": "Red Teaming & Evaluation"
+      }
+    ]
+  },
+  {
+    "id": "M017",
+    "title": "Production Agent Systems",
+    "topics": [
+      {
+        "id": "M017-prototype-to-prod",
+        "title": "The Prototype to Production Gap"
+      },
+      {
+        "id": "M017-observability",
+        "title": "Observability & Tracing"
+      },
+      {
+        "id": "M017-evaluation",
+        "title": "Evaluation (LLM-as-a-Judge)"
+      },
+      {
+        "id": "M017-latency",
+        "title": "Latency & Token Streaming"
+      },
+      {
+        "id": "M017-cost-management",
+        "title": "Cost Management & Caching"
+      },
+      {
+        "id": "M017-state-persistence",
+        "title": "State Persistence at Scale"
+      },
+      {
+        "id": "M017-rate-limits",
+        "title": "Rate Limits & Fallbacks"
+      },
+      {
+        "id": "M017-deployment",
+        "title": "Deployment Architectures"
+      },
+      {
+        "id": "M017-ui-ux",
+        "title": "UI/UX for Agents"
+      },
+      {
+        "id": "M017-future",
+        "title": "The Future of Agents"
+      }
+    ]
+  }
+]
